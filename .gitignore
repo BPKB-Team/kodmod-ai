@@ -51,11 +51,15 @@ models--*/
 *.ogg
 !apps/ai-engine/tests/**/fixtures/*.wav
 
-# ---------- editor & OS ----------
+# ---------- editor, agent & OS ----------
 .vscode/
 .idea/
 .claude/
 .codegraph/
+.mcp.json
+AGENTS.md
+GEMINI.md
+opencode.jsonc
 *.swp
 .DS_Store
 Thumbs.db
