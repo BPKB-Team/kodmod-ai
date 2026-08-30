@@ -55,6 +55,7 @@ models--*/
 .vscode/
 .idea/
 .claude/
+.codegraph/
 *.swp
 .DS_Store
 Thumbs.db
