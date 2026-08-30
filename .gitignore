@@ -1,0 +1,61 @@
+# ---------- privat, jangan di-commit ----------
+/archive/
+
+# ---------- environment & rahasia ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ---------- Node / frontend ----------
+node_modules/
+.vite/
+apps/web/dist/
+apps/web/dev-dist/
+*.local
+.eslintcache
+
+# ---------- model & artefak berat ----------
+*.onnx
+*.gguf
+*.bin
+*.pt
+*.safetensors
+models--*/
+.cache/
+
+# ---------- media hasil runtime ----------
+*.wav
+*.mp3
+*.ogg
+!apps/ai-engine/tests/**/fixtures/*.wav
+
+# ---------- editor & OS ----------
+.vscode/
+.idea/
+.claude/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
