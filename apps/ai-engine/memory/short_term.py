@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import redis.asyncio as aioredis
 
@@ -25,7 +25,7 @@ from config.settings import settings
 logger = logging.getLogger(__name__)
 
 _DEFAULT_TTL = 60 * 60 * 24  # 24h
-_pool: Optional[aioredis.Redis] = None
+_pool: aioredis.Redis | None = None
 
 
 async def get_redis() -> aioredis.Redis:
@@ -56,7 +56,7 @@ async def set_value(session_id: str, sub: str, value: Any, ttl: int = _DEFAULT_T
     await r.set(_key(session_id, sub), json.dumps(value, default=str), ex=ttl)
 
 
-async def get_value(session_id: str, sub: str) -> Optional[Any]:
+async def get_value(session_id: str, sub: str) -> Any | None:
     r = await get_redis()
     v = await r.get(_key(session_id, sub))
     return json.loads(v) if v else None
@@ -75,12 +75,12 @@ async def delete_session(session_id: str) -> None:
 
 
 # --- semantic helpers used by agents -------------------------------------
-async def store_last_response(session_id: str, text: str, audio_url: Optional[str] = None) -> None:
+async def store_last_response(session_id: str, text: str) -> None:
     """Used by accessibility_agent so 'ulangi' can replay it."""
-    await set_value(session_id, "last_response", {"text": text, "audio_url": audio_url})
+    await set_value(session_id, "last_response", {"text": text})
 
 
-async def fetch_last_response(session_id: str) -> Optional[dict]:
+async def fetch_last_response(session_id: str) -> dict | None:
     return await get_value(session_id, "last_response")
 
 
@@ -101,10 +101,20 @@ async def fetch_tutoring_turns(session_id: str) -> list[dict]:
     return [json.loads(x) for x in items]
 
 
-async def set_pacing(session_id: str, rate: float) -> None:
-    await set_value(session_id, "tts_rate", rate)
+# --- in-flight quiz session ---------------------------------------------
+# LangGraph only checkpoints canonical state when a checkpointer is wired.
+# The chat loop re-enters the graph at `intent_router` for every utterance
+# with a fresh state, so the multi-turn quiz keeps its progress here instead:
+# `problem_generator` writes it, `intent_router` rehydrates it on the next
+# turn, `update_student_model` advances (or clears) it.
+async def store_quiz_session(session_id: str, data: dict) -> None:
+    await set_value(session_id, "quiz", data)
 
 
-async def get_pacing(session_id: str) -> float:
-    v = await get_value(session_id, "tts_rate")
-    return float(v) if v is not None else settings.TTS_RATE
+async def fetch_quiz_session(session_id: str) -> dict | None:
+    return await get_value(session_id, "quiz")
+
+
+async def clear_quiz_session(session_id: str) -> None:
+    r = await get_redis()
+    await r.delete(_key(session_id, "quiz"))

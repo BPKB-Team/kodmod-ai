@@ -1,0 +1,66 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: kodmod-postgres
+    environment:
+      POSTGRES_USER: kodmod
+      POSTGRES_PASSWORD: kodmod
+      POSTGRES_DB: kodmod
+    ports:
+      # Host-side only: mapped off 5432 because a native Postgres install can
+      # also be bound there, and Windows will silently route new connections
+      # to whichever process wins that ambiguity instead of this container.
+      # Internal traffic (the `api` service talking to `postgres:5432`) is
+      # unaffected — this only changes what host tools connect to.
+      - "5433:5432"
+    volumes:
+      - kodmod-pgdata:/var/lib/postgresql/data
+    # No schema is mounted here on purpose. `database/models.py` is the source
+    # of truth and Alembic deploys it: run `make migrate` after the first boot.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kodmod -d kodmod"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: kodmod-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - kodmod-redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # api:
+  #   build:
+  #     context: ..
+  #     dockerfile: docker/Dockerfile
+  #   container_name: kodmod-api
+  #   depends_on:
+  #     postgres: { condition: service_healthy }
+  #     redis:    { condition: service_healthy }
+  #   env_file:
+  #     - ../.env
+  #   environment:
+  #     DB_HOST: postgres
+  #     REDIS_HOST: redis
+  #     UPLOAD_DIR: /var/lib/kodmod/uploads
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - kodmod-uploads:/var/lib/kodmod/uploads
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-fsS", "http://localhost:8000/live"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 5
+
+volumes:
+  kodmod-pgdata:
+  kodmod-redisdata:
+  kodmod-uploads:
