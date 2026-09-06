@@ -1,197 +1,136 @@
 """
-KODMOD AI — Quiz Agent (and Mini-Quiz)
-=======================================
+KODMOD AI — Quiz Analyzer Agent
+================================
 
-Implements two related but distinct nodes:
+Runs after the Scoring Agent. Looks at the full set of quiz attempts in the
+current session and produces:
 
-1. `quiz_node` — full quiz session driver from the **Quiz/Assessment cluster**.
-   Asks the next question in `state["quiz_questions"]`, manages pacing,
-   handles repeat / clarify side-requests.
+* Detected misconceptions (linked to concept IDs in the curriculum graph)
+* Per-concept weakness scores
+* A short, audio-friendly summary that the Hasil Analisis path will
+  speak back to the student (matches the Quiz/Assessment cluster diagram).
+* Remediation recommendations passed to the recommendation_agent later.
 
-2. `mini_quiz_node` — the lightweight quick-check inside the **Practices &
-   Tutoring cluster** (the "Mini quiz" box in the Practices diagram).
-   Generates a single on-the-fly check question after a tutoring explanation.
-
-Both are designed for spoken delivery: questions are phrased to be
-unambiguous when heard once, and never reference visuals.
+This agent does NOT write to the database directly — that's the
+`update_student_model` node's job. Analyzer only enriches state.
 """
 
 from __future__ import annotations
 
+import json
 import logging
+from collections import defaultdict
 from typing import Any
-from uuid import uuid4
 
 from graphs.state import KODMODState, QuizQuestion
-from tools.llm_client import get_quiz_llm, language_instruction
+from tools.llm_client import get_scoring_llm, language_instruction
 
 log = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# 1. FULL QUIZ NODE
-# ---------------------------------------------------------------------------
+SYSTEM_PROMPT = """\
+You are KODMOD's Quiz Analyzer. Given a student's set of attempts on a quiz,
+identify:
 
-ASK_PROMPT = """\
-You are the Quiz Host for KODMOD AI. The student is visually impaired and
-will most likely hear this question read aloud.
+1. Misconceptions — wrong-but-systematic patterns (e.g. "always adds when
+   should multiply", "confuses cause and correlation").
+2. Weak concepts — concept_ids where the student struggled.
+3. Strong concepts — concept_ids where the student excelled.
+4. Remediation suggestions — 1–3 short actions the tutor can take next.
 
-Rules for spoken questions:
-- One sentence stem, then options (if MCQ) prefixed by 'A,', 'B,', 'C,', 'D,'.
-- No visual references.
-- Numbers spoken in words for amounts under 20.
-- For 'spoken' / 'explain' / 'reasoning' question types, do NOT list options —
-  just ask the question and a brief framing like "explain in your own words".
-- Always end with a clear closing prompt like "What's your answer?" or
-  "Take your time."
+The student is visually impaired. The summary will be SPOKEN to them.
 
-Output ONLY the question text to be spoken. No prefixes, no JSON.
-"""
-
-
-async def quiz_node(state: KODMODState) -> dict[str, Any]:
-    """Ask the next question in the quiz session."""
-    questions = state.get("quiz_questions", [])
-    idx = state.get("current_question_index", 0)
-
-    if not questions or idx >= len(questions):
-        log.info("Quiz session has no more questions")
-        return {
-            "generated_response": (
-                "Bagus! Kuis ini sudah selesai. Mari kita lihat hasilnya bersama."
-            ),
-            "next_action": "analyze_quiz",
-            "last_node": "quiz_ask",
-        }
-
-    q: QuizQuestion = questions[idx]
-    question_number = idx + 1
-    total = len(questions)
-
-    # Render the question through the LLM so options/phrasing are spoken-friendly
-    raw_q = q.get("text", "")
-    options = q.get("options", []) or []
-    qtype = q.get("type", "spoken")
-
-    user_block = (
-        f"Question {question_number} of {total}.\n"
-        f"Type: {qtype}\n"
-        f"Stem: {raw_q}\n"
-        f"Options: {options if options else 'none'}"
-    )
-
-    llm = get_quiz_llm()
-    response = await llm.ainvoke(
-        [
-            {"role": "system", "content": ASK_PROMPT + language_instruction()},
-            {"role": "user", "content": user_block},
-        ]
-    )
-    spoken_question = response.content if hasattr(response, "content") else str(response)
-
-    # Prepend a tiny intro for the FIRST question of the session; for later
-    # questions, carry the previous answer's feedback forward so the student
-    # hears it before the next question, instead of losing it.
-    if idx == 0:
-        spoken_question = (
-            f"Baik, kita mulai kuis. Ada {total} soal. Soal pertama: " + spoken_question
-        )
-    else:
-        feedback = (state.get("generated_response") or "").strip()
-        if feedback:
-            spoken_question = f"{feedback} Soal berikutnya: {spoken_question}"
-
-    log.info(
-        "Asking question %d/%d (concept=%s, difficulty=%s)",
-        question_number,
-        total,
-        q.get("concept_id"),
-        q.get("difficulty"),
-    )
-
-    return {
-        "quiz_question": q,
-        "generated_response": spoken_question,
-        "next_action": "speak",
-        "last_node": "quiz_ask",
-    }
-
-
-# ---------------------------------------------------------------------------
-# 2. MINI-QUIZ NODE  (inside Practices & Tutoring cluster)
-# ---------------------------------------------------------------------------
-
-MINI_PROMPT = """\
-You are KODMOD's Mini-Quiz generator. After a short tutoring explanation,
-generate ONE quick check question to verify the student understood the key
-idea. Constraints:
-
-- Must be answerable in one sentence or one number/word.
-- Spoken, no visuals.
-- Difficulty matches the just-explained concept.
-- Do NOT reuse phrasing from the explanation verbatim — test understanding,
-  not memory.
-
-Output JSON ONLY:
+Return JSON ONLY:
 {
-  "text": "the question to ask",
-  "type": "spoken" | "mcq",
-  "options": [],            // empty if not mcq
-  "expected_answer": "the canonical answer",
-  "rubric": {"keywords": ["..."]}
+  "misconceptions": ["short label", ...],
+  "weak_concepts":   ["concept_id", ...],
+  "strong_concepts": ["concept_id", ...],
+  "remediation":     ["action 1", "action 2"],
+  "spoken_summary":  "2-3 friendly sentences for the student to hear",
+  "teacher_summary": "more technical 1-2 sentences for the teacher dashboard"
 }
 """
 
 
-async def mini_quiz_node(state: KODMODState) -> dict[str, Any]:
-    """Generate a single quick-check question after a tutoring explanation."""
-    last_explanation = state.get("generated_response", "")
-    concept_id = state.get("current_concept_id", "")
+async def quiz_analyzer_node(state: KODMODState) -> dict[str, Any]:
+    """Synthesize learning insights from the completed (or in-progress) quiz."""
+    attempts = state.get("quiz_attempts", [])
+    questions = state.get("quiz_questions", [])
 
-    llm = get_quiz_llm()
+    if not attempts:
+        return {
+            "next_action": "update_student_model",
+            "last_node": "quiz_analyzer",
+        }
+
+    # ---- Pre-compute deterministic stats so the LLM doesn't have to ------
+    by_concept: dict[str, list[float]] = defaultdict(list)
+    q_by_id: dict[object, QuizQuestion] = {q.get("question_id"): q for q in questions}
+    for a in attempts:
+        q: QuizQuestion = q_by_id.get(a.get("question_id"), {})
+        cid = q.get("concept_id", "unknown")
+        by_concept[cid].append(a.get("score", 0.0))
+
+    concept_avg = {cid: sum(s) / len(s) for cid, s in by_concept.items()}
+
+    # ---- Build a compact dossier for the LLM ----------------------------
+    dossier_lines = []
+    for a in attempts:
+        q = q_by_id.get(a.get("question_id"), {})
+        dossier_lines.append(
+            f"- concept={q.get('concept_id', '?')} "
+            f"q='{q.get('text', '')[:80]}' "
+            f"answer='{a.get('student_answer', '')[:80]}' "
+            f"score={a.get('score', 0):.2f} "
+            f"correct={a.get('is_correct', False)}"
+        )
+    dossier = "\n".join(dossier_lines)
+
+    user_block = f"Concept averages: {json.dumps(concept_avg)}\n\nAttempts:\n{dossier}"
+
+    llm = get_scoring_llm()
     response = await llm.ainvoke(
         [
-            {"role": "system", "content": MINI_PROMPT + language_instruction()},
-            {
-                "role": "user",
-                "content": (
-                    f"Concept: {concept_id}\n"
-                    f"Tutor's explanation just given:\n---\n{last_explanation}\n---"
-                ),
-            },
+            {"role": "system", "content": SYSTEM_PROMPT + language_instruction()},
+            {"role": "user", "content": user_block},
         ]
     )
     raw = response.content if hasattr(response, "content") else str(response)
-
-    import json
 
     try:
         cleaned = (
             raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
         )
-        parsed = json.loads(cleaned)
+        analysis = json.loads(cleaned)
     except json.JSONDecodeError:
-        log.warning("Mini-quiz JSON parse failed; skipping mini-quiz")
-        return {"next_action": "speak", "last_node": "mini_quiz"}
+        log.warning("Analyzer JSON parse failed; using defaults")
+        analysis = {
+            "misconceptions": [],
+            "weak_concepts": [c for c, s in concept_avg.items() if s < 0.6],
+            "strong_concepts": [c for c, s in concept_avg.items() if s >= 0.8],
+            "remediation": ["Tinjau kembali konsep yang lemah."],
+            "spoken_summary": ("Kuis selesai. Mari kita tinjau bagian yang masih perlu latihan."),
+            "teacher_summary": "Analyzer fallback — see raw concept averages.",
+        }
 
-    question: QuizQuestion = {
-        "question_id": str(uuid4()),
-        "text": parsed.get("text", ""),
-        "type": parsed.get("type", "spoken"),
-        "options": parsed.get("options", []),
-        "expected_answer": parsed.get("expected_answer", ""),
-        "rubric": parsed.get("rubric", {}),
-        "concept_id": concept_id,
-        "difficulty": state.get("current_difficulty", "medium"),
-    }
+    log.info(
+        "Quiz analyzed: %d attempts, %d weak concepts, %d misconceptions",
+        len(attempts),
+        len(analysis.get("weak_concepts", [])),
+        len(analysis.get("misconceptions", [])),
+    )
 
-    log.info("Mini-quiz generated: %s", question["text"][:60])
     return {
-        "quiz_question": question,
-        "quiz_questions": [question],
-        "current_question_index": 0,
-        "quiz_session_id": f"mini-{uuid4().hex[:8]}",
-        "generated_response": (f"Cek pemahaman cepat: {question['text']}"),
-        "next_action": "speak",
-        "last_node": "mini_quiz",
+        "misconceptions_detected": analysis.get("misconceptions", []),
+        "analytics_summary": {
+            **state.get("analytics_summary", {}),
+            "weak_concepts": analysis.get("weak_concepts", []),
+            "strong_concepts": analysis.get("strong_concepts", []),
+            "concept_averages": concept_avg,
+            "teacher_summary": analysis.get("teacher_summary", ""),
+        },
+        "recommendations": analysis.get("remediation", []),
+        "generated_response": analysis.get("spoken_summary", ""),
+        "next_action": "update_student_model",
+        "last_node": "quiz_analyzer",
     }
