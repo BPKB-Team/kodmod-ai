@@ -10,10 +10,10 @@ KODMOD AI — Health & Readiness Routes
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter
 from sqlalchemy import text
 
 from config.settings import settings
@@ -24,11 +24,13 @@ router = APIRouter()
 
 @router.get("/live")
 async def live() -> dict[str, Any]:
-    return {"status": "alive", "ts": datetime.utcnow().isoformat()}
+    """Liveness probe — returns 200 as long as the process is running."""
+    return {"status": "alive", "ts": datetime.now(UTC).isoformat()}
 
 
 @router.get("/ready")
 async def ready() -> dict[str, Any]:
+    """Readiness probe — checks that Postgres and Redis are reachable."""
     checks: dict[str, Any] = {}
     overall = True
 
@@ -58,19 +60,19 @@ async def ready() -> dict[str, Any]:
     response = {
         "status": "ready" if overall else "degraded",
         "checks": checks,
-        "ts": datetime.utcnow().isoformat(),
+        "ts": datetime.now(UTC).isoformat(),
     }
     return response
 
 
 @router.get("/version")
 async def version() -> dict[str, Any]:
+    """Build and runtime metadata: app version, env, and the configured models."""
     return {
         "name": settings.APP_NAME,
         "version": settings.APP_VERSION,
         "env": settings.ENV,
-        "llm_provider": settings.KODMOD_LLM_PROVIDER,
-        "vector_backend": settings.VECTOR_BACKEND,
-        "stt_backend": settings.STT_BACKEND,
-        "tts_backend": settings.TTS_BACKEND,
+        "tutor_model": settings.LLM_TUTOR_MODEL,
+        "embedding_model": settings.EMBEDDING_MODEL,
+        "embedding_dim": settings.EMBEDDING_DIM,
     }
