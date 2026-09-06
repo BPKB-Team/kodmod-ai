@@ -10,19 +10,20 @@ Design notes
 * `messages` uses LangGraph's `add_messages` reducer so chat history accumulates
   rather than being overwritten.
 * `mastery_scores` is a sparse dict keyed by concept_id; updates merge.
-* `audio_response_path` and `audio_input_path` are S3/MinIO URIs, not bytes,
-  to keep the state checkpoint small.
+* Text in, text out. Speech recognition and synthesis both live in the browser,
+  so `user_input` is the only inbound text field and `accessible_response` is
+  the only outbound one.
 * Every field has an explicit default so partial state updates never crash a
   downstream node.
 """
+
 from __future__ import annotations
 
+from datetime import UTC
 from typing import Annotated, Any, Literal, TypedDict
-from uuid import UUID
 
-from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage
-
+from langgraph.graph.message import add_messages
 
 # ---------------------------------------------------------------------------
 # Enumerations
@@ -43,9 +44,7 @@ Intent = Literal[
 
 DifficultyLevel = Literal["beginner", "easy", "medium", "hard", "expert"]
 
-EmotionalState = Literal[
-    "neutral", "engaged", "confused", "frustrated", "fatigued", "motivated"
-]
+EmotionalState = Literal["neutral", "engaged", "confused", "frustrated", "fatigued", "motivated"]
 
 NextAction = Literal[
     "route_intent",
@@ -58,7 +57,7 @@ NextAction = Literal[
     "generate_analytics",
     "recommend",
     "accessibility_polish",
-    "speak",
+    "respond",
     "end",
     "interrupt_human",
 ]
@@ -68,6 +67,7 @@ NextAction = Literal[
 # Sub-structures (kept as TypedDicts so the entire state remains JSON-safe
 # for checkpoint serialization).
 # ---------------------------------------------------------------------------
+
 
 class TutoringTurn(TypedDict, total=False):
     role: Literal["student", "tutor"]
@@ -81,7 +81,7 @@ class QuizQuestion(TypedDict, total=False):
     question_id: str
     text: str
     type: Literal["mcq", "spoken", "explain", "reasoning", "step_by_step"]
-    options: list[str]            # for MCQ; empty for spoken
+    options: list[str]  # for MCQ; empty for spoken
     expected_answer: str
     rubric: dict[str, Any]
     concept_id: str
@@ -91,7 +91,7 @@ class QuizQuestion(TypedDict, total=False):
 class QuizAttempt(TypedDict, total=False):
     question_id: str
     student_answer: str
-    score: float                  # 0.0 – 1.0
+    score: float  # 0.0 – 1.0
     is_correct: bool
     confidence: float
     response_latency_ms: int
@@ -110,9 +110,8 @@ class RetrievedDoc(TypedDict, total=False):
 class LearningProfile(TypedDict, total=False):
     learning_style: Literal["auditory", "kinesthetic", "mixed"]
     preferred_pace: Literal["slow", "normal", "fast"]
-    preferred_voice: str
     language: str
-    accessibility: dict[str, Any]   # screen_reader, contrast, font_scale, etc.
+    accessibility: dict[str, Any]  # screen_reader, contrast, font_scale, etc.
 
 
 class AnalyticsSummary(TypedDict, total=False):
@@ -130,6 +129,7 @@ class AnalyticsSummary(TypedDict, total=False):
 # Master State
 # ---------------------------------------------------------------------------
 
+
 class KODMODState(TypedDict, total=False):
     """Central state for the KODMOD LangGraph orchestrator."""
 
@@ -139,41 +139,41 @@ class KODMODState(TypedDict, total=False):
     teacher_id: str | None
     request_id: str
 
-    # ---- Voice I/O ---------------------------------------------------------
-    audio_input_path: str          # URI of inbound audio chunk
-    transcribed_text: str          # output of STT
-    user_input: str                # canonicalized text (post-cleaning)
-    audio_response_path: str       # URI of TTS output
+    # ---- Turn I/O ----------------------------------------------------------
+    user_input: str  # the student's utterance, already text
     detected_language: str
 
     # ---- Routing & intent --------------------------------------------------
     intent: Intent
     intent_confidence: float
     next_action: NextAction
-    interrupt_reason: str | None   # for human-in-the-loop pauses
+    interrupt_reason: str | None  # for human-in-the-loop pauses
 
     # ---- Tutoring context --------------------------------------------------
     current_topic: str
     current_concept_id: str
+    subject_id: str | None  # scopes RAG retrieval to one subject
     current_difficulty: DifficultyLevel
     tutoring_context: list[TutoringTurn]
     retrieved_docs: list[RetrievedDoc]
-    generated_response: str        # raw LLM output before accessibility pass
-    accessible_response: str       # post-accessibility-agent text for TTS
+    generated_response: str  # raw LLM output before accessibility pass
+    accessible_response: str  # post-accessibility-agent text; this is what ships
 
     # ---- Quiz state --------------------------------------------------------
     quiz_session_id: str
+    quiz_n_questions: int  # explicit length request (0 = let the agent decide)
     quiz_questions: list[QuizQuestion]
     current_question_index: int
-    quiz_question: QuizQuestion    # the question currently being asked
+    current_question_attempts: int  # retries on the current question this session
+    quiz_question: QuizQuestion  # the question currently being asked
     student_answer: str
     quiz_attempts: list[QuizAttempt]
-    quiz_score: float              # 0.0 – 1.0 for current attempt
-    cumulative_quiz_score: float   # session-wide
+    quiz_score: float  # 0.0 – 1.0 for current attempt
+    cumulative_quiz_score: float  # session-wide
     misconceptions_detected: list[str]
 
     # ---- Student model & analytics ----------------------------------------
-    mastery_scores: dict[str, float]      # concept_id -> 0.0..1.0
+    mastery_scores: dict[str, float]  # concept_id -> 0.0..1.0
     learning_profile: LearningProfile
     analytics_summary: AnalyticsSummary
     recommendations: list[str]
@@ -196,14 +196,29 @@ class KODMODState(TypedDict, total=False):
 # Factories
 # ---------------------------------------------------------------------------
 
+
+def build_learning_profile(user: Any) -> LearningProfile:
+    """Build a ``LearningProfile`` from a ``User`` ORM row or ``UserOut`` schema.
+
+    Duck-typed on purpose: routes hand us the Pydantic ``UserOut`` while the
+    WebSocket handler has the ORM object. Only keys we actually have data for are
+    set (``LearningProfile`` is ``total=False``); consumers read via ``.get(...)``.
+    """
+    return LearningProfile(
+        language=str(getattr(user, "preferred_language", None) or "id"),
+        accessibility={"profile": getattr(user, "accessibility_profile", None) or "blind"},
+    )
+
+
 def initial_state(
     session_id: str,
     student_id: str,
-    audio_input_path: str | None = None,
+    user_input: str = "",
+    subject_id: str | None = None,
     teacher_id: str | None = None,
 ) -> KODMODState:
     """Return a clean state object for a new turn."""
-    from datetime import datetime, timezone
+    from datetime import datetime
     from uuid import uuid4
 
     return KODMODState(
@@ -211,10 +226,7 @@ def initial_state(
         student_id=student_id,
         teacher_id=teacher_id,
         request_id=str(uuid4()),
-        audio_input_path=audio_input_path or "",
-        transcribed_text="",
-        user_input="",
-        audio_response_path="",
+        user_input=user_input,
         detected_language="id",
         intent="unknown",
         intent_confidence=0.0,
@@ -222,14 +234,17 @@ def initial_state(
         interrupt_reason=None,
         current_topic="",
         current_concept_id="",
+        subject_id=subject_id,
         current_difficulty="medium",
         tutoring_context=[],
         retrieved_docs=[],
         generated_response="",
         accessible_response="",
         quiz_session_id="",
+        quiz_n_questions=0,
         quiz_questions=[],
         current_question_index=0,
+        current_question_attempts=0,
         quiz_question={},
         student_answer="",
         quiz_attempts=[],
@@ -244,7 +259,7 @@ def initial_state(
         accessibility_flags={},
         messages=[],
         trace_id=str(uuid4()),
-        started_at=datetime.now(timezone.utc).isoformat(),
+        started_at=datetime.now(UTC).isoformat(),
         last_node="entry",
         error=None,
     )

@@ -21,6 +21,7 @@ Cost optimization
 * Skips entirely for low-stakes paths (mini-quiz, recommendations) — only
   runs after `tutoring_node`.
 """
+
 from __future__ import annotations
 
 import json
@@ -28,7 +29,7 @@ import logging
 from typing import Any
 
 from graphs.state import KODMODState
-from tools.llm_client import get_router_llm  # small, fast model
+from tools.llm_client import get_reflection_llm, language_instruction
 
 log = logging.getLogger(__name__)
 
@@ -67,9 +68,7 @@ async def reflection_node(state: KODMODState) -> dict[str, Any]:
     if not response.strip():
         return {"next_action": "accessibility_polish", "last_node": "reflection"}
 
-    context_block = "\n".join(
-        f"- {d.get('text','')[:200]}" for d in docs[:4]
-    ) or "(none)"
+    context_block = "\n".join(f"- {d.get('text', '')[:200]}" for d in docs[:4]) or "(none)"
 
     user_block = (
         f"Student question: {user_input}\n\n"
@@ -77,17 +76,19 @@ async def reflection_node(state: KODMODState) -> dict[str, Any]:
         f"Curriculum context:\n{context_block}"
     )
 
-    llm = get_router_llm()
+    llm = get_reflection_llm()
     raw_resp = await llm.ainvoke(
         [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": SYSTEM_PROMPT + language_instruction()},
             {"role": "user", "content": user_block},
         ]
     )
     raw = raw_resp.content if hasattr(raw_resp, "content") else str(raw_resp)
 
     try:
-        cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        cleaned = (
+            raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        )
         verdict = json.loads(cleaned)
     except json.JSONDecodeError:
         log.warning("Reflection JSON parse failed; passing response through")
@@ -96,8 +97,12 @@ async def reflection_node(state: KODMODState) -> dict[str, Any]:
     needs_rewrite = bool(verdict.get("needs_rewrite", False))
     overall = float(verdict.get("overall_score", 0.8))
 
-    log.info("Reflection: overall=%.2f rewrite=%s issues=%s",
-             overall, needs_rewrite, verdict.get("issues", []))
+    log.info(
+        "Reflection: overall=%.2f rewrite=%s issues=%s",
+        overall,
+        needs_rewrite,
+        verdict.get("issues", []),
+    )
 
     out: dict[str, Any] = {
         "next_action": "accessibility_polish",

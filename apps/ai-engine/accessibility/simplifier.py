@@ -18,16 +18,15 @@ flagged as visually-dependent do we invoke this LLM-backed simplifier.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from tools.llm_client import get_quiz_llm
+from tools.llm_client import get_quiz_llm, language_instruction
 
 logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = """Anda adalah ahli aksesibilitas pendidikan untuk siswa tunanetra.
-Tugas Anda: menulis ulang teks tutor agar nyaman didengarkan menggunakan TTS.
+Tugas Anda: menulis ulang teks tutor agar nyaman didengarkan.
 
 ATURAN MUTLAK:
 1. JANGAN menggunakan referensi visual ("seperti gambar", "lihat di atas",
@@ -49,7 +48,7 @@ async def simplify_with_llm(
     *,
     language: str = "id",
     max_sentence_words: int = 22,
-    target_grade_level: Optional[str] = None,
+    target_grade_level: str | None = None,
 ) -> str:
     """
     Returns a simplified, audio-friendly version of `text`.
@@ -58,10 +57,11 @@ async def simplify_with_llm(
     if not text or len(text.split()) < 12:
         return text
 
-    llm = get_quiz_llm(temperature=0.2)
+    llm = get_quiz_llm()
     system = _SYSTEM_PROMPT
     if language == "en":
         system = system.replace("Bahasa Indonesia yang sederhana", "simple English")
+    system += language_instruction()
 
     user_prompt = (
         f"Maksimum kata per kalimat: {max_sentence_words}.\n"
@@ -72,10 +72,12 @@ async def simplify_with_llm(
     )
 
     try:
-        resp = await llm.ainvoke([
-            SystemMessage(content=system),
-            HumanMessage(content=user_prompt),
-        ])
+        resp = await llm.ainvoke(
+            [
+                SystemMessage(content=system),
+                HumanMessage(content=user_prompt),
+            ]
+        )
         out = (resp.content or "").strip() if hasattr(resp, "content") else str(resp).strip()
         return out or text
     except Exception as exc:  # pragma: no cover

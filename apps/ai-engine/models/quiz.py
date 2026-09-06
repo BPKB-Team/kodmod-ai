@@ -1,18 +1,18 @@
 """Pydantic schemas for /quiz endpoints."""
+
 from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 
 class QuizStartRequest(BaseModel):
-    student_id: uuid.UUID
-    concept_id: Optional[uuid.UUID] = None
+    concept_id: uuid.UUID | None = None
     n_questions: int = Field(default=5, ge=1, le=20)
-    difficulty: Optional[Literal["easy", "medium", "hard"]] = None
+    difficulty: Literal["easy", "medium", "hard"] | None = None
     language: Literal["id", "en"] = "id"
 
 
@@ -23,7 +23,6 @@ class QuizQuestionOut(BaseModel):
     question_type: Literal["mcq", "spoken", "explain", "reasoning", "step_by_step"]
     options: list[str] = Field(default_factory=list)
     difficulty: str = "medium"
-    audio_url: Optional[str] = None  # pre-rendered TTS for the question
 
 
 class QuizStartResponse(BaseModel):
@@ -36,19 +35,16 @@ class QuizSubmitRequest(BaseModel):
     quiz_session_id: uuid.UUID
     question_id: str
     student_answer: str
-    response_latency_ms: Optional[int] = None
-    transcribed_from_audio: bool = False
+    response_latency_ms: int | None = None
 
 
 class QuizSubmitResponse(BaseModel):
     score: float = Field(ge=0.0, le=1.0)
     is_correct: bool
     feedback: str
-    spoken_feedback_audio_url: Optional[str] = None
-    next_question: Optional[QuizQuestionOut] = None
+    next_question: QuizQuestionOut | None = None
     quiz_complete: bool = False
-    final_summary: Optional[str] = None
-    final_summary_audio_url: Optional[str] = None
+    final_summary: str | None = None
     cumulative_score: float = 0.0
 
 
@@ -56,10 +52,10 @@ class QuizSessionOut(BaseModel):
     id: uuid.UUID
     student_id: uuid.UUID
     started_at: datetime
-    ended_at: Optional[datetime]
+    ended_at: datetime | None
     total_questions: int
     correct_count: int
-    final_score: Optional[float]
+    final_score: float | None
     status: str
 
     class Config:

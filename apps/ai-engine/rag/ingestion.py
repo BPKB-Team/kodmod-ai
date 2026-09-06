@@ -3,8 +3,7 @@ KODMOD AI — RAG Ingestion Pipeline
 ==================================
 
 Reads source documents, chunks them, embeds, attaches accessibility
-metadata (figure descriptions), and persists to the configured vector
-store.
+metadata (figure descriptions), and persists to pgvector.
 
 Supported sources (via plugins):
 - Markdown files (.md)
@@ -22,11 +21,12 @@ from __future__ import annotations
 import asyncio
 import logging
 import uuid
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Optional
 
 from rag.chunking import chunk_document, chunks_to_payloads
 from rag.embeddings import embed_text
+from rag.stores import pgvector_store
 
 logger = logging.getLogger(__name__)
 
@@ -45,28 +45,28 @@ def _load_text(path: Path) -> str:
 
 
 async def _embed_batch(texts: list[str]) -> list[list[float]]:
-    # embeddings.embed_text already supports batched calls in providers,
-    # but we sequentialise here for simplicity. For large ingestions,
-    # swap this for a true batch method on the embedder.
-    return [await embed_text(t) for t in texts]
+    # embed_text takes a *sequence* of strings and returns one vector per
+    # string. Passing a bare str here would embed it character-by-character.
+    if not texts:
+        return []
+    return await embed_text(texts)
 
 
 async def ingest_paths(
     paths: Iterable[Path],
     *,
-    concept_id: Optional[uuid.UUID] = None,
+    concept_id: uuid.UUID | None = None,
+    subject_id: uuid.UUID | None = None,
+    document_id: uuid.UUID | None = None,
     language: str = "id",
     target_tokens: int = 350,
 ) -> int:
-    """Ingest one or more files; returns number of chunks written."""
-    if settings_backend := __import__("config.settings", fromlist=["settings"]).settings:
-        if settings_backend.VECTOR_BACKEND == "qdrant":
-            from rag.stores import qdrant_store as store
-        else:
-            from rag.stores import pgvector_store as store
-    else:  # pragma: no cover
-        from rag.stores import pgvector_store as store
+    """Ingest one or more files; returns number of chunks written.
 
+    ``subject_id`` scopes the chunks so a student's question only searches the
+    subject they picked; ``document_id`` ties them back to the upload row so
+    deleting a document can delete its chunks.
+    """
     total = 0
     for path in paths:
         path = Path(path)
@@ -81,22 +81,26 @@ async def ingest_paths(
 
         embeddings = await _embed_batch([p["text"] for p in payloads])
         records = []
-        for p, emb in zip(payloads, embeddings):
-            records.append({
-                "id": str(uuid.uuid4()),
-                "text": p["text"],
-                "embedding": emb,
-                "source": p["source"],
-                "language": language,
-                "concept_id": concept_id,
-                "chunk_index": p["chunk_index"],
-                "section_title": p.get("section_title"),
-                "accessibility_metadata": {
-                    "referenced_figures": p.get("referenced_figures", []),
-                    **p.get("metadata", {}),
-                },
-            })
-        n = await store.upsert_chunks(records)
+        for p, emb in zip(payloads, embeddings, strict=False):
+            records.append(
+                {
+                    "id": str(uuid.uuid4()),
+                    "text": p["text"],
+                    "embedding": emb,
+                    "source": p["source"],
+                    "language": language,
+                    "concept_id": concept_id,
+                    "subject_id": subject_id,
+                    "document_id": document_id,
+                    "chunk_index": p["chunk_index"],
+                    "section_title": p.get("section_title"),
+                    "accessibility_metadata": {
+                        "referenced_figures": p.get("referenced_figures", []),
+                        **p.get("metadata", {}),
+                    },
+                }
+            )
+        n = await pgvector_store.upsert_chunks(records)
         total += n
         logger.info("Ingested %s -> %d chunks", path, n)
     return total
@@ -108,6 +112,7 @@ def _cli() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", required=True, help="Directory or file to ingest")
     parser.add_argument("--concept-id", default=None)
+    parser.add_argument("--subject-id", default=None)
     parser.add_argument("--language", default="id")
     args = parser.parse_args()
 
@@ -118,7 +123,10 @@ def _cli() -> None:
         files = [root]
 
     concept_id = uuid.UUID(args.concept_id) if args.concept_id else None
-    n = asyncio.run(ingest_paths(files, concept_id=concept_id, language=args.language))
+    subject_id = uuid.UUID(args.subject_id) if args.subject_id else None
+    n = asyncio.run(
+        ingest_paths(files, concept_id=concept_id, subject_id=subject_id, language=args.language)
+    )
     print(f"Ingested {n} chunks from {len(files)} file(s)")
 
 

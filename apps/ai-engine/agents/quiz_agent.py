@@ -15,6 +15,7 @@ Implements two related but distinct nodes:
 Both are designed for spoken delivery: questions are phrased to be
 unambiguous when heard once, and never reference visuals.
 """
+
 from __future__ import annotations
 
 import logging
@@ -22,8 +23,7 @@ from typing import Any
 from uuid import uuid4
 
 from graphs.state import KODMODState, QuizQuestion
-from tools.llm_client import get_quiz_llm
-from tools.rag_tool import RAGTool
+from tools.llm_client import get_quiz_llm, language_instruction
 
 log = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ log = logging.getLogger(__name__)
 
 ASK_PROMPT = """\
 You are the Quiz Host for KODMOD AI. The student is visually impaired and
-will hear this question via TTS.
+will most likely hear this question read aloud.
 
 Rules for spoken questions:
 - One sentence stem, then options (if MCQ) prefixed by 'A,', 'B,', 'C,', 'D,'.
@@ -83,21 +83,31 @@ async def quiz_node(state: KODMODState) -> dict[str, Any]:
     llm = get_quiz_llm()
     response = await llm.ainvoke(
         [
-            {"role": "system", "content": ASK_PROMPT},
+            {"role": "system", "content": ASK_PROMPT + language_instruction()},
             {"role": "user", "content": user_block},
         ]
     )
     spoken_question = response.content if hasattr(response, "content") else str(response)
 
-    # Prepend a tiny intro for the FIRST question of the session
+    # Prepend a tiny intro for the FIRST question of the session; for later
+    # questions, carry the previous answer's feedback forward so the student
+    # hears it before the next question, instead of losing it.
     if idx == 0:
         spoken_question = (
-            f"Baik, kita mulai kuis. Ada {total} soal. Soal pertama: "
-            + spoken_question
+            f"Baik, kita mulai kuis. Ada {total} soal. Soal pertama: " + spoken_question
         )
+    else:
+        feedback = (state.get("generated_response") or "").strip()
+        if feedback:
+            spoken_question = f"{feedback} Soal berikutnya: {spoken_question}"
 
-    log.info("Asking question %d/%d (concept=%s, difficulty=%s)",
-             question_number, total, q.get("concept_id"), q.get("difficulty"))
+    log.info(
+        "Asking question %d/%d (concept=%s, difficulty=%s)",
+        question_number,
+        total,
+        q.get("concept_id"),
+        q.get("difficulty"),
+    )
 
     return {
         "quiz_question": q,
@@ -141,7 +151,7 @@ async def mini_quiz_node(state: KODMODState) -> dict[str, Any]:
     llm = get_quiz_llm()
     response = await llm.ainvoke(
         [
-            {"role": "system", "content": MINI_PROMPT},
+            {"role": "system", "content": MINI_PROMPT + language_instruction()},
             {
                 "role": "user",
                 "content": (
@@ -154,8 +164,11 @@ async def mini_quiz_node(state: KODMODState) -> dict[str, Any]:
     raw = response.content if hasattr(response, "content") else str(response)
 
     import json
+
     try:
-        cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        cleaned = (
+            raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        )
         parsed = json.loads(cleaned)
     except json.JSONDecodeError:
         log.warning("Mini-quiz JSON parse failed; skipping mini-quiz")
@@ -178,9 +191,7 @@ async def mini_quiz_node(state: KODMODState) -> dict[str, Any]:
         "quiz_questions": [question],
         "current_question_index": 0,
         "quiz_session_id": f"mini-{uuid4().hex[:8]}",
-        "generated_response": (
-            f"Cek pemahaman cepat: {question['text']}"
-        ),
+        "generated_response": (f"Cek pemahaman cepat: {question['text']}"),
         "next_action": "speak",
         "last_node": "mini_quiz",
     }
