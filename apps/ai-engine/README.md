@@ -1,59 +1,58 @@
 # @kodmod/ai-engine
 
-Backend agentic KODMOD. Python 3.11+, FastAPI, LangGraph.
+Backend agentic-nya KODMOD. Python 3.11+, FastAPI, LangGraph.
 
-## Menjalankan
+## Cara menjalankan
 
 ```bash
-# dari root repo:
+# dari root repo
 docker compose up -d postgres redis
 
 python -m venv .venv
-.venv/Scripts/activate        # Windows;  source .venv/bin/activate di Unix
+.venv/Scripts/activate        # Windows, kalau di Unix pakai: source .venv/bin/activate
 pip install -e ".[dev]"
-cp .env.example .env          # isi ANTHROPIC_API_KEY
+cp .env.example .env          # isi ANTHROPIC_API_KEY-nya
 uvicorn api.main:app --reload --port 8000
 ```
 
-## Struktur
+## Struktur folder
 
 ```
 agents/          Node LangGraph, satu file per agent
 graphs/          state.py (KODMODState) + main_graph.py (orchestrator)
-tools/           Tool yang di-bind ke agent (RAG, profil siswa, klien LLM)
-rag/             Ingestion → chunking → embedding → retrieval → rerank
-  stores/        Backend vektor: pgvector (default) | qdrant
+tools/           Tool yang dipakai agent (RAG, profil siswa, klien LLM)
+rag/             Alur ingestion -> chunking -> embedding -> retrieval -> rerank
+  stores/        Backend vektor: pgvector (default) atau qdrant
 voice/           STT (faster-whisper/Deepgram) + TTS (Piper/Azure/ElevenLabs)
-memory/          long_term.py (mastery Postgres), short_term.py (sesi Redis)
+memory/          long_term.py (mastery di Postgres), short_term.py (sesi di Redis)
 analytics/       student_model.py, aggregator.py, insights.py
 accessibility/   narration.py, simplifier.py, voice_commands.py
 api/             FastAPI: routes/ + websockets/voice_stream.py
 database/        SQLAlchemy models, schema.sql, migrasi Alembic
 models/          Model domain Pydantic
-prompts/         System prompt versi-terkontrol (.md) + loader.py
+prompts/         System prompt yang di-versioning (.md) + loader.py
 config/          settings.py (pydantic-settings), logging.py
 tests/           unit/ + integration/
 ```
 
-## Alur satu giliran
+## Alur satu giliran percakapan
 
 ```
-audio → stt → intent_router ─┬─► rag_retrieval → tutoring → reflection
-                             │                              → accessibility → tts
-                             ├─► problem_generator → quiz_ask → tts
-                             └─► analytics → recommendation → accessibility
+audio -> stt -> intent_router
+                  |-> rag_retrieval -> tutoring -> reflection -> accessibility -> tts
+                  |-> problem_generator -> quiz_ask -> tts
+                  |-> analytics -> recommendation -> accessibility
 ```
 
-## Perintah
+## Perintah yang sering dipakai
 
 ```bash
-pytest -q              # test
+pytest -q              # jalanin test
 ruff check .           # lint
-ruff check --fix .     # auto-fix
+ruff check --fix .     # auto-fix lint
 alembic upgrade head   # migrasi basis data
 ```
 
 ## Konfigurasi
 
-Semua knob lewat `config/settings.py` (pydantic-settings), diisi dari `.env`.
-Lihat `.env.example` untuk daftar lengkapnya.
+Semua pengaturan lewat `config/settings.py` (pydantic-settings), diisi dari file `.env`. Lihat `.env.example` buat daftar lengkapnya.

@@ -3,54 +3,51 @@
 </p>
 
 <p align="center">
-  <strong>Asisten belajar AI agentic, audio-first, untuk siswa tunanetra.</strong><br>
-  Bukan pembaca teks — pendamping berpikir.
+  <strong>Asisten belajar AI agentic, audio-first, buat siswa tunanetra.</strong><br>
+  Bukan sekadar pembaca teks. Pendamping berpikir.
 </p>
 
 ---
 
-## Latar belakang
+## Kenapa KODMOD dibuat
 
-Siswa tunanetra di Indonesia tidak kekurangan teknologi. Mereka sudah punya
-JAWS, NVDA, braille display, dan audiobook. Yang belum ada adalah sesuatu yang
-**menantang mereka bertanya, menganalisis, dan mengambil keputusan.**
+Siswa tunanetra di Indonesia sebenarnya nggak kekurangan teknologi. Mereka udah punya JAWS, NVDA, braille display, sampai audiobook. Yang masih kosong adalah sesuatu yang bisa menantang mereka buat bertanya, menganalisis, dan mengambil keputusan sendiri.
 
-Screen reader membacakan halaman. Ia tidak pernah bertanya balik.
+Screen reader cuma membacakan halaman. Dia nggak pernah nanya balik.
 
-KODMOD mengisi celah itu: tutor percakapan yang terikat kurikulum SLB A,
-menilai penalaran alih-alih hafalan, dan melaporkan perkembangan siswa ke guru.
+Nah, KODMOD coba mengisi celah itu. Ini tutor percakapan yang mengikuti kurikulum SLB A, fokus menilai cara berpikir siswa (bukan sekadar hafalan), dan melaporkan progresnya ke guru.
 
-## Struktur
+## Struktur folder
 
 ```
 kodmod-ai/
 ├── apps/
-│   ├── ai-engine/      Backend agentic — Python, FastAPI, LangGraph
-│   └── web/            Antarmuka — React 19, Vite, Tailwind v4
+│   ├── ai-engine/      Backend agentic (Python, FastAPI, LangGraph)
+│   └── web/            Antarmuka (React 19, Vite, Tailwind v4)
 ├── docs/               Arsitektur, API, aksesibilitas, deployment
 ├── infra/docker/       Compose produksi, Caddy, Prometheus
 ├── assets/logo/        Aset merek
 ├── docker-compose.yml  Infrastruktur pengembangan lokal
-└── Makefile            Perintah sehari-hari
+└── Makefile            Kumpulan perintah sehari-hari
 ```
 
 ## Empat cluster agent
 
-| Cluster | Isi | Peran |
+| Cluster | Isi | Tugasnya |
 |---|---|---|
-| Practices & Tutoring | Tutor Agent | Penjelasan Socratic berbasis RAG kurikulum |
-| Quiz / Assessment | Scoring Agent, Quiz Analyzer | Menilai penalaran, menjelaskan letak salahnya |
-| Content & Exercise | Problem Generator | Soal non-visual, divalidasi guru |
-| Analytics & Reporting | Learning Analytics Agent | Dasbor siswa dan guru |
+| Practices & Tutoring | Tutor Agent | Penjelasan gaya Socratic, berbasis RAG kurikulum |
+| Quiz / Assessment | Scoring Agent, Quiz Analyzer | Menilai penalaran, menjelaskan di mana letak salahnya |
+| Content & Exercise | Problem Generator | Bikin soal non-visual, tervalidasi guru |
+| Analytics & Reporting | Learning Analytics Agent | Dasbor buat siswa dan guru |
 
-Detail per cluster: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Detail tiap cluster ada di [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## Teknologi
+## Teknologi yang dipakai
 
 | Lapisan | Pilihan |
 |---|---|
 | Orkestrasi | LangGraph + LangChain |
-| LLM | Claude (bisa diganti OpenAI / Ollama / vLLM) |
+| LLM | Claude (bisa diganti ke OpenAI, Ollama, atau vLLM) |
 | STT | faster-whisper, Deepgram |
 | TTS | Piper, Azure, ElevenLabs |
 | Embedding | BGE-M3 (multilingual) |
@@ -58,29 +55,28 @@ Detail per cluster: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 | API | FastAPI + WebSocket |
 | Antarmuka | React 19, Vite, Tailwind v4, TypeScript |
 
-## Menjalankan
+## Cara menjalankan
 
 ```bash
-make infra-up     # Postgres (pgvector) + Redis
-make install      # dependensi ai-engine + web
-make api          # ai-engine  → http://localhost:8000
-make web          # antarmuka  → http://localhost:5173
+make infra-up     # nyalain Postgres (pgvector) + Redis
+make install      # pasang dependensi ai-engine dan web
+make api          # jalanin ai-engine  -> http://localhost:8000
+make web          # jalanin antarmuka  -> http://localhost:5173
 ```
 
-`make help` menampilkan semua perintah.
+Ketik `make help` buat lihat semua perintah yang tersedia.
 
 ## Aturan aksesibilitas
 
-Empat hal berikut adalah persyaratan produk, bukan preferensi gaya:
+Empat hal ini adalah syarat produk, bukan sekadar preferensi gaya:
 
-1. Setiap alur bisa diselesaikan **tanpa mouse**.
-2. **Cincin fokus tidak boleh dihapus.**
-3. Setiap informasi yang disuarakan TTS punya **padanan di ARIA live region**.
-4. **Tidak pernah ada dua suara sekaligus** — pilih mode pembaca layar
-   *atau* mode percakapan, tidak keduanya.
+1. Setiap alur harus bisa diselesaikan **tanpa mouse**.
+2. **Cincin fokus nggak boleh dihapus.**
+3. Setiap informasi yang keluar lewat TTS harus punya **padanan di ARIA live region**.
+4. **Nggak boleh ada dua suara sekaligus.** Pilih salah satu: mode pembaca layar atau mode percakapan, jangan dua-duanya jalan bareng.
 
 Uji minimal sebelum merge: **NVDA (Windows)** dan **TalkBack (Android)**.
 
 ## Lisensi
 
-Apache-2.0 — lihat [`LICENSE`](LICENSE).
+Apache-2.0, lihat [`LICENSE`](LICENSE).
