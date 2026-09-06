@@ -7,13 +7,14 @@ current session and produces:
 
 * Detected misconceptions (linked to concept IDs in the curriculum graph)
 * Per-concept weakness scores
-* A short, audio-friendly summary that the Hasil Analisis → TTS path will
+* A short, audio-friendly summary that the Hasil Analisis path will
   speak back to the student (matches the Quiz/Assessment cluster diagram).
 * Remediation recommendations passed to the recommendation_agent later.
 
 This agent does NOT write to the database directly — that's the
 `update_student_model` node's job. Analyzer only enriches state.
 """
+
 from __future__ import annotations
 
 import json
@@ -21,8 +22,8 @@ import logging
 from collections import defaultdict
 from typing import Any
 
-from graphs.state import KODMODState
-from tools.llm_client import get_scoring_llm
+from graphs.state import KODMODState, QuizQuestion
+from tools.llm_client import get_scoring_llm, language_instruction
 
 log = logging.getLogger(__name__)
 
@@ -64,9 +65,9 @@ async def quiz_analyzer_node(state: KODMODState) -> dict[str, Any]:
 
     # ---- Pre-compute deterministic stats so the LLM doesn't have to ------
     by_concept: dict[str, list[float]] = defaultdict(list)
-    q_by_id = {q.get("question_id"): q for q in questions}
+    q_by_id: dict[object, QuizQuestion] = {q.get("question_id"): q for q in questions}
     for a in attempts:
-        q = q_by_id.get(a.get("question_id"), {})
+        q: QuizQuestion = q_by_id.get(a.get("question_id"), {})
         cid = q.get("concept_id", "unknown")
         by_concept[cid].append(a.get("score", 0.0))
 
@@ -77,30 +78,29 @@ async def quiz_analyzer_node(state: KODMODState) -> dict[str, Any]:
     for a in attempts:
         q = q_by_id.get(a.get("question_id"), {})
         dossier_lines.append(
-            f"- concept={q.get('concept_id','?')} "
-            f"q='{q.get('text','')[:80]}' "
-            f"answer='{a.get('student_answer','')[:80]}' "
-            f"score={a.get('score',0):.2f} "
+            f"- concept={q.get('concept_id', '?')} "
+            f"q='{q.get('text', '')[:80]}' "
+            f"answer='{a.get('student_answer', '')[:80]}' "
+            f"score={a.get('score', 0):.2f} "
             f"correct={a.get('is_correct', False)}"
         )
     dossier = "\n".join(dossier_lines)
 
-    user_block = (
-        f"Concept averages: {json.dumps(concept_avg)}\n\n"
-        f"Attempts:\n{dossier}"
-    )
+    user_block = f"Concept averages: {json.dumps(concept_avg)}\n\nAttempts:\n{dossier}"
 
     llm = get_scoring_llm()
     response = await llm.ainvoke(
         [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": SYSTEM_PROMPT + language_instruction()},
             {"role": "user", "content": user_block},
         ]
     )
     raw = response.content if hasattr(response, "content") else str(response)
 
     try:
-        cleaned = raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        cleaned = (
+            raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+        )
         analysis = json.loads(cleaned)
     except json.JSONDecodeError:
         log.warning("Analyzer JSON parse failed; using defaults")
@@ -109,9 +109,7 @@ async def quiz_analyzer_node(state: KODMODState) -> dict[str, Any]:
             "weak_concepts": [c for c, s in concept_avg.items() if s < 0.6],
             "strong_concepts": [c for c, s in concept_avg.items() if s >= 0.8],
             "remediation": ["Tinjau kembali konsep yang lemah."],
-            "spoken_summary": (
-                "Kuis selesai. Mari kita tinjau bagian yang masih perlu latihan."
-            ),
+            "spoken_summary": ("Kuis selesai. Mari kita tinjau bagian yang masih perlu latihan."),
             "teacher_summary": "Analyzer fallback — see raw concept averages.",
         }
 
