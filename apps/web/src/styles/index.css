@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   KODMOD — dasar aksesibilitas.
+   Semua aturan di sini adalah persyaratan produk, bukan preferensi estetika.
+   Jangan hapus tanpa mengganti dengan padanan yang setara.
+   ========================================================================== */
+
+@theme {
+  --color-kodmod-ink: oklch(0.22 0.02 250);
+  --color-kodmod-accent: oklch(0.55 0.19 265);
+  --color-kodmod-focus: oklch(0.72 0.19 85);
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+html {
+  /* Jangan pernah kunci ukuran font ke px — pengguna low-vision
+     memperbesar teks lewat pengaturan browser. */
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.6;
+}
+
+/* Cincin fokus WAJIB terlihat. Pengguna keyboard adalah pengguna utama
+   produk ini — `outline: none` tanpa pengganti = regresi aksesibilitas. */
+:focus-visible {
+  outline: 3px solid var(--color-kodmod-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Target sentuh minimum 44x44px (WCAG 2.2 AA — 2.5.8 Target Size). */
+button,
+[role="button"],
+a,
+input,
+select,
+textarea {
+  min-height: 44px;
+}
+
+/* Hormati preferensi pengguna yang sensitif terhadap gerakan. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Disembunyikan secara visual, tetap dibacakan screen reader. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
+}
