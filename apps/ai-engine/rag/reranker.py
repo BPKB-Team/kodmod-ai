@@ -15,8 +15,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import Sequence
 from functools import lru_cache
-from typing import Optional, Sequence
 
 from config.settings import settings
 
@@ -39,7 +39,7 @@ async def rerank(
     query: str,
     docs: Sequence[dict],
     *,
-    top_k: Optional[int] = None,
+    top_k: int | None = None,
     text_key: str = "text",
 ) -> list[dict]:
     """
@@ -51,19 +51,23 @@ async def rerank(
     if not docs:
         return []
     top_k = top_k or settings.RAG_RERANK_TOP_K
-    model = _load_model()
+    loop = asyncio.get_running_loop()
+    # `_load_model()` downloads ~2GB on first use (cached after that via
+    # lru_cache) and is fully synchronous — run it off-loop like `.predict()`
+    # below, or the first call from any request freezes the entire server
+    # (every connection, not just this one) for as long as the download takes.
+    model = await loop.run_in_executor(None, _load_model)
     if model is None:
         return list(docs[:top_k])
 
     pairs = [(query, d.get(text_key, "")) for d in docs]
-    loop = asyncio.get_running_loop()
 
     def _score():
         return model.predict(pairs, convert_to_numpy=True)
 
     scores = await loop.run_in_executor(None, _score)
     enriched = []
-    for d, s in zip(docs, scores):
+    for d, s in zip(docs, scores, strict=False):
         d2 = dict(d)
         d2["rerank_score"] = float(s)
         enriched.append(d2)
