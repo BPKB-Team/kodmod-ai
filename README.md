@@ -3,19 +3,21 @@
 </p>
 
 <p align="center">
-  <strong>Asisten belajar AI agentic, audio-first, buat siswa tunanetra.</strong><br>
-  Bukan sekadar pembaca teks. Pendamping berpikir.
+  <strong>Asisten belajar AI buat siswa tunanetra.</strong><br>
+  Dari sekadar dibacakan, jadi diajak mikir.
 </p>
 
 ---
 
 ## Kenapa KODMOD dibuat
 
-Siswa tunanetra di Indonesia sebenarnya nggak kekurangan teknologi. Mereka udah punya JAWS, NVDA, braille display, sampai audiobook. Yang masih kosong adalah sesuatu yang bisa menantang mereka buat bertanya, menganalisis, dan mengambil keputusan sendiri.
+Di Indonesia ada sekitar 11 juta orang dengan gangguan penglihatan, dan 83% dari mereka sudah pernah merasakan sekolah formal. Jadi akses ke pendidikan sebenarnya bukan lagi tantangan terbesar.
 
-Screen reader cuma membacakan halaman. Dia nggak pernah nanya balik.
+Yang jadi tantangan justru apa yang mereka dapat setelah duduk di kelas. Baru sekitar 5% buku pelajaran yang hadir dalam format yang bisa mereka akses, dan 78% guru di sekolah inklusi belum pernah dapat pelatihan khusus untuk mengajar siswa disabilitas. Alat bantu yang ada sekarang, seperti screen reader JAWS atau NVDA, memang sudah cukup andal membacakan tulisan. Tapi sebatas itu saja, belum ada yang mengajak siswa untuk berpikir, bertanya balik, atau menyusun alasannya sendiri.
 
-Nah, KODMOD coba mengisi celah itu. Ini tutor percakapan yang mengikuti kurikulum SLB A, fokus menilai cara berpikir siswa (bukan sekadar hafalan), dan melaporkan progresnya ke guru.
+Jadi sebenarnya bukan soal kurangnya alat bantu, tapi belum adanya alat yang benar-benar bisa diajak berdiskusi.
+
+Di situlah KODMOD hadir. Ia bekerja sebagai tutor percakapan yang mengikuti kurikulum SLB A, lebih peduli pada cara siswa berpikir ketimbang sekadar menguji hafalan, dan melaporkan progres belajarnya otomatis ke guru.
 
 ## Struktur folder
 
