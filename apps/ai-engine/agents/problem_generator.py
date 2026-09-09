@@ -25,6 +25,7 @@ import logging
 from typing import Any, cast
 from uuid import uuid4
 
+from analytics.student_model import StudentModel
 from graphs.state import DifficultyLevel, KODMODState, QuizQuestion
 from tools.llm_client import get_quiz_llm, language_instruction
 from tools.rag_tool import RAGTool
@@ -51,7 +52,10 @@ CONSTRAINTS
   * step_by_step   (walk through a procedure)
 
 ADAPTATION
-- Difficulty given as <difficulty>. Match it.
+- Difficulty given as <difficulty>. Match it — it has already been nudged up
+  or down from the requester's original ask based on the student's predicted
+  chance of getting this concept right (<predicted_success_probability>), so
+  trust it over your own guess from <mastery> alone.
 - Mastery profile <mastery> is a JSON of concept→score. Mix in neighboring
   concepts the student knows well as scaffolding.
 
@@ -93,6 +97,14 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
     requested_n = int(state.get("quiz_n_questions") or 0)
     n_questions = requested_n if requested_n >= 1 else _decide_n_questions(state)
 
+    # ---- Predict how the student would do on this concept right now, and
+    # nudge difficulty toward the productive-struggle zone instead of the
+    # coarse static default. See StudentModel.predict_correct_probability.
+    predicted_success = StudentModel(
+        student_id=str(state.get("student_id", "")), _scores=dict(mastery)
+    ).predict_correct_probability([concept_id] if concept_id else [])
+    difficulty = _adjust_difficulty(difficulty, predicted_success)
+
     # ---- Pull curriculum context from the Content cluster (RAG) ---------
     # Scope by subject_id even when concept_id can't be resolved, so retrieval
     # never falls back to an unfiltered search over the whole curriculum table.
@@ -115,6 +127,7 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
     user_block = (
         f"<topic>{topic}</topic>\n"
         f"<difficulty>{difficulty}</difficulty>\n"
+        f"<predicted_success_probability>{predicted_success:.2f}</predicted_success_probability>\n"
         f"<mastery>{json.dumps(mastery)}</mastery>\n"
         f"<concept_id>{concept_id}</concept_id>\n"
         f"<n_questions>{n_questions}</n_questions>\n"
@@ -234,6 +247,25 @@ async def generate_questions_for_student(
 # ---------------------------------------------------------------------------
 # Heuristics
 # ---------------------------------------------------------------------------
+
+_DIFFICULTY_LADDER: list[DifficultyLevel] = ["beginner", "easy", "medium", "hard", "expert"]
+
+
+def _adjust_difficulty(current: DifficultyLevel, predicted_success: float) -> DifficultyLevel:
+    """Step difficulty up or down from `predicted_success` (see
+    StudentModel.predict_correct_probability), keeping questions in the
+    productive-struggle zone instead of handing out ones already predicted
+    trivial or hopeless at the student's current mastery.
+
+    One rung per turn, not a jump straight to the extreme — a single quiz
+    round shouldn't swing a "beginner" question to "expert" off one signal.
+    """
+    idx = _DIFFICULTY_LADDER.index(current) if current in _DIFFICULTY_LADDER else 2
+    if predicted_success >= 0.85:
+        idx = min(idx + 1, len(_DIFFICULTY_LADDER) - 1)
+    elif predicted_success <= 0.35:
+        idx = max(idx - 1, 0)
+    return _DIFFICULTY_LADDER[idx]
 
 
 def _decide_n_questions(state: KODMODState) -> int:

@@ -14,12 +14,33 @@ weighting is faster and easier to interpret. We expose:
 * `update(concept_id, score, confidence)` — call after every quiz attempt
 * `mastery_scores()` — full dict for the LangGraph state
 * `weak_concepts(n)` / `strong_concepts(n)` — for analytics + recommendations
+* `predict_correct_probability(concept_ids)` — chance the student answers a
+  question spanning those concepts right, *before* it's asked (see below)
 * `velocity(concept_id, days)` — change in mastery over a window
+
+Predicting success before asking
+---------------------------------
+`predict_correct_probability` adapts Eq. (7)-(8) of the HELP-DKT paper
+(Liang et al., 2022 — see `archive/Student-Model-main` for the original,
+which trains an LSTM/Transformer to produce per-concept ability from a
+sequence of code submissions). That neural encoder doesn't fit KODMOD: it's
+tied to a fixed set of programming concepts and needs an offline training
+corpus we don't have. What *does* transfer without any of that machinery is
+the paper's combination rule once ability is already known — multiply
+per-concept sigmoids rather than average them, so a question touching
+several concepts is only predicted easy if the student clears the threshold
+on *every one* of them:
+
+    y = prod_j sigmoid(ALPHA * (mastery_j - theta))
+
+Here `mastery_j` is simply our own `_scores[concept_id]` — no training, no
+neural net, just the same scores `update()` already maintains.
 """
 
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -35,6 +56,20 @@ log = logging.getLogger(__name__)
 LEARNING_RATE = 0.25
 # Decay applied per day of inactivity (forgetting curve, very mild)
 DAILY_DECAY = 0.005
+
+# Tunables for predict_correct_probability(), ported from HELP-DKT Eq. (8).
+# ALPHA controls how sharply probability swings around the threshold (paper
+# default: sigmoid(alpha*(1-0.5)) ~ 0.99, i.e. a confident "yes" once clearly
+# above theta). THETA_DEFAULT is the mastery level counted as "cleared" a
+# concept; unlike the paper we don't have expert-labeled per-concept
+# difficulty, so callers that care should pass their own theta (e.g.
+# `settings.QUIZ_PASS_THRESHOLD`) — this is only the fallback.
+PREDICT_ALPHA = 10.0
+PREDICT_THETA_DEFAULT = 0.5
+
+
+def _sigmoid(x: float) -> float:
+    return 1.0 / (1.0 + math.exp(-x))
 
 
 @dataclass
@@ -148,6 +183,30 @@ class StudentModel:
         if not self._scores:
             return 0.0
         return sum(self._scores.values()) / len(self._scores)
+
+    def predict_correct_probability(
+        self, concept_ids: list[str], theta: float = PREDICT_THETA_DEFAULT
+    ) -> float:
+        """Chance the student answers correctly a question spanning `concept_ids`.
+
+        Multiplies a per-concept sigmoid rather than averaging (HELP-DKT
+        Eq. 7-8, see module docstring): one weak concept in the mix is
+        enough to drag the prediction down, which an average would hide.
+        A concept never seen before uses the same 0.5 neutral prior as
+        `update()`. No concepts at all returns 0.5 — silence about what a
+        question covers should read as "no signal", not as certain success.
+
+        Meant for the caller deciding what to ask *before* asking it (e.g.
+        problem_generator picking difficulty) — it reads `_scores`, never
+        writes them.
+        """
+        if not concept_ids:
+            return 0.5
+        p = 1.0
+        for cid in concept_ids:
+            mastery = self._scores.get(cid, 0.5)
+            p *= _sigmoid(PREDICT_ALPHA * (mastery - theta))
+        return p
 
 
 # ---------------------------------------------------------------------------

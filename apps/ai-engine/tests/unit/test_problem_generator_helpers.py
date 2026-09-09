@@ -9,6 +9,7 @@ from __future__ import annotations
 import pytest
 
 from agents.problem_generator import (
+    _adjust_difficulty,
     _decide_n_questions,
     _fallback_question,
     _infer_concept,
@@ -48,3 +49,34 @@ def test_fallback_question_is_valid_quiz_question() -> None:  # KM-UNIT-055
     assert q["difficulty"] == "easy"
     assert q["type"] == "explain"
     assert q["question_id"]
+
+
+# --------------------------------------------------------------------------- #
+# _adjust_difficulty() — steps difficulty from predicted success probability
+# (StudentModel.predict_correct_probability). Spec: docs/testplan/01-unit.md §4.
+# --------------------------------------------------------------------------- #
+
+
+def test_adjust_difficulty_steps_up_when_predicted_easy() -> None:  # KM-UNIT-056
+    assert _adjust_difficulty("medium", 0.9) == "hard"
+
+
+def test_adjust_difficulty_steps_down_when_predicted_hard() -> None:  # KM-UNIT-057
+    assert _adjust_difficulty("medium", 0.1) == "easy"
+
+
+def test_adjust_difficulty_unchanged_in_productive_zone() -> None:  # KM-UNIT-058
+    assert _adjust_difficulty("medium", 0.6) == "medium"
+
+
+def test_adjust_difficulty_never_exceeds_expert() -> None:  # KM-UNIT-059
+    assert _adjust_difficulty("expert", 0.99) == "expert"
+
+
+def test_adjust_difficulty_never_drops_below_beginner() -> None:  # KM-UNIT-060
+    assert _adjust_difficulty("beginner", 0.01) == "beginner"
+
+
+def test_adjust_difficulty_moves_one_rung_at_a_time() -> None:  # KM-UNIT-061
+    # A single strong signal shouldn't jump beginner straight to expert.
+    assert _adjust_difficulty("beginner", 0.99) == "easy"
