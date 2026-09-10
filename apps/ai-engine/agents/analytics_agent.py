@@ -32,6 +32,7 @@ from typing import Any
 from analytics.aggregator import StudentAggregator
 from analytics.insights import generate_student_spoken_summary
 from graphs.state import AnalyticsSummary, KODMODState
+from tools.database_tool import save_analytics_report
 
 log = logging.getLogger(__name__)
 
@@ -86,6 +87,16 @@ async def analytics_node(state: KODMODState) -> dict[str, Any]:
         summary["sessions_total"],
         summary["engagement_index"],
     )
+
+    # Persist what the module docstring above already promises ("Persistent
+    # rows in `analytics_reports` - surfaced on the Student Dashboard and
+    # Teacher Dashboard") but this node never actually wrote until now -
+    # analytics_summary only ever reached ephemeral graph state. Best-effort:
+    # a storage hiccup must not stop the spoken summary reaching the student.
+    try:
+        await save_analytics_report(student_id=sid, report_type="student", payload=dict(summary))
+    except Exception:  # pragma: no cover - persistence must not break a turn
+        log.warning("Could not persist analytics report for %s", student_id, exc_info=True)
 
     return {
         "analytics_summary": {**state.get("analytics_summary", {}), **summary},

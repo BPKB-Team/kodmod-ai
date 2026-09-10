@@ -269,6 +269,35 @@ async def test_km_int_114_analytics_node_bad_student_id() -> None:
     assert out["last_node"] == "analytics"
 
 
+async def test_km_int_113b_analytics_node_persists_report(
+    make_student, concept_ids, seed_mastery
+) -> None:  # type: ignore[no-untyped-def]
+    """analytics_node's own docstring promises a persistent analytics_reports
+    row alongside the ephemeral state summary - this only started actually
+    happening once save_analytics_report was wired in."""
+    from sqlalchemy import text
+
+    from agents.analytics_agent import analytics_node
+    from database.session import async_session
+
+    st = await make_student()
+    await seed_mastery(st.id, {concept_ids["pecahan"]: 0.6})
+    await analytics_node({"student_id": str(st.id)})
+
+    async with async_session() as s:
+        row = (
+            await s.execute(
+                text(
+                    "SELECT report_type, payload FROM analytics_reports "
+                    "WHERE student_id = CAST(:sid AS uuid) ORDER BY generated_at DESC LIMIT 1"
+                ),
+                {"sid": str(st.id)},
+            )
+        ).one()
+    assert row.report_type == "student"
+    assert "overall_mastery" in row.payload
+
+
 # --------------------------------------------------------------------------- #
 # recommendation
 # --------------------------------------------------------------------------- #
