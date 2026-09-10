@@ -66,7 +66,7 @@ async def start_quiz(
     state["current_concept_id"] = str(body.concept_id) if body.concept_id else ""
     state["current_difficulty"] = body.difficulty or "medium"
     state["quiz_n_questions"] = body.n_questions
-    state["mastery_scores"] = await _load_mastery(str(student.id))
+    state["mastery_scores"], state["mastery_confidence"] = await _load_mastery(str(student.id))
     state["learning_profile"] = build_learning_profile(student)
 
     graph = request.app.state.graph
@@ -233,8 +233,9 @@ async def submit_answer(
 # ---------------------------------------------------------------------------
 
 
-async def _load_mastery(student_id: str) -> dict[str, float]:
+async def _load_mastery(student_id: str) -> tuple[dict[str, float], dict[str, float]]:
+    """Returns (mastery_scores, mastery_confidence) — see graphs/state.py."""
     from analytics.student_model import StudentModel
 
     model = await StudentModel.load(student_id)
-    return await model.mastery_scores()
+    return await model.mastery_scores(), dict(model._confidence)

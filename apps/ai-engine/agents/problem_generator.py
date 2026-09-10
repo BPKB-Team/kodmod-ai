@@ -94,14 +94,20 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
     topic = requested_topic or concept_id
     difficulty: DifficultyLevel = state.get("current_difficulty", "medium")
     mastery = state.get("mastery_scores", {})
+    mastery_confidence = state.get("mastery_confidence", {})
     requested_n = int(state.get("quiz_n_questions") or 0)
     n_questions = requested_n if requested_n >= 1 else _decide_n_questions(state)
 
     # ---- Predict how the student would do on this concept right now, and
     # nudge difficulty toward the productive-struggle zone instead of the
     # coarse static default. See StudentModel.predict_correct_probability.
+    # mastery_confidence travels alongside mastery_scores in state (see
+    # graphs/state.py) so a concept touched once doesn't get treated as
+    # confidently as one backed by many attempts.
     predicted_success = StudentModel(
-        student_id=str(state.get("student_id", "")), _scores=dict(mastery)
+        student_id=str(state.get("student_id", "")),
+        _scores=dict(mastery),
+        _confidence=dict(mastery_confidence),
     ).predict_correct_probability([concept_id] if concept_id else [])
     difficulty = _adjust_difficulty(difficulty, predicted_success)
 

@@ -27,6 +27,26 @@ async def test_km_int_060_load_reads_mastery_rows(make_student, concept_ids, see
     assert str(cid) in m._last_practiced
 
 
+async def test_km_int_060b_load_applies_decay_for_stale_practice(
+    make_student, concept_ids, seed_mastery
+) -> None:  # type: ignore[no-untyped-def]
+    """load() now applies the forgetting curve itself — previously
+    apply_decay() was only ever called from unit tests, never on the real
+    read path (a concept last practiced 30 days ago stayed frozen at its
+    old score forever)."""
+    from datetime import UTC, datetime, timedelta
+
+    from analytics.student_model import DAILY_DECAY, StudentModel
+
+    st = await make_student()
+    cid = concept_ids["pecahan"]
+    stale = datetime.now(UTC) - timedelta(days=30)
+    await seed_mastery(st.id, {cid: 0.8}, last_seen=stale)
+
+    m = await StudentModel.load(st.id)
+    assert m._scores[str(cid)] == pytest.approx(0.8 - DAILY_DECAY * 30)
+
+
 async def test_km_int_061_load_empty_student() -> None:
     from analytics.student_model import StudentModel
 

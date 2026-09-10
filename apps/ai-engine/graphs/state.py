@@ -174,6 +174,11 @@ class KODMODState(TypedDict, total=False):
 
     # ---- Student model & analytics ----------------------------------------
     mastery_scores: dict[str, float]  # concept_id -> 0.0..1.0
+    # concept_id -> 0.0..1.0, how much evidence backs mastery_scores[cid]
+    # (StudentModel._confidence). Kept alongside mastery_scores rather than
+    # folded into it so a thinly-evidenced score doesn't get mistaken for a
+    # well-established one downstream (see predict_correct_probability).
+    mastery_confidence: dict[str, float]
     learning_profile: LearningProfile
     analytics_summary: AnalyticsSummary
     recommendations: list[str]
@@ -252,6 +257,7 @@ def initial_state(
         cumulative_quiz_score=0.0,
         misconceptions_detected=[],
         mastery_scores={},
+        mastery_confidence={},
         learning_profile={},
         analytics_summary={},
         recommendations=[],

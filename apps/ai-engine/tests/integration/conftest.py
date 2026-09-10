@@ -140,7 +140,14 @@ async def seed_mastery(clean_db):  # type: ignore[no-untyped-def]
 
     from database.session import async_session
 
-    async def _seed(student_id, mapping: dict, *, n_attempts: int = 1, confidence: float = 0.5):  # type: ignore[no-untyped-def]
+    async def _seed(  # type: ignore[no-untyped-def]
+        student_id,
+        mapping: dict,
+        *,
+        n_attempts: int = 1,
+        confidence: float = 0.5,
+        last_seen: datetime | None = None,
+    ):
         async with async_session() as s:
             for cid, mastery in mapping.items():
                 await s.execute(
@@ -156,7 +163,7 @@ async def seed_mastery(clean_db):  # type: ignore[no-untyped-def]
                         "m": mastery,
                         "c": confidence,
                         "n": n_attempts,
-                        "ls": datetime.now(UTC),
+                        "ls": last_seen or datetime.now(UTC),
                     },
                 )
 

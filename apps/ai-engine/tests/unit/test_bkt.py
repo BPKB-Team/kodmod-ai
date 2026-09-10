@@ -136,24 +136,29 @@ def test_predict_at_threshold_is_neutral(model: StudentModel) -> None:  # KM-UNI
 
 
 def test_predict_above_threshold_is_confident(model: StudentModel) -> None:  # KM-UNIT-033
+    # Well-established score (confidence=1.0) clearly above threshold.
     model._scores["c"] = 0.9
-    expected = _sigmoid(PREDICT_ALPHA * (0.9 - PREDICT_THETA_DEFAULT))
+    model._confidence["c"] = 1.0
+    expected = _sigmoid(PREDICT_ALPHA * 1.0 * (0.9 - PREDICT_THETA_DEFAULT))
     got = model.predict_correct_probability(["c"])
     assert got == pytest.approx(expected)
     assert got > 0.9  # clearly above threshold -> confident yes
 
 
 def test_predict_below_threshold_is_unlikely(model: StudentModel) -> None:  # KM-UNIT-034
+    # Well-established score (confidence=1.0) clearly below threshold.
     model._scores["c"] = 0.1
-    expected = _sigmoid(PREDICT_ALPHA * (0.1 - PREDICT_THETA_DEFAULT))
+    model._confidence["c"] = 1.0
+    expected = _sigmoid(PREDICT_ALPHA * 1.0 * (0.1 - PREDICT_THETA_DEFAULT))
     got = model.predict_correct_probability(["c"])
     assert got == pytest.approx(expected)
     assert got < 0.1  # clearly below threshold -> confident no
 
 
 def test_predict_unseen_concept_uses_neutral_prior(model: StudentModel) -> None:  # KM-UNIT-035
-    # Same 0.5 prior update() uses for a concept never touched before.
-    expected = _sigmoid(PREDICT_ALPHA * (0.5 - 0.3))
+    # Same 0.5 mastery *and* 0.5 confidence prior update() uses for a
+    # concept never touched before.
+    expected = _sigmoid(PREDICT_ALPHA * 0.5 * (0.5 - 0.3))
     assert model.predict_correct_probability(["never-seen"], theta=0.3) == pytest.approx(expected)
 
 
@@ -161,8 +166,11 @@ def test_predict_multiple_concepts_multiplies_not_averages(
     model: StudentModel,
 ) -> None:  # KM-UNIT-036
     # One weak concept among several must drag the prediction down toward
-    # its own low probability, not get smoothed out by an average.
+    # its own low probability, not get smoothed out by an average. Pin
+    # confidence=1.0 on both so this test is about the AND-semantics, not
+    # the confidence weighting (covered separately below).
     model._scores.update({"strong": 0.95, "weak": 0.05})
+    model._confidence.update({"strong": 1.0, "weak": 1.0})
     both = model.predict_correct_probability(["strong", "weak"])
     weak_alone = model.predict_correct_probability(["weak"])
     strong_alone = model.predict_correct_probability(["strong"])
@@ -170,3 +178,23 @@ def test_predict_multiple_concepts_multiplies_not_averages(
     assert both < weak_alone  # product, never higher than its weakest factor
     naive_average = (strong_alone + weak_alone) / 2
     assert both < naive_average  # the whole point: product punishes the gap
+
+
+def test_predict_low_confidence_hedges_toward_neutral(model: StudentModel) -> None:  # KM-UNIT-037
+    # Same extreme mastery, but one score is backed by real evidence and the
+    # other is a single lucky/unlucky attempt. The thinly-evidenced one must
+    # sit closer to 0.5 — a flatter sigmoid, not the same confident swing.
+    model._scores.update({"proven": 0.9, "shaky": 0.9})
+    model._confidence.update({"proven": 1.0, "shaky": 0.55})
+    proven = model.predict_correct_probability(["proven"])
+    shaky = model.predict_correct_probability(["shaky"])
+    assert shaky < proven
+    assert abs(shaky - 0.5) < abs(proven - 0.5)
+
+
+def test_predict_confidence_zero_is_fully_neutral(model: StudentModel) -> None:  # KM-UNIT-038
+    # Degenerate case: confidence 0 must neutralize the sigmoid completely,
+    # no matter how extreme the mastery value looks.
+    model._scores["c"] = 1.0
+    model._confidence["c"] = 0.0
+    assert model.predict_correct_probability(["c"]) == pytest.approx(0.5)

@@ -103,6 +103,7 @@ async def build_turn_state(
     try:
         model = await StudentModel.load(str(student.id))
         state["mastery_scores"] = await model.mastery_scores()
+        state["mastery_confidence"] = dict(model._confidence)
     except Exception:  # pragma: no cover - a cold mastery table must not block a turn
         log.warning("Could not load mastery for %s", student.id, exc_info=True)
     return state

@@ -31,10 +31,13 @@ per-concept sigmoids rather than average them, so a question touching
 several concepts is only predicted easy if the student clears the threshold
 on *every one* of them:
 
-    y = prod_j sigmoid(ALPHA * (mastery_j - theta))
+    y = prod_j sigmoid(ALPHA * confidence_j * (mastery_j - theta))
 
-Here `mastery_j` is simply our own `_scores[concept_id]` — no training, no
-neural net, just the same scores `update()` already maintains.
+Here `mastery_j` and `confidence_j` are simply our own `_scores[concept_id]`
+and `_confidence[concept_id]` — no training, no neural net, just the same
+state `update()` already maintains. The `confidence_j` factor (absent from
+the paper, which assumes a fully-trained encoder) keeps a thinly-evidenced
+score from swinging the prediction as hard as a well-established one.
 """
 
 from __future__ import annotations
@@ -102,6 +105,11 @@ class StudentModel:
                 m._attempts[cid] = int(r.n_attempts)
                 if r.last_practiced:
                     m._last_practiced[cid] = r.last_practiced
+        # Every caller wants "mastery as of right now" — apply the forgetting
+        # curve here once rather than trusting each call site to remember to.
+        # A no-op for anything practiced today; previously this only ran
+        # inside unit tests that called it directly, never on the live path.
+        m.apply_decay()
         return m
 
     async def persist(self) -> None:
@@ -196,16 +204,25 @@ class StudentModel:
         `update()`. No concepts at all returns 0.5 — silence about what a
         question covers should read as "no signal", not as certain success.
 
+        Each concept's sigmoid is scaled by how much evidence backs its
+        score (`_confidence`, same value `update()` accumulates by +0.05 per
+        attempt). A mastery of 0.9 from one lucky guess — confidence barely
+        above the 0.5 prior — shouldn't swing the prediction as hard as the
+        same 0.9 earned over twenty attempts. Low confidence flattens the
+        sigmoid toward neutral instead of letting a thin data point read as
+        certainty.
+
         Meant for the caller deciding what to ask *before* asking it (e.g.
-        problem_generator picking difficulty) — it reads `_scores`, never
-        writes them.
+        problem_generator picking difficulty) — it reads `_scores` and
+        `_confidence`, never writes them.
         """
         if not concept_ids:
             return 0.5
         p = 1.0
         for cid in concept_ids:
             mastery = self._scores.get(cid, 0.5)
-            p *= _sigmoid(PREDICT_ALPHA * (mastery - theta))
+            confidence = self._confidence.get(cid, 0.5)
+            p *= _sigmoid(PREDICT_ALPHA * confidence * (mastery - theta))
         return p
 
 
@@ -261,6 +278,7 @@ async def update_student_model_node(state) -> dict[str, Any]:
 
     return {
         "mastery_scores": await model.mastery_scores(),
+        "mastery_confidence": dict(model._confidence),
         "current_question_index": new_index,
         "current_question_attempts": 0,  # reset for the next question
         "next_action": "generate_analytics",
