@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   KODMOD — dasar aksesibilitas.
+   KODMOD - dasar aksesibilitas.
    Semua aturan di sini adalah persyaratan produk, bukan preferensi estetika.
    Jangan hapus tanpa mengganti dengan padanan yang setara.
    ========================================================================== */
@@ -17,7 +17,7 @@
 }
 
 html {
-  /* Jangan pernah kunci ukuran font ke px — pengguna low-vision
+  /* Jangan pernah kunci ukuran font ke px - pengguna low-vision
      memperbesar teks lewat pengaturan browser. */
   font-size: 100%;
 }
@@ -30,14 +30,14 @@ body {
 }
 
 /* Cincin fokus WAJIB terlihat. Pengguna keyboard adalah pengguna utama
-   produk ini — `outline: none` tanpa pengganti = regresi aksesibilitas. */
+   produk ini - `outline: none` tanpa pengganti = regresi aksesibilitas. */
 :focus-visible {
   outline: 3px solid var(--color-kodmod-focus);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-/* Target sentuh minimum 44x44px (WCAG 2.2 AA — 2.5.8 Target Size). */
+/* Target sentuh minimum 44x44px (WCAG 2.2 AA - 2.5.8 Target Size). */
 button,
 [role="button"],
 a,

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # =============================================================================
-# KODMOD AI — ordered test pipeline (Stage 0 -> 10).
+# KODMOD AI - ordered test pipeline (Stage 0 -> 10).
 #
 # Only the test INFRA runs in Docker (docker/docker-compose.test.yml: postgres,
 # redis, llm-stub, [qdrant]). The `db-init` step and the `api` server run
-# natively on the host — schema+seed via scripts/create_test_db +
-# scripts/seed_curriculum, the API via scripts/serve_test_api — so a code
+# natively on the host - schema+seed via scripts/create_test_db +
+# scripts/seed_curriculum, the API via scripts/serve_test_api - so a code
 # change is picked up by a plain restart, no `docker build`. This SCRIPT runs
 # natively too and never runs pytest inside a container. On Windows, prefer
 # scripts/run_tests.ps1 in PowerShell.
@@ -72,11 +72,11 @@ want() {  # want <stage-number>
 run_stage() {  # run_stage <num> <label> <command...>
   local num="$1" label="$2"; shift 2
   want "$num" || return 0
-  c_hdr "Stage $num — $label"
+  c_hdr "Stage $num - $label"
   if "$@"; then
     c_grn "Stage $num PASSED"
   else
-    c_red "Stage $num FAILED — fix the root cause, then: bash scripts/run_tests.sh --from $num"
+    c_red "Stage $num FAILED - fix the root cause, then: bash scripts/run_tests.sh --from $num"
     exit 1
   fi
 }
@@ -90,7 +90,7 @@ stop_host_api() {  # kill the host uvicorn started by compose_up_api, if any
 }
 trap stop_host_api EXIT
 
-compose_up_infra() {  # postgres + redis + llm-stub (Docker) + schema/seed (host) — Stage 3
+compose_up_infra() {  # postgres + redis + llm-stub (Docker) + schema/seed (host) - Stage 3
   if [ "$USE_COMPOSE" -eq 1 ]; then
     $COMPOSE_TEST up -d postgres redis llm-stub
   fi
@@ -107,7 +107,7 @@ compose_up_api() {  # + the backend, run natively on the host (Stage 4+)
     return 0  # reuse a healthy server (e.g. --no-compose, or a dev-run server)
   fi
   stop_host_api
-  # Never inherit reload for perf/e2e — watchfiles churn thrashes concurrency.
+  # Never inherit reload for perf/e2e - watchfiles churn thrashes concurrency.
   unset SERVE_TEST_API_RELOAD
   KODMOD_CHECKPOINTER="${want_cp:-postgres}" \
     $PYBIN -m scripts.serve_test_api >"$REPORTS/api.log" 2>&1 &
@@ -116,10 +116,10 @@ compose_up_api() {  # + the backend, run natively on the host (Stage 4+)
   echo "waiting for api on http://localhost:8000/live ..."
   for _ in $(seq 1 30); do
     curl -fsS http://localhost:8000/live >/dev/null 2>&1 && return 0
-    kill -0 "$API_PID" 2>/dev/null || { c_red "serve_test_api exited early — see $REPORTS/api.log"; return 1; }
+    kill -0 "$API_PID" 2>/dev/null || { c_red "serve_test_api exited early - see $REPORTS/api.log"; return 1; }
     sleep 2
   done
-  c_red "api did not become healthy — see $REPORTS/api.log"
+  c_red "api did not become healthy - see $REPORTS/api.log"
   return 1
 }
 
@@ -156,7 +156,7 @@ stage8() {  # non-blocking: record baselines, never fail the pipeline
   [ "$USE_COMPOSE" -eq 1 ] && $COMPOSE_TEST --profile load up -d locust
   $PYTEST -q -m "perf $NOT_KNOWN_BUG" --junitxml="$REPORTS/junit-perf.xml" \
     --benchmark-json="docs/testplan/baselines/bench.json" || \
-    c_red "Stage 8 had failures (non-blocking) — see reports/junit-perf.xml"
+    c_red "Stage 8 had failures (non-blocking) - see reports/junit-perf.xml"
   return 0
 }
 
@@ -166,16 +166,16 @@ stage9() { compose_up_api && $PYTEST -q -m "security $NOT_KNOWN_BUG" \
 burndown() {  # non-blocking: how many tracked bugs are still open (RED)
   c_hdr "Known-bug burndown"
   $PYTEST -q -m known_bug --no-header -rN --junitxml="$REPORTS/junit-known-bug.xml" || true
-  echo "(failures above = bugs still open; passes = fixed — remove the known_bug marker)"
+  echo "(failures above = bugs still open; passes = fixed - remove the known_bug marker)"
 }
 
 gate() {
-  c_hdr "Stage 10 — Release Readiness Gate"
+  c_hdr "Stage 10 - Release Readiness Gate"
   # Repo-inspection meta-checks (traceability, docs, migration policy, marker
-  # hygiene) — no service needed. Non-blocking here; the gate script folds the
+  # hygiene) - no service needed. Non-blocking here; the gate script folds the
   # result in via reports/junit-readiness.xml.
   $PYTEST -q -m "readiness $NOT_KNOWN_BUG" --junitxml="$REPORTS/junit-readiness.xml" || \
-    c_red "Stage 10 readiness meta-checks had failures — see reports/junit-readiness.xml"
+    c_red "Stage 10 readiness meta-checks had failures - see reports/junit-readiness.xml"
   python scripts/readiness_gate.py || return 1
 }
 

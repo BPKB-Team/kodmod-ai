@@ -1,4 +1,4 @@
-"""Stage 9 §5 — Schemathesis negative / stateful fuzzing.
+"""Stage 9 §5 - Schemathesis negative / stateful fuzzing.
 
 Spec: docs/testplan/09-security.md §5 (KM-SEC-050..051).
 
@@ -58,7 +58,7 @@ _CRLF = "test\r\nX-Injected: 1"
 @schema.parametrize()
 def test_km_sec_050_no_server_errors_authed(case) -> None:  # type: ignore[no-untyped-def]
     if (case.method.upper(), case.path) in _EXCLUDE:
-        pytest.skip("tracked 5xx — asserted explicitly elsewhere")
+        pytest.skip("tracked 5xx - asserted explicitly elsewhere")
     case.headers = {**(case.headers or {}), "Authorization": f"Bearer {_TOKEN}"}
     response = case.call()
     assert response.status_code < 500, (

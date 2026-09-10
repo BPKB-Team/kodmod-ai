@@ -1,15 +1,15 @@
 """
-KODMOD AI — Reflection Agent
+KODMOD AI - Reflection Agent
 =============================
 
 An optional but powerful self-correction layer. After the Tutoring Agent
 emits an explanation, the Reflection Agent rapidly judges:
 
-1. **Pedagogical quality** — does it scaffold? does it answer the actual
+1. **Pedagogical quality** - does it scaffold? does it answer the actual
    question? is it grounded in the retrieved curriculum?
-2. **Accessibility** — any visual references, formatting, or jargon left?
-3. **Safety** — anything inappropriate for a minor learner?
-4. **Hallucination check** — claims unsupported by `retrieved_docs`?
+2. **Accessibility** - any visual references, formatting, or jargon left?
+3. **Safety** - anything inappropriate for a minor learner?
+4. **Hallucination check** - claims unsupported by `retrieved_docs`?
 
 If the score is below threshold, the agent rewrites the response (or, when
 running with a checkpointer, requests a human-in-the-loop review by raising
@@ -18,7 +18,7 @@ an interrupt).
 Cost optimization
 -----------------
 * Uses the small/fast LLM (Haiku / Llama-3-8B / Mini).
-* Skips entirely for low-stakes paths (mini-quiz, recommendations) — only
+* Skips entirely for low-stakes paths (mini-quiz, recommendations) - only
   runs after `tutoring_node`.
 """
 
@@ -46,7 +46,7 @@ Score 0.0–1.0 on each axis:
 
 If overall_score < 0.7 OR any axis < 0.5, propose a rewrite.
 
-OUTPUT — JSON ONLY:
+OUTPUT - JSON ONLY:
 {
   "pedagogy": 0-1,
   "accessibility": 0-1,

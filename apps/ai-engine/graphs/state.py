@@ -1,5 +1,5 @@
 """
-KODMOD AI — Central LangGraph State Schema
+KODMOD AI - Central LangGraph State Schema
 ===========================================
 
 This is the single source of truth for state passed between all agents in the

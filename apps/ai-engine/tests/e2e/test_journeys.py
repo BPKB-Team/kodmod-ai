@@ -1,10 +1,10 @@
-"""Stage 6 — end-to-end user journeys (text-mode) against the containerized api.
+"""Stage 6 - end-to-end user journeys (text-mode) against the containerized api.
 
 Spec: docs/testplan/06-e2e.md (KM-E2E-001..006, 010).
 
 The tutoring / quiz / RAG / meta-command journeys all enter through
 ``/chat/message`` or ``/quiz/*``, which currently 500 on ``student.profile`` (#1)
-and the quiz field mismatch (#5) / unreachable scoring path (#11) — so those
+and the quiz field mismatch (#5) / unreachable scoring path (#11) - so those
 journeys carry @known_bug. The analytics journey (KM-E2E-003) works today.
 """
 
@@ -18,7 +18,7 @@ pytestmark = [pytest.mark.e2e, pytest.mark.asyncio(loop_scope="session"), pytest
 
 
 # --------------------------------------------------------------------------- #
-# KM-E2E-001 — onboarding + tutoring
+# KM-E2E-001 - onboarding + tutoring
 # --------------------------------------------------------------------------- #
 async def test_km_e2e_001_onboarding_tutoring(client, auth_headers) -> None:  # type: ignore[no-untyped-def]
     create = await client.post(
@@ -45,7 +45,7 @@ async def test_km_e2e_001_onboarding_tutoring(client, auth_headers) -> None:  # 
 
 
 # --------------------------------------------------------------------------- #
-# KM-E2E-002 — full quiz cycle  (the "siap dipakai" milestone)
+# KM-E2E-002 - full quiz cycle  (the "siap dipakai" milestone)
 # --------------------------------------------------------------------------- #
 async def test_km_e2e_002_full_quiz_cycle(
     client, student_factory, concept_ids, auth_headers
@@ -84,7 +84,7 @@ async def test_km_e2e_002_full_quiz_cycle(
 
 
 # --------------------------------------------------------------------------- #
-# KM-E2E-003 — student analytics  (works today)
+# KM-E2E-003 - student analytics  (works today)
 # --------------------------------------------------------------------------- #
 async def test_km_e2e_003_student_analytics(
     client, student_factory, concept_ids, seed_mastery, auth_headers
@@ -104,12 +104,12 @@ async def test_km_e2e_003_student_analytics(
     body = spoken.json()
     assert isinstance(body["spoken"], str) and body["spoken"].strip()
     assert "rollup" in body
-    # KM-E2E-010 — accessibility guarantees on a real produced spoken summary
+    # KM-E2E-010 - accessibility guarantees on a real produced spoken summary
     assert_accessible(body["spoken"])
 
 
 # --------------------------------------------------------------------------- #
-# KM-E2E-004 — teacher cohort alerts
+# KM-E2E-004 - teacher cohort alerts
 # --------------------------------------------------------------------------- #
 async def test_km_e2e_004_cohort_alerts(client, teacher_factory, auth_headers) -> None:  # type: ignore[no-untyped-def]
     _tid, tok = await teacher_factory()
@@ -121,7 +121,7 @@ async def test_km_e2e_004_cohort_alerts(client, teacher_factory, auth_headers) -
 
 
 # --------------------------------------------------------------------------- #
-# KM-E2E-005 — RAG-grounded answer
+# KM-E2E-005 - RAG-grounded answer
 # --------------------------------------------------------------------------- #
 async def test_km_e2e_005_rag_grounded(client, student_factory, concept_ids, auth_headers) -> None:  # type: ignore[no-untyped-def]
     sid, tok = await student_factory()
@@ -143,7 +143,7 @@ async def test_km_e2e_005_rag_grounded(client, student_factory, concept_ids, aut
 
 
 # --------------------------------------------------------------------------- #
-# KM-E2E-006 — meta voice commands mid-session
+# KM-E2E-006 - meta voice commands mid-session
 # --------------------------------------------------------------------------- #
 async def test_km_e2e_006_meta_commands(client, student_factory, auth_headers) -> None:  # type: ignore[no-untyped-def]
     sid, tok = await student_factory()

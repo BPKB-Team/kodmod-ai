@@ -1,5 +1,5 @@
 """
-KODMOD AI — Authentication Routes
+KODMOD AI - Authentication Routes
 =================================
 
 Register, log in, inspect and edit your own account.

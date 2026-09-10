@@ -1,13 +1,13 @@
 """
-KODMOD AI — Main LangGraph Orchestrator
+KODMOD AI - Main LangGraph Orchestrator
 ========================================
 
 This module assembles the four clusters into a single StateGraph:
 
-    Cluster 1 — Practices & Tutoring   (tutoring_node, mini_quiz_node)
-    Cluster 2 — Quiz / Assessment      (quiz subgraph)
-    Cluster 3 — Content & Exercise     (problem_generator, rag_retrieval)
-    Cluster 4 — Analytics & Reporting  (analytics_node, recommendation_node)
+    Cluster 1 - Practices & Tutoring   (tutoring_node, mini_quiz_node)
+    Cluster 2 - Quiz / Assessment      (quiz subgraph)
+    Cluster 3 - Content & Exercise     (problem_generator, rag_retrieval)
+    Cluster 4 - Analytics & Reporting  (analytics_node, recommendation_node)
 
 Flow
 ----
@@ -65,12 +65,12 @@ log = logging.getLogger(__name__)
 
 def route_after_intent(state: KODMODState) -> str:
     """
-    First branch point — mirrors the 'What do you want?' diamond in the
+    First branch point - mirrors the 'What do you want?' diamond in the
     Practices & Tutoring diagram.
     """
     intent = state.get("intent", "unknown")
 
-    # Quiz in progress: the utterance is an answer, not a new request — the
+    # Quiz in progress: the utterance is an answer, not a new request - the
     # intent_router already forced intent="quiz". Route straight to scoring
     # instead of regenerating a fresh question set.
     questions = state.get("quiz_questions") or []
@@ -91,7 +91,7 @@ def route_after_intent(state: KODMODState) -> str:
         return "tutoring"
     if intent == "stop":
         return "end"
-    return "tutoring"  # safe default — explain rather than fail
+    return "tutoring"  # safe default - explain rather than fail
 
 
 def route_after_scoring(state: KODMODState) -> str:
@@ -117,7 +117,7 @@ def route_after_tutoring(state: KODMODState) -> str:
     """
     After a tutoring explanation, optionally fire the lightweight "Mini quiz"
     comprehension check (Practices & Tutoring diagram) before self-reflection.
-    Only for a plain tutoring turn on a known concept — never mid quiz session.
+    Only for a plain tutoring turn on a known concept - never mid quiz session.
     """
     if (
         state.get("intent") == "tutoring"
@@ -246,7 +246,7 @@ async def build_kodmod_graph(
     graph.add_edge("analytics", "recommendation")
     graph.add_edge("recommendation", "accessibility")
 
-    # Final — every speaking path converges here.
+    # Final - every speaking path converges here.
     graph.add_edge("accessibility", END)
 
     # ---- Compile ---------------------------------------------------------

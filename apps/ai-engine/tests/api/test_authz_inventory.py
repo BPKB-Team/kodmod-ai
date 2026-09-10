@@ -1,4 +1,4 @@
-"""Stage 4 §3 — unauthenticated-endpoint allowlist.
+"""Stage 4 §3 - unauthenticated-endpoint allowlist.
 
 Spec: docs/testplan/04-api.md §3 (KM-API-030). Static introspection of api.main:app.
 """
@@ -44,7 +44,7 @@ def _unauth_routes():
         for m in methods:
             if m in {"HEAD", "OPTIONS", "WEBSOCKET"}:
                 # WS auth is enforced in-handler via authenticate_ws(?token=),
-                # not as a Depends dependency — covered by Stage 5 (KM-WS-001..006).
+                # not as a Depends dependency - covered by Stage 5 (KM-WS-001..006).
                 continue
             if not authed:
                 out.add((m, path))

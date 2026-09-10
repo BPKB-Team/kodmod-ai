@@ -1,4 +1,4 @@
-"""Stage 3 §5 — analytics/student_model.py round-trips against real Postgres.
+"""Stage 3 §5 - analytics/student_model.py round-trips against real Postgres.
 
 Spec: docs/testplan/03-integration.md §5 (KM-INT-060..065).
 """
@@ -30,7 +30,7 @@ async def test_km_int_060_load_reads_mastery_rows(make_student, concept_ids, see
 async def test_km_int_060b_load_applies_decay_for_stale_practice(
     make_student, concept_ids, seed_mastery
 ) -> None:  # type: ignore[no-untyped-def]
-    """load() now applies the forgetting curve itself — previously
+    """load() now applies the forgetting curve itself - previously
     apply_decay() was only ever called from unit tests, never on the real
     read path (a concept last practiced 30 days ago stayed frozen at its
     old score forever)."""
@@ -79,7 +79,7 @@ async def test_km_int_062_update_persist_round_trip(make_student, concept_ids) -
                 {"sid": str(st.id), "cid": cid},
             )
         ).scalar_one()
-    assert n == 1  # ON CONFLICT (student_id, concept_id) — no duplicate
+    assert n == 1  # ON CONFLICT (student_id, concept_id) - no duplicate
 
 
 async def test_km_int_063_persist_sets_attempts_and_last_seen(make_student, concept_ids) -> None:  # type: ignore[no-untyped-def]

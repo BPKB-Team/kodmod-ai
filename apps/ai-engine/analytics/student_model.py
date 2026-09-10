@@ -1,5 +1,5 @@
 """
-KODMOD AI — Student Model
+KODMOD AI - Student Model
 ==========================
 
 The persistent representation of what a student knows. Implements a
@@ -8,25 +8,25 @@ lightweight version of Bayesian Knowledge Tracing (BKT) for each concept:
     P(L_t) = P(L_{t-1} | evidence)
     P(L_t) = P(L_t)(1 − P(slip)) + (1 − P(L_t))P(guess)        # for predictions
 
-For KODMOD we don't need a full BKT — a moving-average with confidence
+For KODMOD we don't need a full BKT - a moving-average with confidence
 weighting is faster and easier to interpret. We expose:
 
-* `update(concept_id, score, confidence)` — call after every quiz attempt
-* `mastery_scores()` — full dict for the LangGraph state
-* `weak_concepts(n)` / `strong_concepts(n)` — for analytics + recommendations
-* `predict_correct_probability(concept_ids)` — chance the student answers a
+* `update(concept_id, score, confidence)` - call after every quiz attempt
+* `mastery_scores()` - full dict for the LangGraph state
+* `weak_concepts(n)` / `strong_concepts(n)` - for analytics + recommendations
+* `predict_correct_probability(concept_ids)` - chance the student answers a
   question spanning those concepts right, *before* it's asked (see below)
-* `velocity(concept_id, days)` — change in mastery over a window
+* `velocity(concept_id, days)` - change in mastery over a window
 
 Predicting success before asking
 ---------------------------------
 `predict_correct_probability` adapts Eq. (7)-(8) of the HELP-DKT paper
-(Liang et al., 2022 — see `archive/Student-Model-main` for the original,
+(Liang et al., 2022 - see `archive/Student-Model-main` for the original,
 which trains an LSTM/Transformer to produce per-concept ability from a
 sequence of code submissions). That neural encoder doesn't fit KODMOD: it's
 tied to a fixed set of programming concepts and needs an offline training
 corpus we don't have. What *does* transfer without any of that machinery is
-the paper's combination rule once ability is already known — multiply
+the paper's combination rule once ability is already known - multiply
 per-concept sigmoids rather than average them, so a question touching
 several concepts is only predicted easy if the student clears the threshold
 on *every one* of them:
@@ -34,7 +34,7 @@ on *every one* of them:
     y = prod_j sigmoid(ALPHA * confidence_j * (mastery_j - theta))
 
 Here `mastery_j` and `confidence_j` are simply our own `_scores[concept_id]`
-and `_confidence[concept_id]` — no training, no neural net, just the same
+and `_confidence[concept_id]` - no training, no neural net, just the same
 state `update()` already maintains. The `confidence_j` factor (absent from
 the paper, which assumes a fully-trained encoder) keeps a thinly-evidenced
 score from swinging the prediction as hard as a well-established one.
@@ -66,7 +66,7 @@ DAILY_DECAY = 0.005
 # above theta). THETA_DEFAULT is the mastery level counted as "cleared" a
 # concept; unlike the paper we don't have expert-labeled per-concept
 # difficulty, so callers that care should pass their own theta (e.g.
-# `settings.QUIZ_PASS_THRESHOLD`) — this is only the fallback.
+# `settings.QUIZ_PASS_THRESHOLD`) - this is only the fallback.
 PREDICT_ALPHA = 10.0
 PREDICT_THETA_DEFAULT = 0.5
 
@@ -105,7 +105,7 @@ class StudentModel:
                 m._attempts[cid] = int(r.n_attempts)
                 if r.last_practiced:
                     m._last_practiced[cid] = r.last_practiced
-        # Every caller wants "mastery as of right now" — apply the forgetting
+        # Every caller wants "mastery as of right now" - apply the forgetting
         # curve here once rather than trusting each call site to remember to.
         # A no-op for anything practiced today; previously this only ran
         # inside unit tests that called it directly, never on the live path.
@@ -146,7 +146,7 @@ class StudentModel:
     # ------------------------------------------------------------------
     def update(self, concept_id: str, attempt_score: float, confidence: float = 0.9) -> None:
         prev = self._scores.get(concept_id, 0.5)
-        # Weight by confidence — uncertain scores nudge less
+        # Weight by confidence - uncertain scores nudge less
         delta = (attempt_score - prev) * LEARNING_RATE * confidence
         new_score = max(0.0, min(1.0, prev + delta))
         # Confidence accumulates with attempts
@@ -167,7 +167,7 @@ class StudentModel:
         )
 
     def apply_decay(self) -> None:
-        """Mild forgetting curve — call before reading scores for analytics."""
+        """Mild forgetting curve - call before reading scores for analytics."""
         now = datetime.now(UTC)
         for cid, last in self._last_practiced.items():
             days = max(0, (now - last).days)
@@ -201,19 +201,19 @@ class StudentModel:
         Eq. 7-8, see module docstring): one weak concept in the mix is
         enough to drag the prediction down, which an average would hide.
         A concept never seen before uses the same 0.5 neutral prior as
-        `update()`. No concepts at all returns 0.5 — silence about what a
+        `update()`. No concepts at all returns 0.5 - silence about what a
         question covers should read as "no signal", not as certain success.
 
         Each concept's sigmoid is scaled by how much evidence backs its
         score (`_confidence`, same value `update()` accumulates by +0.05 per
-        attempt). A mastery of 0.9 from one lucky guess — confidence barely
-        above the 0.5 prior — shouldn't swing the prediction as hard as the
+        attempt). A mastery of 0.9 from one lucky guess - confidence barely
+        above the 0.5 prior - shouldn't swing the prediction as hard as the
         same 0.9 earned over twenty attempts. Low confidence flattens the
         sigmoid toward neutral instead of letting a thin data point read as
         certainty.
 
         Meant for the caller deciding what to ask *before* asking it (e.g.
-        problem_generator picking difficulty) — it reads `_scores` and
+        problem_generator picking difficulty) - it reads `_scores` and
         `_confidence`, never writes them.
         """
         if not concept_ids:

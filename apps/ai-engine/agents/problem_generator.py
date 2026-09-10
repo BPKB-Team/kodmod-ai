@@ -1,5 +1,5 @@
 """
-KODMOD AI — Problem Generator Agent
+KODMOD AI - Problem Generator Agent
 ====================================
 
 Top of the **Quiz/Assessment cluster** (and also fed by the **Content & Exercise
@@ -8,11 +8,11 @@ calibrated to the student's mastery profile.
 
 Inputs from state
 -----------------
-* `current_concept_id` — what we're quizzing on
-* `current_difficulty` — coarse difficulty knob
-* `mastery_scores`     — per-concept history; used to pick neighboring concepts
+* `current_concept_id` - what we're quizzing on
+* `current_difficulty` - coarse difficulty knob
+* `mastery_scores`     - per-concept history; used to pick neighboring concepts
                          to weave in (spiral curriculum)
-* `learning_profile`   — language, pace preference
+* `learning_profile`   - language, pace preference
 
 The agent uses the Content cluster's RAG to ground each question in real
 curriculum material so we never hallucinate facts.
@@ -41,7 +41,7 @@ CONSTRAINTS
 - Every question must be answerable WITHOUT seeing anything.
 - No diagrams, charts, images, tables. No "look at the figure" phrasing.
 - Numbers under 20 spelled out in the stem. Larger numbers as digits + spoken
-  form — speech engines handle digits fine.
+  form - speech engines handle digits fine.
 - For MCQ: exactly 4 options, labeled A, B, C, D. Distractors must be
   plausible (don't make 3 obviously wrong).
 - Mix question types across the set:
@@ -52,7 +52,7 @@ CONSTRAINTS
   * step_by_step   (walk through a procedure)
 
 ADAPTATION
-- Difficulty given as <difficulty>. Match it — it has already been nudged up
+- Difficulty given as <difficulty>. Match it - it has already been nudged up
   or down from the requester's original ask based on the student's predicted
   chance of getting this concept right (<predicted_success_probability>), so
   trust it over your own guess from <mastery> alone.
@@ -63,7 +63,7 @@ GROUNDING
 - Use only facts present in <curriculum_context>. If context is thin, ask
   about general definitions.
 
-OUTPUT — JSON ONLY:
+OUTPUT - JSON ONLY:
 {
   "questions": [
     {
@@ -90,7 +90,7 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
     if not concept_id:
         concept_id = _infer_concept(state)
     # Human-readable topic for the LLM. `concept_id` is often a UUID or "general",
-    # which tells the model nothing — prefer an explicit topic label.
+    # which tells the model nothing - prefer an explicit topic label.
     topic = requested_topic or concept_id
     difficulty: DifficultyLevel = state.get("current_difficulty", "medium")
     mastery = state.get("mastery_scores", {})
@@ -127,7 +127,7 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
     )
     context_block = (
         "\n".join(f"[{i + 1}] {d.get('text', '')[:300]}" for i, d in enumerate(docs[:6]))
-        or "(curriculum context unavailable — fall back to general knowledge)"
+        or "(curriculum context unavailable - fall back to general knowledge)"
     )
 
     user_block = (
@@ -160,7 +160,7 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
         log.error("Problem generator JSON parse failed")
         parsed = {"questions": []}
 
-    # Prefer the real curriculum id from state — the LLM's free-text
+    # Prefer the real curriculum id from state - the LLM's free-text
     # `concept_id` ("pecahan") is not a UUID and would break mastery
     # persistence downstream (`CAST(:cid AS uuid)`).
     resolved_cid = state.get("current_concept_id") or concept_id
@@ -235,7 +235,7 @@ async def generate_questions_for_student(
     topic_hint: str | None = None,
 ) -> list[dict[str, Any]]:
     """
-    Adapter used by ``POST /exercise/generate`` and ``tools/quiz_generator_tool`` —
+    Adapter used by ``POST /exercise/generate`` and ``tools/quiz_generator_tool`` -
     wraps :func:`problem_generator_node` and returns plain dicts
     (``ExerciseGenerateResponse.exercises`` is ``list[dict]``).
     """
@@ -263,7 +263,7 @@ def _adjust_difficulty(current: DifficultyLevel, predicted_success: float) -> Di
     productive-struggle zone instead of handing out ones already predicted
     trivial or hopeless at the student's current mastery.
 
-    One rung per turn, not a jump straight to the extreme — a single quiz
+    One rung per turn, not a jump straight to the extreme - a single quiz
     round shouldn't swing a "beginner" question to "expert" off one signal.
     """
     idx = _DIFFICULTY_LADDER.index(current) if current in _DIFFICULTY_LADDER else 2

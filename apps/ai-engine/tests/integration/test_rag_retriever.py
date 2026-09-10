@@ -1,4 +1,4 @@
-"""Stage 3 §8 — rag/retriever.py + rag/ingestion.py (real pgvector, stub embeddings).
+"""Stage 3 §8 - rag/retriever.py + rag/ingestion.py (real pgvector, stub embeddings).
 
 Spec: docs/testplan/03-integration.md §8 (KM-INT-091..098).
 """
@@ -33,10 +33,10 @@ def _rec(text: str, idx: int = 0, *, cid: str = CID, language: str = "id", src: 
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-091 — node contract: reads current_concept_id, sets next_action  (#10)
+# KM-INT-091 - node contract: reads current_concept_id, sets next_action  (#10)
 # --------------------------------------------------------------------------- #
 @pytest.mark.known_bug(
-    "#10 — rag_retrieval_node reads state['concept_id'] (never set) instead of "
+    "#10 - rag_retrieval_node reads state['concept_id'] (never set) instead of "
     "state['current_concept_id'], and returns only {'retrieved_docs': ...} without "
     "next_action / last_node"
 )
@@ -54,7 +54,7 @@ async def test_km_int_091_rag_node_contract(clean_db) -> None:  # type: ignore[n
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-092 — retrieve("") short-circuits to []
+# KM-INT-092 - retrieve("") short-circuits to []
 # --------------------------------------------------------------------------- #
 async def test_km_int_092_empty_query(clean_db) -> None:  # type: ignore[no-untyped-def]
     from rag.retriever import retrieve
@@ -64,7 +64,7 @@ async def test_km_int_092_empty_query(clean_db) -> None:  # type: ignore[no-unty
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-093 — end-to-end retrieve returns relevant chunks, capped at rerank_top_k
+# KM-INT-093 - end-to-end retrieve returns relevant chunks, capped at rerank_top_k
 # --------------------------------------------------------------------------- #
 async def test_km_int_093_retrieve_end_to_end(clean_db) -> None:  # type: ignore[no-untyped-def]
     from config.settings import settings
@@ -88,7 +88,7 @@ async def test_km_int_093_retrieve_end_to_end(clean_db) -> None:  # type: ignore
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-094 — reranker passthrough when the model can't load
+# KM-INT-094 - reranker passthrough when the model can't load
 # --------------------------------------------------------------------------- #
 async def test_km_int_094_reranker_passthrough(clean_db) -> None:  # type: ignore[no-untyped-def]
     # stub_reranker (autouse) already forces _load_model() -> None.
@@ -102,7 +102,7 @@ async def test_km_int_094_reranker_passthrough(clean_db) -> None:  # type: ignor
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-095 — no candidates -> []
+# KM-INT-095 - no candidates -> []
 # --------------------------------------------------------------------------- #
 async def test_km_int_095_no_candidates(clean_db) -> None:  # type: ignore[no-untyped-def]
     from rag.retriever import retrieve
@@ -111,7 +111,7 @@ async def test_km_int_095_no_candidates(clean_db) -> None:  # type: ignore[no-un
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-096 — ingest_paths on a mini markdown doc
+# KM-INT-096 - ingest_paths on a mini markdown doc
 # --------------------------------------------------------------------------- #
 async def test_km_int_096_ingest_paths(clean_db, tmp_path) -> None:  # type: ignore[no-untyped-def]
     from sqlalchemy import text as sa_text
@@ -148,7 +148,7 @@ async def test_km_int_096_ingest_paths(clean_db, tmp_path) -> None:  # type: ign
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-097 — PDF ingest without pypdf degrades to "" (no crash)
+# KM-INT-097 - PDF ingest without pypdf degrades to "" (no crash)
 # --------------------------------------------------------------------------- #
 def test_km_int_097_pdf_without_pypdf(monkeypatch, tmp_path) -> None:
     from rag.ingestion import _load_text
@@ -160,7 +160,7 @@ def test_km_int_097_pdf_without_pypdf(monkeypatch, tmp_path) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-098 — _store() selects the configured backend
+# KM-INT-098 - _store() selects the configured backend
 # --------------------------------------------------------------------------- #
 def test_km_int_098_store_backend_selection(monkeypatch) -> None:
     from rag import retriever

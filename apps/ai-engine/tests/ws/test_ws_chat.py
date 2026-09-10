@@ -1,4 +1,4 @@
-"""Stage 5 — the streaming chat socket (`/ws/chat`).
+"""Stage 5 - the streaming chat socket (`/ws/chat`).
 
 Spec: docs/testplan/05-ws.md (KM-WS-001..017).
 

@@ -1,5 +1,5 @@
 """
-KODMOD AI — Async Database Session
+KODMOD AI - Async Database Session
 ==================================
 
 Owns the async SQLAlchemy engine and session factory. Used by:
@@ -44,13 +44,13 @@ def _make_engine() -> AsyncEngine:
     In-process pytest uses NullPool to avoid event-loop bleed between tests
     (a pooled connection bound to a torn-down loop breaks the next test).
     A host-run server (``scripts/serve_test_api``) also sets ``ENV=test`` but
-    has one long-lived loop, so it must keep a real pool — NullPool there means
+    has one long-lived loop, so it must keep a real pool - NullPool there means
     a fresh asyncpg connection per checkout, which collapses under concurrency
     (KM-PERF-003/004/010/020). Gate on "am I under pytest", not just ``ENV``.
 
     NullPool has no notion of pool sizing (every checkout opens a fresh
     connection), so `pool_size`/`max_overflow` must be omitted when it's
-    selected — SQLAlchemy raises `TypeError` if they're passed alongside it.
+    selected - SQLAlchemy raises `TypeError` if they're passed alongside it.
     """
     use_null_pool = settings.ENV == "test" and "pytest" in sys.modules
     kwargs: dict = {
@@ -72,7 +72,7 @@ async def init_db() -> None:
         return
     _engine = _make_engine()
     _session_factory = async_sessionmaker(_engine, expire_on_commit=False, class_=AsyncSession)
-    # Smoke test connection — fail fast if DB is unreachable.
+    # Smoke test connection - fail fast if DB is unreachable.
     try:
         async with _engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
@@ -104,7 +104,7 @@ async def close_db() -> None:
 
 def get_engine() -> AsyncEngine:
     if _engine is None:
-        raise RuntimeError("DB not initialized — call init_db() first")
+        raise RuntimeError("DB not initialized - call init_db() first")
     return _engine
 
 
@@ -119,7 +119,7 @@ async def async_session() -> AsyncIterator[AsyncSession]:
             await session.execute(...)
     """
     if _session_factory is None:
-        raise RuntimeError("DB not initialized — call init_db() first")
+        raise RuntimeError("DB not initialized - call init_db() first")
 
     session: AsyncSession = _session_factory()
     try:
@@ -135,7 +135,7 @@ async def async_session() -> AsyncIterator[AsyncSession]:
 async def get_db() -> AsyncIterator[AsyncSession]:
     """FastAPI dependency variant (non-context-manager)."""
     if _session_factory is None:
-        raise RuntimeError("DB not initialized — call init_db() first")
+        raise RuntimeError("DB not initialized - call init_db() first")
     session: AsyncSession = _session_factory()
     try:
         yield session

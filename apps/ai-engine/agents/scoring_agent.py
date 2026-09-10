@@ -1,15 +1,15 @@
 """
-KODMOD AI — Scoring Agent
+KODMOD AI - Scoring Agent
 =========================
 
 Evaluates a student's answer to a quiz question. Combines two signals:
 
-1. **Exact match** — for MCQ: the letter (or option text) either matches the
+1. **Exact match** - for MCQ: the letter (or option text) either matches the
    canonical answer or it doesn't.
-2. **LLM rubric grading** — for every other question type (`spoken`,
+2. **LLM rubric grading** - for every other question type (`spoken`,
    `explain`, `reasoning`, `step_by_step`), an LLM applies the rubric stored
    on the question. This tolerates paraphrasing and speech-recognition
-   artifacts far better than a bare embedding-similarity threshold would —
+   artifacts far better than a bare embedding-similarity threshold would -
    important because the problem generator does not always label a question
    type consistently with what it actually demands (e.g. an explanation
    question tagged `"spoken"`), and a strict similarity cutoff against a
@@ -18,8 +18,8 @@ Evaluates a student's answer to a quiz question. Combines two signals:
 
 Outputs a `QuizAttempt` appended to `state["quiz_attempts"]` and updates
 `state["quiz_score"]` with the score for THIS attempt (0.0–1.0). Also mirrors
-progress (including the per-question retry count) into Redis on every call —
-not just on a pass — so a remediation retry is not lost between turns; see
+progress (including the per-question retry count) into Redis on every call -
+not just on a pass - so a remediation retry is not lost between turns; see
 `route_after_scoring` / `QUIZ_MAX_ATTEMPTS_PER_QUESTION` in `graphs/main_graph.py`.
 """
 
@@ -81,7 +81,7 @@ async def scoring_node(state: KODMODState) -> dict[str, Any]:
         if score is not None:
             attempt = _build_attempt(question, student_answer, score, feedback)
             return await _emit(state, attempt)
-        # No leading letter and no same-language option match — e.g. the
+        # No leading letter and no same-language option match - e.g. the
         # student restated the correct option's content in a different
         # language than the options were generated in. Don't default this to
         # wrong; judge it against the correct option's full text instead.
@@ -109,18 +109,18 @@ def _score_mcq(
     s = student_answer.strip()
     e = expected.strip().rstrip(".!?")
     if not e:
-        # No canonical answer to match against — never award credit blindly.
+        # No canonical answer to match against - never award credit blindly.
         return 0.0, "Belum tepat."
 
     # Confident case: the answer leads with an option letter. Any punctuation
-    # or restated text may follow — "B", "B.", "B, dua per empat" all count,
+    # or restated text may follow - "B", "B.", "B, dua per empat" all count,
     # since the word boundary after the letter doesn't require a space.
     m = _MCQ_LEADING_LETTER.match(s)
     if m:
         correct = m.group(1).lower() == e[:1].lower()
         return (1.0, "Benar.") if correct else (0.0, "Belum tepat.")
 
-    # No leading letter — maybe they restated the option text verbatim, in
+    # No leading letter - maybe they restated the option text verbatim, in
     # the same language the options were generated in.
     s_lower = s.lower().rstrip(".!?")
     e_lower = e.lower()
@@ -278,7 +278,7 @@ async def _persist_progress(
     """Mirror this attempt into Redis, pass or fail.
 
     Previously only `update_student_model_node` persisted quiz progress, and
-    only on a pass — so a low-scoring (remediation) retry vanished on the next
+    only on a pass - so a low-scoring (remediation) retry vanished on the next
     turn and the per-question attempt count could never be enforced. This is
     what lets `route_after_scoring` force the quiz to advance after
     `settings.QUIZ_MAX_ATTEMPTS_PER_QUESTION` failed tries instead of looping

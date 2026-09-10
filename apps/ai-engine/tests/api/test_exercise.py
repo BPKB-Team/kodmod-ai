@@ -1,4 +1,4 @@
-"""Stage 4 §6 — /exercise endpoints.
+"""Stage 4 §6 - /exercise endpoints.
 
 Spec: docs/testplan/04-api.md §6 (KM-API-060..063).
 """

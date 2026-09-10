@@ -1,8 +1,8 @@
-"""KM-STATIC-020 / 021 / 022 — SAST and secret hygiene.
+"""KM-STATIC-020 / 021 / 022 - SAST and secret hygiene.
 
 020: bandit, 0 findings at severity HIGH.
 021: detect-secrets against a committed baseline (skipped until the baseline
-     exists — create with ``detect-secrets scan > .secrets.baseline``).
+     exists - create with ``detect-secrets scan > .secrets.baseline``).
 022: no raw provider keys / 64-hex JWT secrets in git-tracked files.
 """
 
@@ -88,7 +88,7 @@ def test_no_raw_secrets_in_tracked_files() -> None:  # KM-STATIC-022
     assert ls.returncode == 0, out(ls)
     tracked = [line for line in ls.stdout.splitlines() if line]
 
-    # .env is gitignored — it must never appear among tracked files.
+    # .env is gitignored - it must never appear among tracked files.
     assert not [f for f in tracked if f.rsplit("/", 1)[-1] == ".env"], ".env is tracked!"
 
     offenders: list[str] = []

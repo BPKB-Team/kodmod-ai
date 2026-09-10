@@ -1,4 +1,4 @@
-# KODMOD AI — Caddy reverse proxy
+# KODMOD AI - Caddy reverse proxy
 # Replace `kodmod.example.com` with your real hostname.
 
 {
@@ -8,7 +8,7 @@
 kodmod.example.com {
     encode zstd gzip
 
-    # WebSocket upgrade for /ws/voice — Caddy handles this transparently.
+    # WebSocket upgrade for /ws/voice - Caddy handles this transparently.
     reverse_proxy api:8000 {
         flush_interval -1
         transport http {

@@ -1,4 +1,4 @@
-"""KM-STATIC-050 / 051 — pytest markers & collection are clean.
+"""KM-STATIC-050 / 051 - pytest markers & collection are clean.
 
 050: every custom marker used in tests/ is registered in pyproject.toml and
      ``--collect-only`` raises no PytestUnknownMarkWarning.

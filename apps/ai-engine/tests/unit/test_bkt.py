@@ -1,6 +1,6 @@
-"""KM-UNIT-020..030 — BKT mastery math (analytics/student_model.StudentModel).
+"""KM-UNIT-020..030 - BKT mastery math (analytics/student_model.StudentModel).
 
-Rewrite of the old test_student_model.py (finding #18 — its `update()` / `apply_decay()`
+Rewrite of the old test_student_model.py (finding #18 - its `update()` / `apply_decay()`
 signatures were stale). Oracle: the closed-form update in student_model.py::
     delta     = (attempt_score - prev) * LEARNING_RATE * confidence   # LR=0.25
     new_score = clamp01(prev + delta)                                 # prev defaults 0.5
@@ -119,7 +119,7 @@ async def test_mastery_scores_is_async_copy(model: StudentModel) -> None:  # KM-
 
 
 # --------------------------------------------------------------------------- #
-# predict_correct_probability() — HELP-DKT Eq. (7)-(8) adaptation, no
+# predict_correct_probability() - HELP-DKT Eq. (7)-(8) adaptation, no
 # training/neural net involved (see module docstring). Spec: docs/testplan/
 # 01-unit.md §2.
 # --------------------------------------------------------------------------- #
@@ -183,7 +183,7 @@ def test_predict_multiple_concepts_multiplies_not_averages(
 def test_predict_low_confidence_hedges_toward_neutral(model: StudentModel) -> None:  # KM-UNIT-037
     # Same extreme mastery, but one score is backed by real evidence and the
     # other is a single lucky/unlucky attempt. The thinly-evidenced one must
-    # sit closer to 0.5 — a flatter sigmoid, not the same confident swing.
+    # sit closer to 0.5 - a flatter sigmoid, not the same confident swing.
     model._scores.update({"proven": 0.9, "shaky": 0.9})
     model._confidence.update({"proven": 1.0, "shaky": 0.55})
     proven = model.predict_correct_probability(["proven"])

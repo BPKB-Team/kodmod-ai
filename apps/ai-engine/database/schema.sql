@@ -1,5 +1,5 @@
 -- =====================================================================
--- KODMOD AI — PostgreSQL Schema
+-- KODMOD AI - PostgreSQL Schema
 -- =====================================================================
 -- Requires:
 --   * PostgreSQL 16+
@@ -15,7 +15,7 @@
 --   5. Quiz                     (quiz_sessions, quiz_questions, quiz_attempts)
 --   6. Student model            (mastery_scores, misconceptions)
 --   7. Analytics                (analytics_reports, recommendations)
---   8. LangGraph checkpoints    (handled by AsyncPostgresSaver — separate schema)
+--   8. LangGraph checkpoints    (handled by AsyncPostgresSaver - separate schema)
 --   9. Audit & accessibility    (audit_log, accessibility_prefs)
 -- =====================================================================
 
@@ -220,7 +220,7 @@ CREATE INDEX idx_attempts_student ON quiz_attempts(student_id, answered_at DESC)
 
 
 -- ---------------------------------------------------------------------
--- 6. Student model — mastery & misconceptions
+-- 6. Student model - mastery & misconceptions
 -- ---------------------------------------------------------------------
 
 CREATE TABLE mastery_scores (

@@ -1,4 +1,4 @@
-"""KM-UNIT-080..090 — pure accessibility helpers (agents/accessibility_agent.py).
+"""KM-UNIT-080..090 - pure accessibility helpers (agents/accessibility_agent.py).
 
 Oracle: the regex constants + helper functions, and the transform order in
 `accessibility_node`. `describe_visuals_in_text` (narration.py) is covered in
@@ -65,8 +65,8 @@ def test_normalize_numbers_spells_decimals() -> None:  # KM-UNIT-085
 
 def test_normalize_dashes_becomes_commas() -> None:  # KM-UNIT-086
     """Typographic dashes must not survive: a screen reader reads them unevenly."""
-    out = _normalize_dashes("Pecahan — bagian dari keseluruhan – misalnya setengah.")
-    assert "—" not in out
+    out = _normalize_dashes("Pecahan - bagian dari keseluruhan – misalnya setengah.")
+    assert "-" not in out
     assert "–" not in out
     assert "Pecahan, bagian dari keseluruhan, misalnya setengah." == out
 
@@ -74,9 +74,9 @@ def test_normalize_dashes_becomes_commas() -> None:  # KM-UNIT-086
 @pytest.mark.parametrize(
     "text,expected",
     [
-        ("a" * 1300, True),  # KM-UNIT-087 — length
-        ("x, " * 31, True),  # KM-UNIT-088 — 31 commas, < 1200 chars
-        ("kata, " * 5 + "a" * 170, False),  # KM-UNIT-089 — normal
+        ("a" * 1300, True),  # KM-UNIT-087 - length
+        ("x, " * 31, True),  # KM-UNIT-088 - 31 commas, < 1200 chars
+        ("kata, " * 5 + "a" * 170, False),  # KM-UNIT-089 - normal
     ],
 )
 def test_should_simplify(text: str, expected: bool) -> None:

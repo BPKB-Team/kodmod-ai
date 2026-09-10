@@ -1,4 +1,4 @@
-"""KM-UNIT-100..104 — accessibility/voice_commands.detect_command.
+"""KM-UNIT-100..104 - accessibility/voice_commands.detect_command.
 
 Spec: docs/testplan/01-unit.md §7 (accessibility/voice_commands.py).
 """

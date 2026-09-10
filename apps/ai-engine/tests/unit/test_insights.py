@@ -1,4 +1,4 @@
-"""KM-UNIT-110..123 — rule-based insight generation.
+"""KM-UNIT-110..123 - rule-based insight generation.
 
 Covers analytics/insights.py (student/teacher/cohort rule engines + the
 `use_llm` switch) and analytics/aggregator.py::_window_start.

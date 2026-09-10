@@ -1,4 +1,4 @@
-# KODMOD AI — Accessibility Design
+# KODMOD AI - Accessibility Design
 
 KODMOD AI is built **voice-first** for learners who are blind or have
 low vision. This document captures the non-negotiable rules every
@@ -10,7 +10,7 @@ Every assistant turn will be read by TTS. The learner cannot:
 
 - See colors, shapes, charts, or diagrams.
 - Scroll back to re-read a long paragraph.
-- Skim — they listen sequentially.
+- Skim - they listen sequentially.
 - Easily resume mid-sentence after a pause.
 
 Implications:
@@ -22,7 +22,7 @@ Implications:
 - Section structure is conveyed by ordinal words ("pertama, kedua") not
   punctuation.
 
-## 2. Visual References — Forbidden Vocabulary
+## 2. Visual References - Forbidden Vocabulary
 
 The accessibility agent (`accessibility/narration.py`) automatically
 strips and rewrites these patterns. Any agent that emits user-facing
@@ -41,14 +41,14 @@ text **must** route through `accessibility_node` before TTS:
 The learner controls pacing via voice commands
 (`accessibility/voice_commands.py`):
 
-- **ulangi / repeat** — replay the last assistant turn.
-- **lebih pelan / slower** — reduce TTS rate by 0.1.
-- **lebih cepat / faster** — increase TTS rate by 0.1.
-- **lanjut / next** — advance.
-- **kembali / back** — step back.
-- **berhenti / stop** — cancel current generation.
-- **bantuan / help** — read the available commands.
-- **mulai kuis / start quiz** — initiate quiz mode.
+- **ulangi / repeat** - replay the last assistant turn.
+- **lebih pelan / slower** - reduce TTS rate by 0.1.
+- **lebih cepat / faster** - increase TTS rate by 0.1.
+- **lanjut / next** - advance.
+- **kembali / back** - step back.
+- **berhenti / stop** - cancel current generation.
+- **bantuan / help** - read the available commands.
+- **mulai kuis / start quiz** - initiate quiz mode.
 
 These commands short-circuit the LLM router for sub-millisecond
 response.
@@ -91,9 +91,9 @@ Teachers can configure per-student:
 
 CI runs unit tests for:
 
-- `describe_visuals_in_text` — ensures visual references are removed.
-- `voice_commands.detect_command` — ensures all commands match.
-- Output sentence-length checker — fails the build if any tutoring
+- `describe_visuals_in_text` - ensures visual references are removed.
+- `voice_commands.detect_command` - ensures all commands match.
+- Output sentence-length checker - fails the build if any tutoring
   example response in `tests/fixtures/` contains a sentence > 22 words.
 
 ## 9. WCAG / Standards Alignment

@@ -1,14 +1,14 @@
 """
-KODMOD AI — Run the API on the host for Stage 4-9 tests
+KODMOD AI - Run the API on the host for Stage 4-9 tests
 ======================================================
 
 The test model runs only *infra* in Docker (`postgres`, `redis`, `llm-stub` via
 `docker/docker-compose.test.yml`). The backend itself runs **natively on the
 host** through this launcher instead of the `api` container, so a source change
-is picked up by a plain restart — no `docker build`.
+is picked up by a plain restart - no `docker build`.
 
 It locks the test environment into ``os.environ`` *before* anything imports
-``config.settings`` — see ``scripts/_testenv.py`` for the values.
+``config.settings`` - see ``scripts/_testenv.py`` for the values.
 
 Run from ``kodmod-ai/`` once the infra + schema/seed are ready::
 
@@ -35,10 +35,10 @@ from scripts._testenv import ROOT, apply_test_env
 PID_FILE = ROOT / "reports" / ".api.pid"
 API_LOG = ROOT / "reports" / "api.log"
 
-# When reload is on, only watch source packages — never the repo root. Otherwise
+# When reload is on, only watch source packages - never the repo root. Otherwise
 # watchfiles picks up every append to reports/api.log and every baseline JSON the
 # perf suite writes (docs/testplan/baselines/), plus OneDrive sync churn, and the
-# app reloads mid-run — dropping in-flight HTTP/WS turns (KM-PERF-020 et al.).
+# app reloads mid-run - dropping in-flight HTTP/WS turns (KM-PERF-020 et al.).
 RELOAD_DIRS = [
     "api",
     "agents",
@@ -93,13 +93,13 @@ def main() -> None:
     # LangGraph's AsyncPostgresSaver uses psycopg async, which refuses to run on
     # Windows' default ProactorEventLoop (uvicorn picks it for a single-process
     # server). Point uvicorn's loop factory at a SelectorEventLoop there so the
-    # checkpointer — hence the whole lifespan — can start. Linux/CI keeps "auto".
+    # checkpointer - hence the whole lifespan - can start. Linux/CI keeps "auto".
     loop = "asyncio:SelectorEventLoop" if sys.platform == "win32" else "auto"
 
     PID_FILE.parent.mkdir(parents=True, exist_ok=True)
     PID_FILE.write_text(str(os.getpid()), encoding="utf-8")
 
-    host = os.environ.get("KODMOD_API_HOST", "0.0.0.0")  # noqa: S104 — local test server
+    host = os.environ.get("KODMOD_API_HOST", "0.0.0.0")  # noqa: S104 - local test server
     port = int(os.environ.get("KODMOD_API_PORT", "8000"))
     reload = os.environ.get("SERVE_TEST_API_RELOAD") == "1"
 
@@ -113,7 +113,7 @@ def main() -> None:
     }
     if reload:
         logging.getLogger("scripts.serve_test_api").warning(
-            "uvicorn --reload is ON (SERVE_TEST_API_RELOAD=1) — do NOT use this for "
+            "uvicorn --reload is ON (SERVE_TEST_API_RELOAD=1) - do NOT use this for "
             "perf/e2e runs; watchfiles churn thrashes the app under concurrency."
         )
         run_kwargs["reload_dirs"] = RELOAD_DIRS

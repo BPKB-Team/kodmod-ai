@@ -105,7 +105,7 @@ function Stop-TestApi {  # kill the host uvicorn started by Invoke-ComposeApi, i
     Remove-Item "$Reports/.api.pid" -ErrorAction SilentlyContinue
 }
 
-function Invoke-ComposeInfra {  # postgres + redis + llm-stub (Docker) + schema/seed (host) — Stage 3
+function Invoke-ComposeInfra {  # postgres + redis + llm-stub (Docker) + schema/seed (host) - Stage 3
     Invoke-Compose "up -d postgres redis llm-stub"
     python -m scripts.init_test_db
     if ($LASTEXITCODE -ne 0) { throw "scripts.init_test_db failed" }
@@ -113,7 +113,7 @@ function Invoke-ComposeInfra {  # postgres + redis + llm-stub (Docker) + schema/
 
 function Invoke-ComposeApi {  # + the backend, run natively on the host (Stage 4+)
     # -Checkpointer "memory" (Stage 8) forces a fresh server with the lock-free
-    # in-memory saver — the Postgres saver serialises every graph turn on one
+    # in-memory saver - the Postgres saver serialises every graph turn on one
     # asyncio.Lock. Otherwise reuse a healthy server.
     param([string]$Checkpointer = "")
     Invoke-ComposeInfra
@@ -124,7 +124,7 @@ function Invoke-ComposeApi {  # + the backend, run natively on the host (Stage 4
         } catch { }
     }
     Stop-TestApi
-    # Never inherit reload for perf/e2e — watchfiles churn thrashes concurrency.
+    # Never inherit reload for perf/e2e - watchfiles churn thrashes concurrency.
     $env:SERVE_TEST_API_RELOAD = $null
     $env:KODMOD_CHECKPOINTER = if ($Checkpointer) { $Checkpointer } else { "postgres" }
     $script:ApiProc = Start-Process -FilePath "python" -ArgumentList "-m", "scripts.serve_test_api" `

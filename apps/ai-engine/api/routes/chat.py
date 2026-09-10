@@ -1,5 +1,5 @@
 """
-KODMOD AI — Chat Routes
+KODMOD AI - Chat Routes
 =======================
 
 - POST   /chat/message         -> one turn, single response (no streaming)

@@ -1,4 +1,4 @@
-"""KM-UNIT-130..135 — per-role LLM getters (tools/llm_client.py).
+"""KM-UNIT-130..135 - per-role LLM getters (tools/llm_client.py).
 
 OpenAI is the only provider. Each getter is `@lru_cache`d, takes no arguments,
 and reads its model id from settings, so these tests patch

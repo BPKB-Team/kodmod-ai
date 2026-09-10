@@ -10,7 +10,7 @@ llm-stub). `db-init` and `api` run natively on the host, as do the test SCRIPTS:
   * Stage 3 (integration) calls Python functions directly in this process and
     talks to Postgres/Redis over their published ports.
   * Stage 4+ (api/ws/e2e/security) talk to the host `api` process
-    (`python -m scripts.serve_test_api`) over HTTP/WS — see the `client`/`ws_url`
+    (`python -m scripts.serve_test_api`) over HTTP/WS - see the `client`/`ws_url`
     fixtures below. `scripts/run_tests.{ps1,sh}` start/stop it for you.
 
 Environment is forced to ``test`` BEFORE any project import so the cached
@@ -30,7 +30,7 @@ from collections.abc import AsyncIterator, Iterator
 import pytest
 
 # --------------------------------------------------------------------------- #
-# Environment — must run at import time, before anything imports settings.
+# Environment - must run at import time, before anything imports settings.
 # --------------------------------------------------------------------------- #
 os.environ.setdefault("ENV", "test")
 os.environ.setdefault("DEBUG", "false")
@@ -49,7 +49,7 @@ os.environ.setdefault("JWT_SECRET", "test-secret-not-for-prod-0123456789abcdef")
 
 RUN_REAL_LLM = os.getenv("KODMOD_RUN_REAL_LLM") == "1"
 
-# Fixed UUIDs — see docs/testplan/test-data.md
+# Fixed UUIDs - see docs/testplan/test-data.md
 STUDENT_BLIND = uuid.UUID("11111111-1111-1111-1111-111111111111")
 STUDENT_LOWVISION = uuid.UUID("11111111-1111-1111-1111-111111111112")
 STUDENT_STRONG = uuid.UUID("11111111-1111-1111-1111-111111111113")
@@ -62,7 +62,7 @@ TEST_PASSWORD = "test-password-123"
 
 # --------------------------------------------------------------------------- #
 # Markers are registered in pyproject.toml [tool.pytest.ini_options].markers
-# (single source of truth — keep the two lists in sync if either changes):
+# (single source of truth - keep the two lists in sync if either changes):
 #   static, unit, contract, integration, api, ws, e2e, security,
 #   real_llm, slow, db, redis, known_bug
 # --------------------------------------------------------------------------- #
@@ -74,7 +74,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 # --------------------------------------------------------------------------- #
-# Event loop — session-scoped so async session-scoped fixtures share state.
+# Event loop - session-scoped so async session-scoped fixtures share state.
 # --------------------------------------------------------------------------- #
 @pytest.fixture(scope="session")
 def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
@@ -162,7 +162,7 @@ def stub_embeddings(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPa
 
 
 # --------------------------------------------------------------------------- #
-# Database — real Postgres from docker-compose.test.yml (Stage 3+).
+# Database - real Postgres from docker-compose.test.yml (Stage 3+).
 # --------------------------------------------------------------------------- #
 @pytest.fixture(scope="session")
 async def db_engine():  # type: ignore[no-untyped-def]
@@ -218,7 +218,7 @@ async def seeded_curriculum(db_engine):  # type: ignore[no-untyped-def]
 
 
 # --------------------------------------------------------------------------- #
-# Redis — real Redis from docker-compose.test.yml.
+# Redis - real Redis from docker-compose.test.yml.
 # --------------------------------------------------------------------------- #
 @pytest.fixture
 async def redis_client() -> AsyncIterator[object]:
@@ -269,7 +269,7 @@ async def client(api_base_url: str):  # type: ignore[no-untyped-def]
 
 @pytest.fixture
 def ws_url(api_base_url: str) -> str:
-    """ws://localhost:8000/ws/chat — real WebSocket to the running api."""
+    """ws://localhost:8000/ws/chat - real WebSocket to the running api."""
     return api_base_url.replace("http://", "ws://").replace("https://", "wss://") + "/ws/chat"
 
 

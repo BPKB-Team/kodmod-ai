@@ -1,4 +1,4 @@
-"""KM-UNIT-010..018 — RAG chunking (rag/chunking.py).
+"""KM-UNIT-010..018 - RAG chunking (rag/chunking.py).
 
 Spec: docs/testplan/01-unit.md §1.
 """

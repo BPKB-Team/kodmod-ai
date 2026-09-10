@@ -1,4 +1,4 @@
-"""KM-UNIT-040..047 — pure scoring helpers (agents/scoring_agent.py).
+"""KM-UNIT-040..047 - pure scoring helpers (agents/scoring_agent.py).
 
 Oracle: the functions themselves + the QuizAttempt TypedDict in graphs/state.py.
 Spec: docs/testplan/01-unit.md §3.
@@ -48,7 +48,7 @@ def test_score_mcq_empty_options_is_safe() -> None:  # KM-UNIT-043
 def test_score_mcq_letter_with_trailing_punctuation() -> None:
     # Regression: "B, dua per empat" (letter immediately followed by a comma,
     # no space) used to fall through every check and score 0.0 despite being
-    # correct — the leading-letter regex must not require a space after it.
+    # correct - the leading-letter regex must not require a space after it.
     score, feedback = _score_mcq("B, dua per empat", "B", _OPTIONS)
     assert score == 1.0
     assert feedback == "Benar."
@@ -56,7 +56,7 @@ def test_score_mcq_letter_with_trailing_punctuation() -> None:
 
 def test_score_mcq_ambiguous_answer_defers_to_rubric() -> None:
     # No leading letter, and the answer doesn't textually match any option
-    # (e.g. answered in a different language than the options) — must not
+    # (e.g. answered in a different language than the options) - must not
     # default to wrong; the caller falls back to LLM rubric grading instead.
     score, feedback = _score_mcq("two", "B", _OPTIONS)
     assert score is None

@@ -1,4 +1,4 @@
-"""Deterministic fake embeddings — hash-seeded unit vectors, no model download.
+"""Deterministic fake embeddings - hash-seeded unit vectors, no model download.
 
 Signature matches ``rag.embeddings.embed_text``:
     async def embed_text(texts: Sequence[str]) -> list[list[float]]

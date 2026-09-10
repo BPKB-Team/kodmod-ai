@@ -1,4 +1,4 @@
-"""Stage 2 — Contract: handler <-> response_model consistency, OpenAPI, route inventory.
+"""Stage 2 - Contract: handler <-> response_model consistency, OpenAPI, route inventory.
 
 Spec: docs/testplan/02-contract.md §2 (KM-CONTRACT-020..028).
 
@@ -55,10 +55,10 @@ def _body_attr_reads(func: ast.AST, param: str = "body") -> set[str]:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-020 — quiz handlers only pass fields the response model declares
+# KM-CONTRACT-020 - quiz handlers only pass fields the response model declares
 # --------------------------------------------------------------------------- #
 @pytest.mark.known_bug(
-    "#5 — api/routes/quiz.py builds QuizStartResponse/QuizSubmitResponse with kwargs "
+    "#5 - api/routes/quiz.py builds QuizStartResponse/QuizSubmitResponse with kwargs "
     "(session_id, question_audio_uri, feedback_text, feedback_audio_uri, is_session_complete) "
     "that models/quiz.py does not declare"
 )
@@ -83,10 +83,10 @@ def test_km_contract_020_quiz_handler_response_kwargs_match_model() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-021 — quiz submit handler reads request fields the model declares
+# KM-CONTRACT-021 - quiz submit handler reads request fields the model declares
 # --------------------------------------------------------------------------- #
 @pytest.mark.known_bug(
-    "#5 — submit_answer reads body.session_id / body.answer_text; QuizSubmitRequest "
+    "#5 - submit_answer reads body.session_id / body.answer_text; QuizSubmitRequest "
     "declares quiz_session_id / student_answer"
 )
 def test_km_contract_021_quiz_submit_reads_declared_request_fields() -> None:
@@ -101,7 +101,7 @@ def test_km_contract_021_quiz_submit_reads_declared_request_fields() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-022 — _load_mastery does not chain two coroutines  (#6, FIXED)
+# KM-CONTRACT-022 - _load_mastery does not chain two coroutines  (#6, FIXED)
 # --------------------------------------------------------------------------- #
 def test_km_contract_022_load_mastery_not_chained_coroutine() -> None:
     from api.routes.quiz import _load_mastery
@@ -114,7 +114,7 @@ def test_km_contract_022_load_mastery_not_chained_coroutine() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-023 — /openapi.json generates
+# KM-CONTRACT-023 - /openapi.json generates
 # --------------------------------------------------------------------------- #
 def test_km_contract_023_openapi_schema_valid(fastapi_app) -> None:  # type: ignore[no-untyped-def]
     schema = fastapi_app.openapi()
@@ -124,10 +124,10 @@ def test_km_contract_023_openapi_schema_valid(fastapi_app) -> None:  # type: ign
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-024 — every operation carries a summary or description
+# KM-CONTRACT-024 - every operation carries a summary or description
 # --------------------------------------------------------------------------- #
 @pytest.mark.known_bug(
-    "docs — several route handlers (health.live/ready/version, student.get_me, ...) have "
+    "docs - several route handlers (health.live/ready/version, student.get_me, ...) have "
     "neither a summary nor a docstring-derived description in the OpenAPI schema"
 )
 def test_km_contract_024_every_route_documented(resolved_routes) -> None:  # type: ignore[no-untyped-def]
@@ -143,7 +143,7 @@ def test_km_contract_024_every_route_documented(resolved_routes) -> None:  # typ
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-025 — health router mounts at /live,/ready,/version (no /health)
+# KM-CONTRACT-025 - health router mounts at /live,/ready,/version (no /health)
 # --------------------------------------------------------------------------- #
 def test_km_contract_025_health_paths_have_no_prefix(resolved_routes) -> None:  # type: ignore[no-untyped-def]
     paths = {path for _m, path, _r in resolved_routes}
@@ -154,7 +154,7 @@ def test_km_contract_025_health_paths_have_no_prefix(resolved_routes) -> None:  
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-026 — router prefixes
+# KM-CONTRACT-026 - router prefixes
 # --------------------------------------------------------------------------- #
 def test_km_contract_026_router_prefixes(resolved_routes) -> None:  # type: ignore[no-untyped-def]
     paths = {path for _m, path, _r in resolved_routes}
@@ -176,19 +176,19 @@ def test_km_contract_026_router_prefixes(resolved_routes) -> None:  # type: igno
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-027 — /metrics mounted without an auth dependency  (#14, noted)
+# KM-CONTRACT-027 - /metrics mounted without an auth dependency  (#14, noted)
 # --------------------------------------------------------------------------- #
 def test_km_contract_027_metrics_mounted_unauthenticated(resolved_routes, route_deps) -> None:  # type: ignore[no-untyped-def]
     metrics = [(m, p, r) for m, p, r in resolved_routes if p == "/metrics"]
     assert metrics, "/metrics is not mounted"
     _m, _p, route = metrics[0]
-    # documented finding #14: no auth wrapper — Stage 4/9 decides the fix.
+    # documented finding #14: no auth wrapper - Stage 4/9 decides the fix.
     deps = route_deps(route)
     assert "current_student" not in deps and "current_teacher" not in deps
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-028 — api/routes/exercise imports clean; the symbol it calls is missing
+# KM-CONTRACT-028 - api/routes/exercise imports clean; the symbol it calls is missing
 # --------------------------------------------------------------------------- #
 def test_km_contract_028a_exercise_module_imports() -> None:
     mod = importlib.import_module("api.routes.exercise")
@@ -196,7 +196,7 @@ def test_km_contract_028a_exercise_module_imports() -> None:
 
 
 @pytest.mark.known_bug(
-    "#7 — api/routes/exercise.generate_exercises calls "
+    "#7 - api/routes/exercise.generate_exercises calls "
     "agents.problem_generator.generate_questions_for_student, which does not exist"
 )
 def test_km_contract_028b_exercise_generator_symbol_exists() -> None:

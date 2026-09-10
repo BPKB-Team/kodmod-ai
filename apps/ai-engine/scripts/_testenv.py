@@ -3,7 +3,7 @@
 `scripts/init_test_db.py` (schema + seed) and `scripts/serve_test_api.py` (the
 API) run natively on the host against the ``kodmod-test`` Docker infra. Both must
 pin the same test env into ``os.environ`` **before** anything imports
-``config.settings`` — pydantic-settings lets ``os.environ`` win over the on-disk
+``config.settings`` - pydantic-settings lets ``os.environ`` win over the on-disk
 ``.env`` (which carries the real OpenAI key and ``DB_NAME=kodmod``).
 
 Values mirror ``tests/conftest.py``. Both the chat models and the embeddings are
@@ -28,13 +28,13 @@ TEST_ENV: dict[str, str] = {
     "DEBUG": "false",
     "LOG_JSON": "true",
     "LANGCHAIN_TRACING_V2": "false",
-    # Postgres — compose `postgres` service, host port 5433.
+    # Postgres - compose `postgres` service, host port 5433.
     "DB_HOST": "localhost",
     "DB_PORT": "5433",
     "DB_USER": "kodmod",
     "DB_PASSWORD": "kodmod",
     "DB_NAME": "kodmod_test",
-    # Redis — compose `redis` service, host port 6380.
+    # Redis - compose `redis` service, host port 6380.
     "REDIS_HOST": "localhost",
     "REDIS_PORT": "6380",
     "REDIS_DB": "0",

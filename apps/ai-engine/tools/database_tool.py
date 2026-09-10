@@ -1,8 +1,8 @@
 """
-KODMOD AI — Database Tool
+KODMOD AI - Database Tool
 =========================
 
-A narrow set of safe DB operations exposed to agents — *not* an arbitrary
+A narrow set of safe DB operations exposed to agents - *not* an arbitrary
 SQL escape hatch. The tool surface is restricted to:
 
 - save_session_summary: write the human-readable summary at the end of a

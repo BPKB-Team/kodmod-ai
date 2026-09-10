@@ -1,5 +1,5 @@
 """
-KODMOD AI — Content Routes
+KODMOD AI - Content Routes
 ==========================
 
 - GET  /content/concepts                  -> list concepts

@@ -1,6 +1,6 @@
 """Deterministic OpenAI-compatible stub for load / system tests.
 
-NOT a mock of model quality — it returns canned, deterministic responses so that
+NOT a mock of model quality - it returns canned, deterministic responses so that
 Stage 7-9 can exercise the real HTTP/graph/DB/checkpointer path without cost,
 network, or GPU. In-process pytest stages patch the LLM in Python instead
 (see tests/_fakes/), and never hit this service.

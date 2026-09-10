@@ -1,5 +1,5 @@
 """
-KODMOD AI — Quiz REST Routes
+KODMOD AI - Quiz REST Routes
 =============================
 
 For clients that want fine-grained control over quiz sessions outside the
@@ -155,7 +155,7 @@ async def submit_answer(
     quiz_complete = bool(total) and answered >= total
 
     # Persist any newly-scored attempts so the analytics rollup can count them.
-    # `final["quiz_attempts"]` is the checkpointed list — it grows by one per
+    # `final["quiz_attempts"]` is the checkpointed list - it grows by one per
     # submit; we only write the rows we haven't written yet.
     session_uuid = _uuid_or_none(thread_id)
     attempts = final.get("quiz_attempts", []) or []
@@ -234,7 +234,7 @@ async def submit_answer(
 
 
 async def _load_mastery(student_id: str) -> tuple[dict[str, float], dict[str, float]]:
-    """Returns (mastery_scores, mastery_confidence) — see graphs/state.py."""
+    """Returns (mastery_scores, mastery_confidence) - see graphs/state.py."""
     from analytics.student_model import StudentModel
 
     model = await StudentModel.load(student_id)

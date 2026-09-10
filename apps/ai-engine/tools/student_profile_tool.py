@@ -1,5 +1,5 @@
 """
-KODMOD AI — Student Profile Tool
+KODMOD AI - Student Profile Tool
 ================================
 
 Exposes student state (profile, mastery, recent recommendations) to

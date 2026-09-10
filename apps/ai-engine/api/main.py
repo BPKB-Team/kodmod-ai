@@ -1,22 +1,22 @@
 """
-KODMOD AI — FastAPI Application Entry
+KODMOD AI - FastAPI Application Entry
 ======================================
 
 Mounts:
-  /auth/*        — register, log in, own account
-  /chat/*        — conversation turns and history (REST)
-  /ws/chat       — the streaming conversation socket
-  /quiz/*        — quiz session management
-  /student/*     — the student's own learning profile
-  /teacher/*     — roster, per-student progress, transcripts
-  /admin/*       — accounts and invitation codes
-  /subjects/*    — subjects, concepts, curriculum document uploads
-  /documents/*   — deleting an uploaded document
-  /analytics/*   — student and cohort analytics
-  /exercise/*    — exercise generation
-  /content/*     — curriculum lookup and retrieval
+  /auth/*        - register, log in, own account
+  /chat/*        - conversation turns and history (REST)
+  /ws/chat       - the streaming conversation socket
+  /quiz/*        - quiz session management
+  /student/*     - the student's own learning profile
+  /teacher/*     - roster, per-student progress, transcripts
+  /admin/*       - accounts and invitation codes
+  /subjects/*    - subjects, concepts, curriculum document uploads
+  /documents/*   - deleting an uploaded document
+  /analytics/*   - student and cohort analytics
+  /exercise/*    - exercise generation
+  /content/*     - curriculum lookup and retrieval
   /live, /ready, /version
-  /metrics       — Prometheus
+  /metrics       - Prometheus
 
 Lifespan
 --------

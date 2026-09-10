@@ -1,4 +1,4 @@
-"""Stage 4 (API) fixtures — real HTTP against the host ``api`` process.
+"""Stage 4 (API) fixtures - real HTTP against the host ``api`` process.
 
 The host ``api`` (``python -m scripts.serve_test_api``) reads the SAME Postgres
 (``localhost:5433``) as these fixtures, so seeding here must **commit** (unlike

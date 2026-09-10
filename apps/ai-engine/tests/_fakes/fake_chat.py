@@ -2,11 +2,11 @@
 
 ``make_fake_chat(role)`` returns a LangChain chat model that:
   * responds deterministically (no network),
-  * emits a role-appropriate payload — JSON for parsers (intent_router, scoring,
+  * emits a role-appropriate payload - JSON for parsers (intent_router, scoring,
     quiz_analyzer, reflection), prose for tutor / recommendation,
   * supports ``.with_structured_output(Model)`` by returning a filled example.
 
-If an agent's real prompt shape drifts, adjust ``_ROLE_PAYLOADS`` here — this is
+If an agent's real prompt shape drifts, adjust ``_ROLE_PAYLOADS`` here - this is
 the single choke point for "what the fake says".
 """
 

@@ -1,4 +1,4 @@
-"""Stage 0 — Static: configuration has exactly one entry point.
+"""Stage 0 - Static: configuration has exactly one entry point.
 
 `config/settings.py` is documented as the only place that reads the
 environment. That claim was false for a long time: `tools/llm_client.py`,

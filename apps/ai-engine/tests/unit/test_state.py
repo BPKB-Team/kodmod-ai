@@ -1,4 +1,4 @@
-"""KM-UNIT-070..073 — central state factory (graphs/state.py).
+"""KM-UNIT-070..073 - central state factory (graphs/state.py).
 
 Oracle: `initial_state` + the KODMODState TypedDict.
 Spec: docs/testplan/01-unit.md §6.

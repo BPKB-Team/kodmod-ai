@@ -1,5 +1,5 @@
 """
-KODMOD AI — pgvector Store
+KODMOD AI - pgvector Store
 ==========================
 
 Backs the RAG retrieval against the `curriculum_chunks` table created in

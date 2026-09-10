@@ -1,5 +1,5 @@
 """
-KODMOD AI — Create the test schema
+KODMOD AI - Create the test schema
 ==================================
 
 `database/models.py` is the whole schema, `curriculum_chunks` included, so this

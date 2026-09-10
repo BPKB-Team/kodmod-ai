@@ -61,7 +61,7 @@ dev = [
   "mypy>=1.11",
   "ipython>=8.27",
 ]
-# Full automated test stack — see docs/testplan/. Install: pip install -e ".[test]"
+# Full automated test stack - see docs/testplan/. Install: pip install -e ".[test]"
 test = [
   "pytest>=8.3",
   "pytest-asyncio>=0.24",
@@ -102,7 +102,7 @@ include = ["agents*", "graphs*", "tools*", "memory*", "rag*", "api*",
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-# Scratch / exploration artifacts (all untracked) — not part of the app.
+# Scratch / exploration artifacts (all untracked) - not part of the app.
 extend-exclude = ["*.ipynb", "notebooks", "scripts/chat_cli.py"]
 
 [tool.ruff.lint]
@@ -110,7 +110,7 @@ select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "RUF", "S"]
 ignore = ["E501"]  # line length handled by formatter
 # Typographic dashes / quotes and "×" appear in Indonesian copy, docstrings and
 # prompts; not a real homoglyph risk here.
-allowed-confusables = ["–", "—", "−", "×", "’", "‘", "“", "”"]
+allowed-confusables = ["–", "-", "−", "×", "’", "‘", "“", "”"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106", "S311", "S110", "S112", "S603", "S607", "S608", "C408", "C416", "RUF059"]  # asserts + dummy secrets + rng + best-effort swallows + docker/psql subprocess + fixed-fragment seed SQL (bound params) + dict()/unused-unpack fixture idioms
@@ -128,7 +128,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 addopts = "--strict-markers -ra"
 markers = [
-  "static: static & build gates — no running system (Stage 0)",
+  "static: static & build gates - no running system (Stage 0)",
   "unit: pure logic, no I/O (Stage 1)",
   "contract: schema / API / graph wiring, no I/O (Stage 2)",
   "integration: real Postgres + Redis, stubbed LLM (Stage 3)",
@@ -138,11 +138,11 @@ markers = [
   "system: black-box compose stack (Stage 7)",
   "perf: performance / load (Stage 8)",
   "security: dynamic security (Stage 9)",
-  "readiness: release-readiness gate meta-checks (Stage 10) — traceability, docs, migration policy",
+  "readiness: release-readiness gate meta-checks (Stage 10) - traceability, docs, migration policy",
   "real_llm: hits the real OpenAI API; skipped unless KODMOD_RUN_REAL_LLM=1",
-  "no_llm_stub: opts out of the autouse LLM stub — for tests of tools/llm_client.py itself",
+  "no_llm_stub: opts out of the autouse LLM stub - for tests of tools/llm_client.py itself",
   "slow: takes more than a few seconds",
   "db: needs Postgres",
   "redis: needs Redis",
-  "known_bug: asserts TARGET behaviour of a tracked-but-unfixed bug — FAILS (red) until the bug is fixed, then goes green. Argument is the finding ref, e.g. @pytest.mark.known_bug('#12'). Staged runners select `-m \"<stage> and not known_bug\"` so a stage still gates on regressions; `make test-burndown` runs `-m known_bug` to show how many are left.",
+  "known_bug: asserts TARGET behaviour of a tracked-but-unfixed bug - FAILS (red) until the bug is fixed, then goes green. Argument is the finding ref, e.g. @pytest.mark.known_bug('#12'). Staged runners select `-m \"<stage> and not known_bug\"` so a stage still gates on regressions; `make test-burndown` runs `-m known_bug` to show how many are left.",
 ]

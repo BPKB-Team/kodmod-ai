@@ -1,4 +1,4 @@
-"""Stage 4 §9 — /analytics endpoints.
+"""Stage 4 §9 - /analytics endpoints.
 
 Spec: docs/testplan/04-api.md §9 (KM-API-090..097).
 

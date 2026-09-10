@@ -1,4 +1,4 @@
-"""Stage 3 §6 — analytics/aggregator.py (Student + Classroom rollups).
+"""Stage 3 §6 - analytics/aggregator.py (Student + Classroom rollups).
 
 Spec: docs/testplan/03-integration.md §6 (KM-INT-070..079).
 """

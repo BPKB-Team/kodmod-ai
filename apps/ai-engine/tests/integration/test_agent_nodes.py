@@ -1,4 +1,4 @@
-"""Stage 3 §9 — agent node functions in isolation (real DB + Redis, stub LLM/embeddings).
+"""Stage 3 §9 - agent node functions in isolation (real DB + Redis, stub LLM/embeddings).
 
 Spec: docs/testplan/03-integration.md §9 (KM-INT-100..124).
 Each node is called ``await <node>(state)`` with a hand-assembled state; we assert

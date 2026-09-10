@@ -1,5 +1,5 @@
 """
-KODMOD AI — Voice WebSocket
+KODMOD AI - Voice WebSocket
 ============================
 
 Bidirectional streaming endpoint. Client opens a single WS, sends audio
@@ -18,7 +18,7 @@ fallback for browsers that can't set headers on WebSocket).
 
 Rate limiting
 -------------
-Per-student rate limit enforced via Redis token bucket — see
+Per-student rate limit enforced via Redis token bucket - see
 `api/middleware/rate_limit.py`.
 """
 from __future__ import annotations

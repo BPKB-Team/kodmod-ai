@@ -1,4 +1,4 @@
-"""Stage 2 helpers — resolve FastAPI routes without running the lifespan.
+"""Stage 2 helpers - resolve FastAPI routes without running the lifespan.
 
 FastAPI >= 0.128 keeps ``include_router`` lazy: ``app.routes`` contains
 ``_IncludedRouter`` wrappers rather than the child ``APIRoute`` objects. These

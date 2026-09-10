@@ -1,5 +1,5 @@
 """
-KODMOD AI — LLM Client Factory
+KODMOD AI - LLM Client Factory
 ===============================
 
 Single point where models are configured. Different agents use different
@@ -16,7 +16,7 @@ models based on cost / latency / quality trade-offs:
 
 OpenAI is the only provider. Which model backs each role is decided entirely
 by `.env` (`LLM_*_MODEL`); nothing is hardcoded here. Never instantiate
-`ChatOpenAI` directly in agent code — always go through a getter.
+`ChatOpenAI` directly in agent code - always go through a getter.
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ def language_instruction() -> str:
     Read fresh on every call (never baked into a module-level prompt
     constant) so `GRAPH_LANGUAGE` can be changed via `.env` without a code
     change, and so tests can monkeypatch it. Placed last in the prompt
-    deliberately — it's the model's most recent instruction, so it overrides
+    deliberately - it's the model's most recent instruction, so it overrides
     whatever language the input, retrieved curriculum, or few-shot examples
     happen to be in.
     """
@@ -89,7 +89,7 @@ def get_router_llm():
 
 @lru_cache(maxsize=1)
 def get_tutor_llm():
-    """Best quality, streaming on — this is what the student actually hears."""
+    """Best quality, streaming on - this is what the student actually hears."""
     return _chat(_resolve("LLM_TUTOR_MODEL"), temperature=0.5, max_tokens=1500, streaming=True)
 
 

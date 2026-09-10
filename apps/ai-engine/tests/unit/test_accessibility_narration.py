@@ -1,4 +1,4 @@
-"""KM-UNIT-091..096 — accessibility/narration.describe_visuals_in_text.
+"""KM-UNIT-091..096 - accessibility/narration.describe_visuals_in_text.
 
 Spec: docs/testplan/01-unit.md §7 (accessibility/narration.py).
 """

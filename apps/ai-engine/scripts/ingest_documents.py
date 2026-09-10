@@ -1,5 +1,5 @@
 """
-KODMOD AI — Ingest Documents Script
+KODMOD AI - Ingest Documents Script
 ===================================
 
 Walks a directory and ingests every supported file into the RAG vector

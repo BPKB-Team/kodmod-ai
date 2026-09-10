@@ -1,4 +1,4 @@
-"""Stage 3 §4 — memory/episodic.py (analytics_reports piggyback).
+"""Stage 3 §4 - memory/episodic.py (analytics_reports piggyback).
 
 Spec: docs/testplan/03-integration.md §4 (KM-INT-050..053).
 """

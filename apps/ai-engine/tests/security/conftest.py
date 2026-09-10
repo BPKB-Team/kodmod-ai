@@ -1,4 +1,4 @@
-"""Stage 9 (dynamic security) fixtures — real HTTP against the host ``api``.
+"""Stage 9 (dynamic security) fixtures - real HTTP against the host ``api``.
 
 Spec: docs/testplan/09-security.md. Same host-``api`` model as Stage 4-7: the
 process under test reads the shared Postgres, so factories commit and clean up.

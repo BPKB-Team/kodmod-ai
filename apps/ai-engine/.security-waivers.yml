@@ -1,5 +1,5 @@
 # =============================================================================
-# Security finding waivers — read by scripts/readiness_gate.py (KM-READY-007).
+# Security finding waivers - read by scripts/readiness_gate.py (KM-READY-007).
 #
 # A High/Critical finding from Stage 0 (bandit / pip-audit / safety / trivy /
 # gitleaks) or Stage 9 (dynamic) fails the release gate UNLESS it has a dated

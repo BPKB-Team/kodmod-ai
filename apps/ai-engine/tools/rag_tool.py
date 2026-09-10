@@ -1,5 +1,5 @@
 """
-KODMOD AI — RAG Tool
+KODMOD AI - RAG Tool
 ====================
 
 Single retrieval interface used by:
@@ -20,8 +20,8 @@ Configuration
 
 Two retrieval modes
 -------------------
-* `retrieve()`     — returns dicts (used as a normal Python tool)
-* `as_langchain_tool()` — returns a LangChain `Tool` for agents that bind tools
+* `retrieve()`     - returns dicts (used as a normal Python tool)
+* `as_langchain_tool()` - returns a LangChain `Tool` for agents that bind tools
 """
 
 from __future__ import annotations
@@ -78,7 +78,7 @@ class RAGTool:
         if not candidates:
             return []
 
-        # 3. Cross-encoder rerank for precision (optional — the bi-encoder
+        # 3. Cross-encoder rerank for precision (optional - the bi-encoder
         # order from the vector search is already decent, so this can be
         # switched off when the extra local model isn't worth the weight).
         if settings.RAG_RERANK_ENABLED:

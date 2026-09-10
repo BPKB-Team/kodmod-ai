@@ -1,14 +1,14 @@
 """
-KODMOD AI — Learning Analytics Agent
+KODMOD AI - Learning Analytics Agent
 =====================================
 
 The central node of the **Analytics & Reporting cluster** (Image 1). Reads from
 the database (long-term memory) plus current-session state, computes
 performance metrics, and prepares two output products:
 
-* `analytics_summary` in state — used by the Recommendation Agent and (after
+* `analytics_summary` in state - used by the Recommendation Agent and (after
   the browser) read aloud to the student.
-* Persistent rows in `analytics_reports` — surfaced on the Student Dashboard
+* Persistent rows in `analytics_reports` - surfaced on the Student Dashboard
   and Teacher Dashboard.
 
 Metrics computed

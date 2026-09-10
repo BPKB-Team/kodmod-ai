@@ -1,4 +1,4 @@
-"""Stage 3 §7 — rag/stores/pgvector_store.py against real pgvector.
+"""Stage 3 §7 - rag/stores/pgvector_store.py against real pgvector.
 
 Spec: docs/testplan/03-integration.md §7 (KM-INT-080..088).
 Embeddings are the deterministic hash-seeded 1024-d stub.
@@ -168,5 +168,5 @@ async def test_km_int_088_query_plan_smoke(clean_db) -> None:  # type: ignore[no
             .scalars()
             .all()
         )
-    # tiny dataset: planner may pick a seq scan — just prove the query planned OK
+    # tiny dataset: planner may pick a seq scan - just prove the query planned OK
     assert "curriculum_chunks" in plan

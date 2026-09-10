@@ -1,5 +1,5 @@
 """
-KODMOD AI — Password Hashing and Token Issuance
+KODMOD AI - Password Hashing and Token Issuance
 ==============================================
 
 Two small responsibilities, deliberately kept out of the route modules so

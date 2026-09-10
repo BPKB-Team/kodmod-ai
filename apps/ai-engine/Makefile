@@ -1,4 +1,4 @@
-# KODMOD AI — Convenience targets.
+# KODMOD AI - Convenience targets.
 # Run `make help` for a list.
 
 PY ?= python
@@ -14,7 +14,7 @@ COMPOSE_TEST ?= docker compose -p kodmod-test -f docker/docker-compose.test.yml
         compose-test-down compose-test-logs
 
 help:
-	@echo "KODMOD AI — Common targets"
+	@echo "KODMOD AI - Common targets"
 	@echo "  install     Install runtime + dev dependencies"
 	@echo "  dev         Run uvicorn with reload"
 	@echo "  test        Run pytest"
@@ -83,7 +83,7 @@ clean:
 # code change needs no `docker build`. Test SCRIPTS
 # run natively too: `make test-*` below just invokes `python -m pytest`. Stage 4+
 # pytest talks to the host `api` over real HTTP/WS on localhost:8000.
-# `scripts/run_tests.{ps1,sh}` are the primary entrypoints — they manage the
+# `scripts/run_tests.{ps1,sh}` are the primary entrypoints - they manage the
 # host api lifecycle; the `make test-<stage>` targets are for one-shot manual runs
 # and leave the server they start running (stop it with `make compose-test-down`).
 # Windows: prefer `pwsh scripts/run_tests.ps1` over `bash scripts/run_tests.sh`.

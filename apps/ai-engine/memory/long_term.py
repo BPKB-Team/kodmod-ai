@@ -1,5 +1,5 @@
 """
-KODMOD AI — Long-Term Memory (PostgreSQL)
+KODMOD AI - Long-Term Memory (PostgreSQL)
 =========================================
 
 Persistent learner profile and mastery graph. Wraps the SQLAlchemy

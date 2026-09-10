@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1.7
 # ============================================================================
-# KODMOD AI — Production Dockerfile
+# KODMOD AI - Production Dockerfile
 # ============================================================================
 # Multi-stage build:
-#   1. `builder`  — installs deps into a venv (cacheable layer)
-#   2. `runtime`  — slim final image with the venv copied in
+#   1. `builder`  - installs deps into a venv (cacheable layer)
+#   2. `runtime`  - slim final image with the venv copied in
 #
 # CPU-only image by default. For GPU inference (faster-whisper on cuda),
 # build the variant with `--build-arg BASE_IMAGE=nvidia/cuda:12.4.1-runtime-ubuntu22.04`
@@ -87,6 +87,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 # tini is PID 1 so SIGTERM propagates cleanly to uvicorn.
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Default command — use --workers 1 inside k8s and scale via replicas.
+# Default command - use --workers 1 inside k8s and scale via replicas.
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", \
      "--workers", "1", "--log-config", "/app/config/log_conf.json"]

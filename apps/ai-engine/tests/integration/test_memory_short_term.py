@@ -1,4 +1,4 @@
-"""Stage 3 §3 — memory/short_term.py against real Redis.
+"""Stage 3 §3 - memory/short_term.py against real Redis.
 
 Spec: docs/testplan/03-integration.md §3 (KM-INT-040..045).
 """
@@ -20,7 +20,7 @@ SID = "sess-int-short"
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-040 — set_value / get_value round-trip + TTL ~24h + key shape
+# KM-INT-040 - set_value / get_value round-trip + TTL ~24h + key shape
 # --------------------------------------------------------------------------- #
 async def test_km_int_040_set_get_value_and_ttl(redis_client) -> None:  # type: ignore[no-untyped-def]
     from memory.short_term import _key, get_value, set_value
@@ -33,7 +33,7 @@ async def test_km_int_040_set_get_value_and_ttl(redis_client) -> None:  # type: 
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-041 — delete_session removes every sub-key (SCAN + DEL)
+# KM-INT-041 - delete_session removes every sub-key (SCAN + DEL)
 # --------------------------------------------------------------------------- #
 async def test_km_int_041_delete_session(redis_client) -> None:  # type: ignore[no-untyped-def]
     from memory.short_term import delete_session, get_value, set_value
@@ -46,7 +46,7 @@ async def test_km_int_041_delete_session(redis_client) -> None:  # type: ignore[
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-042 — store_last_response / fetch_last_response
+# KM-INT-042 - store_last_response / fetch_last_response
 # --------------------------------------------------------------------------- #
 async def test_km_int_042_last_response(redis_client) -> None:  # type: ignore[no-untyped-def]
     from memory.short_term import fetch_last_response, store_last_response
@@ -57,7 +57,7 @@ async def test_km_int_042_last_response(redis_client) -> None:  # type: ignore[n
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-043 — append_tutoring_turn keeps only the last 12 + sets EXPIRE
+# KM-INT-043 - append_tutoring_turn keeps only the last 12 + sets EXPIRE
 # --------------------------------------------------------------------------- #
 async def test_km_int_043_tutoring_window_ltrim(redis_client) -> None:  # type: ignore[no-untyped-def]
     from memory.short_term import _key, append_tutoring_turn, fetch_tutoring_turns
@@ -73,7 +73,7 @@ async def test_km_int_043_tutoring_window_ltrim(redis_client) -> None:  # type: 
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-044 — get_pacing falls back to settings.TTS_RATE
+# KM-INT-044 - get_pacing falls back to settings.TTS_RATE
 # --------------------------------------------------------------------------- #
 async def test_km_int_044_pacing_fallback_and_set(redis_client) -> None:  # type: ignore[no-untyped-def]
     from config.settings import settings
@@ -85,7 +85,7 @@ async def test_km_int_044_pacing_fallback_and_set(redis_client) -> None:  # type
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-045 — get_redis reuses one pool; close_redis clears it
+# KM-INT-045 - get_redis reuses one pool; close_redis clears it
 # --------------------------------------------------------------------------- #
 async def test_km_int_045_pool_reuse(redis_client) -> None:  # type: ignore[no-untyped-def]
     from memory import short_term as st

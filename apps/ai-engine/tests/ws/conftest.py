@@ -1,4 +1,4 @@
-"""Stage 5 (WebSocket) fixtures — real WS to the host ``api`` process.
+"""Stage 5 (WebSocket) fixtures - real WS to the host ``api`` process.
 
 Mirrors tests/api/conftest.py: committing account factories (the host ``api``
 reads the same Postgres) plus a ``ws_connect`` helper built on httpx-ws.

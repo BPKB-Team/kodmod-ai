@@ -1,5 +1,5 @@
 """
-KODMOD AI — Analytics Aggregator
+KODMOD AI - Analytics Aggregator
 ================================
 
 Computes the metrics that flow into:
@@ -91,7 +91,7 @@ class StudentAggregator:
                 attempts_q = attempts_q.where(QuizAttempt.answered_at >= start)
             attempts = (await session.execute(attempts_q)).scalars().all()
 
-            # ---- Mastery snapshot (full, not windowed — mastery is cumulative)
+            # ---- Mastery snapshot (full, not windowed - mastery is cumulative)
             mastery_rows = (
                 await session.execute(
                     select(MasteryScore, Concept)

@@ -1,9 +1,9 @@
 """
-KODMOD AI — Seed Curriculum Script
+KODMOD AI - Seed Curriculum Script
 ==================================
 
 Bootstraps a small set of subjects/concepts/lessons useful for local
-development and integration tests. Idempotent — safe to run repeatedly.
+development and integration tests. Idempotent - safe to run repeatedly.
 
 Run:
     python scripts/seed_curriculum.py

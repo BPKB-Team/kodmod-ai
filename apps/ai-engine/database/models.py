@@ -1,5 +1,5 @@
 """
-KODMOD AI — SQLAlchemy ORM Models
+KODMOD AI - SQLAlchemy ORM Models
 =================================
 
 **This module is the single source of truth for the database schema.** There is

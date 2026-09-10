@@ -1,4 +1,4 @@
-"""Stage 4 §5 — /content endpoints.
+"""Stage 4 §5 - /content endpoints.
 
 Spec: docs/testplan/04-api.md §5 (KM-API-050..056).
 """

@@ -1,4 +1,4 @@
-"""KM-UNIT-140..143 — pure JWT decode helper (api/dependencies._decode_jwt).
+"""KM-UNIT-140..143 - pure JWT decode helper (api/dependencies._decode_jwt).
 
 Oracle: PyJWT semantics + the HS256 algorithm pinned in settings.
 Spec: docs/testplan/01-unit.md §10.

@@ -1,4 +1,4 @@
-"""Stage 4 §1 — health endpoints (mounted with NO /health prefix).
+"""Stage 4 §1 - health endpoints (mounted with NO /health prefix).
 
 Spec: docs/testplan/04-api.md §1 (KM-API-001..006).
 """

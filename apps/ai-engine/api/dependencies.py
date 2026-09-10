@@ -1,5 +1,5 @@
 """
-KODMOD AI — FastAPI Dependencies
+KODMOD AI - FastAPI Dependencies
 ================================
 
 Reusable dependency callables: DB session, the authenticated user, and role

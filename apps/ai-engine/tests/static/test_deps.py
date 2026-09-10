@@ -1,7 +1,7 @@
-"""KM-STATIC-030 / 031 / 032 / 052 — dependency health.
+"""KM-STATIC-030 / 031 / 032 / 052 - dependency health.
 
-030: pip-audit — 0 un-waived vulnerabilities (waivers: .pip-audit-ignore).
-031: safety — cross-check, same policy.
+030: pip-audit - 0 un-waived vulnerabilities (waivers: .pip-audit-ignore).
+031: safety - cross-check, same policy.
 032: optional non-default backends are not required on the text-mode path.
 052: requirements.txt core set == pyproject [project.dependencies].
 """

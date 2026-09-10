@@ -1,5 +1,5 @@
 """
-KODMOD AI — Chat Turn Service
+KODMOD AI - Chat Turn Service
 =============================
 
 The shared middle of a conversation turn, so the WebSocket and the REST

@@ -1,5 +1,5 @@
 """
-KODMOD AI — Visual Narration Helpers
+KODMOD AI - Visual Narration Helpers
 ====================================
 
 When source content contains diagrams, tables, or charts, this module
@@ -8,16 +8,16 @@ informational payload as a sighted one.
 
 Two paths:
 
-1. `describe_visuals_in_text(text)`  — regex-based deterministic rewriter:
+1. `describe_visuals_in_text(text)`  - regex-based deterministic rewriter:
    replaces patterns like "lihat gambar 3.1", "tabel di atas", "seperti
    pada diagram" with informative substitutes pulled from local context.
 
-2. `describe_image(image_bytes)`     — multimodal vision call (LLM with
+2. `describe_image(image_bytes)`     - multimodal vision call (LLM with
    vision) that produces a structured Bahasa Indonesia narration.
    Used by the ingestion pipeline when chunking PDFs/lessons that contain
    embedded figures.
 
-The deterministic path is what the live tutoring loop uses — it must not
+The deterministic path is what the live tutoring loop uses - it must not
 add latency. The vision path runs offline at ingestion time so the
 description is already cached in the RAG chunk metadata.
 """
@@ -117,7 +117,7 @@ ATURAN:
 - Bahasa Indonesia sederhana.
 - Jelaskan struktur (kiri/kanan, atas/bawah) dengan kata "bagian".
 - Sebutkan label, angka, atau teks yang muncul di gambar.
-- JANGAN katakan "saya melihat" atau "gambar ini menunjukkan" — langsung deskripsikan.
+- JANGAN katakan "saya melihat" atau "gambar ini menunjukkan" - langsung deskripsikan.
 """
 
 

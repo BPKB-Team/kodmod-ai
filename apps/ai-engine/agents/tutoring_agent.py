@@ -1,5 +1,5 @@
 """
-KODMOD AI — Tutoring Agent
+KODMOD AI - Tutoring Agent
 ==========================
 
 The conversational, Socratic, RAG-grounded tutor. This is the dominant agent
@@ -7,18 +7,18 @@ in the Practices & Tutoring cluster (yellow box in the diagram).
 
 Behaviours implemented
 ----------------------
-1. **Adaptive level** — reads `mastery_scores[concept_id]` to decide whether to
+1. **Adaptive level** - reads `mastery_scores[concept_id]` to decide whether to
    explain at "scaffolded", "standard", or "advanced" depth.
-2. **Socratic questioning** — at the end of each explanation, asks one
+2. **Socratic questioning** - at the end of each explanation, asks one
    follow-up question to probe understanding (this is what triggers the loop
    back to the student in the diagram).
-3. **Misconception logging** — if the student's input contradicts curriculum
+3. **Misconception logging** - if the student's input contradicts curriculum
    facts retrieved by RAG, the agent appends to `misconceptions_detected`
    so the analytics cluster can act on it later.
-4. **Audio-friendly** — explicitly avoids visual references ("look at the
+4. **Audio-friendly** - explicitly avoids visual references ("look at the
    diagram", "as you can see"); the Accessibility Agent further polishes the
    output before it is delivered.
-5. **Streaming** — uses `astream` so the WebSocket can forward tokens
+5. **Streaming** - uses `astream` so the WebSocket can forward tokens
    on the first sentence rather than waiting for the full response.
 """
 
@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 
 
 SYSTEM_PROMPT = """\
-You are KODMOD's Tutor — a patient, encouraging teacher for visually impaired
+You are KODMOD's Tutor - a patient, encouraging teacher for visually impaired
 students. Your responses will be spoken aloud, so:
 
 CONTENT RULES
@@ -72,7 +72,7 @@ OUTPUT
 
 
 async def tutoring_node(state: KODMODState) -> dict[str, Any]:
-    """LangGraph node — generates the tutor's response."""
+    """LangGraph node - generates the tutor's response."""
     user_input = state.get("user_input", "")
     concept_id = state.get("current_concept_id", "")
     mastery = state.get("mastery_scores", {}).get(concept_id, 0.5)
@@ -103,7 +103,7 @@ async def tutoring_node(state: KODMODState) -> dict[str, Any]:
         + (
             "\n\nThis is a QUIZ REMEDIATION turn: the student just answered the quiz "
             "question below incorrectly. Explain why their answer was wrong and clarify "
-            "the underlying concept using the question and options given — never ask the "
+            "the underlying concept using the question and options given - never ask the "
             "student to resend the question, it is provided below."
             if is_remediation
             else ""
@@ -115,7 +115,7 @@ async def tutoring_node(state: KODMODState) -> dict[str, Any]:
     quiz_block = (
         "\n\n--- Quiz question just answered (explain using this) ---\n"
         f"Question: {quiz_question.get('text', '')}\n"
-        f"Options: {quiz_question.get('options') or '(none — open-ended question)'}\n"
+        f"Options: {quiz_question.get('options') or '(none - open-ended question)'}\n"
         f"Correct answer: {quiz_question.get('expected_answer', '')}\n"
         f"Student's answer: {state.get('student_answer', '')}"
         if is_remediation and quiz_question

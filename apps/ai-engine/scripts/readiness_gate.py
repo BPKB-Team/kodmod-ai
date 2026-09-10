@@ -1,4 +1,4 @@
-"""Stage 10 — Release Readiness Gate aggregator.
+"""Stage 10 - Release Readiness Gate aggregator.
 
 Reads ``reports/junit-*.xml`` + ``reports/coverage-*.xml`` +
 ``docs/testplan/baselines/`` + ``.security-waivers.yml`` and prints a PASS/FAIL
@@ -6,7 +6,7 @@ table for KM-READY-001..012 (spec: docs/testplan/10-readiness.md).
 
 Exit code is non-zero if any *implemented and applicable* check fails. Checks
 whose input artefacts are absent are reported ``SKIP`` (informational) so the
-gate can run at any point in the campaign without spurious failure — a real
+gate can run at any point in the campaign without spurious failure - a real
 release run supplies every artefact and every row must then be PASS.
 
     python scripts/readiness_gate.py            # full table
@@ -27,10 +27,10 @@ ROOT = Path(__file__).resolve().parent.parent
 REPORTS = ROOT / "reports"
 BASELINES = ROOT / "docs" / "testplan" / "baselines"
 
-# KM-READY-001/002 thresholds (README §7 — final numbers agreed by the team).
+# KM-READY-001/002 thresholds (README §7 - final numbers agreed by the team).
 COV_PURE_MIN = 90.0
 COV_OVERALL_MIN = 75.0
-# KM-READY-005 — max allowed regression vs a stored perf baseline.
+# KM-READY-005 - max allowed regression vs a stored perf baseline.
 PERF_REGRESSION_MAX = 0.25
 
 PURE_LOGIC_PREFIXES = ("analytics/", "rag/chunking", "accessibility/", "graphs/")
@@ -205,7 +205,7 @@ def main() -> int:
 
     rows: list[tuple[str, str, str]] = []
 
-    # KM-READY-001 / 002 — coverage
+    # KM-READY-001 / 002 - coverage
     cov = _coverage_rates()
     if cov is None:
         rows.append(("KM-READY-001  coverage (pure logic >= 90%)", SKIP, "no coverage-*.xml"))
@@ -227,7 +227,7 @@ def main() -> int:
             )
         )
 
-    # KM-READY-003 — bug burndown
+    # KM-READY-003 - bug burndown
     bd = _burndown_counts()
     if bd is None:
         rows.append(
@@ -243,7 +243,7 @@ def main() -> int:
             )
         )
 
-    # KM-READY-004 — stages 0-9 green
+    # KM-READY-004 - stages 0-9 green
     seen, tests, failures, errors, skipped = _junit_totals()
     if not seen:
         rows.append(("KM-READY-004  Stage 0-9 green", SKIP, "no junit-*.xml"))
@@ -256,7 +256,7 @@ def main() -> int:
             )
         )
 
-    # KM-READY-005 — perf regression vs baseline
+    # KM-READY-005 - perf regression vs baseline
     checked, regressions = _perf_regressions()
     if checked == 0:
         rows.append(("KM-READY-005  perf within +/-25% baseline", SKIP, "no bench.json baselines"))
@@ -270,7 +270,7 @@ def main() -> int:
             )
         )
 
-    # KM-READY-006 — soak leak (baseline csv/json)
+    # KM-READY-006 - soak leak (baseline csv/json)
     soak = list(BASELINES.glob("perf-km-perf-030*")) + list(BASELINES.glob("resource-soak.*"))
     rows.append(
         (
@@ -280,11 +280,11 @@ def main() -> int:
         )
     )
 
-    # KM-READY-007 — security waivers
+    # KM-READY-007 - security waivers
     status, detail = _waiver_status()
     rows.append(("KM-READY-007  0 High/Critical without dated waiver", status, detail))
 
-    # KM-READY-009 — traceability
+    # KM-READY-009 - traceability
     orphans = _trace_orphans()
     if orphans is None:
         rows.append(("KM-READY-009  traceability complete", FAIL, "traceability.md missing"))
@@ -297,7 +297,7 @@ def main() -> int:
             )
         )
 
-    # KM-READY-010/011/012 — delegated to `pytest -m readiness` (junit-readiness.xml)
+    # KM-READY-010/011/012 - delegated to `pytest -m readiness` (junit-readiness.xml)
     rd = REPORTS / "junit-readiness.xml"
     if rd.exists():
         try:

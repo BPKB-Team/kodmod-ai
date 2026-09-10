@@ -1,5 +1,5 @@
 """
-KODMOD AI — Text-mode Chat CLI
+KODMOD AI - Text-mode Chat CLI
 ==============================
 
 REPL interaktif ala `ollama run` untuk mencoba fitur tutor dalam mode teks
@@ -26,7 +26,7 @@ import pathlib
 
 
 # --------------------------------------------------------------------------- #
-# 1. Environment — HARUS sebelum import modul proyek apa pun.
+# 1. Environment - HARUS sebelum import modul proyek apa pun.
 # --------------------------------------------------------------------------- #
 def _setup_env() -> pathlib.Path:
     root = pathlib.Path.cwd()
@@ -233,7 +233,7 @@ def _explain(exc: Exception) -> None:
 async def guarded(label: str, coro):
     try:
         return await coro
-    except Exception as exc:  # noqa: BLE001 — CLI harus tetap hidup
+    except Exception as exc:  # noqa: BLE001 - CLI harus tetap hidup
         err(f"fitur '{label}' gagal.")
         _explain(exc)
         return None
@@ -426,7 +426,7 @@ async def do_mastery() -> None:
 
     rows = await guarded("mastery (DB)", _q())
     if rows is not None:
-        bot(f"mastery_scores untuk siswa uji: {rows or '(kosong — jalankan /analyze dulu)'}")
+        bot(f"mastery_scores untuk siswa uji: {rows or '(kosong - jalankan /analyze dulu)'}")
 
 
 async def do_history() -> None:
@@ -494,7 +494,7 @@ async def dispatch(line: str) -> bool:
         return True
     if not line.startswith("/"):
         if CTX.carry.get("quiz_question"):        # kuis aktif -> perlakukan sebagai jawaban
-            sys_("(kuis aktif — ketik /reset untuk keluar)")
+            sys_("(kuis aktif - ketik /reset untuk keluar)")
             await do_answer(line)
             return True
         guess = _guess_quiz(line)
@@ -572,11 +572,11 @@ async def bootstrap() -> None:
 
 
 async def main() -> None:
-    print(_c("1;36", "KODMOD AI — chat mode teks (TTS/STT nonaktif, LLM=OpenAI)"))
+    print(_c("1;36", "KODMOD AI - chat mode teks (TTS/STT nonaktif, LLM=OpenAI)"))
     try:
         await bootstrap()
     except Exception as exc:  # noqa: BLE001
-        err("bootstrap gagal — CLI tidak bisa mulai.")
+        err("bootstrap gagal - CLI tidak bisa mulai.")
         _explain(exc)
         return
     sys_(f"siswa uji: {STUDENT_ID} · concept: {', '.join(CTX.concepts) or '-'}")
@@ -592,7 +592,7 @@ async def main() -> None:
             try:
                 if not await dispatch(line):
                     break
-            except Exception as exc:  # noqa: BLE001 — jangan pernah mematikan REPL
+            except Exception as exc:  # noqa: BLE001 - jangan pernah mematikan REPL
                 err("terjadi error tak terduga saat memproses perintah.")
                 _explain(exc)
     finally:

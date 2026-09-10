@@ -1,4 +1,4 @@
-"""Stage 4 §10 — contract fuzzing with Schemathesis against the live container.
+"""Stage 4 §10 - contract fuzzing with Schemathesis against the live container.
 
 Spec: docs/testplan/04-api.md §10 (KM-API-100..102).
 
@@ -39,7 +39,7 @@ except Exception as exc:  # pragma: no cover
 @schema.parametrize()
 def test_km_api_100_no_server_errors(case) -> None:  # type: ignore[no-untyped-def]
     if (case.method.upper(), case.path) in _EXCLUDE:
-        pytest.skip("tracked 5xx — asserted explicitly elsewhere")
+        pytest.skip("tracked 5xx - asserted explicitly elsewhere")
     # KM-API-100 gates only on "no server error" (5xx). Status-code / schema
     # conformance is a separate concern tracked in the contract stage.
     response = case.call()

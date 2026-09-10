@@ -1,5 +1,5 @@
 """
-KODMOD AI — Speech-to-Text Pipeline
+KODMOD AI - Speech-to-Text Pipeline
 ====================================
 
 LangGraph entry node. Reads `state["audio_input_path"]` (an S3/MinIO/local
@@ -8,9 +8,9 @@ detected language code.
 
 Backends
 --------
-* `faster-whisper` — default for self-hosted, low-latency, on-prem deployments.
-* `openai-whisper-1` — managed fallback when KODMOD_STT_BACKEND=openai.
-* `deepgram` — live streaming transcription for the WebSocket path.
+* `faster-whisper` - default for self-hosted, low-latency, on-prem deployments.
+* `openai-whisper-1` - managed fallback when KODMOD_STT_BACKEND=openai.
+* `deepgram` - live streaming transcription for the WebSocket path.
 
 Streaming
 ---------
@@ -141,7 +141,7 @@ def _ensure_local(uri: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Public helpers — used by tools/voice_tool.py and voice/streaming.py
+# Public helpers - used by tools/voice_tool.py and voice/streaming.py
 # ---------------------------------------------------------------------------
 async def transcribe_path(path, *, language: str | None = None) -> str:
     """Transcribe an audio file at the given path. Backend chosen by settings."""

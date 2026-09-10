@@ -5,7 +5,7 @@ import LiveRegion from "./components/LiveRegion";
 /**
  * Kerangka aplikasi.
  *
- * Ini SENGAJA masih kosong secara visual — desain UI/UX tim akan mengisinya.
+ * Ini SENGAJA masih kosong secara visual - desain UI/UX tim akan mengisinya.
  * Yang sudah dipasang di sini adalah hal-hal yang mahal kalau ditambahkan
  * belakangan: struktur landmark, skip link, live region, dan pemilih mode
  * screen reader.
@@ -56,7 +56,7 @@ export default function App() {
               onChange={() => gantiMode("native")}
             />
             <span>
-              <strong>Pembaca layar saya</strong> — KODMOD diam, NVDA/JAWS/TalkBack yang membacakan.
+              <strong>Pembaca layar saya</strong> - KODMOD diam, NVDA/JAWS/TalkBack yang membacakan.
             </span>
           </label>
 
@@ -69,7 +69,7 @@ export default function App() {
               onChange={() => gantiMode("conversational")}
             />
             <span>
-              <strong>Suara KODMOD</strong> — KODMOD berbicara dua arah. Matikan pembaca layar
+              <strong>Suara KODMOD</strong> - KODMOD berbicara dua arah. Matikan pembaca layar
               agar tidak ada dua suara bersamaan.
             </span>
           </label>
@@ -77,7 +77,7 @@ export default function App() {
       </main>
 
       <footer className="border-t border-black/10 px-6 py-4 text-sm opacity-70">
-        <p>KODMOD — pendidikan inklusif untuk siswa disabilitas netra.</p>
+        <p>KODMOD - pendidikan inklusif untuk siswa disabilitas netra.</p>
       </footer>
     </>
   );

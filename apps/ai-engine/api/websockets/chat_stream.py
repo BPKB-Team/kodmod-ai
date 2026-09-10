@@ -1,5 +1,5 @@
 """
-KODMOD AI — Streaming Chat WebSocket (`/ws/chat`)
+KODMOD AI - Streaming Chat WebSocket (`/ws/chat`)
 =================================================
 
 Text in, text out. Speech recognition and synthesis both live in the browser,

@@ -1,8 +1,8 @@
-"""Stage 3 §10-11 — whole-graph invocation per intent (stub LLM, real DB).
+"""Stage 3 §10-11 - whole-graph invocation per intent (stub LLM, real DB).
 
 Spec: docs/testplan/03-integration.md §10 (KM-INT-140..146) and §11 (KM-INT-150..154).
 The §11 quiz multi-turn group is the quiz-feature definition-of-done (#11 / BUG-3,
-see docs/LAPORAN_BUG.md) — fixed by wiring scoring -> update_student_model ->
+see docs/LAPORAN_BUG.md) - fixed by wiring scoring -> update_student_model ->
 {quiz_ask, quiz_analyzer} so a passing answer speaks the next question within
 the same turn instead of dead-ending after question 1.
 """
@@ -65,7 +65,7 @@ async def _run(graph, intent_state, sid):  # type: ignore[no-untyped-def]
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-140 — tutoring path
+# KM-INT-140 - tutoring path
 # --------------------------------------------------------------------------- #
 async def test_km_int_140_tutoring_path(graph, force_intent, clean_db, make_student) -> None:  # type: ignore[no-untyped-def]
     from graphs.state import initial_state
@@ -83,7 +83,7 @@ async def test_km_int_140_tutoring_path(graph, force_intent, clean_db, make_stud
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-141 — analytics path
+# KM-INT-141 - analytics path
 # --------------------------------------------------------------------------- #
 async def test_km_int_141_analytics_path(
     graph, force_intent, clean_db, make_student, concept_ids, seed_mastery
@@ -103,7 +103,7 @@ async def test_km_int_141_analytics_path(
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-142 — stop path (fast: intent_router -> end_speak -> tts -> END)
+# KM-INT-142 - stop path (fast: intent_router -> end_speak -> tts -> END)
 # --------------------------------------------------------------------------- #
 async def test_km_int_142_stop_path(graph, force_intent, clean_db, make_student) -> None:  # type: ignore[no-untyped-def]
     from graphs.state import initial_state
@@ -122,7 +122,7 @@ async def test_km_int_142_stop_path(graph, force_intent, clean_db, make_student)
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-143 — quiz-start path
+# KM-INT-143 - quiz-start path
 # --------------------------------------------------------------------------- #
 async def test_km_int_143_quiz_start_path(
     graph, force_intent, clean_db, make_student, concept_ids
@@ -143,7 +143,7 @@ async def test_km_int_143_quiz_start_path(
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-144 / 145 — checkpointer persistence + resume across interrupt
+# KM-INT-144 / 145 - checkpointer persistence + resume across interrupt
 # --------------------------------------------------------------------------- #
 @_needs_pg_saver
 async def test_km_int_144_checkpointer_writes(
@@ -190,7 +190,7 @@ async def test_km_int_145_resume_from_interrupt(
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-146 — initial_state carries every field every node needs
+# KM-INT-146 - initial_state carries every field every node needs
 # --------------------------------------------------------------------------- #
 async def test_km_int_146_initial_state_is_sufficient(
     graph, force_intent, clean_db, make_student
@@ -208,7 +208,7 @@ async def test_km_int_146_initial_state_is_sufficient(
 
 
 # --------------------------------------------------------------------------- #
-# §11 — quiz multi-turn  #11 / BUG-3
+# §11 - quiz multi-turn  #11 / BUG-3
 # --------------------------------------------------------------------------- #
 @pytest.fixture
 async def quiz_started(graph, force_intent, clean_db, make_student, concept_ids):  # type: ignore[no-untyped-def]
@@ -250,7 +250,7 @@ async def test_km_int_152_score_routes_on_threshold(quiz_started) -> None:  # ty
     turn2["user_input"] = "A"
     out = await g.ainvoke(turn2, config=_cfg(sid))
     assert out.get("quiz_score") is not None
-    # Every speaking path converges on "accessibility" (see CLAUDE.md) — the
+    # Every speaking path converges on "accessibility" (see CLAUDE.md) - the
     # pass/fail branch from route_after_scoring is visible instead in whether
     # the question index advanced (pass -> update_student_model -> quiz_ask)
     # or stayed put (fail -> tutoring remediation, retry the same question).

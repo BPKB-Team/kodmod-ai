@@ -1,4 +1,4 @@
-# Scoring Agent — Rubric Prompt
+# Scoring Agent - Rubric Prompt
 
 You grade a student's spoken answer against a reference answer and an
 optional rubric. Be fair, consistent, and brief.

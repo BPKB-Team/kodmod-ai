@@ -1,5 +1,5 @@
 """
-KODMOD AI — Cross-Encoder Reranker
+KODMOD AI - Cross-Encoder Reranker
 ==================================
 
 Bi-encoder retrieval (BGE-M3) is fast but imperfect; a cross-encoder
@@ -53,7 +53,7 @@ async def rerank(
     top_k = top_k or settings.RAG_RERANK_TOP_K
     loop = asyncio.get_running_loop()
     # `_load_model()` downloads ~2GB on first use (cached after that via
-    # lru_cache) and is fully synchronous — run it off-loop like `.predict()`
+    # lru_cache) and is fully synchronous - run it off-loop like `.predict()`
     # below, or the first call from any request freezes the entire server
     # (every connection, not just this one) for as long as the download takes.
     model = await loop.run_in_executor(None, _load_model)

@@ -1,5 +1,5 @@
 """
-KODMOD AI — Text-to-Speech Pipeline
+KODMOD AI - Text-to-Speech Pipeline
 ====================================
 
 Final node before the response leaves the graph. Reads `state["accessible_response"]`
@@ -7,10 +7,10 @@ Final node before the response leaves the graph. Reads `state["accessible_respon
 
 Backends (selected via KODMOD_TTS_BACKEND)
 ------------------------------------------
-* `piper`     — fully offline, low-latency, surprisingly natural. Default.
-* `azure`     — neural voices, SSML support, multilingual. Recommended for prod.
-* `elevenlabs`— most natural, emotion-aware. Premium tier.
-* `coqui`     — open-source, voice cloning capable.
+* `piper`     - fully offline, low-latency, surprisingly natural. Default.
+* `azure`     - neural voices, SSML support, multilingual. Recommended for prod.
+* `elevenlabs`- most natural, emotion-aware. Premium tier.
+* `coqui`     - open-source, voice cloning capable.
 
 Streaming
 ---------
@@ -176,7 +176,7 @@ def _to_ssml(text: str, voice: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Public helpers — used by tools/voice_tool.py and voice/streaming.py
+# Public helpers - used by tools/voice_tool.py and voice/streaming.py
 # ---------------------------------------------------------------------------
 from config.settings import settings  # noqa: E402  (kept here to avoid cycles)
 
@@ -213,5 +213,5 @@ async def synthesise_bytes(
     try:
         return Path(path).read_bytes()
     finally:
-        # Don't delete — caller may want the file. Cleanup happens via AUDIO_DIR rotation.
+        # Don't delete - caller may want the file. Cleanup happens via AUDIO_DIR rotation.
         pass

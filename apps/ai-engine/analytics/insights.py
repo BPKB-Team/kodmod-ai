@@ -1,5 +1,5 @@
 """
-KODMOD AI — Insight Generation
+KODMOD AI - Insight Generation
 ==============================
 
 Converts raw analytics rollups into:
@@ -10,7 +10,7 @@ Converts raw analytics rollups into:
 
 This is deliberately rule-based first, with an optional LLM polish pass
 when `use_llm=True`. Rule-based generation is deterministic, fast, and
-matches the "voice-first" latency budget — LLM polish is reserved for
+matches the "voice-first" latency budget - LLM polish is reserved for
 weekly digests where users will tolerate a couple-second delay.
 """
 

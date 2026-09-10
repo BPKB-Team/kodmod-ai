@@ -1,5 +1,5 @@
 """
-KODMOD AI — Episodic Memory
+KODMOD AI - Episodic Memory
 ===========================
 
 Captures *notable* events worth remembering across sessions:
@@ -117,7 +117,7 @@ async def maybe_record_mastery_unlock(
         title=f"Menguasai konsep {concept_name}",
         description=(
             f"Siswa mencapai tingkat penguasaan {mastery:.0%} pada konsep "
-            f"{concept_name}. Bagus sekali — siap untuk materi berikutnya."
+            f"{concept_name}. Bagus sekali - siap untuk materi berikutnya."
         ),
         payload={"concept": concept_name, "mastery": mastery},
     )

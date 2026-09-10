@@ -1,5 +1,5 @@
 """
-KODMOD AI — Logging Configuration
+KODMOD AI - Logging Configuration
 =================================
 
 Structured JSON logs in production, human-readable colored logs in dev.
@@ -103,11 +103,11 @@ class _PrettyFormatter(logging.Formatter):
 
 
 def configure_logging(level: str | None = None) -> None:
-    """Idempotent — safe to call from main, tests, or Celery workers."""
+    """Idempotent - safe to call from main, tests, or Celery workers."""
     root = logging.getLogger()
     # Keep any file handler a launcher already attached (e.g. uvicorn's
     # --log-config in scripts/serve_test_api) so app-lifecycle logs still reach
-    # reports/api.log — and get flushed on every emit — after we take over root.
+    # reports/api.log - and get flushed on every emit - after we take over root.
     preserved = [h for h in root.handlers if isinstance(h, logging.FileHandler)]
     root.handlers.clear()
 

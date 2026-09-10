@@ -1,5 +1,5 @@
 """
-KODMOD AI — Teacher Routes
+KODMOD AI - Teacher Routes
 ==========================
 
 There are no classrooms: a teacher sees every student.

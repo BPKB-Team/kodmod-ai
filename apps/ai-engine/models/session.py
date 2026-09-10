@@ -26,7 +26,7 @@ class SessionOut(BaseModel):
 
 
 class VoiceChatRequest(BaseModel):
-    """Text fallback for /voice/text — when audio upload is not feasible."""
+    """Text fallback for /voice/text - when audio upload is not feasible."""
 
     student_id: uuid.UUID
     session_id: Optional[uuid.UUID] = None

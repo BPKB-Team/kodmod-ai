@@ -1,4 +1,4 @@
-"""KM-UNIT-050..055 — pure problem-generator heuristics (agents/problem_generator.py).
+"""KM-UNIT-050..055 - pure problem-generator heuristics (agents/problem_generator.py).
 
 Oracle: the functions + the QuizQuestion TypedDict in graphs/state.py.
 Spec: docs/testplan/01-unit.md §4.
@@ -52,7 +52,7 @@ def test_fallback_question_is_valid_quiz_question() -> None:  # KM-UNIT-055
 
 
 # --------------------------------------------------------------------------- #
-# _adjust_difficulty() — steps difficulty from predicted success probability
+# _adjust_difficulty() - steps difficulty from predicted success probability
 # (StudentModel.predict_correct_probability). Spec: docs/testplan/01-unit.md §4.
 # --------------------------------------------------------------------------- #
 

@@ -1,4 +1,4 @@
-# KODMOD AI — Architecture
+# KODMOD AI - Architecture
 
 This document explains how the four clusters from the design diagrams
 map onto the codebase.
@@ -35,7 +35,7 @@ map onto the codebase.
 
 ## 2. Cluster Mapping
 
-### Cluster 1 — Practices & Tutoring  (`graphs/main_graph.py`)
+### Cluster 1 - Practices & Tutoring  (`graphs/main_graph.py`)
 
 The "What do you want?" diamond is `route_after_intent()`. The Yes/No
 remediation diamond after scoring is `route_after_scoring()`:
@@ -51,7 +51,7 @@ remediation diamond after scoring is `route_after_scoring()`:
 | TTS out                      | `voice/tts.py::tts_node`                            |
 | Materi ajar (RAG)            | `rag/retriever.py::rag_retrieval_node`              |
 
-### Cluster 2 — Quiz / Assessment
+### Cluster 2 - Quiz / Assessment
 
 | Diagram element              | Code                                                |
 |------------------------------|-----------------------------------------------------|
@@ -65,7 +65,7 @@ remediation diamond after scoring is `route_after_scoring()`:
 | TTS out                      | `voice/tts.py::tts_node`                            |
 | Bridge to Cluster 4          | analytics_node consumes the analyzer output         |
 
-### Cluster 3 — Content & Exercise Management
+### Cluster 3 - Content & Exercise Management
 
 | Diagram element              | Code                                                |
 |------------------------------|-----------------------------------------------------|
@@ -74,7 +74,7 @@ remediation diamond after scoring is `route_after_scoring()`:
 | DB                           | `database/models.py::Exercise`, `Concept`           |
 | Store                        | `tools/database_tool.py`                            |
 
-### Cluster 4 — Analytics & Reporting
+### Cluster 4 - Analytics & Reporting
 
 | Diagram element              | Code                                                |
 |------------------------------|-----------------------------------------------------|

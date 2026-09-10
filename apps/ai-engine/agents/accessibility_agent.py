@@ -1,5 +1,5 @@
 """
-KODMOD AI — Accessibility Agent
+KODMOD AI - Accessibility Agent
 ================================
 
 The last node every speaking path runs through. Takes whatever
@@ -9,14 +9,14 @@ text-to-speech.
 
 Transformations
 ---------------
-1. **De-visualize** — strip "see the figure", "as shown above", "look at",
+1. **De-visualize** - strip "see the figure", "as shown above", "look at",
    "the diagram below", etc. Replace with descriptive narration.
-2. **De-format** — remove markdown (`**bold**`, headers, bullets, asterisks)
+2. **De-format** - remove markdown (`**bold**`, headers, bullets, asterisks)
    that a screen reader reads as "asterisk asterisk bold asterisk asterisk".
-3. **Number normalization** — "Bab 3.2" → "Bab 3 titik 2", so it is not read
+3. **Number normalization** - "Bab 3.2" → "Bab 3 titik 2", so it is not read
    as a date.
-4. **Sentence shortening** — splits sentences > ~25 words.
-5. **Simplification** — if `accessibility_flags["simplify_language"]` is set
+4. **Sentence shortening** - splits sentences > ~25 words.
+5. **Simplification** - if `accessibility_flags["simplify_language"]` is set
    (e.g. for younger learners), invokes an LLM rewrite to grade-school level.
 
 Note there is no pacing markup. Speech synthesis happens in the browser, so
@@ -24,8 +24,8 @@ anything this node emits is also *displayed*; SSML tags would leak onto the
 screen as literal text.
 
 The agent operates in two modes:
-* **Fast path** — pure regex / rule-based, runs in < 5 ms. Used by default.
-* **LLM path** — invoked only when fast-path heuristics flag risky output
+* **Fast path** - pure regex / rule-based, runs in < 5 ms. Used by default.
+* **LLM path** - invoked only when fast-path heuristics flag risky output
   (lots of formatting, very long, or simplification requested).
 """
 
@@ -63,7 +63,7 @@ _LONG_SENTENCE = re.compile(r"([^.!?]{120,}?)([.!?])\s+")
 
 
 async def accessibility_node(state: KODMODState) -> dict[str, Any]:
-    """LangGraph node — polishes generated_response for audio output."""
+    """LangGraph node - polishes generated_response for audio output."""
     text = state.get("generated_response", "") or ""
     if not text.strip():
         return {
@@ -131,7 +131,7 @@ def _normalize_dashes(text: str) -> str:
     sometimes as nothing at all, and the product style avoids them in any case.
     A dash used as a parenthetical or an aside becomes a comma.
     """
-    text = re.sub(r"\s*[—–]\s*", ", ", text)
+    text = re.sub(r"\s*[-–]\s*", ", ", text)
     return re.sub(r",\s*,", ",", text)
 
 
@@ -167,5 +167,5 @@ def _normalize_numbers(text: str) -> str:
 
 
 def _should_simplify(text: str) -> bool:
-    """Heuristic — invoke LLM simplifier for very long or jargon-heavy output."""
+    """Heuristic - invoke LLM simplifier for very long or jargon-heavy output."""
     return len(text) > 1200 or text.count(",") > 30

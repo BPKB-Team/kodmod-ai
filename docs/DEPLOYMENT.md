@@ -1,11 +1,11 @@
-# KODMOD AI — Deployment Guide
+# KODMOD AI - Deployment Guide
 
 This document walks through three deployment topologies, ordered by
 complexity:
 
-1. **Local dev**           — single-node docker-compose
-2. **Single-server prod**  — docker-compose.prod with Caddy + monitoring
-3. **Kubernetes**          — sketch of the manifests for scale
+1. **Local dev**           - single-node docker-compose
+2. **Single-server prod**  - docker-compose.prod with Caddy + monitoring
+3. **Kubernetes**          - sketch of the manifests for scale
 
 ---
 
@@ -68,7 +68,7 @@ docker exec kodmod-postgres pg_dump -U kodmod kodmod | gzip > backup-$(date +%F)
 ```
 
 For RAG-side recoverability, keep the source corpus on object storage
-so re-ingestion is always possible — vector data should be considered
+so re-ingestion is always possible - vector data should be considered
 **derived**, not primary.
 
 ---
@@ -108,7 +108,7 @@ spec:
 
 Recommended:
 - **PostgreSQL**: managed (RDS / Cloud SQL) with pgvector extension enabled.
-- **Redis**: managed (ElastiCache / Memorystore) — single shard is fine.
+- **Redis**: managed (ElastiCache / Memorystore) - single shard is fine.
 - **Vector store**: scale out by switching `VECTOR_BACKEND=qdrant` and
   pointing at a managed Qdrant cluster.
 - **STT GPU pool**: deploy `faster-whisper` workers as a dedicated pool
@@ -129,7 +129,7 @@ once warm; CPU saturates under STT bursts. Plan capacity by
 
 1. Bump `APP_VERSION` in `config/settings.py`.
 2. Push a new image tag.
-3. `kubectl rollout restart deployment/kodmod-api` — old pods drain in
+3. `kubectl rollout restart deployment/kodmod-api` - old pods drain in
    max 30 s (graceful WS close).
 
 ### Schema migrations

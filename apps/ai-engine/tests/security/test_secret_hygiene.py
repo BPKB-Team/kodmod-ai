@@ -1,4 +1,4 @@
-"""Stage 9 §7 — runtime secret hygiene.
+"""Stage 9 §7 - runtime secret hygiene.
 
 Spec: docs/testplan/09-security.md §7 (KM-SEC-070..072).
 """
@@ -28,11 +28,11 @@ _SECRET_NEEDLES = (
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-070 — secrets never land in the api log
+# KM-SEC-070 - secrets never land in the api log
 # --------------------------------------------------------------------------- #
 async def test_km_sec_070_no_secret_in_logs(client, student_factory) -> None:  # type: ignore[no-untyped-def]
     if not _API_LOG.exists():
-        pytest.skip("no reports/api.log — api not started by the stage runner")
+        pytest.skip("no reports/api.log - api not started by the stage runner")
 
     # Generate some traffic that carries a bearer token, then scan the log.
     _st, tok = await student_factory()
@@ -54,7 +54,7 @@ async def test_km_sec_070_no_secret_in_logs(client, student_factory) -> None:  #
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-071 — secrets never land in a response body
+# KM-SEC-071 - secrets never land in a response body
 # --------------------------------------------------------------------------- #
 async def test_km_sec_071_no_secret_in_responses(client) -> None:  # type: ignore[no-untyped-def]
     from config.settings import settings
@@ -87,10 +87,10 @@ async def test_km_sec_071_no_secret_in_responses(client) -> None:  # type: ignor
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-072 — .env is not baked into the built image / not on the run path
+# KM-SEC-072 - .env is not baked into the built image / not on the run path
 # --------------------------------------------------------------------------- #
 @pytest.mark.known_bug(
-    "#15 — the on-disk .env carries real OPENAI_API_KEY / JWT_SECRET; it must be .dockerignore'd "
+    "#15 - the on-disk .env carries real OPENAI_API_KEY / JWT_SECRET; it must be .dockerignore'd "
     "out of the image and the on-disk file rotated"
 )
 def test_km_sec_072_env_not_in_image_context() -> None:
@@ -110,5 +110,5 @@ def test_km_sec_072_env_not_in_image_context() -> None:
     if env_file.exists():
         text = env_file.read_text(encoding="utf-8", errors="replace")
         assert not re.search(r"(OPENAI_API_KEY|ANTHROPIC_API_KEY)\s*=\s*sk-[A-Za-z0-9]", text), (
-            "on-disk .env still contains a live-looking API key — rotate + scrub it"
+            "on-disk .env still contains a live-looking API key - rotate + scrub it"
         )

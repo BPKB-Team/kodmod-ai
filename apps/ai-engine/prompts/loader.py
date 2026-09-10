@@ -1,5 +1,5 @@
 """
-KODMOD AI — Prompt Loader
+KODMOD AI - Prompt Loader
 =========================
 
 Loads prompt templates from `prompts/*.md` so the system prompts that

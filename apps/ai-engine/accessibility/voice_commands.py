@@ -1,5 +1,5 @@
 """
-KODMOD AI — Voice Command Recognition
+KODMOD AI - Voice Command Recognition
 =====================================
 
 Detects fixed-vocabulary navigation commands BEFORE we incur the cost of
@@ -24,7 +24,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-# Keep these patterns conservative — false positives interrupt teaching.
+# Keep these patterns conservative - false positives interrupt teaching.
 _COMMANDS = {
     "repeat": re.compile(
         r"^\s*(ulangi(?:\s+lagi)?|repeat(?:\s+that)?|sekali\s+lagi|say\s+again)\s*[?.!]?\s*$", re.I

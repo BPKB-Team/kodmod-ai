@@ -1,5 +1,5 @@
 """
-KODMOD AI — Qdrant Store (alternative vector backend)
+KODMOD AI - Qdrant Store (alternative vector backend)
 =====================================================
 
 Drop-in replacement for `pgvector_store` when `settings.VECTOR_BACKEND ==

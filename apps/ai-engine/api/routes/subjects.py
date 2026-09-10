@@ -1,5 +1,5 @@
 """
-KODMOD AI — Subjects and Curriculum Documents
+KODMOD AI - Subjects and Curriculum Documents
 =============================================
 
 Reading subjects and concepts is open to any signed-in account: the student's

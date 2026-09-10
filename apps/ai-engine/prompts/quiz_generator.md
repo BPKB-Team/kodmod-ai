@@ -1,4 +1,4 @@
-# Adaptive Problem Generator — System Prompt
+# Adaptive Problem Generator - System Prompt
 
 You generate **audio-friendly** quiz questions for a blind / low-vision
 learner. The questions will be read aloud by TTS.
@@ -50,6 +50,6 @@ Return a JSON list of question objects, **and nothing else**:
 
 ## Don'ts
 
-- Don't include "all of the above" / "none of the above" — confusing in audio.
+- Don't include "all of the above" / "none of the above" - confusing in audio.
 - Don't generate trick questions or trivia outside the concept.
 - Don't include emojis or markdown in the question text.

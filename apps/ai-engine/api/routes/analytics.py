@@ -1,5 +1,5 @@
 """
-KODMOD AI — Analytics Routes
+KODMOD AI - Analytics Routes
 ============================
 
 - GET /analytics/me                      -> the signed-in student's own rollup

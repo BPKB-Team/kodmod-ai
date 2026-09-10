@@ -1,5 +1,5 @@
 """
-KODMOD AI — LLM-Powered Accessibility Simplifier
+KODMOD AI - LLM-Powered Accessibility Simplifier
 ================================================
 
 Takes a piece of generated text (typically a tutoring explanation) and
@@ -8,7 +8,7 @@ rewrites it for a blind / low-vision listener:
 - Removes visual references ("seperti pada gambar", "lihat tabel di atas")
 - Splits long sentences (> MAX_SPOKEN_SENTENCE_WORDS)
 - Replaces dense jargon with plain Bahasa Indonesia
-- Preserves pedagogical content — it is *not* allowed to drop key facts.
+- Preserves pedagogical content - it is *not* allowed to drop key facts.
 
 This is the "second pass" used selectively by `accessibility_agent`. The
 fast regex-only path covers most cases; only when the response is long or

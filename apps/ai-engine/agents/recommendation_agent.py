@@ -1,5 +1,5 @@
 """
-KODMOD AI — Recommendation Agent
+KODMOD AI - Recommendation Agent
 =================================
 
 Sits at the end of the Analytics cluster. Translates raw analytics into
@@ -8,10 +8,10 @@ teacher dashboard).
 
 Recommendations always come in three flavors:
 
-1. **Next lesson** — what to learn NOW, based on weak concepts + prerequisites.
-2. **Practice exercise** — a Content cluster handle the system can call
+1. **Next lesson** - what to learn NOW, based on weak concepts + prerequisites.
+2. **Practice exercise** - a Content cluster handle the system can call
    directly.
-3. **Habit nudge** — encouragement / pacing advice keyed to engagement_index
+3. **Habit nudge** - encouragement / pacing advice keyed to engagement_index
    and streak_days.
 
 The agent is intentionally conservative: it suggests at most 3 actions per
@@ -42,7 +42,7 @@ CONSTRAINTS
 - Use second person ("kamu" in Indonesian, "you" in English).
 - Friendly, never demanding. Acknowledge effort.
 
-OUTPUT — JSON ONLY:
+OUTPUT - JSON ONLY:
 {
   "recommendations": [
     {"type": "next_lesson|practice|habit", "text": "...", "concept_id": "..."},
@@ -108,7 +108,7 @@ def _normalize_recs(raw: Any) -> list[dict[str, Any]]:
     """Coerce ``recommendations`` into ``{type, text, concept_id}`` dicts.
 
     The LLM (or a stub) may hand back either a list of objects or a plain list
-    of strings — tolerate both so the analytics turn never 500s.
+    of strings - tolerate both so the analytics turn never 500s.
     """
     out: list[dict[str, Any]] = []
     for r in raw or []:

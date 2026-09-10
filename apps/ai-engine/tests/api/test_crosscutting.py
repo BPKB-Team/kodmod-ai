@@ -1,4 +1,4 @@
-"""Stage 4 §11 — cross-cutting: CORS, 404/405, malformed body, /metrics.
+"""Stage 4 §11 - cross-cutting: CORS, 404/405, malformed body, /metrics.
 
 Spec: docs/testplan/04-api.md §11 (KM-API-110..114).
 """

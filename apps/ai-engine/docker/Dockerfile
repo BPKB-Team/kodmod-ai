@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1.7
 # ============================================================================
-# KODMOD AI — Production Dockerfile
+# KODMOD AI - Production Dockerfile
 # ============================================================================
 # Multi-stage build:
-#   1. `builder`  — installs deps into a venv (cacheable layer)
-#   2. `runtime`  — slim final image with the venv copied in
+#   1. `builder`  - installs deps into a venv (cacheable layer)
+#   2. `runtime`  - slim final image with the venv copied in
 #
 # CPU-only. The only local model left is the cross-encoder reranker, which is
 # small enough to run on CPU; every other model is an OpenAI API call.
@@ -17,7 +17,7 @@ ARG APP_UID=1001
 # ------------------------------------------------------------------- builder --
 FROM ${BASE_IMAGE} AS builder
 
-# NOTE: PIP_NO_CACHE_DIR is deliberately NOT set — the pip download cache is
+# NOTE: PIP_NO_CACHE_DIR is deliberately NOT set - the pip download cache is
 # kept in a BuildKit cache mount below (see the `pip install` RUN), so it never
 # lands in an image layer but *is* reused across builds. That way a busted
 # `pip install` layer reinstalls from local wheels instead of re-downloading
@@ -40,8 +40,8 @@ WORKDIR /build
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy ONLY requirements.txt first to maximise layer cache hits: this layer —
-# and the expensive `pip install` below — must not be invalidated by source
+# Copy ONLY requirements.txt first to maximise layer cache hits: this layer -
+# and the expensive `pip install` below - must not be invalidated by source
 # edits, nor by pyproject.toml changes (ruff/pytest config etc.), which the
 # build does not read. The full tree (pyproject.toml included) arrives later.
 COPY requirements.txt ./
@@ -50,7 +50,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
  && pip install -r requirements.txt
 
 # Now copy the source tree. Edits here rebuild only this cheap COPY layer
-# onward — `pip install` above stays cached.
+# onward - `pip install` above stays cached.
 COPY . /build
 
 # ------------------------------------------------------------------ runtime --
@@ -95,6 +95,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 # tini is PID 1 so SIGTERM propagates cleanly to uvicorn.
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Default command — use --workers 1 inside k8s and scale via replicas.
+# Default command - use --workers 1 inside k8s and scale via replicas.
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", \
      "--workers", "1", "--log-config", "/app/docker/log_conf.json"]

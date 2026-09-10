@@ -1,4 +1,4 @@
-"""KM-STATIC-012..015 — config.settings loads safely.
+"""KM-STATIC-012..015 - config.settings loads safely.
 
 Each case runs in a **child process** with a controlled env and cwd=tmp_path so
 neither the repo's on-disk ``.env`` nor the pytest-session env forced by

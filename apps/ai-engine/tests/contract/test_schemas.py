@@ -1,8 +1,8 @@
-"""Stage 2 — Contract / Schema: Pydantic models in ``models/*``.
+"""Stage 2 - Contract / Schema: Pydantic models in ``models/*``.
 
 Spec: docs/testplan/02-contract.md §1 (KM-CONTRACT-001..015).
 
-No I/O — pure schema construction and introspection. Where a model is looser
+No I/O - pure schema construction and introspection. Where a model is looser
 than the spec's target contract the test asserts the TARGET and carries
 ``@pytest.mark.known_bug`` (policy 2026-09-02: no more xfail).
 """
@@ -23,7 +23,7 @@ pytestmark = pytest.mark.contract
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-001 / 002 — RegisterRequest
+# KM-CONTRACT-001 / 002 - RegisterRequest
 # --------------------------------------------------------------------------- #
 def test_km_contract_001_register_request_valid() -> None:
     from models.user import RegisterRequest
@@ -66,7 +66,7 @@ def test_km_contract_002_register_request_rejects(field: str, value: str) -> Non
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-003 / 004 — UserOut never leaks credentials
+# KM-CONTRACT-003 / 004 - UserOut never leaks credentials
 # --------------------------------------------------------------------------- #
 def _user_row(**over: object) -> SimpleNamespace:
     now = datetime.now(UTC)
@@ -106,7 +106,7 @@ def test_km_contract_004_user_out_excludes_password_hash() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-005..008 — Quiz request/response models
+# KM-CONTRACT-005..008 - Quiz request/response models
 # --------------------------------------------------------------------------- #
 def test_km_contract_005_quiz_start_request_bounds() -> None:
     from models.quiz import QuizStartRequest
@@ -170,7 +170,7 @@ def test_km_contract_008_quiz_submit_response_defaults_and_bounds() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-009..013 — content / exercise / session models
+# KM-CONTRACT-009..013 - content / exercise / session models
 # --------------------------------------------------------------------------- #
 def test_km_contract_009_content_retrieve_request_bounds() -> None:
     from models.content import ContentRetrieveRequest
@@ -255,7 +255,7 @@ def test_km_contract_013_no_schema_exposes_audio_fields() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-014 — every model class serialises its JSON schema
+# KM-CONTRACT-014 - every model class serialises its JSON schema
 # --------------------------------------------------------------------------- #
 def _iter_model_classes():
     import models as models_pkg
@@ -279,7 +279,7 @@ def test_km_contract_014_all_models_json_schema() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-015 — graph-state Literals match a frozen snapshot
+# KM-CONTRACT-015 - graph-state Literals match a frozen snapshot
 # --------------------------------------------------------------------------- #
 def test_km_contract_015_state_literals_snapshot() -> None:
     from typing import get_args

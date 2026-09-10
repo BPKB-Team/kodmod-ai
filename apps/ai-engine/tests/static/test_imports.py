@@ -1,9 +1,9 @@
-"""KM-STATIC-010 / KM-STATIC-011 — import smoke.
+"""KM-STATIC-010 / KM-STATIC-011 - import smoke.
 
 010: every top-level package imports in a clean child process.
 011: every submodule under the application packages imports individually.
 
-Known-dead modules (BUG-1, #7, #9) are marked ``known_bug`` — the case stays
+Known-dead modules (BUG-1, #7, #9) are marked ``known_bug`` - the case stays
 RED until the dead import is removed, then it goes green on its own (no marker
 to delete). ``KNOWN_DEAD`` is currently empty; add an entry only for a module
 whose *top-level* import is broken by a tracked bug.
@@ -22,7 +22,7 @@ from tests.static._util import PROJECT_ROOT, minimal_env, out, run
 
 pytestmark = pytest.mark.static
 
-# KM-STATIC-010 — the exact list used by scripts/run_tests.sh and CI.
+# KM-STATIC-010 - the exact list used by scripts/run_tests.sh and CI.
 TOP_LEVEL = [
     "agents",
     "graphs",
@@ -37,7 +37,7 @@ TOP_LEVEL = [
     "models",
 ]
 
-# KM-STATIC-011 — walk *.py under these application roots (spec scope + tools/graphs).
+# KM-STATIC-011 - walk *.py under these application roots (spec scope + tools/graphs).
 WALK_ROOTS = [
     "agents",
     "api.routes",
@@ -53,7 +53,7 @@ WALK_ROOTS = [
 # module dotted-name -> finding ref. Tagged @pytest.mark.known_bug so the case
 # is RED until the dead import is removed, then green on its own.
 # (BUG-1 `agents.tutoring_agent`, #7 `api.routes.exercise`, #9 `tools.rag_tool`
-#  all import cleanly now — #7/#9 still carry deeper bugs caught by mypy/contract.)
+#  all import cleanly now - #7/#9 still carry deeper bugs caught by mypy/contract.)
 KNOWN_DEAD: dict[str, str] = {}
 
 

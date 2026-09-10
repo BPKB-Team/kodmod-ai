@@ -1,4 +1,4 @@
-"""Stage 3 §1 — DB layer: database/session.py, scripts/create_test_db.py, ORM schema.
+"""Stage 3 §1 - DB layer: database/session.py, scripts/create_test_db.py, ORM schema.
 
 Spec: docs/testplan/03-integration.md §1 (KM-INT-001..011).
 """
@@ -13,7 +13,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.db, pytest.mark.asyncio(loop_
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-001 — init_db smoke + NullPool has no sizing kwargs  (bug 2, #22)
+# KM-INT-001 - init_db smoke + NullPool has no sizing kwargs  (bug 2, #22)
 # --------------------------------------------------------------------------- #
 async def test_km_int_001_init_db_smoke(db_engine) -> None:  # type: ignore[no-untyped-def]
     from database.session import _make_engine, get_engine
@@ -22,7 +22,7 @@ async def test_km_int_001_init_db_smoke(db_engine) -> None:  # type: ignore[no-u
         assert (await conn.execute(text("SELECT 1"))).scalar_one() == 1
 
     # _make_engine must not pass pool_size/max_overflow when NullPool is selected
-    # (ENV=test) — SQLAlchemy raises TypeError otherwise (#22).
+    # (ENV=test) - SQLAlchemy raises TypeError otherwise (#22).
     eng = _make_engine()
     try:
         assert isinstance(eng.pool, NullPool)
@@ -31,7 +31,7 @@ async def test_km_int_001_init_db_smoke(db_engine) -> None:  # type: ignore[no-u
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-002 — init_db idempotent
+# KM-INT-002 - init_db idempotent
 # --------------------------------------------------------------------------- #
 async def test_km_int_002_init_db_idempotent(db_engine) -> None:  # type: ignore[no-untyped-def]
     from database import session as m
@@ -42,7 +42,7 @@ async def test_km_int_002_init_db_idempotent(db_engine) -> None:  # type: ignore
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-003 — NullPool when ENV=test
+# KM-INT-003 - NullPool when ENV=test
 # --------------------------------------------------------------------------- #
 async def test_km_int_003_null_pool_in_test(db_engine) -> None:  # type: ignore[no-untyped-def]
     from database.session import get_engine
@@ -51,7 +51,7 @@ async def test_km_int_003_null_pool_in_test(db_engine) -> None:  # type: ignore[
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-004 — every ORM table exists in the DB
+# KM-INT-004 - every ORM table exists in the DB
 # --------------------------------------------------------------------------- #
 async def test_km_int_004_all_orm_tables_present(db_engine) -> None:  # type: ignore[no-untyped-def]
     from database.models import Base
@@ -75,7 +75,7 @@ async def test_km_int_004_all_orm_tables_present(db_engine) -> None:  # type: ig
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-005 / 006 — curriculum_chunks DDL + extensions
+# KM-INT-005 / 006 - curriculum_chunks DDL + extensions
 # --------------------------------------------------------------------------- #
 async def test_km_int_005_curriculum_chunks_ddl(db_engine) -> None:  # type: ignore[no-untyped-def]
     from database.session import async_session
@@ -115,7 +115,7 @@ async def test_km_int_006_extensions_enabled(db_engine) -> None:  # type: ignore
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-007 — the deployed columns are the ones the ORM declares
+# KM-INT-007 - the deployed columns are the ones the ORM declares
 # --------------------------------------------------------------------------- #
 async def test_km_int_007_orm_columns_match_db(db_engine) -> None:  # type: ignore[no-untyped-def]
     from database.session import async_session
@@ -155,7 +155,7 @@ async def test_km_int_007_orm_columns_match_db(db_engine) -> None:  # type: igno
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-008 — async_session commits on clean exit, rolls back on error
+# KM-INT-008 - async_session commits on clean exit, rolls back on error
 # --------------------------------------------------------------------------- #
 async def test_km_int_008_async_session_commit_and_rollback(db_engine, make_student) -> None:  # type: ignore[no-untyped-def]
     import uuid
@@ -196,7 +196,7 @@ async def test_km_int_008_async_session_commit_and_rollback(db_engine, make_stud
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-009 — get_db dependency generator commits/rolls back
+# KM-INT-009 - get_db dependency generator commits/rolls back
 # --------------------------------------------------------------------------- #
 async def test_km_int_009_get_db_generator(db_engine, make_student) -> None:  # type: ignore[no-untyped-def]
     import uuid
@@ -219,7 +219,7 @@ async def test_km_int_009_get_db_generator(db_engine, make_student) -> None:  # 
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-010 — close_db disposes + resets globals (isolated, monkeypatched)
+# KM-INT-010 - close_db disposes + resets globals (isolated, monkeypatched)
 # --------------------------------------------------------------------------- #
 async def test_km_int_010_close_db_resets_globals(db_engine, monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -237,7 +237,7 @@ async def test_km_int_010_close_db_resets_globals(db_engine, monkeypatch) -> Non
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-011 — no compose file bootstraps a hand-written SQL schema
+# KM-INT-011 - no compose file bootstraps a hand-written SQL schema
 # --------------------------------------------------------------------------- #
 def test_km_int_011_no_sql_schema_bootstrap() -> None:
     """`database/models.py` is the only schema. Nothing may deploy SQL beside it.

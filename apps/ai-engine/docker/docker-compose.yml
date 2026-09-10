@@ -11,7 +11,7 @@ services:
       # also be bound there, and Windows will silently route new connections
       # to whichever process wins that ambiguity instead of this container.
       # Internal traffic (the `api` service talking to `postgres:5432`) is
-      # unaffected — this only changes what host tools connect to.
+      # unaffected - this only changes what host tools connect to.
       - "5433:5432"
     volumes:
       - kodmod-pgdata:/var/lib/postgresql/data

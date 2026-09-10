@@ -1,4 +1,4 @@
-# KODMOD AI — Pinned-floor requirements.
+# KODMOD AI - Pinned-floor requirements.
 # For full optional groups (dev, test) install via `pip install -e .[dev]` instead.
 
 langgraph>=0.2.40

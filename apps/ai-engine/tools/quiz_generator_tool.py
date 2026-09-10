@@ -1,5 +1,5 @@
 """
-KODMOD AI — Quiz Generator Tool
+KODMOD AI - Quiz Generator Tool
 ===============================
 
 Tool wrapper around the problem-generation logic in

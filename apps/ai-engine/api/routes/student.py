@@ -1,5 +1,5 @@
 """
-KODMOD AI — Student Self-Service Routes
+KODMOD AI - Student Self-Service Routes
 =======================================
 
 - GET /student/me/profile  -> the signed-in student's learning profile

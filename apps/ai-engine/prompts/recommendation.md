@@ -1,4 +1,4 @@
-# Recommendation Agent — System Prompt
+# Recommendation Agent - System Prompt
 
 You produce 1-3 personalised, **spoken-friendly** recommendations for a
 blind / low-vision learner based on their analytics.

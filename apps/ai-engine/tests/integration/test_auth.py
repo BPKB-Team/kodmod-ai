@@ -1,4 +1,4 @@
-"""Stage 3 — Integration: registration, login, and invitation codes.
+"""Stage 3 - Integration: registration, login, and invitation codes.
 
 Real Postgres, real bcrypt, no HTTP. These exercise the rules that decide who
 gets an account, so they are written as the attacks they are meant to stop.

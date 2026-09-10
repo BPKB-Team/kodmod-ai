@@ -1,14 +1,14 @@
 """
-KODMOD AI — Quiz Agent (and Mini-Quiz)
+KODMOD AI - Quiz Agent (and Mini-Quiz)
 =======================================
 
 Implements two related but distinct nodes:
 
-1. `quiz_node` — full quiz session driver from the **Quiz/Assessment cluster**.
+1. `quiz_node` - full quiz session driver from the **Quiz/Assessment cluster**.
    Asks the next question in `state["quiz_questions"]`, manages pacing,
    handles repeat / clarify side-requests.
 
-2. `mini_quiz_node` — the lightweight quick-check inside the **Practices &
+2. `mini_quiz_node` - the lightweight quick-check inside the **Practices &
    Tutoring cluster** (the "Mini quiz" box in the Practices diagram).
    Generates a single on-the-fly check question after a tutoring explanation.
 
@@ -40,7 +40,7 @@ Rules for spoken questions:
 - One sentence stem, then options (if MCQ) prefixed by 'A,', 'B,', 'C,', 'D,'.
 - No visual references.
 - Numbers spoken in words for amounts under 20.
-- For 'spoken' / 'explain' / 'reasoning' question types, do NOT list options —
+- For 'spoken' / 'explain' / 'reasoning' question types, do NOT list options -
   just ask the question and a brief framing like "explain in your own words".
 - Always end with a clear closing prompt like "What's your answer?" or
   "Take your time."
@@ -129,7 +129,7 @@ idea. Constraints:
 - Must be answerable in one sentence or one number/word.
 - Spoken, no visuals.
 - Difficulty matches the just-explained concept.
-- Do NOT reuse phrasing from the explanation verbatim — test understanding,
+- Do NOT reuse phrasing from the explanation verbatim - test understanding,
   not memory.
 
 Output JSON ONLY:

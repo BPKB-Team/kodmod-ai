@@ -1,4 +1,4 @@
-"""Stage 4 §7 — /quiz endpoints.
+"""Stage 4 §7 - /quiz endpoints.
 
 Spec: docs/testplan/04-api.md §7 (KM-API-070..075). Whole group is a known-bug
 backlog until #1 (Student.profile), #5 (field mismatch), #6, #11 are fixed.

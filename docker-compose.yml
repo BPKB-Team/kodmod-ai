@@ -1,4 +1,4 @@
-# KODMOD AI — infrastruktur pengembangan lokal.
+# KODMOD AI - infrastruktur pengembangan lokal.
 #   docker compose up -d            → postgres + redis
 #   docker compose --profile api up → sekalian jalankan ai-engine di container
 #   docker compose --profile qdrant up -d → tambah Qdrant (opsional)

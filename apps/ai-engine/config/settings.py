@@ -1,5 +1,5 @@
 """
-KODMOD AI — Configuration Settings
+KODMOD AI - Configuration Settings
 ==================================
 
 Centralized settings using pydantic-settings. All environment-driven knobs
@@ -15,7 +15,7 @@ The naming convention mirrors the env keys (UPPER_SNAKE_CASE) so deployers
 can grep the codebase to find every knob a single name corresponds to.
 
 Every field has a safe default so `from config.settings import settings`
-never raises in a clean environment (see tests/static/test_settings_load.py) —
+never raises in a clean environment (see tests/static/test_settings_load.py) -
 a missing LLM API key or model id should fail lazily, the first time it's
 actually needed (see `tools.llm_client._resolve`), not at import time.
 """
@@ -31,7 +31,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Sentinel used as the default for every LLM_*_MODEL field. `.env.example`
 # ships this literal value so a fresh checkout fails loudly (but lazily, on
-# first use — see tools.llm_client._resolve) instead of silently calling
+# first use - see tools.llm_client._resolve) instead of silently calling
 # whatever model a hardcoded default happened to name.
 MODEL_UNSET = "SET_ME_IN_ENV"
 
@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     API_PORT: int = 8000
     API_PREFIX: str = "/api/v1"
     # Comma-separated. Credentials are allowed on the CORS middleware, so "*"
-    # is not a valid value — list the frontend origin(s) explicitly.
+    # is not a valid value - list the frontend origin(s) explicitly.
     CORS_ALLOW_ORIGINS: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
     JWT_SECRET: str = "change-me-in-production"
     JWT_ALG: str = "HS256"
@@ -71,13 +71,13 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------- llm
     # OpenAI is the only provider (see tools/llm_client.py). This field is
     # kept as an inert, harmless knob for older tooling/tests that still pass
-    # KODMOD_LLM_PROVIDER — nothing in llm_client branches on it anymore.
+    # KODMOD_LLM_PROVIDER - nothing in llm_client branches on it anymore.
     KODMOD_LLM_PROVIDER: str = "openai"
     OPENAI_API_KEY: str | None = None
     # Override only to point at an OpenAI-compatible endpoint (e.g. the test
     # stub started by scripts/serve_test_api).
     OPENAI_BASE_URL: str | None = None
-    # Legacy field — no longer read by llm_client, kept only so
+    # Legacy field - no longer read by llm_client, kept only so
     # tests/security/test_secret_hygiene.py has something to assert isn't a
     # hardcoded literal.
     ANTHROPIC_API_KEY: str | None = None
@@ -193,7 +193,7 @@ class Settings(BaseSettings):
     # language no matter what language the input or curriculum context is in.
     GRAPH_LANGUAGE: str = "Bahasa Indonesia"
     QUIZ_PASS_THRESHOLD: float = 0.6
-    # A low score alone never blocks a quiz forever — after this many
+    # A low score alone never blocks a quiz forever - after this many
     # attempts on the same question, route_after_scoring lets it pass
     # regardless of score (see graphs/main_graph.py).
     QUIZ_MAX_ATTEMPTS_PER_QUESTION: int = 2
@@ -227,7 +227,7 @@ class Settings(BaseSettings):
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    """Cached accessor — call this everywhere instead of `Settings()`."""
+    """Cached accessor - call this everywhere instead of `Settings()`."""
     return Settings()
 
 

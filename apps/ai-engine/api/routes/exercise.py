@@ -1,5 +1,5 @@
 """
-KODMOD AI — Exercise Routes
+KODMOD AI - Exercise Routes
 ===========================
 
 Endpoints for the Cluster Content & Exercise Management:

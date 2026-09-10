@@ -1,4 +1,4 @@
-"""Stage 3 (integration) fixtures — real Postgres + Redis, stubbed LLM/embeddings.
+"""Stage 3 (integration) fixtures - real Postgres + Redis, stubbed LLM/embeddings.
 
 Node / store / memory code opens its own ``async_session()`` (not the
 SAVEPOINT-wrapped ``db_session`` from the top-level conftest), so isolation here
@@ -49,7 +49,7 @@ def stub_reranker(request, monkeypatch):  # type: ignore[no-untyped-def]
     """Force the cross-encoder reranker into its graceful bi-encoder fallback.
 
     The real ``rag.reranker._load_model`` constructs ``CrossEncoder(...)`` which
-    downloads ~600 MB from HuggingFace — unacceptable in the suite. ``real_llm``
+    downloads ~600 MB from HuggingFace - unacceptable in the suite. ``real_llm``
     tests opt out.
     """
     if "real_llm" in request.keywords:

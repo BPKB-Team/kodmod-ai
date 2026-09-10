@@ -1,5 +1,5 @@
 """
-KODMOD AI — Voice REST Routes
+KODMOD AI - Voice REST Routes
 ==============================
 
 Non-streaming counterpart to the WebSocket endpoint, useful for:

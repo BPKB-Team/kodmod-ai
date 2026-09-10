@@ -1,4 +1,4 @@
-"""Stage 4 §2 — authentication and the role gate, over real HTTP.
+"""Stage 4 §2 - authentication and the role gate, over real HTTP.
 
 Spec: docs/testplan/04-api.md §2 (KM-API-010..028).
 

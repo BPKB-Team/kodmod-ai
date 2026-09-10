@@ -1,12 +1,12 @@
 """
-KODMOD AI — Short-Term Memory (Redis)
+KODMOD AI - Short-Term Memory (Redis)
 =====================================
 
 Per-session ephemeral state: current tutoring turns, in-flight quiz state,
 last spoken response (for "ulangi"/"repeat" commands), pacing preferences.
 
 LangGraph already checkpoints the canonical state to Postgres. This Redis
-layer is for *fast* reads needed inside a single turn — checkpoint reads
+layer is for *fast* reads needed inside a single turn - checkpoint reads
 are too slow for sub-100ms voice-loop logic.
 
 Keys are namespaced by session_id with a 24h TTL by default.

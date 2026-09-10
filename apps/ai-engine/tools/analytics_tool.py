@@ -1,9 +1,9 @@
 """
-KODMOD AI — Analytics Tool
+KODMOD AI - Analytics Tool
 ==========================
 
 Tool wrapper around the analytics aggregator. Agents call this to fetch
-summary data — e.g. when a student asks "bagaimana progress saya
+summary data - e.g. when a student asks "bagaimana progress saya
 minggu ini?" the tutor can call this tool and respond with a spoken
 summary.
 """

@@ -1,10 +1,10 @@
-"""Stage 2 — Contract: LangGraph assembly (graphs/main_graph.py).
+"""Stage 2 - Contract: LangGraph assembly (graphs/main_graph.py).
 
 Spec: docs/testplan/02-contract.md §3 (KM-CONTRACT-030..038).
 
 ``build_kodmod_graph`` is async and returns a compiled ``CompiledStateGraph``.
 We introspect ``g.builder`` (the pre-compile ``StateGraph``) for edges/branches
-because ``get_graph()`` prunes nodes it considers unreachable — which is exactly
+because ``get_graph()`` prunes nodes it considers unreachable - which is exactly
 what KM-CONTRACT-032 needs to *detect*.
 """
 
@@ -65,7 +65,7 @@ async def compiled():  # type: ignore[no-untyped-def]
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-030 — async compile, runnable interface
+# KM-CONTRACT-030 - async compile, runnable interface
 # --------------------------------------------------------------------------- #
 async def test_km_contract_030_compiles_async() -> None:
     from graphs.main_graph import build_kodmod_graph
@@ -77,7 +77,7 @@ async def test_km_contract_030_compiles_async() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-031 — exactly the 13 named nodes
+# KM-CONTRACT-031 - exactly the 13 named nodes
 # --------------------------------------------------------------------------- #
 async def test_km_contract_031_node_set(compiled) -> None:  # type: ignore[no-untyped-def]
     nodes = set(compiled.builder.nodes) - {START, END}
@@ -85,7 +85,7 @@ async def test_km_contract_031_node_set(compiled) -> None:  # type: ignore[no-un
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-032 — every node reachable from START
+# KM-CONTRACT-032 - every node reachable from START
 # --------------------------------------------------------------------------- #
 async def test_km_contract_032_all_nodes_reachable_from_start(compiled) -> None:  # type: ignore[no-untyped-def]
     adj = _adjacency(compiled.builder)
@@ -95,7 +95,7 @@ async def test_km_contract_032_all_nodes_reachable_from_start(compiled) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-033 — no node (except END) without an outbound edge/branch
+# KM-CONTRACT-033 - no node (except END) without an outbound edge/branch
 # --------------------------------------------------------------------------- #
 async def test_km_contract_033_no_dangling_nodes(compiled) -> None:  # type: ignore[no-untyped-def]
     adj = _adjacency(compiled.builder)
@@ -104,7 +104,7 @@ async def test_km_contract_033_no_dangling_nodes(compiled) -> None:  # type: ign
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-034 — the graph never interrupts, with or without a checkpointer
+# KM-CONTRACT-034 - the graph never interrupts, with or without a checkpointer
 # --------------------------------------------------------------------------- #
 async def test_km_contract_034_no_interrupts() -> None:
     """A turn must always run to completion in one invocation.
@@ -124,7 +124,7 @@ async def test_km_contract_034_no_interrupts() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-035 — every conditional-router target is a real node
+# KM-CONTRACT-035 - every conditional-router target is a real node
 # --------------------------------------------------------------------------- #
 async def test_km_contract_035_branch_targets_exist(compiled) -> None:  # type: ignore[no-untyped-def]
     valid = set(compiled.builder.nodes) | {START, END}
@@ -135,7 +135,7 @@ async def test_km_contract_035_branch_targets_exist(compiled) -> None:  # type: 
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-036 — run_turn is an async generator delegating to astream_events
+# KM-CONTRACT-036 - run_turn is an async generator delegating to astream_events
 # --------------------------------------------------------------------------- #
 def test_km_contract_036_run_turn_is_async_generator() -> None:
     from graphs.main_graph import run_turn
@@ -146,10 +146,10 @@ def test_km_contract_036_run_turn_is_async_generator() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-037 — rag_retrieval_node fills next_action/last_node too  (#10)
+# KM-CONTRACT-037 - rag_retrieval_node fills next_action/last_node too  (#10)
 # --------------------------------------------------------------------------- #
 @pytest.mark.known_bug(
-    "#10 — rag_retrieval_node returns only {'retrieved_docs': ...}; the node convention "
+    "#10 - rag_retrieval_node returns only {'retrieved_docs': ...}; the node convention "
     "requires it to also set next_action and last_node"
 )
 def test_km_contract_037_rag_node_sets_next_action() -> None:
@@ -161,10 +161,10 @@ def test_km_contract_037_rag_node_sets_next_action() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-CONTRACT-038 — rag_retrieval_node reads current_concept_id  (#10)
+# KM-CONTRACT-038 - rag_retrieval_node reads current_concept_id  (#10)
 # --------------------------------------------------------------------------- #
 @pytest.mark.known_bug(
-    "#10 — rag_retrieval_node reads state['concept_id'] (never set anywhere); it should "
+    "#10 - rag_retrieval_node reads state['concept_id'] (never set anywhere); it should "
     "read state['current_concept_id']"
 )
 def test_km_contract_038_rag_node_reads_current_concept_id() -> None:

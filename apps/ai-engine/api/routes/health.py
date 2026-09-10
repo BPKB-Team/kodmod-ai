@@ -1,5 +1,5 @@
 """
-KODMOD AI — Health & Readiness Routes
+KODMOD AI - Health & Readiness Routes
 =====================================
 
 - GET /health/live    -> liveness (process is up)
@@ -24,13 +24,13 @@ router = APIRouter()
 
 @router.get("/live")
 async def live() -> dict[str, Any]:
-    """Liveness probe — returns 200 as long as the process is running."""
+    """Liveness probe - returns 200 as long as the process is running."""
     return {"status": "alive", "ts": datetime.now(UTC).isoformat()}
 
 
 @router.get("/ready")
 async def ready() -> dict[str, Any]:
-    """Readiness probe — checks that Postgres and Redis are reachable."""
+    """Readiness probe - checks that Postgres and Redis are reachable."""
     checks: dict[str, Any] = {}
     overall = True
 

@@ -1,5 +1,5 @@
 """
-KODMOD AI — Embeddings
+KODMOD AI - Embeddings
 ======================
 
 Wraps OpenAI's embedding model for both retrieval indexing and query-time

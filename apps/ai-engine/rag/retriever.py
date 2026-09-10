@@ -1,12 +1,12 @@
 """
-KODMOD AI — RAG Retriever (orchestration layer)
+KODMOD AI - RAG Retriever (orchestration layer)
 ===============================================
 
 Single entry point used by `tools/rag_tool.py` and the LangGraph
 `rag_retrieval_node`. Embeds the query, performs the pgvector search, and runs
 the cross-encoder reranker.
 
-This module is intentionally thin — it composes:
+This module is intentionally thin - it composes:
     embeddings.embed_text  +  pgvector_store.query  +  reranker.rerank
 """
 
@@ -61,7 +61,7 @@ async def retrieve(
 
 
 # ---------------------------------------------------------------------------
-# LangGraph node — used directly from `graphs/main_graph.py`
+# LangGraph node - used directly from `graphs/main_graph.py`
 # ---------------------------------------------------------------------------
 async def rag_retrieval_node(state) -> dict:
     """

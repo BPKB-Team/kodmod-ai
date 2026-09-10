@@ -1,8 +1,8 @@
-"""KM-UNIT-060..067 — conditional routers (graphs/main_graph.py).
+"""KM-UNIT-060..067 - conditional routers (graphs/main_graph.py).
 
 The routers are pure functions of `state`. Importing graphs.main_graph pulls in
 every node module; that's tolerated for now (see docs/testplan/01-unit.md
-"Catatan implementasi" — extract to a routers module if it ever gets heavy).
+"Catatan implementasi" - extract to a routers module if it ever gets heavy).
 
 Spec: docs/testplan/01-unit.md §5.
 """
@@ -41,7 +41,7 @@ def test_route_after_intent_table(intent: str, expected: str) -> None:  # KM-UNI
 
 
 def test_route_after_scoring_reads_settings_threshold(monkeypatch: pytest.MonkeyPatch) -> None:
-    # KM-UNIT-063 — finding #12 fixed: route_after_scoring reads settings.QUIZ_PASS_THRESHOLD
+    # KM-UNIT-063 - finding #12 fixed: route_after_scoring reads settings.QUIZ_PASS_THRESHOLD
     from config.settings import settings
 
     monkeypatch.setattr(settings, "QUIZ_PASS_THRESHOLD", 0.7)
@@ -62,7 +62,7 @@ def test_route_after_scoring_still_fails_below_max_attempts() -> None:
 
 def test_route_after_scoring_forces_advance_at_max_attempts(monkeypatch: pytest.MonkeyPatch) -> None:
     # Regression test: a question the student can't clear must not trap the
-    # quiz forever — once QUIZ_MAX_ATTEMPTS_PER_QUESTION is reached, the "pass"
+    # quiz forever - once QUIZ_MAX_ATTEMPTS_PER_QUESTION is reached, the "pass"
     # branch fires regardless of score.
     from config.settings import settings
 

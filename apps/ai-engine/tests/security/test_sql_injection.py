@@ -1,4 +1,4 @@
-"""Stage 9 §2 — SQL injection on the raw-SQL paths.
+"""Stage 9 §2 - SQL injection on the raw-SQL paths.
 
 Spec: docs/testplan/09-security.md §2 (KM-SEC-020..026). Target modules:
 analytics/student_model.py, analytics/aggregator.py, rag/stores/pgvector_store.py.
@@ -19,7 +19,7 @@ _SQLI_UUID = "00000000-0000-0000-0000-000000000000' OR '1'='1"
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-020 — student_id path param: UUID converter rejects before any SQL
+# KM-SEC-020 - student_id path param: UUID converter rejects before any SQL
 # --------------------------------------------------------------------------- #
 async def test_km_sec_020_student_id_injection_via_path(client, student_factory) -> None:  # type: ignore[no-untyped-def]
     _st, tok = await student_factory()
@@ -31,7 +31,7 @@ async def test_km_sec_020_student_id_injection_via_path(client, student_factory)
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-021 — concept_id filter injection
+# KM-SEC-021 - concept_id filter injection
 # --------------------------------------------------------------------------- #
 async def test_km_sec_021_concept_id_injection(
     client, student_factory, curriculum_chunk_count
@@ -55,7 +55,7 @@ async def test_km_sec_021_concept_id_injection(
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-022 — language param injection stays a bind parameter
+# KM-SEC-022 - language param injection stays a bind parameter
 # --------------------------------------------------------------------------- #
 async def test_km_sec_022_language_injection(client, curriculum_chunk_count) -> None:  # type: ignore[no-untyped-def]
     before = await curriculum_chunk_count()
@@ -74,7 +74,7 @@ async def test_km_sec_022_language_injection(client, curriculum_chunk_count) -> 
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-024 — StudentModel.load with a weird student_id via the graph state
+# KM-SEC-024 - StudentModel.load with a weird student_id via the graph state
 # --------------------------------------------------------------------------- #
 async def test_km_sec_024_student_model_load_bad_sid() -> None:
     from sqlalchemy import text
@@ -84,7 +84,7 @@ async def test_km_sec_024_student_model_load_bad_sid() -> None:
 
     await init_db()
 
-    # A malformed id must be rejected as a value error / cast error — never
+    # A malformed id must be rejected as a value error / cast error - never
     # smuggled into SQL. Any raise is acceptable; a completed drop is not.
     try:
         await StudentModel.load("'; DROP TABLE mastery_scores;--")
@@ -93,7 +93,7 @@ async def test_km_sec_024_student_model_load_bad_sid() -> None:
 
     async with async_session() as s:
         exists = (await s.execute(text("SELECT to_regclass('public.mastery_scores')"))).scalar_one()
-    assert exists is not None, "mastery_scores table was dropped — SQL injection!"
+    assert exists is not None, "mastery_scores table was dropped - SQL injection!"
 
     # A well-formed but unknown UUID must simply come back empty, never error.
     model = await StudentModel.load(str(uuid.uuid4()))
@@ -102,7 +102,7 @@ async def test_km_sec_024_student_model_load_bad_sid() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-025 — static audit: no f-string / % / + interpolation into SQL
+# KM-SEC-025 - static audit: no f-string / % / + interpolation into SQL
 # --------------------------------------------------------------------------- #
 _AUDIT_FILES = [
     "analytics/student_model.py",
@@ -149,7 +149,7 @@ def test_km_sec_025_no_sql_string_interpolation() -> None:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=rel)
         v = _SqlInterpolationVisitor()
         v.visit(tree)
-        # pgvector_store assembles the vector literal from numbers only — that is
+        # pgvector_store assembles the vector literal from numbers only - that is
         # explicitly allowlisted in pyproject (ruff S608) and is not user input.
         allowed = rel == "rag/stores/pgvector_store.py"
         real = [x for x in v.violations if not allowed]
@@ -159,7 +159,7 @@ def test_km_sec_025_no_sql_string_interpolation() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# KM-SEC-026 — ClassroomAggregator roster raw SQL stays parameterized
+# KM-SEC-026 - ClassroomAggregator roster raw SQL stays parameterized
 # --------------------------------------------------------------------------- #
 async def test_km_sec_026_cohort_roster_parameterized(client, teacher_factory) -> None:  # type: ignore[no-untyped-def]
     """The cohort roster is a parameterized ORM query; no id is interpolated at all."""

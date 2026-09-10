@@ -1,5 +1,5 @@
 """
-KODMOD AI — Admin Routes
+KODMOD AI - Admin Routes
 ========================
 
 Account and invitation-code management. Every endpoint here requires the admin

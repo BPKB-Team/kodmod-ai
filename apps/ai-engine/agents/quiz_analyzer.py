@@ -1,5 +1,5 @@
 """
-KODMOD AI — Quiz Analyzer Agent
+KODMOD AI - Quiz Analyzer Agent
 ================================
 
 Runs after the Scoring Agent. Looks at the full set of quiz attempts in the
@@ -11,7 +11,7 @@ current session and produces:
   speak back to the student (matches the Quiz/Assessment cluster diagram).
 * Remediation recommendations passed to the recommendation_agent later.
 
-This agent does NOT write to the database directly — that's the
+This agent does NOT write to the database directly - that's the
 `update_student_model` node's job. Analyzer only enriches state.
 """
 
@@ -32,11 +32,11 @@ SYSTEM_PROMPT = """\
 You are KODMOD's Quiz Analyzer. Given a student's set of attempts on a quiz,
 identify:
 
-1. Misconceptions — wrong-but-systematic patterns (e.g. "always adds when
+1. Misconceptions - wrong-but-systematic patterns (e.g. "always adds when
    should multiply", "confuses cause and correlation").
-2. Weak concepts — concept_ids where the student struggled.
-3. Strong concepts — concept_ids where the student excelled.
-4. Remediation suggestions — 1–3 short actions the tutor can take next.
+2. Weak concepts - concept_ids where the student struggled.
+3. Strong concepts - concept_ids where the student excelled.
+4. Remediation suggestions - 1–3 short actions the tutor can take next.
 
 The student is visually impaired. The summary will be SPOKEN to them.
 
@@ -110,7 +110,7 @@ async def quiz_analyzer_node(state: KODMODState) -> dict[str, Any]:
             "strong_concepts": [c for c, s in concept_avg.items() if s >= 0.8],
             "remediation": ["Tinjau kembali konsep yang lemah."],
             "spoken_summary": ("Kuis selesai. Mari kita tinjau bagian yang masih perlu latihan."),
-            "teacher_summary": "Analyzer fallback — see raw concept averages.",
+            "teacher_summary": "Analyzer fallback - see raw concept averages.",
         }
 
     log.info(

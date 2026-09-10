@@ -30,7 +30,7 @@ def valid(sub: object = None, role: str = "student", **extra: object) -> str:
 
 
 def alg_none(sub: object = None, role: str = "student") -> str:
-    """Unsigned token with ``{"alg":"none"}`` — PyJWT must reject it on decode."""
+    """Unsigned token with ``{"alg":"none"}`` - PyJWT must reject it on decode."""
     return pyjwt.encode(_claims(sub, role), key="", algorithm="none")
 
 

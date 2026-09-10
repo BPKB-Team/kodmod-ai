@@ -1,4 +1,4 @@
-"""KM-STATIC-040 / 041 / 042 / 044 / 045 / 060 — compose & image build gates.
+"""KM-STATIC-040 / 041 / 042 / 044 / 045 / 060 - compose & image build gates.
 
 Docker-dependent cases skip when no docker daemon is reachable. Image builds
 carry ``@pytest.mark.slow`` so ``-m "static and not slow"`` (the default in the
@@ -124,7 +124,7 @@ def test_host_tooling_present() -> None:  # KM-STATIC-045
 
 @pytest.mark.skipif(resolve("alembic", "alembic") is None, reason="alembic not installed")
 @pytest.mark.known_bug(
-    "database/migrations/versions/ is empty — test bootstrap uses scripts.create_test_db"
+    "database/migrations/versions/ is empty - test bootstrap uses scripts.create_test_db"
 )
 def test_alembic_consistent() -> None:  # KM-STATIC-060
     proc = run([*resolve("alembic", "alembic"), "check"])  # type: ignore[misc]

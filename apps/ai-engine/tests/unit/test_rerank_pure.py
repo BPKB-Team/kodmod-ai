@@ -1,4 +1,4 @@
-"""KM-UNIT-150..152 — pure RAG helpers with no I/O.
+"""KM-UNIT-150..152 - pure RAG helpers with no I/O.
 
 Oracle: graceful-degradation branch in rag/reranker.rerank, the pgvector literal
 formatter, and the empty-input fast path of rag.embeddings.embed_text.

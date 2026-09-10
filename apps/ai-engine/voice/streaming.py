@@ -1,5 +1,5 @@
 """
-KODMOD AI — Voice Streaming Utilities
+KODMOD AI - Voice Streaming Utilities
 =====================================
 
 Houses the helpers that the WebSocket route needs:
@@ -8,7 +8,7 @@ Houses the helpers that the WebSocket route needs:
                      Wraps faster-whisper for chunked audio (≈400ms windows).
 - `stream_tts()`:    async generator yielding small audio frames so the
                      client can begin playback before the full response
-                     finishes — critical for low-latency voice UX.
+                     finishes - critical for low-latency voice UX.
 - `save_upload()`:   persist a multipart upload to AUDIO_DIR.
 - `fetch_audio()`:   read an audio file by URL/path back into bytes.
 
@@ -155,7 +155,7 @@ class StreamingSTT:
                 return {"partial": None, "final": None, "is_speaking": True}
 
             audio_bytes = b"".join(self._buffer)
-            # Don't drain yet — we re-transcribe the rolling window for
+            # Don't drain yet - we re-transcribe the rolling window for
             # better partial accuracy. We only drain on `flush_segment()`.
             if self._buffered_bytes > self._max_buffer_bytes:
                 # drop the oldest second to keep memory bounded

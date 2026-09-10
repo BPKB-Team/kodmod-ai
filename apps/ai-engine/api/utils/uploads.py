@@ -1,5 +1,5 @@
 """
-KODMOD AI — Upload Handling
+KODMOD AI - Upload Handling
 ===========================
 
 Persists teacher-uploaded curriculum documents to `settings.UPLOAD_DIR` before

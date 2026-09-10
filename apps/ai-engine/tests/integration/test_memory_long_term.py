@@ -1,4 +1,4 @@
-"""Stage 3 §2 — memory/long_term.py against real Postgres.
+"""Stage 3 §2 - memory/long_term.py against real Postgres.
 
 Spec: docs/testplan/03-integration.md §2 (KM-INT-020..026).
 """
@@ -14,7 +14,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.db, pytest.mark.asyncio(loop_
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-020 — load_profile for a fresh student
+# KM-INT-020 - load_profile for a fresh student
 # --------------------------------------------------------------------------- #
 async def test_km_int_020_load_profile_fresh(make_student) -> None:  # type: ignore[no-untyped-def]
     from memory.long_term import load_profile
@@ -30,7 +30,7 @@ async def test_km_int_020_load_profile_fresh(make_student) -> None:  # type: ign
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-021 — update_mastery UPSERTs one row per (student, concept)
+# KM-INT-021 - update_mastery UPSERTs one row per (student, concept)
 # --------------------------------------------------------------------------- #
 async def test_km_int_021_update_mastery_upsert(make_student, concept_ids) -> None:  # type: ignore[no-untyped-def]
     from database.session import async_session
@@ -58,7 +58,7 @@ async def test_km_int_021_update_mastery_upsert(make_student, concept_ids) -> No
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-022 — fetch_weak_concepts returns the 5 lowest, ascending
+# KM-INT-022 - fetch_weak_concepts returns the 5 lowest, ascending
 # --------------------------------------------------------------------------- #
 async def test_km_int_022_fetch_weak_concepts(make_student, concept_ids, seed_mastery) -> None:  # type: ignore[no-untyped-def]
     from memory.long_term import fetch_weak_concepts
@@ -76,7 +76,7 @@ async def test_km_int_022_fetch_weak_concepts(make_student, concept_ids, seed_ma
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-023 — _compute_streak over consecutive / gapped sessions
+# KM-INT-023 - _compute_streak over consecutive / gapped sessions
 # --------------------------------------------------------------------------- #
 async def test_km_int_023_compute_streak(make_student) -> None:  # type: ignore[no-untyped-def]
     from database.models import LearningSession
@@ -96,7 +96,7 @@ async def test_km_int_023_compute_streak(make_student) -> None:  # type: ignore[
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-024 — record_misconception + fetch_open_misconceptions
+# KM-INT-024 - record_misconception + fetch_open_misconceptions
 # --------------------------------------------------------------------------- #
 async def test_km_int_024_misconceptions(make_student, concept_ids) -> None:  # type: ignore[no-untyped-def]
     from memory.long_term import fetch_open_misconceptions, record_misconception
@@ -111,7 +111,7 @@ async def test_km_int_024_misconceptions(make_student, concept_ids) -> None:  # 
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-025 — log_interaction stores metadata in the "metadata" column
+# KM-INT-025 - log_interaction stores metadata in the "metadata" column
 # --------------------------------------------------------------------------- #
 async def test_km_int_025_log_interaction_metadata(make_student) -> None:  # type: ignore[no-untyped-def]
     from database.models import LearningSession
@@ -145,7 +145,7 @@ async def test_km_int_025_log_interaction_metadata(make_student) -> None:  # typ
 
 
 # --------------------------------------------------------------------------- #
-# KM-INT-026 — store_recommendation + fetch_active_recommendations(limit=5)
+# KM-INT-026 - store_recommendation + fetch_active_recommendations(limit=5)
 # --------------------------------------------------------------------------- #
 async def test_km_int_026_recommendations(make_student) -> None:  # type: ignore[no-untyped-def]
     from memory.long_term import fetch_active_recommendations, store_recommendation

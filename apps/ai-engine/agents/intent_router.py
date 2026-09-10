@@ -1,5 +1,5 @@
 """
-KODMOD AI — Intent Router Agent
+KODMOD AI - Intent Router Agent
 ================================
 
 Maps the student's transcribed utterance to one of the discrete intents that
@@ -10,7 +10,7 @@ Practices & Tutoring diagram.
 
 Design choices
 --------------
-* We use a small, fast LLM (configurable) for classification — Claude Haiku /
+* We use a small, fast LLM (configurable) for classification - Claude Haiku /
   Llama-3-8B / GPT-4o-mini are all good fits.
 * The output is a strict JSON object validated with Pydantic; if validation
   fails we fall back to "tutoring" (the safest, most helpful default for an
@@ -75,7 +75,7 @@ Return ONLY a JSON object, no prose:
 
 
 async def intent_router_node(state: KODMODState) -> dict:
-    """LangGraph node — the graph entry point, before any cluster logic."""
+    """LangGraph node - the graph entry point, before any cluster logic."""
     text = state.get("user_input", "")
     if not text.strip():
         # No utterance to classify (e.g. a REST entrypoint that drives the graph
@@ -91,7 +91,7 @@ async def intent_router_node(state: KODMODState) -> dict:
 
     # --- Hard short-circuit: if we're mid-quiz, the utterance IS the answer.
     # The graph re-enters at `intent_router` with a fresh state every turn, so
-    # the quiz progress may only exist in short-term memory — rehydrate it here.
+    # the quiz progress may only exist in short-term memory - rehydrate it here.
     quiz_session_id = state.get("quiz_session_id")
     quiz_questions = state.get("quiz_questions") or []
     question_index = state.get("current_question_index", 0)
@@ -160,7 +160,7 @@ async def intent_router_node(state: KODMODState) -> dict:
         )
         decision = IntentDecision.model_validate_json(cleaned)
     except (ValidationError, json.JSONDecodeError) as exc:
-        log.warning("Intent JSON parse failed: %s — falling back to tutoring", exc)
+        log.warning("Intent JSON parse failed: %s - falling back to tutoring", exc)
         decision = IntentDecision(
             intent="tutoring", confidence=0.4, reasoning="fallback after parse error"
         )
@@ -182,7 +182,7 @@ async def intent_router_node(state: KODMODState) -> dict:
         "last_node": "intent_router",
     }
     # Only overwrite the topic already in state when the student actually named
-    # a new one — a plain follow-up ("lanjutkan") should not clobber the topic
+    # a new one - a plain follow-up ("lanjutkan") should not clobber the topic
     # an in-progress tutoring/quiz flow is already tracking.
     if decision.topic.strip():
         out["current_topic"] = decision.topic.strip()

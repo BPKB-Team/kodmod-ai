@@ -1,5 +1,5 @@
 """
-KODMOD AI — Document Chunking
+KODMOD AI - Document Chunking
 =============================
 
 Splits source documents into RAG-ready chunks that respect:
@@ -45,7 +45,7 @@ class Chunk:
 
 
 def _approx_tokens(text: str) -> int:
-    # Cheap proxy without tokenizer — chars/4 works well enough for budgeting.
+    # Cheap proxy without tokenizer - chars/4 works well enough for budgeting.
     return max(1, len(text) // 4)
 
 

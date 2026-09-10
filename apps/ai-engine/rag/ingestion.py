@@ -1,5 +1,5 @@
 """
-KODMOD AI — RAG Ingestion Pipeline
+KODMOD AI - RAG Ingestion Pipeline
 ==================================
 
 Reads source documents, chunks them, embeds, attaches accessibility
@@ -8,7 +8,7 @@ metadata (figure descriptions), and persists to pgvector.
 Supported sources (via plugins):
 - Markdown files (.md)
 - Plain text (.txt)
-- PDF (via pypdf — text-only; figures are described separately)
+- PDF (via pypdf - text-only; figures are described separately)
 - Lesson rows from the relational DB
 
 Run from CLI:
@@ -71,7 +71,7 @@ async def ingest_paths(
     for path in paths:
         path = Path(path)
         if not path.exists():
-            logger.warning("Path %s missing — skipping", path)
+            logger.warning("Path %s missing - skipping", path)
             continue
         text = _load_text(path)
         if not text.strip():
