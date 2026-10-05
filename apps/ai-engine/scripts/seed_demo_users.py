@@ -39,12 +39,12 @@ async def _seed(passwords: Mapping[str, str] | None = None) -> int:
         if not isinstance(passwords, Mapping) or set(passwords) != set(usernames):
             raise ValueError("Supply a JSON object containing exactly the three demo usernames.")
         if any(
-            not isinstance(password, str)
-            or len(password) < 8
-            or len(password.encode("utf-8")) > 72
+            not isinstance(password, str) or len(password) < 8 or len(password.encode("utf-8")) > 72
             for password in passwords.values()
         ):
-            raise ValueError("Each demo password must contain at least 8 characters and at most 72 bytes.")
+            raise ValueError(
+                "Each demo password must contain at least 8 characters and at most 72 bytes."
+            )
     else:
         passwords = dict.fromkeys(usernames, DEFAULT_DEMO_PASSWORD)
 

@@ -230,7 +230,7 @@ kedua nameserver belum memiliki A, periksa publikasi record pada zona
   otomatis.
 - `https://kodmodai.com` mengembalikan HTTP 200. HTTP beralih ke HTTPS,
   sementara `https://www.kodmodai.com` beralih ke domain utama dengan path
-  dan query tetap dipertahankan. Smoke HTTPS publik lulus 13/13.
+  dan query tetap dipertahankan. Smoke HTTPS publik terakhir lulus 14/14.
 - Login melalui server action HTTPS menghasilkan cookie Secure, HttpOnly,
   SameSite=Lax dan pengalihan admin. Sesi tersebut berhasil mengakses
   identitas API dan halaman admin. Password default ditolak, metrik publik
@@ -263,7 +263,7 @@ perbaikan warning backend yang sudah merged. Docker Engine `29.8.2` dan
 Compose `5.6.0` dipasang dari repository resmi Docker.
 
 - Sepuluh service runtime aktif; migrator selesai dengan exit `0`.
-- Smoke HTTPS aplikasi/API: 13/13 lulus.
+- Smoke HTTPS aplikasi/API: 14/14 lulus, termasuk penolakan URL metrik terenkode.
 - Pemeriksaan monitoring, target, dashboard dan Grafana: 26/26 lulus.
 - Login admin acak, identitas API, halaman admin, penolakan password default,
   dan pembatasan CORS diverifikasi.
@@ -276,3 +276,33 @@ Compose `5.6.0` dipasang dari repository resmi Docker.
 - Konfigurasi Compose/Caddy, sertifikat publik, domain utama, alias `www`,
   login HTTPS dan cookie sesi telah diverifikasi. Pengujian provider nyata
   lulus 16/16 melalui kode; beban pengguna belum diuji.
+
+## Pemeriksaan ulang, 5–6 Oktober 2026
+
+Laporan rinci ada pada [VPS_REVIEW_2026-10-06.md](/home/kodmod-admin/kodmod-ai/docs/VPS_REVIEW_2026-10-06.md).
+Backend memiliki 1.159 tes unik lulus dan empat skip; frontend memiliki 141
+tes lulus setelah fixture tambahan dan perbaikan mock JSX. Lint, format,
+typecheck, build frontend, smoke HTTPS, dan monitoring lulus. Hasil suite
+digabung dengan tes ulang yang relevan, bukan diklaim sebagai satu run penuh.
+
+Caddy sekarang memblokir namespace metrik termasuk URL terenkode; 16 variasi
+URL publik mengembalikan 404. UFW aktif tetapi unit boot-nya sebelumnya
+disabled. Unit sudah di-enable, dan helper firewall memastikan pengaturan
+boot tersebut tetap ada. Periksa dengan `sudo ufw status verbose` serta
+`sudo systemctl is-enabled ufw.service`; VPS tidak direboot untuk audit ini.
+
+Checksum kedua snapshot lengkap tetap valid. Dump database terbaru juga
+berhasil dipulihkan di PostgreSQL sementara dengan empat akun dan revisi
+`0011_provider_usage`; database produksi tidak direstore. Jadwal backup
+otomatis pertama masih perlu diamati setelah timer benar-benar berjalan.
+Snapshot lengkap terbaru `/srv/kodmod/backups/kodmod-20261005T170449Z-30271`
+telah dibuat pada 6 Oktober sekitar 00:04 WIB. Keempat arsip valid, konfigurasi
+arsip cocok dengan file privat saat ini, dan dump snapshot tersebut berhasil
+direstore di container sementara tanpa jaringan. Smoke serta monitoring
+kembali lulus setelah web/API/worker dinyalakan kembali.
+
+Prioritas berikutnya adalah batas login/registrasi dan biaya API, pencabutan
+JWT setelah perubahan password, validasi ulang sesi WebSocket, role database
+khusus aplikasi, materi demo, backup offsite, dan tujuan notifikasi monitoring.
+Audit ini berupa pemeriksaan manual dan pengujian kode; scanner resmi Codex
+Security tidak tersedia pada sesi ini.

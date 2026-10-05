@@ -128,6 +128,14 @@ async function main() {
     }
   }
 
+  if (web.startsWith("https://") && api === web && prefix === "/api") {
+    await check("public metrics blocked for plain and encoded paths", async () => {
+      for (const path of ["/metrics", "/api/metrics", "/api/metrics%2F", "/api/metrics%252F"]) {
+        expect((await request(web, path, "text/plain")).status === 404, "public metrics path is accessible");
+      }
+    });
+  }
+
   let landing;
   let login;
   await check("landing page", async () => { landing = await page(web, "/"); });

@@ -13,8 +13,9 @@
 		Referrer-Policy no-referrer
 		-Server
 	}
-	# Prometheus scrapes the internal API directly.
-	@privateMetrics path /metrics /api/metrics
+	# Reserve the metrics namespace, including encoded suffixes accepted by
+	# the Next.js fallback proxy. Prometheus scrapes the internal API directly.
+	@privateMetrics path /metrics* /api/metrics*
 	handle @privateMetrics {
 		respond 404
 	}

@@ -17,6 +17,8 @@ const hooks = registerHooks({
       export const useMemo = fn => fn();
       export const useContext = () => null;
       export const useState = initial => [globalThis.kodmodLanguageTest.state ?? initial, value => { globalThis.kodmodLanguageTest.state = value; }];`) };
+    // Keep JSX within the same stub boundary; the real runtime requires CommonJS React.
+    if (specifier === "react/jsx-runtime") return { shortCircuit: true, url: "data:text/javascript," + encodeURIComponent(`export const jsx = (type, props) => ({ type, props });`) };
     if (specifier === "next/navigation") return { shortCircuit: true, url: "data:text/javascript," + encodeURIComponent(`export const useRouter = () => ({ refresh: () => globalThis.kodmodLanguageTest.refreshes++ });`) };
     if (specifier.startsWith("@/")) return { shortCircuit: true, url: new URL("../src/" + specifier.slice(2), import.meta.url).href };
     return next(specifier, context);

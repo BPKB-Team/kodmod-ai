@@ -11,6 +11,8 @@ if [[ "$mode" == https ]]; then
   ufw allow 80/tcp comment 'KODMOD HTTPS certificates'
   ufw allow 443/tcp comment 'KODMOD HTTPS'
 fi
+# Persist the configured UFW policy across host reboots as well as Docker restarts.
+systemctl is-enabled --quiet ufw.service || systemctl enable ufw.service
 for command in iptables ip6tables; do
   # IPv6 Docker chains do not exist when Docker IPv6 is disabled; UFW still
   # filters host IPv6 listeners. Never change the INPUT/SSH path here.
