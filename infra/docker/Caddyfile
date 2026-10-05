@@ -1,6 +1,7 @@
 # Caddy obtains and renews HTTPS certificates for APP_DOMAIN automatically.
 {
-	email {$ACME_EMAIL}
+	# ACME can register without an email; quoting preserves an empty value.
+	email "{$ACME_EMAIL}"
 }
 
 {$APP_DOMAIN} {
@@ -28,4 +29,10 @@
 	handle {
 		reverse_proxy web:3000
 	}
+}
+
+# Keep the www alias on the same canonical origin for sessions and API calls.
+www.{$APP_DOMAIN} {
+	header -Server
+	redir https://{$APP_DOMAIN}{uri} permanent
 }

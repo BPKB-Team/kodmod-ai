@@ -37,7 +37,7 @@ sudo bash scripts/release.sh compose up -d --no-deps ai-engine worker
 sudo bash scripts/release.sh smoke
 ```
 
-## Akses sebelum domain tersedia
+## Akses privat sebelum domain tersedia
 
 `KODMOD_MODE=private` pada root `.env` menggunakan konfigurasi produksi ditambah
 `infra/docker/docker-compose.private.yml`. Caddy dinonaktifkan. Web/API/Grafana
@@ -109,11 +109,16 @@ penyimpanan privat di luar VPS; arsip konfigurasi berisi rahasia. Tidak ada
 tujuan offsite atau penghapusan backup lama otomatis yang dikonfigurasi.
 Pantau pemakaian disk dan atur retensi setelah tujuan offsite tersedia.
 
-## Aktifkan HTTPS setelah domain disetujui
+## Domain dan HTTPS
 
-1. Arahkan record A ke IP VPS. Jangan menambahkan AAAA tanpa konektivitas IPv6.
-2. Edit root `.env`: `KODMOD_MODE=https`, `APP_DOMAIN=domain-anda`, dan
-   `ACME_EMAIL=email-anda`. Domain tidak memakai skema atau slash.
+1. Arahkan record A domain utama (`@`) ke `139.190.100.215`. Untuk VPS ini
+   domain yang dipilih adalah `kodmodai.com`. Lookup publik harus
+   mengembalikan IP tersebut agar sertifikat dapat diterbitkan. Jangan
+   menambahkan AAAA tanpa konektivitas IPv6. Tambahkan CNAME `www` ke
+   `kodmodai.com.`; Caddy mengalihkan alias tersebut ke domain utama.
+2. Edit root `.env`: `KODMOD_MODE=https`, `APP_DOMAIN=kodmodai.com`, dan
+   opsional `ACME_EMAIL=email-anda` untuk kontak sertifikat. Domain tidak
+   memakai skema atau slash. Email kosong tetap valid untuk ACME.
 3. Dari checkout server:
 
 ```bash
@@ -126,8 +131,50 @@ sudo bash scripts/release.sh smoke
 Mode HTTPS menghapus port host web/API dan mengaktifkan Caddy di 80/443.
 Cookie menjadi Secure; Grafana tetap privat. Project dan volume tetap sama,
 sehingga data dari mode privat dipertahankan. Caddy memberi header keamanan
-dan menolak akses publik ke metrik. Sertifikat/DNS belum diverifikasi pada
-setup privat ini.
+dan menolak akses publik ke metrik. Konfigurasi Caddy untuk `kodmodai.com`
+telah divalidasi dengan email kosong. Jika DNS belum tersedia saat Caddy
+dijalankan, penerbitan sertifikat akan dicoba ulang secara otomatis. Akses
+HTTPS publik perlu diuji setelah sertifikat diterbitkan.
+
+Periksa DNS sebelum mengganti mode:
+
+```bash
+dig @satu.neodns.id kodmodai.com A +short
+dig @dua.neodns.id kodmodai.com A +short
+dig @1.1.1.1 kodmodai.com A +short
+dig @8.8.8.8 kodmodai.com A +short
+```
+
+Hasil yang diharapkan adalah `139.190.100.215`. Jika jawaban langsung dari
+kedua nameserver belum memiliki A, periksa publikasi record pada zona
+`kodmodai.com` di NEO DNS; menghapus cache DNS lokal tidak memperbaikinya.
+
+### Domain aktif pada 5 Oktober 2026
+
+- Root `.env`: `KODMOD_MODE=https`, `APP_DOMAIN=kodmodai.com`,
+  `ACME_EMAIL=` sesuai pilihan pengguna.
+- Sepuluh service runtime berjalan, termasuk Caddy. Web/API memakai cookie
+  Secure dan CORS untuk `https://kodmodai.com`; port host web/API dihapus.
+  Firewall membuka SSH dan TCP 80/443. Grafana tetap pada loopback.
+- Kedua nameserver aktif (`satu.neodns.id`, `dua.neodns.id`) dan resolver
+  Google/Cloudflare mengembalikan `139.190.100.215`. `www.kodmodai.com`
+  mengikuti CNAME ke domain utama.
+- Sertifikat Let’s Encrypt produksi terbit tanpa email untuk `kodmodai.com`
+  dan `www.kodmodai.com`. Rantai sertifikat dan hostname diverifikasi tanpa
+  menonaktifkan pemeriksaan TLS; masa berlaku berakhir 3 Januari 2027.
+  Caddy menyimpan sertifikat pada volume persisten dan memperbaruinya
+  otomatis.
+- `https://kodmodai.com` mengembalikan HTTP 200. HTTP beralih ke HTTPS,
+  sementara `https://www.kodmodai.com` beralih ke domain utama dengan path
+  dan query tetap dipertahankan. Smoke HTTPS publik lulus 13/13.
+- Login melalui server action HTTPS menghasilkan cookie Secure, HttpOnly,
+  SameSite=Lax dan pengalihan admin. Sesi tersebut berhasil mengakses
+  identitas API dan halaman admin. Password default ditolak, metrik publik
+  mengembalikan 404, serta CORS hanya mengizinkan origin yang dikonfigurasi.
+- Monitoring lulus 26/26. Jalur WebSocket diuji menolak upgrade tanpa
+  autentikasi pada Caddy sementara dengan CA lokal; container tes dihapus.
+- Snapshot lengkap sebelum perubahan:
+  `/srv/kodmod/backups/kodmod-20261005T142946Z-14154`.
 
 ## Pembaruan kode
 
@@ -151,8 +198,8 @@ Source aplikasi di-clone lewat `gh` dari `main` pada `d4a983f`, termasuk
 perbaikan warning backend yang sudah merged. Docker Engine `29.8.2` dan
 Compose `5.6.0` dipasang dari repository resmi Docker.
 
-- Sembilan service runtime aktif; migrator selesai dengan exit `0`.
-- Smoke HTTP aplikasi/API: 13/13 lulus.
+- Sepuluh service runtime aktif; migrator selesai dengan exit `0`.
+- Smoke HTTPS aplikasi/API: 13/13 lulus.
 - Pemeriksaan monitoring, target, dashboard dan Grafana: 26/26 lulus.
 - Login admin acak, identitas API, halaman admin, penolakan password default,
   dan pembatasan CORS diverifikasi.
@@ -162,5 +209,6 @@ Compose `5.6.0` dipasang dari repository resmi Docker.
   dihapus setelah pemeriksaan; database aplikasi tidak menjadi target restore.
 - Startup Docker/stack dan penerapan ulang firewall diperiksa melalui restart
   service, tanpa reboot VPS.
-- Konfigurasi Compose HTTPS dan Caddy valid; penerbitan sertifikat belum diuji
-  karena domain belum tersedia. Provider nyata dan beban pengguna belum diuji.
+- Konfigurasi Compose/Caddy, sertifikat publik, domain utama, alias `www`,
+  login HTTPS dan cookie sesi telah diverifikasi. Provider nyata dan beban
+  pengguna belum diuji.

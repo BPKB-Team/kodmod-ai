@@ -28,7 +28,6 @@ if (mode === "prod" || mode === "prod-private") {
   } else {
     const domain = services.caddy.environment?.APP_DOMAIN || "";
     requireThat(domain.includes(".") && domain !== "localhost" && !/[\s/:]/.test(domain), "Configure a real APP_DOMAIN before HTTPS deployment");
-    requireThat(Boolean(services.caddy.environment?.ACME_EMAIL), "Set ACME_EMAIL before HTTPS deployment");
     requireThat(services.caddy.ports?.some(port => String(port.published) === "443"), "HTTPS ingress must publish port 443");
   }
   requireThat(config.networks?.data?.internal && config.networks?.metrics?.internal, "Database and monitoring networks must be internal");

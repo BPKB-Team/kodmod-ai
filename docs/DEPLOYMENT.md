@@ -98,9 +98,9 @@ lihat [runbook VPS](VPS_SETUP.md). `scripts/release.sh` membaca
 Konfigurasi utama: `infra/docker/docker-compose.prod.yml`. Entry lama `apps/ai-engine/docker/docker-compose.prod.yml` hanya meneruskan ke konfigurasi tersebut.
 
 1. Pasang Docker Engine dan Compose plugin sesuai dokumentasi distro VPS, lalu clone repository ke direktori deploy.
-2. Arahkan DNS domain ke IP VPS. Buka port TCP 80/443 dan port SSH yang dipakai. Jika ada AAAA, pastikan IPv6 benar-benar menuju VPS.
+2. Arahkan DNS domain ke IP VPS dan CNAME `www` ke domain utama; Caddy mengalihkan alias `www` ke domain utama. Buka port TCP 80/443 dan port SSH yang dipakai. Jika ada AAAA, pastikan IPv6 benar-benar menuju VPS.
 3. Dari root repository, salin `.env.example` ke `.env` serta contoh backend ke `apps/ai-engine/.env`. Jangan membawa kredensial demo/database lokal ke VPS.
-4. Isi root `.env`: `APP_DOMAIN` (tanpa `https://`), `ACME_EMAIL`, `DB_PASSWORD` dan `REDIS_PASSWORD` unik, `GRAFANA_ADMIN_PASSWORD` acak, serta `MONITORING_DATA_ROOT` sebagai path Linux absolut yang persisten, misalnya `/srv/kodmod/data/monitoring`. Generate password berbentuk hex agar aman dipakai pada URL database. Backend membaca password database/cache yang sama dari Compose override; root `.env` menjadi sumbernya.
+4. Isi root `.env`: `APP_DOMAIN` (tanpa `https://`), `DB_PASSWORD` dan `REDIS_PASSWORD` unik, `GRAFANA_ADMIN_PASSWORD` acak, serta `MONITORING_DATA_ROOT` sebagai path Linux absolut yang persisten, misalnya `/srv/kodmod/data/monitoring`. `ACME_EMAIL` opsional dan disarankan untuk kontak sertifikat. Generate password berbentuk hex agar aman dipakai pada URL database. Backend membaca password database/cache yang sama dari Compose override; root `.env` menjadi sumbernya.
 5. Isi backend `.env`: `JWT_SECRET` acak minimal 32 byte, API key provider, dan enam ID model. Gunakan `STT_BACKEND=elevenlabs`, `TTS_BACKEND=elevenlabs`, serta `CHECKPOINTER=postgres`. Lindungi kedua file: `chmod 600 .env apps/ai-engine/.env`.
 6. Siapkan kepemilikan direktori metrik, validasi, lalu jalankan:
 
