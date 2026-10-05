@@ -20,8 +20,10 @@ LLM_REFLECTION_MODEL=SET_ME_IN_ENV
 ```
 
 Ganti keenam ID model dengan model yang tersedia di akun OpenAI Anda.
-Key belum diisi pada setup awal; pemeriksaan health tidak memanggil provider.
-Fitur AI/suara perlu konfigurasi provider dan pengujian tersendiri.
+Key belum diisi pada setup awal; pengguna telah mengisinya dan konfigurasi
+API/worker sudah sesuai file privat pada 5 Oktober 2026. Keenam peran memakai
+`gpt-6-luna`. Pemeriksaan health tidak memanggil provider; hasil pengujian
+provider nyata dicatat di bawah.
 Preset Bian, `eleven_multilingual_v2`, dan `scribe_v2` mengikuti konfigurasi repo.
 
 Root `.env` menyimpan mode akses, tag image, password PostgreSQL/Redis/Grafana,
@@ -36,6 +38,33 @@ cd /home/kodmod-admin/kodmod-ai
 sudo bash scripts/release.sh compose up -d --no-deps ai-engine worker
 sudo bash scripts/release.sh smoke
 ```
+
+### Pengujian provider nyata, 5 Oktober 2026
+
+Pengujian memakai kode Python dan request HTTPS, sesuai pilihan pengguna.
+Sebanyak 16/16 pemeriksaan lulus, menggunakan key dari backend VPS:
+
+- OpenAI: klasifikasi intent, tutor Indonesia/Inggris, dua MCQ dengan empat
+  opsi dan sumber yang valid, penilaian rubrik, rekomendasi, serta refleksi.
+  Keenam peran diuji melalui factory/agent aplikasi dengan `gpt-6-luna`.
+- Embedding `text-embedding-3-small`: dua vektor valid, masing-masing 1536
+  dimensi, bernilai finite dan bukan vektor nol.
+- ElevenLabs: Bian membuat MP3 Indonesia/Inggris yang berhasil didekode.
+  Request berulang memakai audio cache; Scribe v2 membaca kembali frasa
+  Indonesia dari audio uji dengan benar.
+- Akun `siswa.demo` berhasil login dan mengirim chat melalui proxy HTTPS.
+  Jawaban chat selesai sekitar 9,9 detik; kedua giliran tersimpan dan sesi
+  uji ditutup. Percakapan tersebut tidak memakai lingkup materi kelas.
+- Terdapat 16 catatan pemakaian provider dengan status `success` atau
+  `cache_hit`; counter kegagalan penyimpanan metadata tetap nol. Key dan
+  token sesi tidak ditampilkan dalam laporan.
+
+Laporan privat: `.runtime/provider-test-2026-10-05.json`. Script sementara
+berada pada `.runtime/probe-openai.py` dan `.runtime/probe-public-api.py`.
+Soal bersumber memakai fixture teks dalam memori, sehingga hasil ini belum
+membuktikan alur unggah/index dokumen kelas di VPS. Pengujian ini juga belum
+mencakup beban pengguna, evaluasi pedagogi, atau pemutaran audio pada browser
+dan perangkat siswa.
 
 ## Akses privat sebelum domain tersedia
 
@@ -245,5 +274,5 @@ Compose `5.6.0` dipasang dari repository resmi Docker.
 - Startup Docker/stack dan penerapan ulang firewall diperiksa melalui restart
   service, tanpa reboot VPS.
 - Konfigurasi Compose/Caddy, sertifikat publik, domain utama, alias `www`,
-  login HTTPS dan cookie sesi telah diverifikasi. Provider nyata dan beban
-  pengguna belum diuji.
+  login HTTPS dan cookie sesi telah diverifikasi. Pengujian provider nyata
+  lulus 16/16 melalui kode; beban pengguna belum diuji.
