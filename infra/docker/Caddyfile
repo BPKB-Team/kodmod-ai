@@ -5,6 +5,18 @@
 
 {$APP_DOMAIN} {
 	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		-Server
+	}
+	# Prometheus scrapes the internal API directly.
+	@privateMetrics path /metrics /api/metrics
+	handle @privateMetrics {
+		respond 404
+	}
 
 	# The existing authenticated FastAPI WebSocket transport is kept available.
 	@websocket path /ws/*

@@ -90,12 +90,17 @@ Seeder membuat atau mereset password untuk `siswa.demo` (student), `guru.demo` (
 
 ## VPS Linux
 
+Untuk server yang sudah dipasang, mode privat sebelum domain tersedia,
+konfigurasi provider, firewall Docker, backup harian, dan aktivasi HTTPS,
+lihat [runbook VPS](VPS_SETUP.md). `scripts/release.sh` membaca
+`KODMOD_MODE=private|https` dari root `.env`.
+
 Konfigurasi utama: `infra/docker/docker-compose.prod.yml`. Entry lama `apps/ai-engine/docker/docker-compose.prod.yml` hanya meneruskan ke konfigurasi tersebut.
 
 1. Pasang Docker Engine dan Compose plugin sesuai dokumentasi distro VPS, lalu clone repository ke direktori deploy.
 2. Arahkan DNS domain ke IP VPS. Buka port TCP 80/443 dan port SSH yang dipakai. Jika ada AAAA, pastikan IPv6 benar-benar menuju VPS.
 3. Dari root repository, salin `.env.example` ke `.env` serta contoh backend ke `apps/ai-engine/.env`. Jangan membawa kredensial demo/database lokal ke VPS.
-4. Isi root `.env`: `APP_DOMAIN` (tanpa `https://`), `ACME_EMAIL`, `DB_PASSWORD` unik, `GRAFANA_ADMIN_PASSWORD` acak, serta `MONITORING_DATA_ROOT` sebagai path Linux absolut yang persisten, misalnya `/srv/kodmod/data/monitoring`. Generate password berbentuk hex agar aman dipakai pada URL database. Backend membaca password database yang sama dari Compose override; root `.env` menjadi sumbernya.
+4. Isi root `.env`: `APP_DOMAIN` (tanpa `https://`), `ACME_EMAIL`, `DB_PASSWORD` dan `REDIS_PASSWORD` unik, `GRAFANA_ADMIN_PASSWORD` acak, serta `MONITORING_DATA_ROOT` sebagai path Linux absolut yang persisten, misalnya `/srv/kodmod/data/monitoring`. Generate password berbentuk hex agar aman dipakai pada URL database. Backend membaca password database/cache yang sama dari Compose override; root `.env` menjadi sumbernya.
 5. Isi backend `.env`: `JWT_SECRET` acak minimal 32 byte, API key provider, dan enam ID model. Gunakan `STT_BACKEND=elevenlabs`, `TTS_BACKEND=elevenlabs`, serta `CHECKPOINTER=postgres`. Lindungi kedua file: `chmod 600 .env apps/ai-engine/.env`.
 6. Siapkan kepemilikan direktori metrik, validasi, lalu jalankan:
 
@@ -113,7 +118,12 @@ Username Grafana mengikuti `GRAFANA_ADMIN_USER` (default `admin`); password awal
 
 Image frontend memakai Next.js standalone dengan tracing monorepo. `API_ORIGIN=http://ai-engine:8000` sama saat build/runtime karena fallback rewrite dikompilasi saat build. Ganti alamat itu hanya dengan rebuild. Browser tetap memakai URL aplikasi `/api`; tidak memerlukan alamat container atau provider key.
 
-Belum ada deploy VPS nyata pada tahap ini. Domain, DNS, TLS, backup/restore di mesin tujuan, serta kapasitas CPU/RAM perlu diverifikasi ketika VPS tersedia. Mulai dengan satu instance API dan satu worker; ukur memori, latency dan konkurensi sebelum menambah replika. Tesseract Indonesia/Inggris tersedia pada image worker. Cache audio dan original dokumen tersimpan dalam volume privat.
+Setup VPS privat tanpa domain dijelaskan pada runbook VPS. Domain, DNS, TLS,
+panggilan provider nyata dan kapasitas di bawah beban tetap perlu diverifikasi
+sebelum peluncuran publik. Mulai dengan satu instance API dan satu worker;
+ukur memori, latency dan konkurensi sebelum menambah replika. Tesseract
+Indonesia/Inggris tersedia pada image worker. Cache audio dan original
+dokumen tersimpan dalam volume privat.
 
 Tooling rilis dari root repository di VPS:
 

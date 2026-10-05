@@ -1,7 +1,21 @@
 # VPS: one Compose project, only Caddy exposes public ports.
 name: kodmod
 
+x-runtime: &runtime
+  security_opt: ["no-new-privileges:true"]
+  logging:
+    driver: local
+    options: { max-size: 10m, max-file: "3" }
+
 x-api: &api
+  <<: *runtime
+  read_only: true
+  cap_drop: [ALL]
+  tmpfs: ["/tmp:rw,noexec,nosuid,size=256m"]
+  mem_limit: 1536m
+  cpus: 2.0
+  pids_limit: 256
+  networks: [backend, data, metrics]
   image: kodmod/ai-engine:${KODMOD_TAG:-vps}
   build:
     context: ../../apps/ai-engine
@@ -21,18 +35,26 @@ x-api: &api
     DB_NAME: ${DB_NAME:-kodmod}
     REDIS_HOST: redis
     REDIS_PORT: 6379
+    REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in the root .env}
     AUDIO_DIR: /var/lib/kodmod/audio
     UPLOAD_DIR: /var/lib/kodmod/uploads
-    CORS_ALLOW_ORIGINS: https://${APP_DOMAIN:?Set APP_DOMAIN in the root .env}
+    CORS_ALLOW_ORIGINS: https://${APP_DOMAIN:-localhost}
     RAG_RERANK_ENABLED: ${RAG_RERANK_ENABLED:-false}
+    OMP_NUM_THREADS: "2"
+    OPENBLAS_NUM_THREADS: "2"
   volumes:
     - kodmod-audio:/var/lib/kodmod/audio
     - kodmod-uploads:/var/lib/kodmod/uploads
 
 services:
   postgres:
+    <<: *runtime
     image: pgvector/pgvector:pg16
     restart: unless-stopped
+    networks: [data]
+    mem_limit: 1g
+    cpus: 2.0
+    pids_limit: 256
     environment:
       POSTGRES_USER: ${DB_USER:-kodmod}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the root .env}
@@ -45,18 +67,32 @@ services:
       retries: 10
 
   redis:
+    <<: *runtime
     image: redis:7-alpine
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
+    user: redis
+    read_only: true
+    cap_drop: [ALL]
+    networks: [data]
+    mem_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in the root .env}
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\" --maxmemory 128mb --maxmemory-policy noeviction"]
     volumes: ["kodmod-redisdata:/data"]
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
       interval: 5s
       timeout: 5s
       retries: 10
 
   migrate:
     <<: *api
+    networks: [data]
+    mem_limit: 768m
+    cpus: 1.0
+    pids_limit: 128
     command: ["python", "-m", "alembic", "upgrade", "head"]
     restart: "no"
     healthcheck: { disable: true }
@@ -72,6 +108,7 @@ services:
 
   worker:
     <<: *api
+    networks: [backend, data]
     command: ["python", "-m", "api.material_worker"]
     restart: unless-stopped
     healthcheck:
@@ -85,6 +122,7 @@ services:
       redis: { condition: service_healthy }
 
   web:
+    <<: *runtime
     image: kodmod/web:${KODMOD_TAG:-vps}
     build:
       context: ../..
@@ -93,6 +131,15 @@ services:
         API_ORIGIN: http://ai-engine:8000
     restart: unless-stopped
     init: true
+    read_only: true
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /app/apps/web/.next/cache:rw,noexec,nosuid,size=64m,uid=1000,gid=1000
+    networks: [edge, backend]
+    mem_limit: 768m
+    cpus: 1.0
+    pids_limit: 256
     environment:
       NODE_ENV: production
       SESSION_COOKIE_SECURE: "true"
@@ -101,11 +148,19 @@ services:
       ai-engine: { condition: service_healthy }
 
   caddy:
+    <<: *runtime
     image: caddy:2-alpine
     restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    networks: [edge, backend]
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 128
     environment:
-      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN in the root .env}
-      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in the root .env}
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-}
     ports: ["80:80", "443:443"]
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
@@ -115,9 +170,14 @@ services:
       web: { condition: service_healthy }
 
   prometheus:
+    <<: *runtime
     image: prom/prometheus:v3.14.0
     profiles: ["monitoring"]
     restart: unless-stopped
+    networks: [metrics]
+    read_only: true
+    cap_drop: [ALL]
+    pids_limit: 128
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -144,14 +204,25 @@ services:
       options: { max-size: 10m, max-file: "3" }
 
   grafana:
+    <<: *runtime
     image: grafana/grafana:13.2.3
     profiles: ["monitoring"]
     restart: unless-stopped
+    # A separate routed network is needed for its loopback host port. Joining
+    # only an internal network suppresses Docker's published-port mapping.
+    networks: [metrics, grafana-access]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in the root .env}
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: "false"
+      GF_PLUGINS_PREINSTALL_DISABLED: "true"
       GF_SERVER_ROOT_URL: http://localhost:${GRAFANA_PORT:-3001}/
       GF_SECURITY_COOKIE_SECURE: "false"
     ports: ["127.0.0.1:${GRAFANA_PORT:-3001}:3000"]
@@ -182,6 +253,8 @@ services:
     privileged: true
     read_only: true
     tmpfs: [/tmp]
+    networks: [metrics]
+    pids_limit: 128
     volumes:
       - type: bind
         source: /
@@ -209,11 +282,15 @@ services:
       options: { max-size: 10m, max-file: "3" }
 
   node-exporter:
+    <<: *runtime
     image: quay.io/prometheus/node-exporter:v1.12.1
     profiles: ["monitoring-linux"]
     restart: unless-stopped
     pid: host
     read_only: true
+    cap_drop: [ALL]
+    networks: [metrics]
+    pids_limit: 128
     command:
       - --path.procfs=/host/proc
       - --path.sysfs=/host/sys
@@ -244,3 +321,12 @@ volumes:
   kodmod-uploads:
   kodmod-caddydata:
   kodmod-caddyconfig:
+
+networks:
+  edge:
+  backend:
+  data:
+    internal: true
+  metrics:
+    internal: true
+  grafana-access:

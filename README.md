@@ -86,6 +86,8 @@ ngrok. Panduan setup dan VPS: [Deployment](docs/DEPLOYMENT.md).
 Tanpa Docker Centre: `docker compose --profile monitoring up -d --build --wait`
 dari root setelah mengisi `.env` backend. Panduan akun admin, data persisten,
 backup, dan **VPS dengan Caddy/HTTPS**: [Deployment](docs/DEPLOYMENT.md).
+Operasi server, akses privat sebelum domain tersedia, API key, firewall
+Docker dan backup harian: [Runbook VPS](docs/VPS_SETUP.md).
 Status fitur beserta batas validasi: [Scope Oktober 2026](docs/SCOPE-STATUS-2026-10-04.md).
 
 **Pengembangan native dengan hot reload (opsional):**

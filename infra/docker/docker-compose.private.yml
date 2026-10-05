@@ -1,0 +1,20 @@
+# Temporary VPS access over an SSH tunnel while a domain is pending.
+# Always combine with docker-compose.prod.yml, using the same project/volumes.
+services:
+  caddy:
+    profiles: [https]
+    ports: !reset []
+  web:
+    ports: ["127.0.0.1:${WEB_PORT:-3100}:3000"]
+    environment:
+      SESSION_COOKIE_SECURE: "false"
+  ai-engine:
+    ports: ["127.0.0.1:${API_PORT:-8109}:8000"]
+    environment:
+      CORS_ALLOW_ORIGINS: http://localhost:${WEB_PORT:-3100},http://127.0.0.1:${WEB_PORT:-3100}
+  worker:
+    environment:
+      CORS_ALLOW_ORIGINS: http://localhost:${WEB_PORT:-3100},http://127.0.0.1:${WEB_PORT:-3100}
+  migrate:
+    environment:
+      CORS_ALLOW_ORIGINS: http://localhost:${WEB_PORT:-3100},http://127.0.0.1:${WEB_PORT:-3100}
