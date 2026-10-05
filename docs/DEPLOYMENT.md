@@ -88,6 +88,11 @@ pwsh -NoProfile -File F:\Docker_Centre\kodmod\docker.ps1 demo-users
 
 Seeder membuat atau mereset password untuk `siswa.demo` (student), `guru.demo` (teacher), dan `admin.demo` (admin) menjadi `password`. Menjalankan ulang menjaga ketiga akun demo tetap bisa dipakai dengan kredensial yang sama. Seeder tidak mengubah pengguna lain, termasuk `baysatriow`. Password ini hanya untuk database pengujian lokal; jangan gunakan pada database produksi atau saat membagikan tunnel publik.
 
+Pada VPS publik gunakan `sudo bash scripts/seed-demo-vps.sh` dari checkout
+server. Helper menjalankan seeder dengan `--passwords-stdin` dan password
+acak berbeda untuk setiap akun. Kredensial berada pada file privat
+`.runtime/demo-accounts.json`; lihat [akun demo VPS](VPS_SETUP.md#akun-demo-pada-vps).
+
 ## VPS Linux
 
 Untuk server yang sudah dipasang, mode privat sebelum domain tersedia,

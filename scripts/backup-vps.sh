@@ -49,6 +49,7 @@ archive_volume "$audio" audio
 archive_volume "$uploads" uploads
 private_files=(.env apps/ai-engine/.env)
 if [[ -f .runtime/admin-password ]]; then private_files+=(.runtime/admin-password); fi
+if [[ -f .runtime/demo-accounts.json ]]; then private_files+=(.runtime/demo-accounts.json); fi
 tar -czf "$snapshot/configuration.tar.gz" "${private_files[@]}"
 chmod 0600 "$snapshot"/*
 (cd -- "$snapshot" && sha256sum -- *.dump *.tar.gz > SHA256SUMS && sha256sum --check SHA256SUMS)

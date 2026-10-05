@@ -63,6 +63,41 @@ Password aplikasi ada di `.runtime/admin-password`; password Grafana adalah
 `GRAFANA_ADMIN_PASSWORD` pada root `.env`. Baca hanya melalui sesi privat.
 Tidak ada akun demo dengan password `password` pada database VPS.
 
+## Akun demo pada VPS
+
+| Username | Peran | Halaman setelah login |
+| --- | --- | --- |
+| `siswa.demo` | student | `/siswa` |
+| `guru.demo` | teacher | `/guru` |
+| `admin.demo` | admin | `/admin` |
+
+Masing-masing akun memakai password acak berbeda. Kredensial tersimpan pada
+`/home/kodmod-admin/kodmod-ai/.runtime/demo-accounts.json`, milik
+`kodmod-admin` dengan izin `600`. Baca file tersebut hanya dalam sesi privat.
+Login di `https://kodmodai.com/masuk`. Akun admin utama tetap memakai
+password pada `.runtime/admin-password`.
+
+Seeder VPS dapat dijalankan ulang:
+
+```bash
+cd /home/kodmod-admin/kodmod-ai
+sudo bash scripts/seed-demo-vps.sh
+```
+
+Helper membuat file kredensial pada pemakaian pertama, lalu menggunakan
+file yang sama pada pemakaian berikutnya. Backup database dibuat sebelum
+seeding tanpa menghentikan aplikasi. Seeder memakai container sementara
+dan script checkout melalui mount read-only; rebuild image tidak diperlukan.
+Ketiga akun dibuat atau password-nya diatur ulang sesuai file privat.
+Konflik peran membatalkan transaksi; akun lain tidak diubah. Snapshot harian
+juga menyertakan file kredensial demo dalam arsip konfigurasi privat.
+
+Validasi 5 Oktober 2026: ketiga akun berhasil login melalui server action
+HTTPS, menerima cookie Secure/HttpOnly/SameSite=Lax, mengakses identitas API
+dan halaman sesuai peran. Password `password` ditolak. Menjalankan seeder
+ulang mempertahankan ID akun demo dan tidak mengubah akun lain; kredensial
+admin utama tetap valid.
+
 ## Operasi
 
 ```bash
