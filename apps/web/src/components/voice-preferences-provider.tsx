@@ -10,7 +10,7 @@ import { DEFAULT_VOICE_SETTINGS, parseVoiceSettings, readVoiceSettingsSnapshot, 
   parseDisplaySettings, type DisplaySettings, type VoiceSettings, type SpeechEngine } from "@/lib/speech-preferences.mjs";
 import { pruneExpiredSpeechAudioCache } from "@/lib/speech-audio-cache";
 import { speechOutput } from "@/lib/browser-speech";
-import { attachMenuNarration, announceLanguageChange } from "@/lib/menu-narration.mjs";
+import { attachMenuNarration, announceLanguageChange, announcePageNavigation } from "@/lib/menu-narration.mjs";
 import type { Language } from "@/lib/i18n.mjs";
 import { useI18n } from "./language-provider";
 import { Switch } from "./ui/switch";
@@ -65,6 +65,7 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
   const wasOpen = useRef(false);
   const initialGuidePlayed = useRef(false);
   const pendingLanguage = useRef<Language | null>(null);
+  const lastPathname = useRef(pathname);
   const opened = ready && (!saved || settingsOpen);
   const output = useSyncExternalStore(speechOutput.subscribe, speechOutput.getState, speechOutput.getState);
   const previewActive = output.owner === "voice-setup";
@@ -166,6 +167,22 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
   }, [ready, opened, preferences.menuEnabled, preferences.engine, pathname, language]);
 
   useEffect(() => {
+    if (!ready) return;
+    const previousPathname = lastPathname.current;
+    lastPathname.current = pathname;
+    if (previousPathname === pathname) return;
+    announcePageNavigation({
+      document,
+      speech: speechOutput,
+      language,
+      engine: preferences.engine,
+      enabled: preferences.menuEnabled && !opened,
+      previousPathname,
+      pathname,
+    });
+  }, [ready, pathname, language, preferences.engine, preferences.menuEnabled, opened]);
+
+  useEffect(() => {
     if (!preferences.guidedNavigation) return;
     let start: { x: number; y: number } | null = null;
     const begin = (event: TouchEvent) => { start = event.touches.length === 1
@@ -202,6 +219,8 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
   return <VoicePreferencesContext.Provider value={value}>
     {children}
     {warning && !opened && <div className="global-voice-notice" role="status">{t(warning)}</div>}
+    {!opened && output.owner === "menu" && output.status === "error" &&
+      <div className="global-voice-notice" role="status" aria-live="polite">{t(output.message)}</div>}
     <Dialog ref={dialog} className="voice-preferences-dialog" aria-labelledby="voice-preferences-title"
       aria-describedby="voice-preferences-description" data-voice-ignore="true"
       onCancel={event => { event.preventDefault(); if (!saved) save(); else closeSettings(); }}>

@@ -14,6 +14,9 @@ export function attachMenuNarration({ document, speech, language, engine, pathna
   function narrate(event, hover = false) {
     if (hover && event.pointerType === "touch") return;
     const element = closestMenu(event.target);
+    // NativeSelect owns the confirmation text. A document-level click label
+    // would replace its queued "{option} dipilih" message.
+    if (event.type === "click" && element?.matches?.("[role=option]")) return;
     if (hover && element?.contains(event.relatedTarget)) return;
     const activeModal = document.querySelector(".swal2-container.swal2-shown, dialog[open]");
     const insideModal = Boolean(activeModal && element?.closest?.(".swal2-container, dialog[open]"));
@@ -71,4 +74,24 @@ export function announceLanguageChange(speech, language, { engine, enabled, reco
   if (!enabled || recording || !["id", "en"].includes(language)) return Promise.resolve();
   return speech.play({ owner: "language", engine, language, menuKey: "language-changed",
     text: language === "en" ? "Language changed to English." : "Bahasa telah berubah ke Bahasa Indonesia." });
+}
+
+export function announcePageNavigation({
+  document,
+  speech,
+  language,
+  engine,
+  enabled,
+  previousPathname,
+  pathname,
+}) {
+  if (previousPathname === pathname || !(pathname === "/siswa" || pathname.startsWith("/siswa/"))) return;
+  const heading = document.querySelector("main h1") ?? document.querySelector("h1");
+  if (!heading) return;
+  heading.setAttribute("tabindex", "-1");
+  heading.focus();
+  const text = heading.textContent?.trim().replace(/\s+/g, " ").slice(0, 300);
+  if (enabled && engine !== "off" && text) {
+    void speech.play({ owner: "menu", text, engine, language });
+  }
 }

@@ -41,6 +41,37 @@ test("autoplay rejection settles in a state with replay available", async () => 
   assert.equal(coordinator.getState().status, "blocked");
 });
 
+test("KODMOD request failures never switch to local device speech", async () => {
+  let deviceCalls = 0;
+  const coordinator = createSpeechCoordinator({
+    loadAudio: async () => { throw new Error("KODMOD unavailable"); },
+    makeAudio: () => { throw new Error("audio should not be created"); },
+    speakDevice: () => { deviceCalls++; return { play: async () => {}, stop() {}, dispose() {} }; },
+  });
+
+  await coordinator.play({ owner: "tutor", text: "Answer", language: "id", engine: "app" });
+
+  assert.equal(deviceCalls, 0);
+  assert.equal(coordinator.getState().status, "error");
+  assert.equal(coordinator.getState().fallback, false);
+  assert.match(coordinator.getState().message, /KODMOD/);
+});
+
+test("KODMOD playback failures never switch to local device speech", async () => {
+  let deviceCalls = 0;
+  const coordinator = createSpeechCoordinator({
+    loadAudio: async () => "audio",
+    makeAudio: () => ({ play: async () => { throw new Error("audio output unavailable"); }, stop() {}, dispose() {} }),
+    speakDevice: () => { deviceCalls++; return { play: async () => {}, stop() {}, dispose() {} }; },
+  });
+
+  await coordinator.play({ owner: "tutor", text: "Answer", language: "id", engine: "app" });
+
+  assert.equal(deviceCalls, 0);
+  assert.equal(coordinator.getState().status, "error");
+  assert.equal(coordinator.getState().fallback, false);
+});
+
 test("audio that finishes before its start promise resolves remains finished", async () => {
   const coordinator = createSpeechCoordinator({ loadAudio: async () => "audio", makeAudio: (_blob, ended) => ({
     play: async () => ended(), stop() {}, dispose() {}, pause() {}, resume() {},
@@ -59,7 +90,22 @@ test("an output error after playback starts releases the audio and offers text",
   fail(new Error("Audio device disconnected"));
   assert.equal(coordinator.getState().status, "error");
   assert.equal(stopped, true);
-  assert.match(coordinator.getState().message, /teks/);
+  assert.match(coordinator.getState().message, /KODMOD/);
+});
+
+test("local device speech runs only when the device engine is selected", async () => {
+  let deviceCalls = 0, apiCalls = 0;
+  const coordinator = createSpeechCoordinator({
+    loadAudio: async () => { apiCalls++; return "audio"; },
+    makeAudio: () => ({ play: async () => {}, stop() {}, dispose() {} }),
+    speakDevice: () => { deviceCalls++; return { play: async () => {}, stop() {}, dispose() {} }; },
+  });
+
+  await coordinator.play({ owner: "tutor", text: "Answer", language: "id", engine: "device" });
+
+  assert.equal(deviceCalls, 1);
+  assert.equal(apiCalls, 0);
+  assert.equal(coordinator.getState().status, "playing");
 });
 
 test("delayed menu reading cannot replace a loading, playing or paused Tutor or preview", async () => {

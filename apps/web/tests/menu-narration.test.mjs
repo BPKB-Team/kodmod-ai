@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
-import { attachMenuNarration, announceLanguageChange } from "../src/lib/menu-narration.mjs";
+import { attachMenuNarration, announceLanguageChange, announcePageNavigation } from "../src/lib/menu-narration.mjs";
 import { createSpeechCoordinator } from "../src/lib/speech-output.mjs";
 
 function fixture() {
@@ -19,7 +19,7 @@ function fixture() {
   const child = { parent: element, closest: () => element };
   const detach = attachMenuNarration({ document, speech, language: "en", engine: "app", pathname: "/" });
   return { document, speech, element, child, queued, played, listeners, detach,
-    emit(name, target = element, rest = {}) { listeners.get(name)?.({ target, ...rest }); } };
+    emit(name, target = element, rest = {}) { listeners.get(name)?.({ type: name, target, ...rest }); } };
 }
 
 test("hover reads once inside a menu and leaving before playback cancels it", () => {
@@ -121,5 +121,32 @@ test("dialog announcement dispatched on window reaches menu narration", () => {
   }));
   assert.deepEqual(played.map(request => request.text), ["Yakin ingin keluar?"]);
   detach();
+  dom.window.close();
+});
+
+test("clicking a custom option does not replace its selected confirmation", () => {
+  const f = fixture();
+  f.element.matches = selector => selector === "[role=option]";
+  f.emit("click");
+  assert.equal(f.queued.length, 0);
+  f.detach();
+});
+
+test("student page changes focus and announce the new page heading", () => {
+  const dom = new JSDOM("<!doctype html><main><h1>Progres belajar</h1></main>", { pretendToBeVisual: true });
+  const played = [];
+  const heading = dom.window.document.querySelector("h1");
+  announcePageNavigation({
+    document: dom.window.document,
+    speech: { play: request => played.push(request) },
+    language: "id",
+    engine: "app",
+    enabled: true,
+    previousPathname: "/siswa/tutor",
+    pathname: "/siswa/progres",
+  });
+  assert.equal(heading.getAttribute("tabindex"), "-1");
+  assert.equal(dom.window.document.activeElement, heading);
+  assert.deepEqual(played.map(request => request.text), ["Progres belajar"]);
   dom.window.close();
 });

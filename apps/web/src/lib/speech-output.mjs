@@ -53,26 +53,19 @@ export function createSpeechCoordinator({ loadAudio, makeAudio, speakDevice }) {
       release();
       publish({ status: error?.name === "NotAllowedError" ? "blocked" : "error",
         message: error?.name === "NotAllowedError" ? "Tekan Dengarkan untuk mengaktifkan suara."
-          : "Suara belum tersedia. Kamu tetap bisa membaca teks." });
+          : request.engine === "app"
+            ? "Suara KODMOD belum tersedia. Coba lagi atau pilih suara perangkat."
+            : "Suara perangkat belum tersedia. Kamu tetap bisa membaca teks." });
     };
     try {
       if (request.engine === "device") {
         output = speakDevice(request, ended, failed);
         await output.play();
       } else {
-        try {
-          const audio = await loadAudio(request, signal);
-          if (!current()) return;
-          output = makeAudio(audio, ended, failed);
-          await output.play();
-        } catch (error) {
-          if (!current() || finished) return;
-          if (error?.name === "NotAllowedError") throw error;
-          release();
-          output = speakDevice(request, ended, failed);
-          await output.play();
-          if (current() && !finished) publish({ fallback: true, message: "Suara KODMOD belum tersedia. Menggunakan suara perangkat." });
-        }
+        const audio = await loadAudio(request, signal);
+        if (!current()) return;
+        output = makeAudio(audio, ended, failed);
+        await output.play();
       }
       if (current() && !finished) publish({ status: "playing" });
     } catch (error) {

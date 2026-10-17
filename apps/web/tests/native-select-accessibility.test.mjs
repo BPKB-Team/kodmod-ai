@@ -4,11 +4,12 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 import ts from "typescript";
+import { attachMenuNarration } from "../src/lib/menu-narration.mjs";
 
 const require = createRequire(import.meta.url);
 const componentPath = new URL("../src/components/ui/native-select.tsx", import.meta.url);
 
-function loadNativeSelect(React) {
+function loadNativeSelect(React, { voiceQueue, menuEnabled = false }) {
   const source = readFileSync(componentPath, "utf8");
   const compiled = ts.transpileModule(source, {
     compilerOptions: {
@@ -24,8 +25,10 @@ function loadNativeSelect(React) {
   const mocks = {
     "lucide-react": { ChevronDown: icon, Check: icon },
     "@/lib/utils": { cn: (...parts) => parts.filter(Boolean).join(" ") },
-    "@/lib/browser-speech": { speechOutput: { queueMenu() {}, cancelQueuedMenu() {} } },
-    "@/components/voice-preferences-provider": { useVoicePreferences: () => ({ menuEnabled: false, engine: "off" }) },
+    "@/lib/browser-speech": { speechOutput: {
+      queueMenu(request) { voiceQueue.push(request); }, cancelQueuedMenu() {},
+    } },
+    "@/components/voice-preferences-provider": { useVoicePreferences: () => ({ menuEnabled, engine: menuEnabled ? "app" : "off" }) },
     "@/components/language-provider": { useI18n: () => ({ language: "id" }) },
   };
   const moduleRequire = id => mocks[id] ?? require(id);
@@ -33,7 +36,7 @@ function loadNativeSelect(React) {
   return componentModule.exports.NativeSelect;
 }
 
-async function renderSelect() {
+async function renderSelect({ menuEnabled = false } = {}) {
   const dom = new JSDOM("<!doctype html><html><body><div id='root'></div></body></html>", { pretendToBeVisual: true });
   const globals = ["window", "document", "HTMLElement", "HTMLSelectElement", "Node", "IS_REACT_ACT_ENVIRONMENT"];
   const previous = new Map(globals.map(name => [name, globalThis[name]]));
@@ -46,7 +49,8 @@ async function renderSelect() {
 
   const React = (await import("react")).default;
   const { createRoot } = await import("react-dom/client");
-  const NativeSelect = loadNativeSelect(React);
+  const voiceQueue = [];
+  const NativeSelect = loadNativeSelect(React, { voiceQueue, menuEnabled });
   const root = createRoot(dom.window.document.getElementById("root"));
   await React.act(async () => {
     root.render(React.createElement("label", null,
@@ -63,6 +67,7 @@ async function renderSelect() {
     React,
     root,
     trigger: dom.window.document.querySelector('[role="combobox"]'),
+    voiceQueue,
     async cleanup() {
       await React.act(async () => root.unmount());
       dom.window.close();
@@ -96,6 +101,34 @@ test("keyboard navigation exposes the active option to screen readers", async ()
     assert.ok(activeId, "the combobox must identify its active option");
     assert.equal(view.dom.window.document.getElementById(activeId)?.textContent.trim(), "IPA");
   } finally {
+    await view.cleanup();
+  }
+});
+
+test("selecting an option speaks its selection confirmation once", async () => {
+  const view = await renderSelect({ menuEnabled: true });
+  const speech = {
+    getState: () => ({ owner: null, status: "idle" }),
+    queueMenu(request) { view.voiceQueue.push(request); },
+    cancelQueuedMenu() {},
+    stop() {},
+    play() {},
+  };
+  const detach = attachMenuNarration({
+    document: view.dom.window.document,
+    speech,
+    language: "id",
+    engine: "app",
+    pathname: "/siswa/latihan",
+  });
+  try {
+    await view.React.act(async () => view.trigger.click());
+    view.voiceQueue.length = 0;
+    const option = view.dom.window.document.querySelector('[role="option"][aria-disabled="false"]');
+    await view.React.act(async () => option.click());
+    assert.deepEqual(view.voiceQueue.map(request => request.text), ["Matematika dipilih."]);
+  } finally {
+    detach();
     await view.cleanup();
   }
 });
