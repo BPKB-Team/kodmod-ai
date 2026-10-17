@@ -93,11 +93,30 @@ def generate_student_spoken_summary(analytics: dict, *, language: str = "id") ->
         )
         return " ".join(parts)
 
-    parts.append(
-        f"{period}, you completed {n_sessions} learning sessions with average mastery of {_pct(overall, language)}."
-        if english
-        else f"{period} kamu sudah belajar {n_sessions} sesi dengan tingkat penguasaan rata-rata {_pct(overall)}."
-    )
+    if weak or strong:
+        parts.append(
+            f"{period}, you completed {n_sessions} learning sessions with average mastery of {_pct(overall, language)}."
+            if english
+            else f"{period} kamu sudah belajar {n_sessions} sesi dengan tingkat penguasaan rata-rata {_pct(overall)}."
+        )
+    else:
+        if n_sessions:
+            parts.append(
+                f"{period}, you completed {n_sessions} learning sessions."
+                if english
+                else f"{period} kamu tercatat belajar {n_sessions} sesi."
+            )
+        else:
+            parts.append(
+                f"{period}, your practice answers have been recorded."
+                if english
+                else f"{period} jawaban latihanmu sudah tercatat."
+            )
+        parts.append(
+            "Concept mastery will appear when practice is linked to approved concepts."
+            if english
+            else "Penguasaan konsep akan tampil setelah latihan dikaitkan dengan konsep yang disetujui."
+        )
 
     if accuracy >= 0.8:
         parts.append(

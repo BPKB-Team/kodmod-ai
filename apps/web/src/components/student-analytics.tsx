@@ -55,6 +55,8 @@ export function StudentAnalytics({
   const [window, setWindow] = useState<AnalyticsWindow>(initial.window);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const hasConceptMastery = data.weak_concepts.length > 0 || data.strong_concepts.length > 0;
+  const hasLearningActivity = data.n_sessions > 0 || data.n_quiz_attempts > 0;
 
   async function changeWindow(next: AnalyticsWindow) {
     if (next === window || loading) return;
@@ -140,11 +142,11 @@ export function StudentAnalytics({
       <div className="analytics-hero panel">
         <div className="analytics-hero-copy">
           <h3>{data.student_name}</h3>
-          <p>{masteryLabel(data.overall_mastery, language)} · {data.n_sessions}<UiText>{" sesi belajar pada periode ini."}</UiText></p>
-          <progress max={1} value={data.overall_mastery} aria-label={t("Penguasaan materi {value}", { value: percent(data.overall_mastery) })} />
+          <p>{hasConceptMastery ? masteryLabel(data.overall_mastery, language) : <UiText>{"Penguasaan konsep belum tersedia"}</UiText>} · {data.n_sessions}<UiText>{" sesi belajar pada periode ini."}</UiText></p>
+          {hasConceptMastery && <progress max={1} value={data.overall_mastery} aria-label={t("Penguasaan materi {value}", { value: percent(data.overall_mastery) })} />}
           <div className="analytics-progress-meta">
-            <strong>{percent(data.overall_mastery)}</strong>
-            <span><UiText>{"penguasaan materi"}</UiText></span>
+            <strong>{hasConceptMastery ? percent(data.overall_mastery) : "—"}</strong>
+            <span><UiText>{hasConceptMastery ? "penguasaan materi" : "belum ada data konsep"}</UiText></span>
           </div>
         </div>
         <div className="analytics-hero-mark" aria-hidden="true">
@@ -208,7 +210,9 @@ export function StudentAnalytics({
               ))}
             </div>
           ) : (
-            <p className="analytics-empty"><UiText>{"Belum ada konsep yang perlu perhatian khusus."}</UiText></p>
+            <p className="analytics-empty"><UiText>{hasLearningActivity
+              ? "Aktivitasmu sudah tercatat. Fokus konsep tampil setelah materi terhubung dengan konsep yang disetujui."
+              : "Belum ada konsep yang perlu perhatian khusus."}</UiText></p>
           )}
         </article>
 
@@ -234,7 +238,9 @@ export function StudentAnalytics({
               ))}
             </div>
           ) : (
-            <p className="analytics-empty"><UiText>{"Selesaikan satu latihan untuk melihat kekuatanmu."}</UiText></p>
+            <p className="analytics-empty"><UiText>{hasLearningActivity
+              ? "Aktivitasmu sudah tercatat. Konsep kuat tampil setelah materi terhubung dengan konsep yang disetujui."
+              : "Selesaikan satu latihan untuk melihat kekuatanmu."}</UiText></p>
           )}
         </article>
       </div>

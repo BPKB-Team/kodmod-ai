@@ -36,6 +36,24 @@ def test_formal_answers_are_described_even_without_a_tutor_session():
     assert "belum belajar sama sekali" not in result
 
 
+def test_spoken_summary_does_not_call_unmapped_concepts_zero_mastery():
+    result = generate_student_spoken_summary(
+        {
+            "student_name": "Budi",
+            "n_sessions": 1,
+            "n_quiz_attempts": 2,
+            "quiz_accuracy": 0.5,
+            "overall_mastery": 0.0,
+            "weak_concepts": [],
+            "strong_concepts": [],
+        },
+        language="id",
+    )
+
+    assert "penguasaan rata-rata 0 persen" not in result
+    assert "dikaitkan dengan konsep" in result
+
+
 def test_zero_grade_is_spoken_as_a_result_and_not_an_empty_history():
     result = generate_student_spoken_summary(
         {"n_sessions": 0, "n_quiz_attempts": 2, "quiz_accuracy": 0}, language="en"

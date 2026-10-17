@@ -1,6 +1,8 @@
 import { translate } from "./i18n.mjs";
 
 export function studyTimeLabel(value, language = "id") {
+  const numericMinutes = Number.isFinite(value) ? Math.max(0, value) : 0;
+  if (numericMinutes > 0 && numericMinutes < 0.5) return language === "en" ? "< 1 min" : "< 1 menit";
   const total = Math.max(0, Math.round(Number.isFinite(value) ? value : 0));
   const hours = Math.floor(total / 60);
   const minutes = total % 60;

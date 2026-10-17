@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, cast
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from analytics.student_model import mastery_at
 from api.teacher_access import teacher_roster_query
@@ -62,6 +62,58 @@ def _window_start(window: WindowName) -> datetime | None:
     return None  # "all"
 
 
+def _duration_minutes(
+    started_at: datetime | None,
+    ended_at: datetime | None,
+    *,
+    last_activity_at: datetime | None = None,
+    window_start: datetime | None = None,
+) -> float:
+    """Return evidenced session time, including open sessions through last activity."""
+    if started_at is None:
+        return 0.0
+    end = ended_at or last_activity_at
+    if end is None:
+        return 0.0
+    start = max(started_at, window_start) if window_start is not None else started_at
+    return max(0.0, (end - start).total_seconds() / 60.0)
+
+
+def _is_independent_assessment(row) -> bool:
+    return (row.assessment_state or {}).get("assessment_kind", "assessment") != "tutor"
+
+
+def _activity_total_minutes(
+    *,
+    learning_sessions: list,
+    learning_activity: dict,
+    quiz_sessions: list,
+    quiz_activity: dict,
+    window_start: datetime | None = None,
+) -> float:
+    """Count tutor sessions and independent assessments without counting tutor quizzes twice."""
+    learning_minutes = sum(
+        _duration_minutes(
+            row.started_at,
+            row.ended_at,
+            last_activity_at=learning_activity.get(row.id),
+            window_start=window_start,
+        )
+        for row in learning_sessions
+    )
+    assessment_minutes = sum(
+        _duration_minutes(
+            row.started_at,
+            row.ended_at,
+            last_activity_at=quiz_activity.get(row.id),
+            window_start=window_start,
+        )
+        for row in quiz_sessions
+        if _is_independent_assessment(row)
+    )
+    return learning_minutes + assessment_minutes
+
+
 @dataclass
 class StudentAggregator:
     async def summarise(
@@ -81,7 +133,17 @@ class StudentAggregator:
             # ---- Sessions in window
             sess_q = select(LearningSession).where(LearningSession.student_id == student_id)
             if start:
-                sess_q = sess_q.where(LearningSession.started_at >= start)
+                recent_interactions = (
+                    select(InteractionLog.session_id)
+                    .join(LearningSession, InteractionLog.session_id == LearningSession.id)
+                    .where(
+                        LearningSession.student_id == student_id,
+                        InteractionLog.timestamp >= start,
+                    )
+                )
+                sess_q = sess_q.where(
+                    or_(LearningSession.started_at >= start, LearningSession.id.in_(recent_interactions))
+                )
             sessions = (await session.execute(sess_q)).scalars().all()
 
             # ---- Quiz attempts in window
@@ -93,6 +155,30 @@ class StudentAggregator:
             if start:
                 attempts_q = attempts_q.where(QuizAttempt.answered_at >= start)
             attempts = (await session.execute(attempts_q)).scalars().all()
+
+            # Standalone assessments are learning activity too. Tutor mini-quizzes
+            # are excluded below because their enclosing LearningSession already
+            # measures the same time.
+            quiz_session_q = select(QuizSession).where(QuizSession.student_id == student_id)
+            if start:
+                answered_session_ids = {attempt.quiz_session_id for attempt in attempts}
+                quiz_session_q = quiz_session_q.where(
+                    or_(
+                        QuizSession.started_at >= start,
+                        QuizSession.id.in_(answered_session_ids),
+                    )
+                )
+            quiz_sessions = (await session.execute(quiz_session_q)).scalars().all()
+
+            activity_q = (
+                select(InteractionLog.session_id, func.max(InteractionLog.timestamp))
+                .join(LearningSession, InteractionLog.session_id == LearningSession.id)
+                .where(LearningSession.student_id == student_id)
+                .group_by(InteractionLog.session_id)
+            )
+            if start:
+                activity_q = activity_q.where(InteractionLog.timestamp >= start)
+            learning_activity = dict((await session.execute(activity_q)).all())
 
             # Frozen formal grades use a separate attempt table. Count their
             # questions, not their percentage scores, so a one-question mini
@@ -151,14 +237,19 @@ class StudentAggregator:
             ).scalar_one()
 
         # ---------- Compute rollups ----------
-        n_sessions = len(sessions)
-        total_minutes = sum(
-            (
-                ((s.ended_at or s.started_at) - s.started_at).total_seconds() / 60.0
-                for s in sessions
-                if s.started_at
-            ),
-            0.0,
+        independent_assessments = [row for row in quiz_sessions if _is_independent_assessment(row)]
+        n_sessions = len(sessions) + len(independent_assessments)
+        quiz_activity = {}
+        for attempt in attempts:
+            current = quiz_activity.get(attempt.quiz_session_id)
+            if current is None or (attempt.answered_at and attempt.answered_at > current):
+                quiz_activity[attempt.quiz_session_id] = attempt.answered_at
+        total_minutes = _activity_total_minutes(
+            learning_sessions=sessions,
+            learning_activity=learning_activity,
+            quiz_sessions=quiz_sessions,
+            quiz_activity=quiz_activity,
+            window_start=start,
         )
 
         formal_answers = int(assignment_answers or 0)

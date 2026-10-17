@@ -77,7 +77,7 @@ async def test_km_int_070_student_summary_rollups(make_student, concept_ids) -> 
     await _seed_activity(st.id, concept_ids["pecahan"], n_sessions=2, n_correct=2, n_wrong=1)
 
     out = await StudentAggregator().summarise(student_id=st.id, window="week")
-    assert out["n_sessions"] == 2
+    assert out["n_sessions"] == 3  # includes the independent assessment session
     assert out["n_quiz_attempts"] == 3
     assert out["avg_quiz_score"] == pytest.approx(2 / 3, abs=1e-3)
     assert out["quiz_accuracy"] == pytest.approx(2 / 3, abs=1e-3)
