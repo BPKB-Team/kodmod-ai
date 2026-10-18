@@ -60,6 +60,7 @@ models--*/
 .codegraph/
 .superpowers/
 .runtime/
+.codex-presentation-build/
 .mcp.json
 AGENTS.md
 /apps/web/CLAUDE.md

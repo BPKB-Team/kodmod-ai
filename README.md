@@ -52,7 +52,7 @@ Detail tiap cluster ada di [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 | LLM | OpenAI melalui LangChain; model setiap agen diatur di `.env` backend |
 | STT | ElevenLabs Scribe (`scribe_v2`) atau faster-whisper/Deepgram fallback |
 | TTS | ElevenLabs (`eleven_multilingual_v2`) atau Piper/Azure fallback |
-| Embedding | OpenAI `text-embedding-3-small` + pgvector; reranker lokal opsional |
+| Embedding | OpenAI `text-embedding-3-small` + PostgreSQL/pgvector; indeks kandidat Qdrant opsional |
 | Basis data | PostgreSQL 16 + pgvector, Redis |
 | API | FastAPI + WebSocket |
 | Antarmuka | Next.js App Router, React 19, Tailwind v4, TypeScript |
@@ -77,11 +77,21 @@ tetap di `F:\Docker_Centre\kodmod\data`. Provider key dibaca dari
 eksternal. Build lokal memakai image hasil kompilasi; jalankan `up` kembali
 setelah perubahan source.
 
+Jika Qdrant diaktifkan, data index-nya memakai named volume pada Docker
+Desktop WSL2 data disk di `F:\Docker_Centre\wsl\DockerDesktopWSL`, bukan
+direktori bind `F:\Docker_Centre\kodmod\data\qdrant`.
+
 Perintah monitoring terpisah: `npm run docker:monitoring`,
 `npm run docker:monitoring:status`, `npm run docker:monitoring:logs`, dan
 `npm run docker:monitoring:down`. Credential Grafana Docker Centre disimpan
 di `F:\Docker_Centre\kodmod\.env`; layanan metrik tidak dibuka lewat tunnel
-ngrok. Panduan setup dan VPS: [Deployment](docs/DEPLOYMENT.md).
+ngrok. Panduan setup dan VPS: [Deployment](docs/DEPLOYMENT.md). Untuk batas
+arsitektur, aktivasi, backup, pemulihan, dan rollback indeks Qdrant lokal,
+lihat [Operasional Qdrant](docs/QDRANT_OPERATIONS.md).
+
+Dokumen tambahan: [perilaku pembacaan UI](docs/VOICE_UI_OPERATIONS.md),
+[20 materi demo beserta tugas dan kuis](docs/demo-data/general-learning/README.md),
+dan [diagram/presentasi arsitektur](deliverables/architecture/README.md).
 
 Tanpa Docker Centre: `docker compose --profile monitoring up -d --build --wait`
 dari root setelah mengisi `.env` backend. Panduan akun admin, data persisten,

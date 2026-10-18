@@ -1,0 +1,1727 @@
+{
+  "title": "Bank template kuis demo KODMOD",
+  "language": "id",
+  "usage_note": "Khusus pengajar. Template perlu dibuat sebagai draft dalam alur kuis KODMOD setelah memilih subject_id dari environment test. Jawaban benar dan penjelasan tidak untuk ditampilkan sebelum pengumpulan.",
+  "templates": [
+    {
+      "template_id": "quiz-01",
+      "title": "Kuis 01 — Pecahan sebagai Bagian dari Keseluruhan",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 01.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Berapa 3/8 dari 24 objek?",
+          "narration": "Berapa 3/8 dari 24 objek?",
+          "options": [
+            {
+              "id": "A",
+              "label": "8"
+            },
+            {
+              "id": "B",
+              "label": "9"
+            },
+            {
+              "id": "C",
+              "label": "12"
+            },
+            {
+              "id": "D",
+              "label": "16"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "24 ÷ 8 = 3 untuk tiap bagian; 3 bagian bernilai 9.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Dalam 5/8, apa arti angka 8?",
+          "narration": "Dalam 5/8, apa arti angka 8?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Banyak bagian yang dipilih"
+            },
+            {
+              "id": "B",
+              "label": "Jumlah objek dalam semua keadaan"
+            },
+            {
+              "id": "C",
+              "label": "Banyak bagian sama besar dalam satu keseluruhan"
+            },
+            {
+              "id": "D",
+              "label": "Nilai pecahan sebagai desimal"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Penyebut menunjukkan jumlah bagian sama besar dalam keseluruhan.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Pecahan mana yang senilai dengan 1/2?",
+          "narration": "Pecahan mana yang senilai dengan 1/2?",
+          "options": [
+            {
+              "id": "A",
+              "label": "4/8"
+            },
+            {
+              "id": "B",
+              "label": "3/8"
+            },
+            {
+              "id": "C",
+              "label": "2/5"
+            },
+            {
+              "id": "D",
+              "label": "5/8"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "4/8 disederhanakan menjadi 1/2.",
+          "difficulty": "easy"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-02",
+      "title": "Kuis 02 — Pecahan Senilai dan Membandingkan Pecahan",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 02.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Mana lebih besar, 4/5 atau 4/7?",
+          "narration": "Mana lebih besar, 4/5 atau 4/7?",
+          "options": [
+            {
+              "id": "A",
+              "label": "4/5"
+            },
+            {
+              "id": "B",
+              "label": "4/7"
+            },
+            {
+              "id": "C",
+              "label": "Keduanya sama"
+            },
+            {
+              "id": "D",
+              "label": "Tidak bisa dibandingkan"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Dengan pembilang sama, bagian per lima lebih besar daripada bagian per tujuh.",
+          "difficulty": "medium"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Manakah perbandingan yang benar?",
+          "narration": "Manakah perbandingan yang benar?",
+          "options": [
+            {
+              "id": "A",
+              "label": "2/3 < 3/5"
+            },
+            {
+              "id": "B",
+              "label": "2/3 > 3/5"
+            },
+            {
+              "id": "C",
+              "label": "2/3 = 3/5"
+            },
+            {
+              "id": "D",
+              "label": "Keduanya tidak bernilai"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Perkalian silang: 10 > 9, jadi 2/3 lebih besar.",
+          "difficulty": "medium"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Jika penyebut sama, bagaimana membandingkan pecahan?",
+          "narration": "Jika penyebut sama, bagaimana membandingkan pecahan?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Bandingkan penyebut saja"
+            },
+            {
+              "id": "B",
+              "label": "Pilih pembilang terkecil"
+            },
+            {
+              "id": "C",
+              "label": "Nilainya selalu sama"
+            },
+            {
+              "id": "D",
+              "label": "Pembilang lebih besar berarti pecahan lebih besar"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Dengan penyebut sama, ukuran bagian sama dan pembilang menentukan jumlahnya.",
+          "difficulty": "easy"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-03",
+      "title": "Kuis 03 — Operasi Dasar Pecahan",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 03.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Hitung 1/4 + 1/4.",
+          "narration": "Hitung 1/4 + 1/4.",
+          "options": [
+            {
+              "id": "A",
+              "label": "1/8"
+            },
+            {
+              "id": "B",
+              "label": "1/2"
+            },
+            {
+              "id": "C",
+              "label": "2/8"
+            },
+            {
+              "id": "D",
+              "label": "1/4"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "2/4 disederhanakan menjadi 1/2.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Hitung 3/4 − 1/6.",
+          "narration": "Hitung 3/4 − 1/6.",
+          "options": [
+            {
+              "id": "A",
+              "label": "1/2"
+            },
+            {
+              "id": "B",
+              "label": "5/12"
+            },
+            {
+              "id": "C",
+              "label": "7/12"
+            },
+            {
+              "id": "D",
+              "label": "2/3"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "9/12 − 2/12 = 7/12.",
+          "difficulty": "medium"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Hitung 2/3 × 3/5.",
+          "narration": "Hitung 2/3 × 3/5.",
+          "options": [
+            {
+              "id": "A",
+              "label": "2/5"
+            },
+            {
+              "id": "B",
+              "label": "5/8"
+            },
+            {
+              "id": "C",
+              "label": "6/8"
+            },
+            {
+              "id": "D",
+              "label": "1/5"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "6/15 disederhanakan menjadi 2/5.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-04",
+      "title": "Kuis 04 — Persamaan Linear Satu Variabel",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 04.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Selesaikan x + 6 = 14.",
+          "narration": "Selesaikan x + 6 = 14.",
+          "options": [
+            {
+              "id": "A",
+              "label": "6"
+            },
+            {
+              "id": "B",
+              "label": "7"
+            },
+            {
+              "id": "C",
+              "label": "8"
+            },
+            {
+              "id": "D",
+              "label": "20"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Kurangi kedua sisi dengan 6; x = 8.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Selesaikan 3x = 21.",
+          "narration": "Selesaikan 3x = 21.",
+          "options": [
+            {
+              "id": "A",
+              "label": "6"
+            },
+            {
+              "id": "B",
+              "label": "7"
+            },
+            {
+              "id": "C",
+              "label": "18"
+            },
+            {
+              "id": "D",
+              "label": "24"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Bagi kedua sisi dengan 3; x = 7.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Selesaikan 2x + 4 = 16.",
+          "narration": "Selesaikan 2x + 4 = 16.",
+          "options": [
+            {
+              "id": "A",
+              "label": "4"
+            },
+            {
+              "id": "B",
+              "label": "5"
+            },
+            {
+              "id": "C",
+              "label": "8"
+            },
+            {
+              "id": "D",
+              "label": "6"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Kurangi 4 lalu bagi 2; x = 6.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-05",
+      "title": "Kuis 05 — Keliling dan Luas Bangun Datar",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 05.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Luas persegi panjang 7 × 3 unit adalah?",
+          "narration": "Luas persegi panjang 7 × 3 unit adalah?",
+          "options": [
+            {
+              "id": "A",
+              "label": "21 unit persegi"
+            },
+            {
+              "id": "B",
+              "label": "20 unit"
+            },
+            {
+              "id": "C",
+              "label": "10 unit persegi"
+            },
+            {
+              "id": "D",
+              "label": "21 unit"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Luas = panjang × lebar = 21 unit persegi.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Segitiga beralas 8 dan tinggi 4 unit. Berapa luasnya?",
+          "narration": "Segitiga beralas 8 dan tinggi 4 unit. Berapa luasnya?",
+          "options": [
+            {
+              "id": "A",
+              "label": "32 unit persegi"
+            },
+            {
+              "id": "B",
+              "label": "16 unit persegi"
+            },
+            {
+              "id": "C",
+              "label": "12 unit persegi"
+            },
+            {
+              "id": "D",
+              "label": "24 unit"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Luas = 1/2 × 8 × 4 = 16.",
+          "difficulty": "medium"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Persegi berkeliling 20 unit. Berapa panjang satu sisinya?",
+          "narration": "Persegi berkeliling 20 unit. Berapa panjang satu sisinya?",
+          "options": [
+            {
+              "id": "A",
+              "label": "4 unit"
+            },
+            {
+              "id": "B",
+              "label": "10 unit"
+            },
+            {
+              "id": "C",
+              "label": "5 unit"
+            },
+            {
+              "id": "D",
+              "label": "16 unit"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "20 ÷ 4 = 5 unit.",
+          "difficulty": "easy"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-06",
+      "title": "Kuis 06 — Membaca Data dan Ukuran Rata-Rata",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 06.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Mean dari 4, 6, dan 8 adalah?",
+          "narration": "Mean dari 4, 6, dan 8 adalah?",
+          "options": [
+            {
+              "id": "A",
+              "label": "5"
+            },
+            {
+              "id": "B",
+              "label": "6"
+            },
+            {
+              "id": "C",
+              "label": "7"
+            },
+            {
+              "id": "D",
+              "label": "18"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Jumlah 18 dibagi 3 nilai sama dengan 6.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Median dari 2, 5, 9 adalah?",
+          "narration": "Median dari 2, 5, 9 adalah?",
+          "options": [
+            {
+              "id": "A",
+              "label": "2"
+            },
+            {
+              "id": "B",
+              "label": "9"
+            },
+            {
+              "id": "C",
+              "label": "5"
+            },
+            {
+              "id": "D",
+              "label": "16"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Nilai tengah dari data terurut adalah 5.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Rentang dari 1, 4, 7, 10 adalah?",
+          "narration": "Rentang dari 1, 4, 7, 10 adalah?",
+          "options": [
+            {
+              "id": "A",
+              "label": "6"
+            },
+            {
+              "id": "B",
+              "label": "7"
+            },
+            {
+              "id": "C",
+              "label": "10"
+            },
+            {
+              "id": "D",
+              "label": "9"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "10 − 1 = 9.",
+          "difficulty": "easy"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-07",
+      "title": "Kuis 07 — Fotosintesis dan Aliran Energi",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 07.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Apa yang dibutuhkan dalam ringkasan fotosintesis?",
+          "narration": "Apa yang dibutuhkan dalam ringkasan fotosintesis?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Karbon dioksida, air, dan energi cahaya"
+            },
+            {
+              "id": "B",
+              "label": "Oksigen, gula, dan tanah"
+            },
+            {
+              "id": "C",
+              "label": "Gula, oksigen, dan air saja"
+            },
+            {
+              "id": "D",
+              "label": "Nitrogen dan kegelapan"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Fotosintesis menggunakan karbon dioksida dan air dengan energi cahaya.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Apa hasil utama yang ditunjukkan dalam persamaan ringkas fotosintesis?",
+          "narration": "Apa hasil utama yang ditunjukkan dalam persamaan ringkas fotosintesis?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Tanah dan mineral"
+            },
+            {
+              "id": "B",
+              "label": "Karbon dioksida dan air"
+            },
+            {
+              "id": "C",
+              "label": "Cahaya dan klorofil"
+            },
+            {
+              "id": "D",
+              "label": "Gula dan oksigen"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Persamaan ringkas menunjukkan gula dan oksigen sebagai hasil.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Di bagian sel tumbuhan mana sebagian besar fotosintesis berlangsung?",
+          "narration": "Di bagian sel tumbuhan mana sebagian besar fotosintesis berlangsung?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Akar"
+            },
+            {
+              "id": "B",
+              "label": "Kloroplas"
+            },
+            {
+              "id": "C",
+              "label": "Bunga saja"
+            },
+            {
+              "id": "D",
+              "label": "Dinding sel"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Kloroplas berisi struktur yang berperan dalam fotosintesis.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-08",
+      "title": "Kuis 08 — Jaring-Jaring Makanan dan Energi",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 08.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Dalam rumput → belalang → katak, apa peran rumput?",
+          "narration": "Dalam rumput → belalang → katak, apa peran rumput?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Konsumen sekunder"
+            },
+            {
+              "id": "B",
+              "label": "Pengurai"
+            },
+            {
+              "id": "C",
+              "label": "Produsen"
+            },
+            {
+              "id": "D",
+              "label": "Pemangsa puncak"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Rumput membuat bahan makanan melalui fotosintesis.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Panah pada rantai makanan menunjukkan arah apa?",
+          "narration": "Panah pada rantai makanan menunjukkan arah apa?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Energi dari sumber makanan ke pemakannya"
+            },
+            {
+              "id": "B",
+              "label": "Arah hewan berjalan"
+            },
+            {
+              "id": "C",
+              "label": "Arah angin"
+            },
+            {
+              "id": "D",
+              "label": "Jumlah organisme"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Panah bergerak dari yang dimakan ke pemakan.",
+          "difficulty": "medium"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Mengapa jaring-jaring makanan sering lebih realistis?",
+          "narration": "Mengapa jaring-jaring makanan sering lebih realistis?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Semua organisme makan satu jenis saja"
+            },
+            {
+              "id": "B",
+              "label": "Energi bergerak tanpa arah"
+            },
+            {
+              "id": "C",
+              "label": "Pengurai tidak terlibat"
+            },
+            {
+              "id": "D",
+              "label": "Banyak organisme memiliki beberapa hubungan makan"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Jaring-jaring mewakili hubungan yang saling terhubung.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-09",
+      "title": "Kuis 09 — Merancang Penyelidikan yang Adil",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 09.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Faktor yang sengaja diubah dalam eksperimen disebut?",
+          "narration": "Faktor yang sengaja diubah dalam eksperimen disebut?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Variabel terikat"
+            },
+            {
+              "id": "B",
+              "label": "Variabel bebas"
+            },
+            {
+              "id": "C",
+              "label": "Kesimpulan"
+            },
+            {
+              "id": "D",
+              "label": "Sampel"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Variabel bebas adalah faktor yang sengaja diubah.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Apa yang tepat diukur sebagai hasil pertumbuhan tanaman?",
+          "narration": "Apa yang tepat diukur sebagai hasil pertumbuhan tanaman?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Warna pot"
+            },
+            {
+              "id": "B",
+              "label": "Jumlah air yang diberikan"
+            },
+            {
+              "id": "C",
+              "label": "Perubahan tinggi tanaman"
+            },
+            {
+              "id": "D",
+              "label": "Jenis tanah"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Tinggi tanaman dapat menjadi variabel terikat yang diukur konsisten.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Mengapa jumlah air dijaga sama saat cahaya dibandingkan?",
+          "narration": "Mengapa jumlah air dijaga sama saat cahaya dibandingkan?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Agar hasil lebih berkaitan dengan faktor cahaya yang diuji"
+            },
+            {
+              "id": "B",
+              "label": "Agar tanaman tidak perlu diukur"
+            },
+            {
+              "id": "C",
+              "label": "Supaya semua variabel berubah"
+            },
+            {
+              "id": "D",
+              "label": "Agar hasil selalu identik"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Mengendalikan faktor lain membuat perbandingan lebih adil.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-10",
+      "title": "Kuis 10 — Dasar-Dasar Tata Surya",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 10.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Berapa planet dalam daftar delapan planet tata surya?",
+          "narration": "Berapa planet dalam daftar delapan planet tata surya?",
+          "options": [
+            {
+              "id": "A",
+              "label": "7"
+            },
+            {
+              "id": "B",
+              "label": "9"
+            },
+            {
+              "id": "C",
+              "label": "10"
+            },
+            {
+              "id": "D",
+              "label": "8"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Daftar modern mencakup delapan planet.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Planet apa setelah Bumi jika bergerak menjauhi Matahari?",
+          "narration": "Planet apa setelah Bumi jika bergerak menjauhi Matahari?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Venus"
+            },
+            {
+              "id": "B",
+              "label": "Mars"
+            },
+            {
+              "id": "C",
+              "label": "Jupiter"
+            },
+            {
+              "id": "D",
+              "label": "Merkurius"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Urutannya Bumi lalu Mars.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Perputaran Bumi pada porosnya disebut?",
+          "narration": "Perputaran Bumi pada porosnya disebut?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Revolusi"
+            },
+            {
+              "id": "B",
+              "label": "Orbit"
+            },
+            {
+              "id": "C",
+              "label": "Rotasi"
+            },
+            {
+              "id": "D",
+              "label": "Presipitasi"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Rotasi adalah perputaran pada poros.",
+          "difficulty": "easy"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-11",
+      "title": "Kuis 11 — Persentase, Rasio, dan Perbandingan",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 11.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Berapa 15% dari 200?",
+          "narration": "Berapa 15% dari 200?",
+          "options": [
+            {
+              "id": "A",
+              "label": "15"
+            },
+            {
+              "id": "B",
+              "label": "25"
+            },
+            {
+              "id": "C",
+              "label": "30"
+            },
+            {
+              "id": "D",
+              "label": "45"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "0,15 × 200 = 30.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Pecahan paling sederhana dari 25% adalah?",
+          "narration": "Pecahan paling sederhana dari 25% adalah?",
+          "options": [
+            {
+              "id": "A",
+              "label": "1/4"
+            },
+            {
+              "id": "B",
+              "label": "1/5"
+            },
+            {
+              "id": "C",
+              "label": "1/2"
+            },
+            {
+              "id": "D",
+              "label": "4/5"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "25/100 disederhanakan menjadi 1/4.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "40 dari 50 benda memiliki ciri tertentu. Persentasenya?",
+          "narration": "40 dari 50 benda memiliki ciri tertentu. Persentasenya?",
+          "options": [
+            {
+              "id": "A",
+              "label": "40%"
+            },
+            {
+              "id": "B",
+              "label": "50%"
+            },
+            {
+              "id": "C",
+              "label": "60%"
+            },
+            {
+              "id": "D",
+              "label": "80%"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "40 ÷ 50 = 0,8 = 80%.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-12",
+      "title": "Kuis 12 — Desimal, Nilai Tempat, dan Konversi Satuan",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 12.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Mana lebih besar: 0,45 atau 0,405?",
+          "narration": "Mana lebih besar: 0,45 atau 0,405?",
+          "options": [
+            {
+              "id": "A",
+              "label": "0,405"
+            },
+            {
+              "id": "B",
+              "label": "0,45"
+            },
+            {
+              "id": "C",
+              "label": "Keduanya sama"
+            },
+            {
+              "id": "D",
+              "label": "Tidak dapat dibandingkan"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "0,45 = 0,450 dan lebih besar daripada 0,405.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Hitung 2,4 + 0,35.",
+          "narration": "Hitung 2,4 + 0,35.",
+          "options": [
+            {
+              "id": "A",
+              "label": "2,39"
+            },
+            {
+              "id": "B",
+              "label": "2,65"
+            },
+            {
+              "id": "C",
+              "label": "2,70"
+            },
+            {
+              "id": "D",
+              "label": "2,75"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "2,40 + 0,35 = 2,75.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "1,25 meter sama dengan berapa sentimeter?",
+          "narration": "1,25 meter sama dengan berapa sentimeter?",
+          "options": [
+            {
+              "id": "A",
+              "label": "125 cm"
+            },
+            {
+              "id": "B",
+              "label": "12,5 cm"
+            },
+            {
+              "id": "C",
+              "label": "1.250 cm"
+            },
+            {
+              "id": "D",
+              "label": "0,125 cm"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "1,25 × 100 = 125 cm.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-13",
+      "title": "Kuis 13 — Koordinat dan Pola Linear",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 13.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Pada titik (3, 5), nilai x adalah?",
+          "narration": "Pada titik (3, 5), nilai x adalah?",
+          "options": [
+            {
+              "id": "A",
+              "label": "5"
+            },
+            {
+              "id": "B",
+              "label": "8"
+            },
+            {
+              "id": "C",
+              "label": "3"
+            },
+            {
+              "id": "D",
+              "label": "2"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Angka pertama pada (x, y) adalah x.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Jika y = 2x + 1 dan x = 4, nilai y adalah?",
+          "narration": "Jika y = 2x + 1 dan x = 4, nilai y adalah?",
+          "options": [
+            {
+              "id": "A",
+              "label": "9"
+            },
+            {
+              "id": "B",
+              "label": "7"
+            },
+            {
+              "id": "C",
+              "label": "8"
+            },
+            {
+              "id": "D",
+              "label": "10"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "2 × 4 + 1 = 9.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Jika x naik satu pada y = 2x + 1, bagaimana perubahan y?",
+          "narration": "Jika x naik satu pada y = 2x + 1, bagaimana perubahan y?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Berkurang 2"
+            },
+            {
+              "id": "B",
+              "label": "Tetap"
+            },
+            {
+              "id": "C",
+              "label": "Bertambah 1"
+            },
+            {
+              "id": "D",
+              "label": "Bertambah 2"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Koefisien x menunjukkan kenaikan 2 untuk setiap x bertambah 1.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-14",
+      "title": "Kuis 14 — Peluang dan Hasil Acak",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 14.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Kantong berisi 3 biru dan 2 kuning. Peluang mengambil biru?",
+          "narration": "Kantong berisi 3 biru dan 2 kuning. Peluang mengambil biru?",
+          "options": [
+            {
+              "id": "A",
+              "label": "2/5"
+            },
+            {
+              "id": "B",
+              "label": "3/5"
+            },
+            {
+              "id": "C",
+              "label": "1/2"
+            },
+            {
+              "id": "D",
+              "label": "3/2"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Tiga dari lima keping berwarna biru.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Apa arti peluang 0?",
+          "narration": "Apa arti peluang 0?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Pasti terjadi"
+            },
+            {
+              "id": "B",
+              "label": "Lebih mungkin terjadi"
+            },
+            {
+              "id": "C",
+              "label": "Mustahil dalam model"
+            },
+            {
+              "id": "D",
+              "label": "Ada satu hasil"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Peluang 0 menyatakan peristiwa mustahil menurut model.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Mengapa hasil 20 percobaan bisa berbeda dari peluang teoritis?",
+          "narration": "Mengapa hasil 20 percobaan bisa berbeda dari peluang teoritis?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Sampel terbatas memiliki variasi acak"
+            },
+            {
+              "id": "B",
+              "label": "Peluang teoritis selalu salah"
+            },
+            {
+              "id": "C",
+              "label": "Semua hasil harus sama"
+            },
+            {
+              "id": "D",
+              "label": "Aturan matematika berubah"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Variasi acak dapat muncul pada jumlah percobaan terbatas.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-15",
+      "title": "Kuis 15 — Wujud Zat dan Model Partikel",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 15.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Wujud apa mempertahankan bentuk dan volumenya?",
+          "narration": "Wujud apa mempertahankan bentuk dan volumenya?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Gas"
+            },
+            {
+              "id": "B",
+              "label": "Cair"
+            },
+            {
+              "id": "C",
+              "label": "Uap"
+            },
+            {
+              "id": "D",
+              "label": "Padat"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Zat padat memiliki bentuk dan volume tetap pada kondisi biasa.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Perubahan cair menjadi gas disebut?",
+          "narration": "Perubahan cair menjadi gas disebut?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Menguap"
+            },
+            {
+              "id": "B",
+              "label": "Membeku"
+            },
+            {
+              "id": "C",
+              "label": "Mengembun"
+            },
+            {
+              "id": "D",
+              "label": "Mencair"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Menguap adalah perubahan cair menjadi gas.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Ketika es mencair, apa yang terjadi pada jenis zatnya?",
+          "narration": "Ketika es mencair, apa yang terjadi pada jenis zatnya?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Menjadi zat kimia lain"
+            },
+            {
+              "id": "B",
+              "label": "Partikel air hilang"
+            },
+            {
+              "id": "C",
+              "label": "Tetap air; wujud berubah"
+            },
+            {
+              "id": "D",
+              "label": "Massanya menjadi nol"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Mencair adalah perubahan fisika; zatnya tetap air.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-16",
+      "title": "Kuis 16 — Gaya dan Gerak",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 16.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Benda menempuh 60 meter dalam 12 sekon. Kelajuan rata-ratanya?",
+          "narration": "Benda menempuh 60 meter dalam 12 sekon. Kelajuan rata-ratanya?",
+          "options": [
+            {
+              "id": "A",
+              "label": "4 m/s"
+            },
+            {
+              "id": "B",
+              "label": "5 m/s"
+            },
+            {
+              "id": "C",
+              "label": "6 m/s"
+            },
+            {
+              "id": "D",
+              "label": "12 m/s"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "60 ÷ 12 = 5 m/s.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Gaya total untuk massa 2 kg dengan percepatan 3 m/s² adalah?",
+          "narration": "Gaya total untuk massa 2 kg dengan percepatan 3 m/s² adalah?",
+          "options": [
+            {
+              "id": "A",
+              "label": "1,5 N"
+            },
+            {
+              "id": "B",
+              "label": "5 N"
+            },
+            {
+              "id": "C",
+              "label": "3 N"
+            },
+            {
+              "id": "D",
+              "label": "6 N"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "F = m × a = 2 × 3 = 6 N.",
+          "difficulty": "medium"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Jika gaya total seimbang pada benda yang bergerak, apa mungkin terjadi?",
+          "narration": "Jika gaya total seimbang pada benda yang bergerak, apa mungkin terjadi?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Benda terus bergerak dengan kecepatan tetap"
+            },
+            {
+              "id": "B",
+              "label": "Benda berhenti seketika"
+            },
+            {
+              "id": "C",
+              "label": "Benda selalu mempercepat"
+            },
+            {
+              "id": "D",
+              "label": "Massanya hilang"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Gaya total nol berarti kecepatan tidak berubah.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-17",
+      "title": "Kuis 17 — Siklus Air dan Tempat Penyimpanan Air",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 17.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Uap air menjadi titik cair melalui proses apa?",
+          "narration": "Uap air menjadi titik cair melalui proses apa?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Evaporasi"
+            },
+            {
+              "id": "B",
+              "label": "Transpirasi"
+            },
+            {
+              "id": "C",
+              "label": "Kondensasi"
+            },
+            {
+              "id": "D",
+              "label": "Limpasan"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Kondensasi mengubah uap menjadi cair.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Air yang mengalir di permukaan daratan disebut?",
+          "narration": "Air yang mengalir di permukaan daratan disebut?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Limpasan"
+            },
+            {
+              "id": "B",
+              "label": "Infiltrasi"
+            },
+            {
+              "id": "C",
+              "label": "Rotasi"
+            },
+            {
+              "id": "D",
+              "label": "Sublimasi"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Limpasan adalah aliran air pada permukaan.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Manakah contoh tempat air tersimpan?",
+          "narration": "Manakah contoh tempat air tersimpan?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Hanya awan"
+            },
+            {
+              "id": "B",
+              "label": "Hanya sungai"
+            },
+            {
+              "id": "C",
+              "label": "Hanya tumbuhan"
+            },
+            {
+              "id": "D",
+              "label": "Tanah, danau, laut, atau es"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Air tersimpan di banyak tempat, termasuk tanah, danau, laut, dan es.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-18",
+      "title": "Kuis 18 — Perubahan dan Perpindahan Energi",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 18.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Perubahan energi utama pada lampu listrik?",
+          "narration": "Perubahan energi utama pada lampu listrik?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Cahaya menjadi listrik"
+            },
+            {
+              "id": "B",
+              "label": "Listrik menjadi cahaya dan panas"
+            },
+            {
+              "id": "C",
+              "label": "Panas menjadi massa"
+            },
+            {
+              "id": "D",
+              "label": "Bunyi menjadi listrik"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Lampu mengubah energi listrik menjadi cahaya dan panas.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Apa yang dinyatakan kekekalan energi?",
+          "narration": "Apa yang dinyatakan kekekalan energi?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Energi diam di satu benda"
+            },
+            {
+              "id": "B",
+              "label": "Energi diciptakan dari ketiadaan"
+            },
+            {
+              "id": "C",
+              "label": "Energi hilang saat berubah"
+            },
+            {
+              "id": "D",
+              "label": "Energi total tetap meski bentuk/tempatnya berubah"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Energi dapat berpindah atau berubah bentuk, sementara totalnya tetap.",
+          "difficulty": "medium"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Sebagian energi gerak berubah menjadi apa saat benda melambat karena gesekan?",
+          "narration": "Sebagian energi gerak berubah menjadi apa saat benda melambat karena gesekan?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Energi termal"
+            },
+            {
+              "id": "B",
+              "label": "Energi tak terbatas"
+            },
+            {
+              "id": "C",
+              "label": "Massa benda"
+            },
+            {
+              "id": "D",
+              "label": "Energi potensial Matahari"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Gesekan mengubah sebagian energi gerak menjadi termal.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-19",
+      "title": "Kuis 19 — Memeriksa Sumber dan Bukti",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 19.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Apa langkah untuk memeriksa asal sebuah klaim?",
+          "narration": "Apa langkah untuk memeriksa asal sebuah klaim?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Menilai desain saja"
+            },
+            {
+              "id": "B",
+              "label": "Membaca judul saja"
+            },
+            {
+              "id": "C",
+              "label": "Memeriksa penulis/lembaga, tanggal, dan bukti"
+            },
+            {
+              "id": "D",
+              "label": "Menganggap semua tautan benar"
+            }
+          ],
+          "correct_option_id": "C",
+          "explanation": "Asal, tanggal, dan bukti memberi konteks untuk menilai klaim.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Mengapa mencari sumber independen tambahan berguna?",
+          "narration": "Mengapa mencari sumber independen tambahan berguna?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Memeriksa apakah bukti didukung secara terpisah"
+            },
+            {
+              "id": "B",
+              "label": "Membuat semua sumber memakai kata sama"
+            },
+            {
+              "id": "C",
+              "label": "Menghindari membaca bukti"
+            },
+            {
+              "id": "D",
+              "label": "Memastikan satu sumber selalu benar"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Pemeriksaan silang dapat menemukan konteks dan perbedaan bukti.",
+          "difficulty": "medium"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Klaim berisi angka tanpa metode atau sumber. Apa respons terbaik?",
+          "narration": "Klaim berisi angka tanpa metode atau sumber. Apa respons terbaik?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Langsung menyebarkan"
+            },
+            {
+              "id": "B",
+              "label": "Menganggap pasti benar"
+            },
+            {
+              "id": "C",
+              "label": "Menghapus sumber lain"
+            },
+            {
+              "id": "D",
+              "label": "Cari asal dan metode sebelum menyimpulkan"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Angka memerlukan konteks, metode, dan sumber.",
+          "difficulty": "medium"
+        }
+      ]
+    },
+    {
+      "template_id": "quiz-20",
+      "title": "Kuis 20 — Menulis Penjelasan Berbasis Bukti",
+      "description": "Kuis pilihan ganda tiga soal untuk mengulas materi 20.",
+      "release_policy": "after_submission",
+      "questions": [
+        {
+          "order_index": 1,
+          "prompt": "Dalam klaim–bukti–penalaran, bagian apa yang menjawab pertanyaan?",
+          "narration": "Dalam klaim–bukti–penalaran, bagian apa yang menjawab pertanyaan?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Bukti"
+            },
+            {
+              "id": "B",
+              "label": "Klaim"
+            },
+            {
+              "id": "C",
+              "label": "Penalaran"
+            },
+            {
+              "id": "D",
+              "label": "Judul"
+            }
+          ],
+          "correct_option_id": "B",
+          "explanation": "Klaim adalah jawaban atau posisi yang didukung.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 2,
+          "prompt": "Apa fungsi bukti dalam penjelasan?",
+          "narration": "Apa fungsi bukti dalam penjelasan?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Mengulang judul"
+            },
+            {
+              "id": "B",
+              "label": "Menggantikan seluruh penalaran"
+            },
+            {
+              "id": "C",
+              "label": "Memanjangkan kesimpulan"
+            },
+            {
+              "id": "D",
+              "label": "Memberikan data/pengamatan pendukung"
+            }
+          ],
+          "correct_option_id": "D",
+          "explanation": "Bukti menyediakan dasar yang dapat diperiksa untuk klaim.",
+          "difficulty": "easy"
+        },
+        {
+          "order_index": 3,
+          "prompt": "Mengapa keterbatasan sampel perlu disebut?",
+          "narration": "Mengapa keterbatasan sampel perlu disebut?",
+          "options": [
+            {
+              "id": "A",
+              "label": "Agar kesimpulan tidak melampaui data"
+            },
+            {
+              "id": "B",
+              "label": "Agar data tampak tidak berguna"
+            },
+            {
+              "id": "C",
+              "label": "Agar klaim tidak dijelaskan"
+            },
+            {
+              "id": "D",
+              "label": "Supaya semua hasil dianggap salah"
+            }
+          ],
+          "correct_option_id": "A",
+          "explanation": "Keterbatasan menunjukkan sejauh mana hasil dapat digeneralisasi.",
+          "difficulty": "medium"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+demo_id,username,full_name,role,grade_level,preferred_language,accessibility_profile,usage_profile,planned_tutor_sessions_completed,planned_tutor_sessions_open,planned_independent_assessments_completed,planned_study_minutes,planned_materials_opened,planned_independent_assessment_average_pct,planned_strong_concept,planned_next_focus,record_status
+demo-siswa-001,demo.siswa.001,[DEMO] Alya Putri Anindita,student,Kelas 7,id,standard,Rutin konsisten,5,1,4,100,5,78,Persamaan Linear,Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-002,demo.siswa.002,[DEMO] Bima Ardiansyah,student,Kelas 8,id,standard,Rutin konsisten,6,0,5,117,6,81,Data dan Statistik,Bangun Datar,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-003,demo.siswa.003,[DEMO] Citra Maharani,student,Kelas 9,id,standard,Rutin konsisten,7,0,6,134,7,84,Ekosistem,Ekosistem,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-004,demo.siswa.004,[DEMO] Daffa Ramadhan,student,Kelas 10,id,standard,Rutin konsisten,8,0,7,151,8,87,Tata Surya,Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-005,demo.siswa.005,[DEMO] Elsa Permata,student,Kelas 11,id,standard,Rutin konsisten,9,0,4,168,9,90,Operasi Pecahan,Bangun Datar,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-006,demo.siswa.006,[DEMO] Farhan Pratama,student,Kelas 7,id,blind,Rutin konsisten,5,0,5,185,5,93,Bangun Datar,Ekosistem,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-007,demo.siswa.007,[DEMO] Gita Anggraini,student,Kelas 8,id,blind,Rutin konsisten,6,1,6,202,6,78,Fotosintesis,Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-008,demo.siswa.008,[DEMO] Hadi Saputra,student,Kelas 9,id,blind,Rutin konsisten,7,0,7,219,7,81,Metode Ilmiah,Bangun Datar,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-009,demo.siswa.009,[DEMO] Intan Puspita,student,Kelas 10,id,low_vision,Rutin konsisten,8,0,4,236,8,84,Pecahan,Ekosistem,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-010,demo.siswa.010,[DEMO] Jovan Mahendra,student,Kelas 11,id,low_vision,Rutin konsisten,9,0,5,253,9,87,Persamaan Linear,Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-011,demo.siswa.011,[DEMO] Kirana Lestari,student,Kelas 7,id,standard,Meningkat bertahap,2,1,2,45,3,55,Fotosintesis,Data dan Statistik,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-012,demo.siswa.012,[DEMO] Luthfi Hakim,student,Kelas 8,id,standard,Meningkat bertahap,3,0,3,56,4,60,Metode Ilmiah,Metode Ilmiah,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-013,demo.siswa.013,[DEMO] Maya Oktaviani,student,Kelas 9,id,standard,Meningkat bertahap,4,0,4,67,5,65,Pecahan,Operasi Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-014,demo.siswa.014,[DEMO] Naufal Rizky,student,Kelas 10,id,standard,Meningkat bertahap,5,0,2,78,6,70,Persamaan Linear,Data dan Statistik,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-015,demo.siswa.015,[DEMO] Oki Prasetyo,student,Kelas 11,id,standard,Meningkat bertahap,6,1,3,89,7,75,Data dan Statistik,Metode Ilmiah,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-016,demo.siswa.016,[DEMO] Putri Amelia,student,Kelas 7,id,blind,Meningkat bertahap,2,0,4,100,3,80,Ekosistem,Operasi Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-017,demo.siswa.017,[DEMO] Qori Azzahra,student,Kelas 8,id,blind,Meningkat bertahap,3,0,2,111,4,55,Tata Surya,Data dan Statistik,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-018,demo.siswa.018,[DEMO] Raka Wijaya,student,Kelas 9,id,blind,Meningkat bertahap,4,0,3,122,5,60,Operasi Pecahan,Metode Ilmiah,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-019,demo.siswa.019,[DEMO] Salsa Nuraini,student,Kelas 10,id,low_vision,Meningkat bertahap,5,1,4,133,6,65,Bangun Datar,Operasi Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-020,demo.siswa.020,[DEMO] Tegar Firmansyah,student,Kelas 11,id,low_vision,Meningkat bertahap,6,0,2,144,7,70,Fotosintesis,Data dan Statistik,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-021,demo.siswa.021,[DEMO] Umar Fadli,student,Kelas 7,id,standard,Perlu latihan tambahan,3,2,1,50,2,25,Tata Surya,Tata Surya,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-022,demo.siswa.022,[DEMO] Vina Kartika,student,Kelas 8,id,standard,Perlu latihan tambahan,4,1,2,59,3,31,Operasi Pecahan,Persamaan Linear,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-023,demo.siswa.023,[DEMO] Wahyu Nugraha,student,Kelas 9,id,standard,Perlu latihan tambahan,5,1,3,68,4,37,Bangun Datar,Fotosintesis,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-024,demo.siswa.024,[DEMO] Xena Maharani,student,Kelas 10,id,standard,Perlu latihan tambahan,3,2,1,77,5,43,Fotosintesis,Tata Surya,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-025,demo.siswa.025,[DEMO] Yoga Prasetya,student,Kelas 11,id,standard,Perlu latihan tambahan,4,1,2,86,2,49,Metode Ilmiah,Persamaan Linear,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-026,demo.siswa.026,[DEMO] Zahra Fitriani,student,Kelas 7,id,blind,Perlu latihan tambahan,5,1,3,95,3,55,Pecahan,Fotosintesis,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-027,demo.siswa.027,[DEMO] Aditya Kusuma,student,Kelas 8,id,blind,Perlu latihan tambahan,3,2,1,104,4,61,Persamaan Linear,Tata Surya,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-028,demo.siswa.028,[DEMO] Bella Safitri,student,Kelas 9,id,blind,Perlu latihan tambahan,4,1,2,113,5,25,Data dan Statistik,Persamaan Linear,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-029,demo.siswa.029,[DEMO] Candra Wibowo,student,Kelas 10,id,low_vision,Perlu latihan tambahan,5,1,3,122,2,31,Ekosistem,Fotosintesis,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-030,demo.siswa.030,[DEMO] Dewi Larasati,student,Kelas 11,id,low_vision,Perlu latihan tambahan,3,2,1,131,3,37,Tata Surya,Tata Surya,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-031,demo.siswa.031,[DEMO] Eko Setiawan,student,Kelas 7,id,standard,Belajar sporadis,0,1,0,8,0,,Persamaan Linear,Bangun Datar,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-032,demo.siswa.032,[DEMO] Fajar Hidayat,student,Kelas 8,id,standard,Belajar sporadis,1,0,1,15,1,45,Data dan Statistik,Ekosistem,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-033,demo.siswa.033,[DEMO] Galih Pamungkas,student,Kelas 9,id,standard,Belajar sporadis,2,0,2,22,2,55,Ekosistem,Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-034,demo.siswa.034,[DEMO] Hana Salsabila,student,Kelas 10,id,standard,Belajar sporadis,3,0,3,29,3,65,Tata Surya,Bangun Datar,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-035,demo.siswa.035,[DEMO] Ilham Maulana,student,Kelas 11,id,standard,Belajar sporadis,0,0,0,0,4,,Operasi Pecahan,Ekosistem,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-036,demo.siswa.036,[DEMO] Jelita Ayuningtyas,student,Kelas 7,id,blind,Belajar sporadis,1,1,1,43,0,85,Bangun Datar,Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-037,demo.siswa.037,[DEMO] Kevin Saputra,student,Kelas 8,id,blind,Belajar sporadis,2,0,2,50,1,35,Fotosintesis,Bangun Datar,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-038,demo.siswa.038,[DEMO] Laras Wulandari,student,Kelas 9,id,blind,Belajar sporadis,3,0,3,57,2,45,Metode Ilmiah,Ekosistem,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-039,demo.siswa.039,[DEMO] Muhammad Akbar,student,Kelas 10,id,low_vision,Belajar sporadis,0,0,0,0,3,,Pecahan,Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-040,demo.siswa.040,[DEMO] Nadia Aulia,student,Kelas 11,id,low_vision,Belajar sporadis,1,0,1,71,4,65,Persamaan Linear,Bangun Datar,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-041,demo.siswa.041,[DEMO] Oscar Pranata,student,Kelas 7,id,standard,Baru bergabung,0,1,1,10,0,40,Fotosintesis,Metode Ilmiah,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-042,demo.siswa.042,[DEMO] Prita Sari,student,Kelas 8,id,standard,Baru bergabung,1,0,0,16,1,,Metode Ilmiah,Operasi Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-043,demo.siswa.043,[DEMO] Qila Nadhira,student,Kelas 9,id,standard,Baru bergabung,0,0,0,0,2,,,Data dan Statistik,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-044,demo.siswa.044,[DEMO] Reza Kurniawan,student,Kelas 10,id,standard,Baru bergabung,1,0,1,28,0,70,Persamaan Linear,Metode Ilmiah,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-045,demo.siswa.045,[DEMO] Siti Rahma,student,Kelas 11,id,standard,Baru bergabung,0,1,0,34,1,,Data dan Statistik,Operasi Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-046,demo.siswa.046,[DEMO] Taufik Iskandar,student,Kelas 7,id,blind,Baru bergabung,1,0,0,40,2,,Ekosistem,Data dan Statistik,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-047,demo.siswa.047,[DEMO] Vira Nirmala,student,Kelas 8,id,blind,Baru bergabung,0,0,1,46,0,60,Tata Surya,Metode Ilmiah,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-048,demo.siswa.048,[DEMO] Wulan Pertiwi,student,Kelas 9,id,blind,Baru bergabung,1,0,0,52,1,,Operasi Pecahan,Operasi Pecahan,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-049,demo.siswa.049,[DEMO] Yudha Prakoso,student,Kelas 10,id,low_vision,Baru bergabung,0,1,0,58,2,,Bangun Datar,Data dan Statistik,PLAN_ONLY_NOT_IMPORTED
+demo-siswa-050,demo.siswa.050,[DEMO] Zaki Alfarizi,student,Kelas 11,id,low_vision,Baru bergabung,1,0,1,64,0,50,Fotosintesis,Metode Ilmiah,PLAN_ONLY_NOT_IMPORTED
