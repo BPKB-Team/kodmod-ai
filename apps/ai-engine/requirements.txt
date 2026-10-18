@@ -24,6 +24,7 @@ psycopg[binary,pool]>=3.2
 alembic>=1.13
 redis[hiredis]>=5.0
 pgvector>=0.3.0
+qdrant-client>=1.19.1,<2.0
 
 # Local cross-encoder is optional: install the [reranker] extra when enabled.
 rank-bm25>=0.2.2

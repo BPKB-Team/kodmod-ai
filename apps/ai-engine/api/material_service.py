@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.material_concepts import current_concepts
+from config.settings import settings
 from database.models import ClassMaterial, Classroom, Enrollment, User
 from database.session import async_session
 from rag.ingestion import build_material_records
@@ -83,6 +84,8 @@ async def index_class_material(
 ) -> None:
     """Publish an index atomically; outdated jobs never replace newer content."""
     mapping_version = None
+    old_qdrant_ids: list[str] = []
+    qdrant_points: list[dict] = []
     try:
         async with async_session() as session:
             row = await session.scalar(
@@ -163,13 +166,24 @@ async def index_class_material(
                 and row.n_chunks > 0
             ):
                 return
-            await replace_material_chunks(session, material_id, version, records)
+            old_qdrant_ids, qdrant_points = await replace_material_chunks(
+                session,
+                material_id,
+                version,
+                records,
+                class_id=row.class_id,
+                mapping_version=mapping_version,
+            )
             row.indexed_version = version
             row.indexed_mapping_version = mapping_version
             row.n_chunks = len(records)
             row.rag_status = "ready"
             row.rag_error = None
             await session.commit()
+        if settings.VECTOR_BACKEND == "qdrant":
+            from rag.stores.qdrant_store import sync_material_replacement
+
+            await sync_material_replacement(old_qdrant_ids, qdrant_points)
     except Exception:
         if lease:
             # Queue owns retry status; obsolete lease holders cannot mutate it.

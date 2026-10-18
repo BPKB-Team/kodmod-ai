@@ -103,6 +103,13 @@ async def lifespan(app: FastAPI):
     log.info("Shutting down KODMOD AI")
     if app.state.checkpointer_pool is not None:
         await app.state.checkpointer_pool.close()
+    if settings.VECTOR_BACKEND == "qdrant":
+        from rag.stores.qdrant_store import close_client
+
+        try:
+            await close_client()
+        except Exception:
+            log.exception("Could not close the Qdrant client cleanly")
     await close_db()
 
 

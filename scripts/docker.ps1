@@ -44,6 +44,20 @@ if ($Action -in $monitoringProfileActions) {
     if ($IsLinux) { $composeArgs += @('--profile', 'monitoring-linux') }
 }
 
+# The optional Qdrant profile is included for application lifecycle/status
+# commands when selected, and for down so a full stack stop also stops Qdrant.
+# PostgreSQL remains available as the retrieval fallback.
+$runtimeEnv = if ($usesCentre) { $centreEnv } else { Join-Path $sourceRoot '.env' }
+$vectorBackend = if ($env:VECTOR_BACKEND) { $env:VECTOR_BACKEND } else { 'pgvector' }
+if (-not $env:VECTOR_BACKEND -and (Test-Path -LiteralPath $runtimeEnv)) {
+    $backendEntry = Get-Content -LiteralPath $runtimeEnv |
+        Where-Object { $_ -match '^VECTOR_BACKEND=' } | Select-Object -First 1
+    if ($backendEntry) { $vectorBackend = ($backendEntry -split '=', 2)[1].Trim().Trim('"').Trim("'") }
+}
+if (($vectorBackend -eq 'qdrant' -and $Action -in @('up', 'api', 'status', 'logs')) -or $Action -eq 'down') {
+    $composeArgs += @('--profile', 'qdrant')
+}
+
 if ($usesCentre -and $Action -in @('up', 'monitoring-up')) {
     $lines = @(Get-Content -LiteralPath $centreEnv)
     $dataRoot = [System.IO.Path]::GetFullPath((Join-Path $CentreRoot 'data\monitoring')).Replace('\', '/')

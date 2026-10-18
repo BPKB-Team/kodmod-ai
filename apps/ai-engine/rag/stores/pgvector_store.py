@@ -13,9 +13,10 @@ import logging
 import uuid
 from pathlib import PurePosixPath
 
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import Text, delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config.settings import settings
 from database.models import ClassMaterial, Classroom, CurriculumChunk, Enrollment
 from database.session import async_session
 
@@ -37,6 +38,11 @@ async def upsert_chunks(records: list[dict]) -> int:
     """
     if not records:
         return 0
+    prepared = []
+    for record in records:
+        item = dict(record)
+        item["id"] = str(item.get("id") or uuid.uuid4())
+        prepared.append(item)
     sql = text("""
         INSERT INTO curriculum_chunks
           (id, content, embedding, source, language, concept_id, subject_id,
@@ -47,11 +53,20 @@ async def upsert_chunks(records: list[dict]) -> int:
         ON CONFLICT (id) DO UPDATE SET
           content = EXCLUDED.content,
           embedding = EXCLUDED.embedding,
-          accessibility_metadata = EXCLUDED.accessibility_metadata;
+          source = EXCLUDED.source,
+          language = EXCLUDED.language,
+          concept_id = EXCLUDED.concept_id,
+          subject_id = EXCLUDED.subject_id,
+          document_id = EXCLUDED.document_id,
+          chunk_index = EXCLUDED.chunk_index,
+          section_title = EXCLUDED.section_title,
+          accessibility_metadata = EXCLUDED.accessibility_metadata,
+          created_at = NOW();
     """)
     n = 0
+    canonical_vectors: dict[str, tuple[list[float], str]] = {}
     async with async_session() as session:
-        for r in records:
+        for r in prepared:
             await session.execute(
                 sql,
                 {
@@ -69,21 +84,74 @@ async def upsert_chunks(records: list[dict]) -> int:
                 },
             )
             n += 1
+        if settings.VECTOR_BACKEND == "qdrant":
+            ids = [uuid.UUID(r["id"]) for r in prepared]
+            hash_rows = (
+                await session.execute(
+                    select(
+                        CurriculumChunk.id,
+                        CurriculumChunk.embedding,
+                        func.md5(CurriculumChunk.embedding.cast(Text)).label("vector_hash"),
+                    ).where(CurriculumChunk.id.in_(ids))
+                )
+            ).all()
+            canonical_vectors = {str(row.id): (row.embedding, row.vector_hash) for row in hash_rows}
+    if settings.VECTOR_BACKEND == "qdrant":
+        try:
+            from rag.stores.qdrant_store import upsert_points
+
+            await upsert_points(
+                [
+                    {
+                        **record,
+                        "scope": "global",
+                        "embedding": canonical_vectors[record["id"]][0],
+                        "vector_hash": canonical_vectors[record["id"]][1],
+                    }
+                    for record in prepared
+                ]
+            )
+        except Exception:
+            logger.exception("Qdrant mirror upsert failed; PostgreSQL remains authoritative")
     logger.info("Upserted %d chunks into curriculum_chunks", n)
     return n
 
 
 async def replace_material_chunks(
-    session: AsyncSession, material_id: uuid.UUID, version: int, records: list[dict]
-) -> None:
+    session: AsyncSession,
+    material_id: uuid.UUID,
+    version: int,
+    records: list[dict],
+    *,
+    class_id: uuid.UUID | None = None,
+    mapping_version: int = 0,
+) -> tuple[list[str], list[dict]]:
     """Replace a material's chunks inside the caller's locked transaction."""
+    mirror_qdrant = settings.VECTOR_BACKEND == "qdrant"
+    old_ids = []
+    if mirror_qdrant:
+        old_ids = [
+            str(chunk_id)
+            for chunk_id in await session.scalars(
+                select(CurriculumChunk.id).where(CurriculumChunk.material_id == material_id)
+            )
+        ]
+        if class_id is None:
+            material = await session.get(ClassMaterial, material_id)
+            class_id = material.class_id if material else None
+    prepared = []
+    for record in records:
+        item = dict(record)
+        item["id"] = str(item.get("id") or uuid.uuid4())
+        prepared.append(item)
     await session.execute(delete(CurriculumChunk).where(CurriculumChunk.material_id == material_id))
     session.add_all(
         [
             CurriculumChunk(
+                id=uuid.UUID(record["id"]),
                 material_id=material_id,
                 material_version=version,
-                material_mapping_version=record.get("material_mapping_version", 0),
+                material_mapping_version=record.get("material_mapping_version", mapping_version),
                 content=record["text"],
                 embedding=record["embedding"],
                 source=record["source"],
@@ -92,10 +160,40 @@ async def replace_material_chunks(
                 section_title=record.get("section_title"),
                 accessibility_metadata=record.get("accessibility_metadata", {}),
             )
-            for record in records
+            for record in prepared
         ]
     )
     await session.flush()
+    ids = [uuid.UUID(record["id"]) for record in prepared]
+    canonical_vectors = {}
+    if mirror_qdrant and ids:
+        hash_rows = (
+            await session.execute(
+                select(
+                    CurriculumChunk.id,
+                    CurriculumChunk.embedding,
+                    func.md5(CurriculumChunk.embedding.cast(Text)).label("vector_hash"),
+                ).where(CurriculumChunk.id.in_(ids))
+            )
+        ).all()
+        canonical_vectors = {str(row.id): (row.embedding, row.vector_hash) for row in hash_rows}
+    points = []
+    if mirror_qdrant:
+        points = [
+            {
+                "id": record["id"],
+                "embedding": canonical_vectors[record["id"]][0],
+                "scope": "class",
+                "class_id": str(class_id) if class_id else None,
+                "material_id": str(material_id),
+                "material_version": version,
+                "material_mapping_version": record.get("material_mapping_version", mapping_version),
+                "language": record.get("language", "id"),
+                "vector_hash": canonical_vectors[record["id"]][1],
+            }
+            for record in prepared
+        ]
+    return old_ids, points
 
 
 async def query(
@@ -108,8 +206,12 @@ async def query(
     student_id: uuid.UUID | None = None,
     class_id: uuid.UUID | None = None,
     material_id: uuid.UUID | None = None,
+    candidate_ids: list[uuid.UUID] | None = None,
+    include_vector_hash: bool = False,
 ) -> list[dict]:
     """Cosine search; shared curriculum queries never include class materials."""
+    if not candidate_ids and candidate_ids is not None:
+        return []
     if (class_id and not student_id) or (material_id and not class_id):
         return []
     distance = CurriculumChunk.embedding.cosine_distance(embedding)
@@ -128,6 +230,10 @@ async def query(
         CurriculumChunk.material_id,
         (1 - distance).label("score"),
     )
+    if include_vector_hash:
+        stmt = stmt.add_columns(
+            func.md5(CurriculumChunk.embedding.cast(Text)).label("_vector_hash")
+        )
     if class_id:
         stmt = (
             stmt.add_columns(
@@ -158,6 +264,8 @@ async def query(
             stmt = stmt.where(CurriculumChunk.subject_id == subject_id)
     if language:
         stmt = stmt.where(CurriculumChunk.language == language)
+    if candidate_ids is not None:
+        stmt = stmt.where(CurriculumChunk.id.in_(candidate_ids))
     stmt = stmt.order_by(distance).limit(top_k)
     async with async_session() as session:
         rows = (await session.execute(stmt)).mappings().all()
@@ -180,18 +288,46 @@ async def query(
 
 
 async def delete_by_source(source: str) -> int:
-    sql = text("DELETE FROM curriculum_chunks WHERE source = :source")
+    ids: list[str] = []
     async with async_session() as session:
-        res = await session.execute(sql, {"source": source})
-    return res.rowcount or 0  # type: ignore[attr-defined]  # CursorResult has rowcount
+        ids = [
+            str(chunk_id)
+            for chunk_id in await session.scalars(
+                select(CurriculumChunk.id).where(CurriculumChunk.source == source)
+            )
+        ]
+        await session.execute(delete(CurriculumChunk).where(CurriculumChunk.source == source))
+    await _mirror_delete_ids(ids)
+    return len(ids)
 
 
 async def delete_by_document(document_id: uuid.UUID | str) -> int:
     """Remove every chunk produced by one uploaded document."""
-    sql = text("DELETE FROM curriculum_chunks WHERE document_id = CAST(:doc AS uuid)")
+    document_uuid = uuid.UUID(str(document_id))
+    ids: list[str] = []
     async with async_session() as session:
-        res = await session.execute(sql, {"doc": str(document_id)})
-    return res.rowcount or 0  # type: ignore[attr-defined]  # CursorResult has rowcount
+        ids = [
+            str(chunk_id)
+            for chunk_id in await session.scalars(
+                select(CurriculumChunk.id).where(CurriculumChunk.document_id == document_uuid)
+            )
+        ]
+        await session.execute(
+            delete(CurriculumChunk).where(CurriculumChunk.document_id == document_uuid)
+        )
+    await _mirror_delete_ids(ids)
+    return len(ids)
+
+
+async def _mirror_delete_ids(ids: list[str]) -> None:
+    if not ids or settings.VECTOR_BACKEND != "qdrant":
+        return
+    try:
+        from rag.stores.qdrant_store import delete_points
+
+        await delete_points(ids)
+    except Exception:
+        logger.exception("Qdrant mirror delete failed; PostgreSQL remains authoritative")
 
 
 class PgVectorStore:

@@ -7,7 +7,7 @@ Single entry point used by `tools/rag_tool.py` and the LangGraph
 the cross-encoder reranker.
 
 This module is intentionally thin - it composes:
-    embeddings.embed_text  +  pgvector_store.query  +  reranker.rerank
+    embeddings.embed_text + vector-store query + reranker.rerank
 """
 
 from __future__ import annotations
@@ -75,7 +75,12 @@ async def retrieve(
                 student_id=student_id, class_id=class_id, material_id=material_id, language=None
             )
         )
-    candidates = await pgvector_store.query(embedding, **filters)
+    if settings.VECTOR_BACKEND == "qdrant":
+        from rag.stores.qdrant_store import query as qdrant_query
+
+        candidates = await qdrant_query(embedding, **filters)
+    else:
+        candidates = await pgvector_store.query(embedding, **filters)
     if not candidates:
         if class_id or material_id:
             raise HTTPException(

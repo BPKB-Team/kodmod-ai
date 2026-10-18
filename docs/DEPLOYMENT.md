@@ -10,7 +10,7 @@ Image default menggunakan OpenAI LLM/embedding dan ElevenLabs STT/TTS. Tidak mem
 
 ## Lokal Windows, Docker Centre yang sudah ada
 
-Dari `C:\laragon\www\kodmod`, setelah Docker Desktop aktif:
+Dari `F:\Laragon\www\kodmod`, setelah Docker Desktop aktif:
 
 ```powershell
 pwsh -NoProfile -File .\scripts\docker.ps1 up
@@ -22,6 +22,17 @@ Alias dari root repository: `npm run docker:up`, `npm run docker:status`,
 script Docker Centre yang sama, sehingga tidak membuat project/database duplikat.
 
 Script memakai project `kodmod-centre` dan override di `F:\Docker_Centre\kodmod` jika konfigurasi tersebut menunjuk checkout ini. Data PostgreSQL, Redis, audio, unggahan, dan metrik tetap di direktori `data` Docker Centre. Script akan menolak checkout yang berbeda agar tidak memakai database proyek lain tanpa sengaja. Saat monitoring pertama kali dijalankan, script membuat password Grafana acak di file privat `F:\Docker_Centre\kodmod\.env` dan menyiapkan folder metrik. `F:\Docker_Centre\kodmod\docker.ps1 up` juga memanggil script repository ini.
+
+Qdrant tersedia sebagai profile opsional untuk Docker Centre lokal. Jika
+`VECTOR_BACKEND=qdrant` ditetapkan di `F:\Docker_Centre\kodmod\.env`, wrapper
+`scripts/docker.ps1 up` mengaktifkan service Qdrant dan meneruskan konfigurasi
+ke API/worker. Qdrant menyimpan data pada named volume Linux Docker Desktop,
+di WSL2 data disk yang saat ini berada di
+`F:\Docker_Centre\wsl\DockerDesktopWSL`; Qdrant tidak bind ke
+`F:\Docker_Centre\kodmod\data\qdrant`. Default pengembangan dan Compose VPS
+tetap `pgvector`; Qdrant belum menjadi bagian dari Compose produksi. Lihat
+[panduan operasional Qdrant](QDRANT_OPERATIONS.md) sebelum mengubah backend,
+membangun ulang indeks, atau memulihkan snapshot.
 
 API, worker, dan migrasi harus memakai mount audio/unggahan yang sama. Template pemulihan konfigurasi: `infra/docker/compose.centre.example.yaml`. Worker memakai lease/heartbeat dan retry SQL; pekerjaan yang berhenti dapat diklaim ulang tanpa memerlukan halaman browser tetap terbuka.
 

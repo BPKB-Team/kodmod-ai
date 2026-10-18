@@ -20,6 +20,10 @@ services:
       - type: bind
         source: "${KODMOD_DOCKER_ROOT}/data/redis"
         target: /data
+  qdrant:
+    container_name: null
+    # Keep the Linux named volume from docker-compose.yml. A Windows host bind
+    # can appear as 9p inside Docker Desktop and Qdrant cannot guarantee WAL safety there.
   ai-engine:
     container_name: null
     volumes: *private-data

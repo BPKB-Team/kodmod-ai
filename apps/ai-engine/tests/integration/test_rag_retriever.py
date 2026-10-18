@@ -175,6 +175,7 @@ async def test_km_int_097_pdf_without_pypdf(monkeypatch, tmp_path) -> None:
 # --------------------------------------------------------------------------- #
 async def test_km_int_098_store_backend_selection(monkeypatch) -> None:
     from rag import retriever
+    from rag.stores import qdrant_store
 
     called = []
 
@@ -182,9 +183,7 @@ async def test_km_int_098_store_backend_selection(monkeypatch) -> None:
         called.append(filters)
         return []
 
-    monkeypatch.setattr(retriever.pgvector_store, "query", query)
-    # Classroom permissions live in PostgreSQL. A legacy Qdrant setting must
-    # not redirect retrieval away from the database that enforces them.
+    monkeypatch.setattr(qdrant_store, "query", query)
     monkeypatch.setattr(retriever.settings, "VECTOR_BACKEND", "qdrant")
     assert await retriever.retrieve("pecahan", use_reranker=False) == []
     assert len(called) == 1

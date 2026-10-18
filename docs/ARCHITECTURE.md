@@ -107,10 +107,19 @@ through the graph. The fields most agents read/write are:
 | Layer              | Store                | What it holds                       |
 |--------------------|----------------------|-------------------------------------|
 | Graph checkpoints  | Postgres (langgraph) | One row per (thread_id, step)       |
-| Curriculum + RAG   | Postgres + pgvector  | concepts, lessons, curriculum_chunks|
+| Curriculum + RAG   | Postgres + pgvector  | canonical content, embeddings, authorization|
 | OLTP / analytics   | Postgres             | sessions, attempts, mastery, reports|
 | Short-term memory  | Redis                | last response, pacing, session vars |
-| Vector alt         | Qdrant (optional)    | when VECTOR_BACKEND=qdrant          |
+| ANN candidate index| Qdrant (optional)    | vector IDs + scope/version filters only|
+
+When `VECTOR_BACKEND=qdrant`, Qdrant finds candidate vector IDs. PostgreSQL
+still loads the final text and applies class enrollment, publication, active
+class, and material-version checks. Qdrant stores no curriculum text or source
+paths. If its index is unavailable, stale, or returns too few validated hits,
+retrieval falls back to the complete PostgreSQL/pgvector query. See
+[`QDRANT_INTEGRATION.md`](QDRANT_INTEGRATION.md) for the boundary and
+[`QDRANT_OPERATIONS.md`](QDRANT_OPERATIONS.md) for setup, backup, recovery,
+security, and reindex procedures.
 
 ## 5. Streaming
 

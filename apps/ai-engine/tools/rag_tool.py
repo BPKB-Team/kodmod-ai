@@ -50,6 +50,10 @@ class RAGTool:
 
     # -----------------------------------------------------------------
     def _build_store(self):
+        if settings.VECTOR_BACKEND == "qdrant":
+            from rag.stores.qdrant_store import QdrantVectorStore
+
+            return QdrantVectorStore()
         from rag.stores.pgvector_store import PgVectorStore
 
         return PgVectorStore()
