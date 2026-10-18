@@ -1,11 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, AudioLines, BookOpen, Check, ChevronDown, Keyboard, MessageCircle, ListChecks, TrendingUp } from "lucide-react";
-import { Brand } from "@/components/ui";
+import { ArrowRight, AudioLines, BookOpen, Check, ChevronDown, Keyboard, MessageCircle, ListChecks, TrendingUp, BarChart3, Users, GraduationCap, LogIn, Sparkles } from "lucide-react";
 import LandingMenu from "@/components/LandingMenu";
 import { ExperienceToolbar } from "@/components/experience-toolbar";
 import { getServerI18n } from "@/lib/server-language";
 import "../styles/landing.css";
+import "../styles/public-learning.css";
+import { TutorAgentDemo } from "@/components/tutor-agent-demo";
+import { LandingFooter } from "@/components/landing-footer";
 
 const navigation = [["#tentang", "Tentang KODMOD"], ["#cara-belajar", "Cara belajar"], ["#untuk-guru", "Untuk guru"], ["#faq", "Pertanyaan umum"]];
 const menuKeys: Record<string, string> = { "#tentang": "about", "#cara-belajar": "how", "#untuk-guru": "features", "#faq": "faq" };
@@ -25,24 +27,158 @@ export default async function HomePage() {
     </div></header>
     <main id="konten-utama" tabIndex={-1}>
       <section className="lp-hero">
-        <div className="lp-grid" aria-hidden="true" /><div className="lp-orbit lp-orbit-one" aria-hidden="true" /><div className="lp-orbit lp-orbit-two" aria-hidden="true" />
+        <div className="lp-grid" aria-hidden="true" />
+        <div className="lp-globe-mesh" aria-hidden="true">
+          <svg viewBox="0 0 1000 1000" fill="none" className="lp-globe-svg" aria-hidden="true">
+            <defs>
+              <radialGradient id="globeGlowGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.16" />
+                <stop offset="50%" stopColor="#2563eb" stopOpacity="0.06" />
+                <stop offset="90%" stopColor="#020817" stopOpacity="0" />
+              </radialGradient>
+              <linearGradient id="globeLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.35" />
+                <stop offset="50%" stopColor="#60a5fa" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.04" />
+              </linearGradient>
+            </defs>
+            <circle cx="500" cy="500" r="440" fill="url(#globeGlowGrad)" />
+            <circle cx="500" cy="500" r="440" stroke="url(#globeLineGrad)" strokeWidth="1.5" strokeDasharray="6 6" />
+            <circle cx="500" cy="500" r="350" stroke="url(#globeLineGrad)" strokeWidth="1" strokeDasharray="4 6" opacity="0.6" />
+            <ellipse cx="500" cy="500" rx="440" ry="130" stroke="url(#globeLineGrad)" strokeWidth="1" strokeDasharray="3 5" />
+            <ellipse cx="500" cy="500" rx="440" ry="260" stroke="url(#globeLineGrad)" strokeWidth="1" strokeDasharray="3 5" />
+            <ellipse cx="500" cy="500" rx="150" ry="440" stroke="url(#globeLineGrad)" strokeWidth="1" strokeDasharray="3 5" />
+            <ellipse cx="500" cy="500" rx="300" ry="440" stroke="url(#globeLineGrad)" strokeWidth="1" strokeDasharray="3 5" />
+            <ellipse cx="500" cy="500" rx="510" ry="170" stroke="#60a5fa" strokeWidth="2" opacity="0.32" transform="rotate(-24 500 500)" />
+            <ellipse cx="500" cy="500" rx="560" ry="200" stroke="#38bdf8" strokeWidth="1" strokeDasharray="8 8" opacity="0.22" transform="rotate(-24 500 500)" />
+          </svg>
+        </div>
+        <div className="lp-orbit lp-orbit-one" aria-hidden="true" />
+        <div className="lp-orbit lp-orbit-two" aria-hidden="true" />
         <div className="lp-container lp-hero-layout">
           <div className="lp-hero-copy">
+            <div className="lp-slogan-pill" data-voice-menu="slogan" tabIndex={0}>
+              <Sparkles size={14} className="lp-slogan-sparkle" aria-hidden="true" />
+              <span>{t("BEYOND ACCESS, BEYOND SIGHT")}</span>
+            </div>
+            <div className="lp-agentic-subtitle" data-voice-menu="agentic-sub" tabIndex={0}>
+              <span>{t("AGENTIC AI LEARNING ASSISTANT FOR VISUALLY IMPAIRED STUDENTS")}</span>
+            </div>
             <h1 data-voice-menu="hero-title">{t("Pahami pelajaran,")}<br />{t("selangkah demi selangkah.")}</h1>
             <p data-voice-menu="hero-subtitle">{t("Belajar dari materi guru, tanyakan yang belum kamu pahami, dan berlatih bersama Tutor AI. Pilih teks atau suara yang nyaman untukmu.")}</p>
             <div className="lp-actions">
-              <Link href="/daftar" className="lp-btn lp-btn-blue" data-voice-menu="register">{t("Mulai belajar")}<ArrowRight size={18} aria-hidden="true" /></Link>
-              <a href="#cara-belajar" className="lp-text-link" data-voice-menu="how">{t("Lihat cara kerjanya")}<ChevronDown size={17} aria-hidden="true" /></a>
+              <Link href="/daftar" className="lp-btn lp-btn-blue" data-voice-menu="cta-start">{t("Mulai belajar")}<ArrowRight size={18} aria-hidden="true" /></Link>
+              <a href="#cara-belajar" className="lp-text-link" data-voice-menu="cta-how">{t("Lihat cara kerjanya")}<ChevronDown size={17} aria-hidden="true" /></a>
             </div>
-            <div className="lp-access-chips"><span data-voice-menu="chip-text-voice"><AudioLines size={16} aria-hidden="true" />{t("Teks & suara")}</span><span data-voice-menu="chip-keyboard"><Keyboard size={16} aria-hidden="true" />{t("Navigasi keyboard")}</span></div>
+            <div className="lp-access-chips">
+              <span data-voice-menu="chip-text-voice" tabIndex={0}><AudioLines size={16} aria-hidden="true" />{t("Teks & suara")}</span>
+              <span data-voice-menu="chip-keyboard" tabIndex={0}><Keyboard size={16} aria-hidden="true" />{t("Navigasi keyboard")}</span>
+            </div>
           </div>
           <div className="lp-hero-visual">
-            <div className="lp-art-glow" aria-hidden="true" /><Image className="lp-hero-art" src="/images/landing/hero-learning.svg" alt="" width={800} height={800} priority />
-            <div className="lp-floating lp-floating-top" data-voice-menu="floating-listen"><span className="lp-icon"><AudioLines size={22} aria-hidden="true" /></span><div>{t("Dengarkan penjelasan")}<small>{t("Jeda, ulangi, atau lanjutkan.")}</small></div></div>
-            <div className="lp-floating lp-floating-bottom" data-voice-menu="floating-ask"><span className="lp-icon"><MessageCircle size={21} aria-hidden="true" /></span><div>{t("Tanyakan yang belum paham")}<small>{t("Satu pertanyaan setiap langkah.")}</small></div></div>
+            <div className="lp-art-glow" aria-hidden="true" />
+            <Image className="lp-hero-art" src="/images/landing/hero-learning.svg" alt={t("Ilustrasi buku belajar interaktif KODMOD")} width={800} height={800} priority />
+            <div className="lp-floating lp-floating-top" data-voice-menu="floating-listen" tabIndex={0}>
+              <span className="lp-icon"><AudioLines size={22} aria-hidden="true" /></span>
+              <div>
+                <strong>{t("Dengarkan penjelasan")}</strong>
+                <small>{t("Jeda, ulangi, atau lanjutkan.")}</small>
+              </div>
+            </div>
+            <div className="lp-floating lp-floating-bottom" data-voice-menu="floating-ask" tabIndex={0}>
+              <span className="lp-icon"><MessageCircle size={21} aria-hidden="true" /></span>
+              <div>
+                <strong>{t("Tanyakan yang belum paham")}</strong>
+                <small>{t("Satu pertanyaan setiap langkah.")}</small>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="lp-principles lp-container" data-voice-menu="principles"><span><BookOpen size={19} aria-hidden="true" />{t("Materi dari guru")}</span><span><MessageCircle size={19} aria-hidden="true" />{t("Tutor yang menemani")}</span><span><ListChecks size={19} aria-hidden="true" />{t("Latihan & penugasan")}</span></div>
+        <div className="lp-principles lp-container" data-voice-menu="principles" tabIndex={0}>
+          <span><BookOpen size={19} aria-hidden="true" />{t("Materi dari guru")}</span>
+          <span><MessageCircle size={19} aria-hidden="true" />{t("Tutor yang menemani")}</span>
+          <span><ListChecks size={19} aria-hidden="true" />{t("Latihan & penugasan")}</span>
+        </div>
+      </section>
+
+      {/* SECTION BARU: DEMO INTERAKTIF AGENTIC AI TUTOR */}
+      <section className="lp-agentic-demo-section" id="demo-tutor" aria-labelledby="agentic-demo-heading">
+        <div className="lp-container">
+          <div className="lp-agentic-section-header">
+            <span className="lp-agentic-badge" data-voice-menu="demo-badge" tabIndex={0}>✦ {t("Simulasi Tutor AI")}</span>
+            <h2 id="agentic-demo-heading" className="lp-agentic-title" data-voice-menu="demo-heading" tabIndex={0}>{t("Coba Langsung Simulasi Tutor AI")}</h2>
+            <p className="lp-agentic-desc">
+              {t("Ketik pertanyaan materi pelajaran yang ingin kamu pelajari, atau pilih topik cepat di bawah. Saksikan langkah berpikir AI yang menyusun analogi khusus audio untuk membantu pemahaman konsep secara mendalam.")}
+            </p>
+          </div>
+          <TutorAgentDemo />
+        </div>
+      </section>
+
+      {/* 5 Core Solution Pillars Showcase from Pitch Deck */}
+      <section className="lp-pillars-section" id="pilar-solusi">
+        <div className="lp-container">
+          <div className="lp-pillars-header">
+            <div className="lp-sdg-badge" data-voice-menu="sdg-badge" tabIndex={0} title="UN SDG 4 - Quality Education">
+              <span className="lp-sdg-num">4</span>
+              <div className="lp-sdg-text">
+                <strong>QUALITY EDUCATION</strong>
+                <small>THE GLOBAL GOALS</small>
+              </div>
+            </div>
+            <div className="lp-pillars-title-wrap">
+              <span className="lp-pillars-tag" data-voice-menu="pillars-tag" tabIndex={0}>{t("Pilar Solusi KODMOD")}</span>
+              <h2 className="lp-pillars-headline" data-voice-menu="slogan-section" tabIndex={0}>{t("BEYOND ACCESS, BEYOND SIGHT")}</h2>
+            </div>
+          </div>
+
+          <div className="lp-pillars-grid">
+            <div className="lp-pillar-card" data-voice-menu="pillar-audio" tabIndex={0}>
+              <div className="lp-pillar-icon wave"><AudioLines size={24} aria-hidden="true" /></div>
+              <h3>{t("Audio-First Learning")}</h3>
+              <p>{t("Arsitektur multisensori yang memprioritaskan narasi suara jernih, navigasi keyboard tanpa mouse, dan interaksi yang ramah pembaca layar.")}</p>
+            </div>
+            <div className="lp-pillar-card" data-voice-menu="pillar-practice" tabIndex={0}>
+              <div className="lp-pillar-icon pencil"><ListChecks size={24} aria-hidden="true" /></div>
+              <h3>{t("Practice & Assess")}</h3>
+              <p>{t("Latihan interaktif dan kuis terstruktur dengan opsi ramah aksesibilitas untuk menguji pemahaman konsep secara bertahap.")}</p>
+            </div>
+            <div className="lp-pillar-card" data-voice-menu="pillar-feedback" tabIndex={0}>
+              <div className="lp-pillar-icon chat"><MessageCircle size={24} aria-hidden="true" /></div>
+              <h3>{t("Cognitive Feedback")}</h3>
+              <p>{t("Tutor AI memberikan analogi konkret dan panduan berpikir selangkah demi selangkah yang disesuaikan untuk siswa disabilitas netra.")}</p>
+            </div>
+            <div className="lp-pillar-card" data-voice-menu="pillar-adaptive" tabIndex={0}>
+              <div className="lp-pillar-icon trend"><TrendingUp size={24} aria-hidden="true" /></div>
+              <h3>{t("Adaptive Learning")}</h3>
+              <p>{t("Ritme belajar adaptif yang mengikuti pemahaman dan respon siswa, memudahkan mereka mengulang atau mendalami topik.")}</p>
+            </div>
+            <div className="lp-pillar-card" data-voice-menu="pillar-analytics" tabIndex={0}>
+              <div className="lp-pillar-icon chart"><BarChart3 size={24} aria-hidden="true" /></div>
+              <h3>{t("Analytics & Reporting")}</h3>
+              <p>{t("Laporan progres dan penguasaan konsep yang transparan bagi guru dan pendidik untuk mendampingi intervensi belajar tepat sasaran.")}</p>
+            </div>
+          </div>
+
+          {/* Dual Impact Bar: For Students | For Educators */}
+          <div className="lp-dual-value-bar">
+            <div className="lp-dual-val-col" data-voice-menu="val-students" tabIndex={0}>
+              <span className="lp-dual-icon student"><Users size={22} aria-hidden="true" /></span>
+              <div>
+                <strong>{t("Untuk Siswa")}</strong>
+                <p>{t("Belajar lebih dalam")}: {t("Eksplorasi materi secara mandiri dengan pendampingan AI interaktif.")}</p>
+              </div>
+            </div>
+            <div className="lp-dual-divider" aria-hidden="true" />
+            <div className="lp-dual-val-col" data-voice-menu="val-teachers" tabIndex={0}>
+              <span className="lp-dual-icon teacher"><GraduationCap size={22} aria-hidden="true" /></span>
+              <div>
+                <strong>{t("Untuk Pendidik")}</strong>
+                <p>{t("Mengajar lebih cerdas")}: {t("Distribusi materi cepat, review kuis otomatis, dan pemantauan menyeluruh.")}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
       <section id="tentang" className="lp-section lp-container">
         <div className="lp-section-heading" data-voice-menu="heading-about"><h2>{t("Semua kebutuhan belajar,")}<br />{t("lebih mudah dijangkau.")}</h2><p>{t("Dirancang untuk siswa tunanetra dan low vision, dengan pendampingan guru.")}</p></div>
@@ -90,8 +226,71 @@ export default async function HomePage() {
           ["Apakah tersedia Bahasa Inggris?", "Pilih EN dari menu bahasa. Tampilan dan jawaban Tutor mengikuti bahasa pilihanmu. Materi guru tetap menggunakan bahasa aslinya.", "faq-5"],
         ].map(([question, answer, faqKey]) => <details key={question} data-voice-menu={faqKey}><summary>{t(question)}<ChevronDown size={19} aria-hidden="true" /></summary><p>{t(answer)}</p></details>)}
       </div></section>
-      <section className="lp-cta"><div className="lp-container"><div data-voice-menu="section-cta"><h2>{t("Siap mulai belajar?")}</h2><p>{t("Buat akunmu dan pilih cara belajar yang paling nyaman.")}</p></div><div className="lp-actions"><Link href="/daftar" className="lp-btn lp-btn-blue" data-voice-menu="register">{t("Buat akun")}<ArrowRight size={18} aria-hidden="true" /></Link><Link href="/masuk" className="lp-text-link" data-voice-menu="login">{t("Sudah punya akun?")} {t("Masuk")}</Link></div></div></section>
+      <section className="lp-cta-refined" id="mulai-belajar">
+        <div className="lp-cta-bg-glow" aria-hidden="true" />
+        <div className="lp-container">
+          <div className="lp-cta-card">
+            <div className="lp-cta-badge-pill" data-voice-menu="cta-badge" tabIndex={0}>
+              <Sparkles size={14} className="lp-slogan-sparkle" aria-hidden="true" />
+              <span>{t("MULAI SEKARANG")}</span>
+            </div>
+            <h2 className="lp-cta-headline" data-voice-menu="cta-title" tabIndex={0}>
+              {t("Siap mulai belajar?")}
+            </h2>
+            <p className="lp-cta-subheadline" data-voice-menu="cta-desc" tabIndex={0}>
+              {t("Buat akunmu dan pilih cara belajar yang paling nyaman.")}
+            </p>
+
+            <div className="lp-cta-actions-wrap">
+              <Link
+                href="/daftar"
+                className="voice-game-voice-btn lp-cta-btn-primary"
+                data-voice-menu="cta-register"
+                aria-label={t("Buat akun")}
+              >
+                <span className="lp-cta-btn-icon" aria-hidden="true">
+                  <ArrowRight size={20} strokeWidth={2.5} />
+                </span>
+                <span className="lp-cta-btn-text">
+                  <strong>{t("Buat akun")}</strong>
+                </span>
+              </Link>
+
+              <Link
+                href="/masuk"
+                className="voice-game-voice-btn lp-cta-btn-secondary"
+                data-voice-menu="cta-login"
+                aria-label={`${t("Sudah punya akun?")} ${t("Masuk")}`}
+              >
+                <span className="lp-cta-btn-icon secondary" aria-hidden="true">
+                  <LogIn size={18} />
+                </span>
+                <span className="lp-cta-btn-text">
+                  <strong>{t("Sudah punya akun?")} {t("Masuk")}</strong>
+                </span>
+              </Link>
+            </div>
+
+            <div className="lp-cta-perks-row" aria-label="Keunggulan KODMOD">
+              <span className="lp-cta-perk-item">
+                <Check size={16} strokeWidth={3} className="lp-perk-check" aria-hidden="true" />
+                <span>{t("100% Ramah Pembaca Layar")}</span>
+              </span>
+              <span className="lp-cta-perk-dot" aria-hidden="true">•</span>
+              <span className="lp-cta-perk-item">
+                <Check size={16} strokeWidth={3} className="lp-perk-check" aria-hidden="true" />
+                <span>{t("Suara Jernih AI")}</span>
+              </span>
+              <span className="lp-cta-perk-dot" aria-hidden="true">•</span>
+              <span className="lp-cta-perk-item">
+                <Check size={16} strokeWidth={3} className="lp-perk-check" aria-hidden="true" />
+                <span>{t("Akses Gratis")}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
-    <footer className="lp-footer lp-container"><div><Brand /><p data-voice-menu="footer-tagline">{t("Ruang belajar untuk semua.")}</p></div><nav aria-label={t("Navigasi footer")}>{navigation.map(([href, label]) => <a href={href} key={href} data-voice-menu={menuKeys[href]}>{t(label)}</a>)}</nav><small>© {new Date().getFullYear()} KODMOD</small></footer>
+    <LandingFooter />
   </div>;
 }
