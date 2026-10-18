@@ -33,6 +33,7 @@ async def audit_http():
         "subjects",
         "concepts",
         "learning_sessions",
+        "interaction_logs",
         "quiz_sessions",
         "mastery_scores",
     ]
@@ -161,6 +162,46 @@ async def test_admin_user_crud_records_audit_events(audit_http):
         # Verify target_name survived deletion
         deleted_event = next(e for e in events if e.action == "user.deleted")
         assert "Guru Baru" in deleted_event.target_name
+
+
+async def test_admin_deletes_student_with_learning_history(audit_http):
+    client, factory, _, admin_user, student = audit_http
+    session_id = uuid.uuid4()
+    interaction_id = uuid.uuid4()
+    async with factory() as session:
+        session.add(
+            models.LearningSession(
+                id=session_id,
+                student_id=student.id,
+                mode="guided_tutoring",
+                guided_state={"phase": "learning"},
+            )
+        )
+        session.add(
+            models.InteractionLog(
+                id=interaction_id,
+                session_id=session_id,
+                role="assistant",
+                text="Test transcript",
+            )
+        )
+        await session.commit()
+
+    response = await client.delete(f"/admin/users/{student.id}")
+    assert response.status_code == 204, response.text
+
+    async with factory() as session:
+        assert await session.get(models.User, student.id) is None
+        assert await session.get(models.LearningSession, session_id) is None
+        assert await session.get(models.InteractionLog, interaction_id) is None
+        deleted_event = await session.scalar(
+            select(models.AuditEvent).where(
+                models.AuditEvent.action == "user.deleted",
+                models.AuditEvent.target_id == str(student.id),
+            )
+        )
+        assert deleted_event is not None
+        assert deleted_event.actor_id == admin_user.id
 
 
 async def test_password_reset_does_not_report_unchanged_role_as_a_change(audit_http):
