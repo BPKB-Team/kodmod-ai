@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useId, useState } from "react";
 import { useI18n } from "./language-provider";
 import { LogoutButton } from "./logout-button";
 import {
@@ -13,13 +14,20 @@ import {
   ChevronRight,
   FileCheck2,
   ClipboardList,
+  Menu,
 } from "lucide-react";
 
 export function LearningNav({ base }: { base: string }) {
   const { t } = useI18n();
   const path = usePathname();
+  const navigationId = useId();
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <nav className="admin-nav" aria-label={t("Menu ruang belajar")}>
+    <>
+    <button type="button" className="learning-nav-toggle" aria-expanded={menuOpen} aria-controls={navigationId}
+      onClick={() => setMenuOpen(open => !open)}><Menu size={20} aria-hidden="true" />{t("Menu ruang belajar")}
+      <ChevronRight size={18} aria-hidden="true" /></button>
+    <nav id={navigationId} className={`admin-nav${menuOpen ? " is-open" : ""}`} aria-label={t("Menu ruang belajar")}>
       {[
         { href: base, title: "Ringkasan", icon: LayoutDashboard },
         { href: `${base}/kelas`, title: "Kelas", icon: Library },
@@ -46,6 +54,7 @@ export function LearningNav({ base }: { base: string }) {
           <Link
             key={href}
             href={href}
+            onClick={() => setMenuOpen(false)}
             data-voice-menu={
               href === base
                 ? "dashboard"
@@ -80,5 +89,6 @@ export function LearningNav({ base }: { base: string }) {
       <div className="admin-nav-divider" aria-hidden="true" />
       <LogoutButton variant="nav" />
     </nav>
+    </>
   );
 }

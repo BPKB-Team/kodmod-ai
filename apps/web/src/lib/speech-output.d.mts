@@ -1,6 +1,6 @@
 import type { SpeechEngine } from "./speech-preferences.mjs";
 import type { Language } from "./i18n.mjs";
-export type SpeechRequest = { owner: string; text: string; engine: SpeechEngine; language: Language; menuKey?: string };
+export type SpeechRequest = { owner: string; text: string; engine: SpeechEngine; language: Language; menuKey?: string; interrupt?: boolean };
 export type OutputState = { owner: string | null; status: "idle" | "loading" | "playing" | "paused" | "blocked" | "error";
   fallback: boolean; message: string };
 export type SpeechOutput = { play: () => Promise<void> | void; pause: () => void;

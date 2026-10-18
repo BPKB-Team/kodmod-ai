@@ -14,7 +14,7 @@ function fixture() {
     stop() { queued.length = 0; }, play: async request => played.push(request) };
   const element = { dataset: { voiceMenu: "login" }, textContent: "Masuk", labels: null,
     getAttribute: () => null, matches: () => false,
-    closest(selector) { return selector.includes("data-voice-ignore") ? null : this; },
+    closest(selector) { return selector.includes("data-voice-ignore") || selector.includes("data-voice-managed") ? null : this; },
     contains(node) { return node === this || node?.parent === this; } };
   const child = { parent: element, closest: () => element };
   const detach = attachMenuNarration({ document, speech, language: "en", engine: "app", pathname: "/" });
@@ -50,6 +50,22 @@ test("focus and click share a label while touch hover, disabled and modal contro
   f.element.matches = () => true;
   f.emit("focusin");
   assert.equal(f.queued.length, 0);
+});
+
+test("pointer movement cannot cancel speech queued by keyboard focus or selection", () => {
+  const f = fixture();
+  f.emit("focusin");
+  f.emit("pointerout", f.element, { relatedTarget: null });
+  assert.equal(f.queued.length, 1);
+  f.detach();
+});
+
+test("hovering empty space cannot cancel a deliberate control announcement", () => {
+  const f = fixture();
+  f.emit("focusin");
+  f.emit("pointerover", { closest: () => null });
+  assert.equal(f.queued.length, 1);
+  f.detach();
 });
 
 test("recording and Tutor activity block narration both at hover and delayed playback", () => {

@@ -5,7 +5,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from analytics.aggregator import _activity_total_minutes, _duration_minutes, _is_independent_assessment
+from analytics.aggregator import (
+    _activity_total_minutes,
+    _duration_minutes,
+    _is_independent_assessment,
+)
 
 pytestmark = pytest.mark.unit
 

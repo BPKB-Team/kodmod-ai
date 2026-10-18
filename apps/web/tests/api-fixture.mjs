@@ -2,6 +2,7 @@
 // Run: node apps/web/tests/api-fixture.mjs
 import { createServer } from "node:http";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { createLearningFixture } from "./learning-fixture.mjs";
 const quizFailureQueue = [];
 const quizRequests = [];
@@ -37,7 +38,9 @@ const users = [
 const invites = [];
 let serial = 1;
 const voiceRequests = [];
+const publicMenuKeys = new Set([...readFileSync(new URL("../../ai-engine/voice/menu_catalog.py", import.meta.url), "utf8").matchAll(/^[ \t]+"([a-z0-9-]+)":/gm)].map(match => match[1]));
 const voiceBytes = process.env.FIXTURE_AUDIO_FILE ? readFileSync(process.env.FIXTURE_AUDIO_FILE) : Buffer.from([0xff, 0xfb, 0x90, 0x00]);
+const voiceProfile = "fixture-" + createHash("sha256").update(voiceBytes).digest("hex").slice(0, 16);
 const server = createServer(async (req, res) => {
   res.setHeader("Content-Type", "application/json");
   const send = (status, body) => {
@@ -66,9 +69,9 @@ const server = createServer(async (req, res) => {
     return send(200, { requests: quizRequests, failures: quizFailureQueue });
   }
   if (url.pathname === "/__fixture/voice") return send(200, { requests: voiceRequests });
-  if (url.pathname === "/voice/profile") return send(200, { profile: "fixture-bian-v2" });
+  if (url.pathname === "/voice/profile") return send(200, { profile: voiceProfile });
   if (url.pathname.startsWith("/voice/menu/")) {
-    if (!new Set(["welcome", "preview", "home", "about", "how", "features", "faq", "login", "register", "username", "password", "full-name", "role", "dashboard", "classes", "materials", "tutor", "practice", "assignments", "progress", "quizzes", "review", "analytics", "users", "activity", "sound", "logout"]).has(url.pathname.split("/").at(-1))) return send(404, {});
+    if (!publicMenuKeys.has(url.pathname.split("/").at(-1))) return send(404, {});
     if (!["id", "en"].includes(url.searchParams.get("language") || "id")) return send(422, {});
     voiceRequests.push({ menu: url.pathname.split("/").at(-1), language: url.searchParams.get("language") || "id" });
     res.writeHead(200, { "Content-Type": "audio/mpeg" }); return res.end(voiceBytes);

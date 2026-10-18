@@ -18,10 +18,10 @@ test("first visit shows voice setup; saved users can enable optional swipe navig
   dom.window.HTMLDialogElement.prototype.close = function () { this.open = false; };
   dom.window.HTMLElement.prototype.getClientRects = function () { return this.closest("dialog:not([open])") ? [] : [{}]; };
   const idle = Object.freeze({ owner: "", status: "idle", message: "" });
-  globalThis.kodmodVoiceTest = { idle, plays: [] };
+  globalThis.kodmodVoiceTest = { idle, plays: [], queued: [] };
   const stubs = new Map([
     ["next/navigation", "export const usePathname = () => '/';"],
-    ["@/lib/browser-speech", "export const speechOutput = { subscribe: () => () => {}, getState: () => globalThis.kodmodVoiceTest.idle, play: async request => { globalThis.kodmodVoiceTest.plays.push(request); }, stop() {}, queueMenu() {}, cancelQueuedMenu() {} };"],
+    ["@/lib/browser-speech", "export const speechOutput = { subscribe: () => () => {}, getState: () => globalThis.kodmodVoiceTest.idle, play: async request => { globalThis.kodmodVoiceTest.plays.push(request); }, stop() {}, queueMenu(request) { globalThis.kodmodVoiceTest.queued.push(request); }, cancelQueuedMenu() {} };"],
     ["@/lib/speech-audio-cache", "export async function pruneExpiredSpeechAudioCache() {}"],
     ["./language-provider", "export const useI18n = () => ({language: 'id', t: value => value, changeLanguage: async () => {}});"],
     ["@/components/language-provider", "export const useI18n = () => ({language: 'id', t: value => value});"],
@@ -66,6 +66,12 @@ test("first visit shows voice setup; saved users can enable optional swipe navig
     const dialog = document.querySelector("dialog");
     assert.equal(dialog.open, true, "New visitors must see the adjustment menu");
     assert.equal(document.querySelector('input[value="app"]').checked, true);
+    assert.ok(globalThis.kodmodVoiceTest.plays.some(request => request.menuKey === "voice-settings"), "The settings popup must announce its purpose");
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+      document.querySelector("#tutor-reader").focus();
+    });
+    assert.equal(globalThis.kodmodVoiceTest.queued.at(-1)?.menuKey, "tutor-reader-on", "Menu narration must remain enabled inside voice settings");
     await act(async () => document.querySelector(".voice-preferences-actions button").click());
     assert.equal(dialog.open, false);
     await act(async () => root.render(createElement(VoicePreferencesProvider, { key: "returning" }, createElement(Controls))));

@@ -143,3 +143,21 @@ test("global stop or a new Tutor cancels queued menu reading; recording is check
   await new Promise(resolve => setTimeout(resolve, 20));
   assert.deepEqual(played, ["Answer"]);
 });
+
+test("an intentional option selection can interrupt the tutor without enabling passive hover interruptions", async () => {
+  const { coordinator, played, stopped } = setup(async request => request.text);
+  await coordinator.play({ owner: "tutor", text: "Penjelasan soal", language: "id", engine: "app" });
+  await coordinator.play({ owner: "menu", text: "Menu lewat", language: "id", engine: "app" });
+  await coordinator.play({ owner: "menu", text: "Fotosintesis dipilih.", language: "id", engine: "app", interrupt: true });
+  assert.deepEqual(played, ["Penjelasan soal", "Fotosintesis dipilih."]);
+  assert.deepEqual(stopped, ["Penjelasan soal"]);
+});
+
+test("layout hover cannot replace a queued selection confirmation", async () => {
+  const { coordinator, played } = setup(async request => request.text);
+  coordinator.queueMenu({ owner: "menu", text: "Besar dipilih.", language: "id", engine: "app", interrupt: true }, () => true, 10);
+  coordinator.queueMenu({ owner: "menu", text: "Tampilan dan navigasi", language: "id", engine: "app", interrupt: false }, () => true, 15);
+  await new Promise(resolve => setTimeout(resolve, 30));
+  assert.deepEqual(played, ["Besar dipilih."]);
+  coordinator.stop();
+});

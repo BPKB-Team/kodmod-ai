@@ -24,6 +24,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, cast
@@ -85,9 +86,9 @@ def _is_independent_assessment(row) -> bool:
 
 def _activity_total_minutes(
     *,
-    learning_sessions: list,
+    learning_sessions: Sequence[Any],
     learning_activity: dict,
-    quiz_sessions: list,
+    quiz_sessions: Sequence[Any],
     quiz_activity: dict,
     window_start: datetime | None = None,
 ) -> float:
@@ -142,7 +143,10 @@ class StudentAggregator:
                     )
                 )
                 sess_q = sess_q.where(
-                    or_(LearningSession.started_at >= start, LearningSession.id.in_(recent_interactions))
+                    or_(
+                        LearningSession.started_at >= start,
+                        LearningSession.id.in_(recent_interactions),
+                    )
                 )
             sessions = (await session.execute(sess_q)).scalars().all()
 
@@ -239,7 +243,7 @@ class StudentAggregator:
         # ---------- Compute rollups ----------
         independent_assessments = [row for row in quiz_sessions if _is_independent_assessment(row)]
         n_sessions = len(sessions) + len(independent_assessments)
-        quiz_activity = {}
+        quiz_activity: dict[uuid.UUID, datetime | None] = {}
         for attempt in attempts:
             current = quiz_activity.get(attempt.quiz_session_id)
             if current is None or (attempt.answered_at and attempt.answered_at > current):

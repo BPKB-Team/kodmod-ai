@@ -12,7 +12,7 @@ export function VoiceControls({ text, onTranscript, autoPlayKey, language: conte
   language?: "id" | "en";
 }) {
   const owner = useId();
-  const { engine, tutorEnabled, openVoicePreferences } = useVoicePreferences();
+  const { engine, tutorEnabled, settingsOpen, openVoicePreferences } = useVoicePreferences();
   const { language: interfaceLanguage, t } = useI18n();
   const language = contentLanguage ?? interfaceLanguage;
   const output = useSyncExternalStore(speechOutput.subscribe, speechOutput.getState, speechOutput.getState);
@@ -32,10 +32,14 @@ export function VoiceControls({ text, onTranscript, autoPlayKey, language: conte
   const play = useCallback(() => speechOutput.play({ owner, text, engine: engine === "off" ? "app" : engine, language }), [owner, text, engine, language]);
   useEffect(() => () => { speechOutput.stop(owner); cancelCapture(); }, [owner, text, engine, language, cancelCapture]);
   useEffect(() => {
-    if (!autoPlayKey || autoPlayed.current === autoPlayKey) return;
+    if (!autoPlayKey || !tutorEnabled || settingsOpen || !text.trim() || autoPlayed.current === autoPlayKey) return;
     autoPlayed.current = autoPlayKey;
-    if (tutorEnabled && text.trim()) void play();
-  }, [autoPlayKey, text, tutorEnabled, play]);
+    void play();
+    return () => {
+      if (autoPlayed.current === autoPlayKey) autoPlayed.current = null;
+      speechOutput.stop(owner);
+    };
+  }, [autoPlayKey, text, tutorEnabled, settingsOpen, owner, play]);
   useEffect(() => { if (!tutorEnabled && autoPlayKey) speechOutput.stop(owner); }, [tutorEnabled, autoPlayKey, owner]);
 
   async function listen() {
@@ -94,7 +98,7 @@ export function VoiceControls({ text, onTranscript, autoPlayKey, language: conte
   const busyLabel = capture === "permission" ? "Menunggu izin mikrofon…" : capture === "transcribing" ? "Mengubah suara menjadi teks…" : "Menyiapkan suara…";
   const active = ["loading", "playing", "paused"].includes(state);
   return <section className="voice-panel voice-panel-compact" aria-label={t("Bantuan suara")}
-    data-voice-ignore="true" data-recording={capture === "recording"}>
+    data-voice-managed="playback" data-voice-player="true" data-recording={capture === "recording"}>
     <div className="voice-panel-heading"><Headphones size={21} aria-hidden="true" />
       <strong>{t(engine === "device" ? "Suara perangkat" : "Suara KODMOD")}</strong>
       <button type="button" className="icon-button" aria-label={t("Pengaturan suara")} title={t("Pengaturan suara")} onClick={openVoicePreferences}><Settings2 size={18} aria-hidden="true" /></button>

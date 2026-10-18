@@ -266,7 +266,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
             <h2>{question.question}</h2>
             <VoiceControls
               key={`${answerAttempt}:${answerLocked ? "read" : "answer"}`}
-              text={feedback || question.question}
+              text={feedback || [question.question, ...question.options.map((option, index) => `${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}: ${option}`)].join(". ")}
               language={contentLanguage}
               autoPlayKey={phase === "submitting" ? null : `${quizSessionId}:${question.question_id}:${phase}:${answerAttempt}`}
               onTranscript={answerLocked ? undefined : changeAnswer}

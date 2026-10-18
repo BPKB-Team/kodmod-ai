@@ -5,10 +5,10 @@ import { translate, type Language } from "@/lib/i18n.mjs";
 
 const t = (text: string) => translate(text, document.documentElement.lang as Language);
 
-function announceDialog(text: string) {
+function announceDialog(text: string, menuKey?: string) {
   if (typeof window === "undefined" || typeof CustomEvent === "undefined") return;
   try {
-    window.dispatchEvent(new CustomEvent("kodmod:dialog-announce", { detail: { text } }));
+    window.dispatchEvent(new CustomEvent("kodmod:dialog-announce", { detail: { text, menuKey } }));
   } catch {
     // Ignore if window is not available
   }
@@ -52,7 +52,8 @@ export type Confirmation = {
 export async function confirmAction(options: Confirmation) {
   await waitForNativeDialog();
   if (Swal.isVisible()) return false;
-  announceDialog(`${t(options.title)}. ${t(options.text)}`);
+  const publicKey = options.title === "Masuk ke KODMOD?" ? "login" : options.title === "Buat akun KODMOD?" ? "register" : undefined;
+  const confirmText = t(options.confirmText || "Ya, lanjutkan");
   const result = await dialog().fire({
     titleText: t(options.title),
     text: t(options.text),
@@ -61,7 +62,12 @@ export async function confirmAction(options: Confirmation) {
     showCancelButton: true,
     focusCancel: true,
     reverseButtons: true,
-    confirmButtonText: t(options.confirmText || "Ya, lanjutkan"),
+    confirmButtonText: confirmText,
+    didOpen(popup) {
+      popup.querySelector<HTMLElement>(".swal2-cancel")?.setAttribute("data-voice-menu", "dialog-cancel");
+      if (publicKey) popup.querySelector<HTMLElement>(".swal2-confirm")?.setAttribute("data-voice-menu", `${publicKey}-confirm`);
+      announceDialog(`${t(options.title)}. ${t(options.text)}. ${t("Batal")}. ${confirmText}.`, publicKey ? `dialog-${publicKey}` : undefined);
+    },
   });
   return result.isConfirmed;
 }
@@ -69,11 +75,23 @@ export async function confirmAction(options: Confirmation) {
 export async function notifyResult(message: string, error = false) {
   await waitForNativeDialog();
   const title = t(error ? "Belum berhasil" : "Berhasil");
-  announceDialog(`${title}. ${t(message)}`);
+  const publicMessages: Record<string, string> = {
+    "Username atau kata sandi tidak sesuai.": "login-invalid",
+    "Isi username dan kata sandi terlebih dahulu.": "login-required",
+    "Periksa nama, username, peran, dan kata sandi (minimal 8 karakter).": "register-invalid",
+    "Username sudah digunakan. Pilih username lain.": "username-used",
+    "Sesi tidak valid. Hubungi administrator.": "session-invalid",
+    "Anda sudah keluar dari akun dengan aman.": "signed-out",
+  };
+  const menuKey = publicMessages[message] ?? (error && /^\/(masuk|daftar)(\/|$)/.test(window.location?.pathname ?? "") ? "dialog-error" : undefined);
   await dialog().fire({
     titleText: title,
     text: t(message),
     icon: error ? "error" : "success",
     iconColor: error ? "#c44343" : "#23856d",
+    didOpen(popup) {
+      popup.querySelector<HTMLElement>(".swal2-confirm")?.setAttribute("data-voice-menu", "dialog-ok");
+      announceDialog(`${title}. ${t(message)}. ${t("Mengerti")}.`, menuKey);
+    },
   });
 }

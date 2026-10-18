@@ -8,4 +8,4 @@ export function announceLanguageChange(speech: Speech, language: Language,
   options: { engine: SpeechEngine; enabled: boolean; recording?: boolean }): Promise<void>;
 export function announcePageNavigation(options: { document: Document; speech: Speech;
   language: Language; engine: SpeechEngine; enabled: boolean;
-  previousPathname: string; pathname: string }): void;
+  previousPathname: string; pathname: string }): (() => void) | undefined;

@@ -199,6 +199,62 @@
   background:
     radial-gradient(ellipse at 95% 0, #e4eeff, transparent 45%), #f3f7fc;
 }
+/* This theme is loaded after product.css, so it must preserve the mobile shell. */
+.learning-nav-toggle { display: none; }
+@media (max-width: 800px) {
+  .admin-shell {
+    display: block;
+  }
+  .admin-shell > .sidebar {
+    position: static;
+    height: auto;
+    max-height: none;
+    width: 100%;
+    padding: 1rem;
+    overflow: visible;
+    border-right: 0;
+  }
+  .admin-shell .sidebar > .brand {
+    margin: 0;
+  }
+  .admin-shell .sidebar > .brand img {
+    max-width: 9.5rem;
+  }
+  .admin-shell .admin-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .375rem;
+  }
+  .admin-shell .admin-nav :is(a, button) {
+    min-width: 0;
+    min-height: 44px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .admin-shell .admin-nav-divider {
+    grid-column: 1 / -1;
+  }
+  .admin-shell .workspace-main {
+    padding: 1.25rem;
+  }
+  .learning-shell .learning-nav-toggle {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    width: 100%;
+    min-height: 44px;
+    padding: .75rem;
+    border: 1px solid #46617e;
+    border-radius: .75rem;
+    color: #eef5ff;
+    background: #122d4e;
+    font: inherit;
+    text-align: start;
+  }
+  .learning-nav-toggle > svg:last-child { margin-inline-start: auto; }
+  .learning-nav-toggle[aria-expanded=true] > svg:last-child { transform: rotate(90deg); }
+  .learning-shell .admin-nav:not(.is-open) { display: none; }
+}
 .sidebar {
   position: sticky;
   top: 0;

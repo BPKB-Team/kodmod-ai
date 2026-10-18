@@ -62,6 +62,7 @@ export function Password({
         />
         <button
           type="button"
+          data-voice-menu={visible ? "password-hide" : "password-show"}
           aria-label={
             t(visible ? "Sembunyikan kata sandi" : "Tampilkan kata sandi")
           }

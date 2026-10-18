@@ -36,7 +36,7 @@ function loadNativeSelect(React, { voiceQueue, menuEnabled = false }) {
   return componentModule.exports.NativeSelect;
 }
 
-async function renderSelect({ menuEnabled = false } = {}) {
+async function renderSelect({ menuEnabled = false, asyncChange = false } = {}) {
   const dom = new JSDOM("<!doctype html><html><body><div id='root'></div></body></html>", { pretendToBeVisual: true });
   const globals = ["window", "document", "HTMLElement", "HTMLSelectElement", "Node", "IS_REACT_ACT_ENVIRONMENT"];
   const previous = new Map(globals.map(name => [name, globalThis[name]]));
@@ -52,15 +52,22 @@ async function renderSelect({ menuEnabled = false } = {}) {
   const voiceQueue = [];
   const NativeSelect = loadNativeSelect(React, { voiceQueue, menuEnabled });
   const root = createRoot(dom.window.document.getElementById("root"));
-  await React.act(async () => {
-    root.render(React.createElement("label", null,
+  let finishChange;
+  function Form() {
+    const [busy, setBusy] = React.useState(false);
+    return React.createElement("label", null,
       React.createElement("span", null, "Mata pelajaran"),
-      React.createElement(NativeSelect, { value: "math", onChange() {} },
+      React.createElement(NativeSelect, { value: "math", disabled: busy, onChange: asyncChange ? async () => {
+        setBusy(true); await new Promise(resolve => { finishChange = resolve; }); setBusy(false);
+      } : () => {} },
         React.createElement("option", { value: "", disabled: true }, "Pilih mata pelajaran"),
         React.createElement("option", { value: "math" }, "Matematika"),
         React.createElement("option", { value: "science" }, "IPA"),
       ),
-    ));
+    );
+  }
+  await React.act(async () => {
+    root.render(React.createElement(Form));
   });
   return {
     dom,
@@ -68,6 +75,7 @@ async function renderSelect({ menuEnabled = false } = {}) {
     root,
     trigger: dom.window.document.querySelector('[role="combobox"]'),
     voiceQueue,
+    finishChange: () => finishChange?.(),
     async cleanup() {
       await React.act(async () => root.unmount());
       dom.window.close();
@@ -131,4 +139,43 @@ test("selecting an option speaks its selection confirmation once", async () => {
     detach();
     await view.cleanup();
   }
+});
+
+test("opening a dropdown keeps its own announcement instead of the document click label", async () => {
+  const view = await renderSelect({ menuEnabled: true });
+  const speech = { getState: () => ({ owner: null, status: "idle" }),
+    queueMenu: request => view.voiceQueue.push(request), cancelQueuedMenu() {}, stop() {}, play() {} };
+  const detach = attachMenuNarration({ document: view.dom.window.document, speech, language: "id", engine: "app", pathname: "/siswa/materi" });
+  try {
+    await view.React.act(async () => view.trigger.click());
+    assert.equal(view.voiceQueue.length, 1);
+    assert.equal(view.dom.window.document.querySelector('[role="listbox"]').getAttribute("aria-label"), "Mata pelajaran");
+    assert.match(view.voiceQueue[0].text, /Daftar pilihan dibuka/);
+    assert.equal(view.voiceQueue[0].interrupt, true);
+  } finally { detach(); await view.cleanup(); }
+});
+
+test("Home and End move the dropdown highlight to enabled boundary options", async () => {
+  const view = await renderSelect({ menuEnabled: true });
+  try {
+    await view.React.act(async () => view.trigger.click());
+    await view.React.act(async () => view.trigger.dispatchEvent(new view.dom.window.KeyboardEvent("keydown", { key: "End", bubbles: true })));
+    assert.match(view.voiceQueue.at(-1)?.text ?? "", /IPA/);
+    await view.React.act(async () => view.trigger.dispatchEvent(new view.dom.window.KeyboardEvent("keydown", { key: "Home", bubbles: true })));
+    assert.match(view.voiceQueue.at(-1)?.text ?? "", /Matematika/);
+  } finally { await view.cleanup(); }
+});
+
+test("async choices restore focus after the disabled trigger becomes available again", async () => {
+  const view = await renderSelect({ asyncChange: true });
+  try {
+    view.trigger.focus();
+    await view.React.act(async () => view.trigger.click());
+    await view.React.act(async () => view.dom.window.document.querySelector('[role="option"][aria-disabled="false"]').click());
+    assert.equal(view.trigger.disabled, true);
+    view.trigger.blur();
+    await view.React.act(async () => view.finishChange());
+    assert.equal(view.trigger.disabled, false);
+    assert.equal(view.dom.window.document.activeElement, view.trigger);
+  } finally { await view.cleanup(); }
 });

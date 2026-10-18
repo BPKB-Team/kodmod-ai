@@ -56,15 +56,17 @@ These commands short-circuit the LLM router for sub-millisecond
 response.
 
 The student reader also exposes `Dengarkan` and `Jawab dengan suara`. The
-first uses the authenticated `/voice/tts` proxy and never autoplays. The
+first uses the authenticated `/voice/tts` proxy. Material reading is explicit;
+tutor and assessment narration follows the Tutor voice preference. The
 second records only after a microphone action, sends the clip to `/voice/stt`,
 and shows the transcription for review before it can become an answer.
 
 ## 4. Onboarding Without Sight
 
-- First-run: speak welcome + commands within 3 seconds of connecting.
+- First-run: offer the voice settings and an explicit guide button. Play the
+  welcome guide on the first interaction when browser playback rules allow it.
 - Use audio cues (short tones) for connection state changes.
-- Confirm every destructive action twice.
+- Confirm destructive actions with a clear explanation and a safe default.
 - Provide a "skip onboarding" command for repeat users.
 
 ## 5. Multimodal Content Ingestion
@@ -112,3 +114,13 @@ student) target **WCAG 2.2 Level AA**:
 - Screen-reader compatibility (semantic HTML, ARIA labels)
 - Color contrast ≥ 4.5:1
 - Text resize up to 200% without loss of function
+
+## 10. Interactive UI Speech
+
+Shared menu narration covers focus, option selection, dropdowns, switches,
+tabs, native dialogs, confirmation/result popups, and destination headings.
+The voice coordinator preserves explicit choices against passive hover and
+keeps provider failures from silently changing to device speech. See
+[UI voice operations and verification](VOICE_UI_OPERATIONS.md) for the
+implemented behavior, contributor rules, test workflow, and live-provider
+limitations recorded on 18 October 2026.

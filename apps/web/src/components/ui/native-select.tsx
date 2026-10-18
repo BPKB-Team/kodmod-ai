@@ -95,6 +95,8 @@ export function NativeSelect({
   const nativeSelectRef = useRef<HTMLSelectElement>(null);
 
   const listboxId = useId();
+  const typeahead = useRef({ text: "", at: 0 });
+  const pendingFocus = useRef(false);
   const isControlled = controlledValue !== undefined;
   const currentValue = isControlled ? String(controlledValue) : internalValue;
   const explicitAriaLabel = rest["aria-label"];
@@ -137,36 +139,53 @@ export function NativeSelect({
   const isLanguageSelect =
     className?.includes("toolbar-language") ||
     dataVoiceMenu === "language" ||
-    name === "language";
+    name === "language" || id === "voice-language";
+
+  const optionText = useCallback((option: SelectOption) => {
+    const rendered = Array.from(nativeSelectRef.current?.options ?? []).find(item => item.value === option.value);
+    return rendered?.textContent?.replace(/\s+/g, " ").trim() || option.text;
+  }, []);
 
   const getOptionMenuKey = useCallback(
     (val: string) => {
-      if (!isLanguageSelect) return undefined;
-      if (val === "id") return "lang-id";
-      if (val === "en") return "lang-en";
+      if (isLanguageSelect) return val === "id" ? "lang-id" : val === "en" ? "lang-en" : undefined;
+      if (name === "role" && ["student", "teacher"].includes(val)) return `role-${val}`;
+      if (dataVoiceMenu === "text-size" && ["default", "large", "extra-large"].includes(val)) return `text-size-${val}`;
       return undefined;
     },
-    [isLanguageSelect],
+    [isLanguageSelect, name, dataVoiceMenu],
   );
 
   const getSelectedMenuKey = useCallback(
     (val: string) => {
-      if (!isLanguageSelect) return undefined;
-      if (val === "id") return "lang-id-selected";
-      if (val === "en") return "lang-en-selected";
-      return undefined;
+      const key = getOptionMenuKey(val);
+      return key ? `${key}-selected` : undefined;
     },
-    [isLanguageSelect],
+    [getOptionMenuKey],
   );
 
   const selectedOption = options.find((opt) => opt.value === currentValue) ?? options[0];
 
+  const restoreFocus = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (!trigger?.isConnected || trigger.disabled) return;
+    pendingFocus.current = false;
+    if (trigger.ownerDocument.activeElement !== trigger.ownerDocument.body) return;
+    trigger.setAttribute("data-voice-silent-focus", "true");
+    trigger.focus({ preventScroll: true });
+    trigger.removeAttribute("data-voice-silent-focus");
+  }, []);
+
+  useEffect(() => {
+    if (!disabled && pendingFocus.current) restoreFocus();
+  }, [disabled, restoreFocus]);
+
   const speak = useCallback(
-    (text: string, delay = 60, menuKey?: string) => {
+    (text: string, delay = 60, menuKey?: string, interrupt = true) => {
       if (!menuEnabled || engine === "off" || !text.trim()) return;
       speechOutput.queueMenu(
-        { owner: "menu", text, engine: engine === "device" ? "device" : "app", language, menuKey },
-        () => true,
+        { owner: "menu", text, engine: engine === "device" ? "device" : "app", language, menuKey, interrupt },
+        () => !document.querySelector('.voice-panel[data-recording="true"]'),
         delay,
       );
     },
@@ -184,7 +203,7 @@ export function NativeSelect({
 
       // Announce selection
       const announcement =
-        language === "en" ? `${option.text} selected.` : `${option.text} dipilih.`;
+        language === "en" ? `${optionText(option)} selected.` : `${optionText(option)} dipilih.`;
       speak(announcement, 20, getSelectedMenuKey(option.value));
 
       // Trigger onChange for forms and callers
@@ -193,32 +212,47 @@ export function NativeSelect({
           target: { value: option.value, name: name ?? "" },
           currentTarget: { value: option.value, name: name ?? "" },
         } as unknown as React.ChangeEvent<HTMLSelectElement>;
-        onChange(syntheticEvent);
+        const change: unknown = onChange(syntheticEvent);
+        // Async language changes temporarily disable the trigger. Restore keyboard
+        // focus when they settle without replacing the spoken confirmation.
+        if (change && typeof (change as Promise<unknown>).then === "function") {
+          pendingFocus.current = true;
+          void Promise.resolve(change).then(restoreFocus, restoreFocus);
+        }
       }
     },
-    [disabled, getSelectedMenuKey, isControlled, language, name, onChange, speak],
+    [disabled, getSelectedMenuKey, isControlled, language, name, onChange, optionText, restoreFocus, speak],
   );
 
   const toggleOpen = useCallback(() => {
     if (disabled) return;
-    setIsOpen((prev) => {
-      const next = !prev;
+      const next = !isOpen;
+      setIsOpen(next);
       if (next) {
         let idx = options.findIndex((opt) => opt.value === currentValue && !opt.disabled);
         if (idx < 0) idx = options.findIndex((opt) => !opt.disabled);
         setHighlightedIndex(idx);
-        const curText = selectedOption?.text ?? "";
+        const curText = selectedOption ? optionText(selectedOption) : "";
         const announce =
           language === "en"
             ? `Options opened. Currently selected: ${curText}`
             : `Daftar pilihan dibuka. Pilihan saat ini: ${curText}`;
-        speak(announce, 40, isLanguageSelect ? "dropdown-opened" : undefined);
+        speak(announce, 40, isLanguageSelect || name === "role" || dataVoiceMenu === "text-size" ? "dropdown-opened" : undefined);
       } else {
         speechOutput.cancelQueuedMenu();
       }
-      return next;
-    });
-  }, [currentValue, disabled, isLanguageSelect, language, options, selectedOption?.text, speak]);
+  }, [currentValue, disabled, isOpen, isLanguageSelect, language, options, selectedOption, optionText, speak, name, dataVoiceMenu]);
+
+  useEffect(() => {
+    if (!isOpen || highlightedIndex < 0) return;
+    listRef.current?.children[highlightedIndex]?.scrollIntoView?.({ block: "nearest" });
+  }, [highlightedIndex, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || explicitAriaLabelledBy) return;
+    const label = triggerRef.current?.getAttribute("aria-label");
+    if (label) listRef.current?.setAttribute("aria-label", label);
+  }, [isOpen, explicitAriaLabel, explicitAriaLabelledBy]);
 
   // Click outside listener
   useEffect(() => {
@@ -251,7 +285,7 @@ export function NativeSelect({
         if (next < 0) break;
         setHighlightedIndex(next);
         const opt = options[next];
-        if (opt) speak(opt.text, 50, getOptionMenuKey(opt.value));
+        if (opt) speak(optionText(opt), 50, getOptionMenuKey(opt.value));
         break;
       }
       case "ArrowUp": {
@@ -260,7 +294,17 @@ export function NativeSelect({
         if (prev < 0) break;
         setHighlightedIndex(prev);
         const opt = options[prev];
-        if (opt) speak(opt.text, 50, getOptionMenuKey(opt.value));
+        if (opt) speak(optionText(opt), 50, getOptionMenuKey(opt.value));
+        break;
+      }
+      case "Home":
+      case "End": {
+        event.preventDefault();
+        const indexes = options.map((option, index) => option.disabled ? -1 : index).filter(index => index >= 0);
+        const index = event.key === "Home" ? indexes[0] : indexes.at(-1);
+        if (index === undefined) break;
+        setHighlightedIndex(index);
+        speak(optionText(options[index]), 50, getOptionMenuKey(options[index].value));
         break;
       }
       case "Enter":
@@ -280,6 +324,21 @@ export function NativeSelect({
         setIsOpen(false);
         break;
       }
+      default: {
+        if (event.key.length !== 1 || event.ctrlKey || event.altKey || event.metaKey) break;
+        event.preventDefault();
+        const now = Date.now(), letter = event.key.toLocaleLowerCase(language);
+        const previous = now - typeahead.current.at < 700 ? typeahead.current.text : "";
+        const query = previous === letter ? letter : previous + letter;
+        typeahead.current = { text: query, at: now };
+        for (let step = 1; step <= options.length; step++) {
+          const index = (highlightedIndex + step) % options.length;
+          const option = options[index];
+          if (!option.disabled && optionText(option).toLocaleLowerCase(language).startsWith(query)) {
+            setHighlightedIndex(index); speak(optionText(option), 50, getOptionMenuKey(option.value)); break;
+          }
+        }
+      }
     }
   };
 
@@ -292,6 +351,7 @@ export function NativeSelect({
   return (
     <div
       ref={wrapperRef}
+      data-voice-managed="select"
       className={cn("kodmod-select-wrapper", className)}
       onKeyDown={handleKeyDown}
     >
@@ -337,6 +397,7 @@ export function NativeSelect({
         aria-describedby={rest["aria-describedby"]}
         aria-invalid={rest["aria-invalid"]}
         aria-required={required || undefined}
+        data-voice-menu={dataVoiceMenu ?? (isLanguageSelect ? "language" : name === "role" ? "role" : undefined)}
         disabled={disabled}
         className={cn("kodmod-select-trigger", isOpen && "is-open")}
         onClick={toggleOpen}
@@ -356,7 +417,8 @@ export function NativeSelect({
           ref={listRef}
           role="listbox"
           className="kodmod-select-menu"
-          aria-labelledby={explicitAriaLabelledBy ?? `${listboxId}-trigger`}
+          aria-label={explicitAriaLabelledBy ? undefined : accessibleName}
+          aria-labelledby={explicitAriaLabelledBy}
         >
           {options.map((opt, idx) => {
             const isSelected = opt.value === currentValue;
@@ -378,10 +440,10 @@ export function NativeSelect({
                   opt.disabled && "is-disabled",
                 )}
                 onClick={() => handleSelect(opt)}
-                onPointerOver={() => {
-                  if (opt.disabled) return;
+                onPointerOver={event => {
+                  if (opt.disabled || event.pointerType === "touch" || event.currentTarget.contains(event.relatedTarget as Node | null)) return;
                   setHighlightedIndex(idx);
-                  speak(opt.text, 50, optMenuKey);
+                  speak(optionText(opt), 50, optMenuKey, false);
                 }}
               >
                 <span className="option-label">{opt.label}</span>

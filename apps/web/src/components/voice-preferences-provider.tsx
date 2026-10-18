@@ -18,7 +18,7 @@ import { Dialog } from "./ui/dialog";
 import { LoadingStatus } from "./loading-feedback";
 import { Spinner } from "./ui/spinner";
 
-type Preferences = VoiceSettings & { openVoicePreferences: () => void; toggleMenu: () => void };
+type Preferences = VoiceSettings & { settingsOpen: boolean; openVoicePreferences: () => void; toggleMenu: () => void };
 const VoicePreferencesContext = createContext<Preferences | null>(null);
 const getServerSnapshot = () => null;
 const subscribe = (listener: () => void) => {
@@ -64,6 +64,7 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
   const returnFocus = useRef<HTMLElement | null>(null);
   const wasOpen = useRef(false);
   const initialGuidePlayed = useRef(false);
+  const settingsAnnounced = useRef(false);
   const pendingLanguage = useRef<Language | null>(null);
   const lastPathname = useRef(pathname);
   const opened = ready && (!saved || settingsOpen);
@@ -79,8 +80,9 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
     if (!value.menuEnabled) speechOutput.stop("menu");
     if (!writeVoiceSettings(value)) setWarning("Pengaturan belum tersimpan di perangkat. Pilihan tetap berlaku selama halaman ini terbuka.");
   }, [preferences]);
-  const value = useMemo(() => ({ ...preferences, openVoicePreferences, toggleMenu }),
-    [preferences, openVoicePreferences, toggleMenu]);
+  const activePreferences = opened ? draft : preferences;
+  const value = useMemo(() => ({ ...activePreferences, settingsOpen: opened, openVoicePreferences, toggleMenu }),
+    [activePreferences, opened, openVoicePreferences, toggleMenu]);
 
   const preview = useCallback((engine: SpeechEngine, welcome = false) => {
     if (engine === "off") return Promise.resolve();
@@ -162,16 +164,26 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
   }, [language, opened, draft.engine, draft.menuEnabled, preferences.engine, preferences.menuEnabled]);
 
   useEffect(() => {
-    if (!ready || opened || !preferences.menuEnabled || preferences.engine === "off") return;
-    return attachMenuNarration({ document, speech: speechOutput, language, engine: preferences.engine, pathname });
-  }, [ready, opened, preferences.menuEnabled, preferences.engine, pathname, language]);
+    if (!ready || !activePreferences.menuEnabled || activePreferences.engine === "off") return;
+    return attachMenuNarration({ document, speech: speechOutput, language, engine: activePreferences.engine, pathname });
+  }, [ready, activePreferences.menuEnabled, activePreferences.engine, pathname, language]);
+
+  useEffect(() => {
+    if (!opened) { settingsAnnounced.current = false; return; }
+    if (settingsAnnounced.current) return;
+    settingsAnnounced.current = true;
+    window.dispatchEvent(new CustomEvent("kodmod:dialog-announce", { detail: {
+      text: `${t("Pengaturan suara")}. ${t("Dengarkan contoh, lalu pilih suara yang nyaman untukmu.")}`,
+      menuKey: "voice-settings",
+    } }));
+  }, [opened, t]);
 
   useEffect(() => {
     if (!ready) return;
     const previousPathname = lastPathname.current;
     lastPathname.current = pathname;
     if (previousPathname === pathname) return;
-    announcePageNavigation({
+    return announcePageNavigation({
       document,
       speech: speechOutput,
       language,
@@ -218,20 +230,20 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
 
   return <VoicePreferencesContext.Provider value={value}>
     {children}
-    {warning && !opened && <div className="global-voice-notice" role="status">{t(warning)}</div>}
-    {!opened && output.owner === "menu" && output.status === "error" &&
-      <div className="global-voice-notice" role="status" aria-live="polite">{t(output.message)}</div>}
+    {warning && !opened && <div className="global-voice-notice" role="status" data-voice-ignore="true">{t(warning)}</div>}
+    {!opened && output.owner === "menu" && ["error", "blocked"].includes(output.status) &&
+      <div className="global-voice-notice" role="status" aria-live="polite" data-voice-ignore="true">{t(output.message)}</div>}
     <Dialog ref={dialog} className="voice-preferences-dialog" aria-labelledby="voice-preferences-title"
-      aria-describedby="voice-preferences-description" data-voice-ignore="true"
+      aria-describedby="voice-preferences-description" data-voice-dialog-managed="true"
       onCancel={event => { event.preventDefault(); if (!saved) save(); else closeSettings(); }}>
       <div className="voice-preferences-content">
         <div className="voice-preferences-heading">
           <span className="voice-preferences-mark" aria-hidden="true"><Volume2 size={23} /></span>
-          {saved && <button className="voice-preferences-close" aria-label={t("Tutup")} onClick={closeSettings}><X size={21} /></button>}
+          {saved && <button className="voice-preferences-close" data-voice-menu="voice-close" aria-label={t("Tutup")} onClick={closeSettings}><X size={21} /></button>}
         </div>
         <h2 id="voice-preferences-title">{t(saved ? "Pengaturan suara" : "Pilih suara untuk belajar")}</h2>
         <p id="voice-preferences-description" className="voice-preferences-intro">{t("Dengarkan contoh, lalu pilih suara yang nyaman untukmu.")}</p>
-        <button type="button" className="voice-guide-button" data-guide-button onClick={() => void preview(draft.engine, true)}>
+        <button type="button" className="voice-guide-button" data-guide-button data-voice-managed="playback" data-voice-menu="voice-guide" onClick={() => void preview(draft.engine, true)}>
           <Play size={17} aria-hidden="true" />{t("Dengarkan panduan")}
         </button>
         <fieldset className="voice-preferences-options">
@@ -243,47 +255,48 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
           ]).map(({ id: engine, title, desc, icon: Icon }) => <div key={engine} className={`voice-choice-row ${draft.engine === engine ? "is-selected" : ""}`}>
             <label className="voice-preference-option">
               <input type="radio" name="speech-engine" value={engine} checked={draft.engine === engine}
+                data-voice-managed="preview" data-voice-menu={`voice-${engine}`}
                 onChange={() => { setDraft({ ...draft, engine }); if (engine !== "off") void preview(engine); }} />
               <span className="voice-preference-icon" aria-hidden="true"><Icon size={21} /></span>
               <span className="voice-preference-copy"><strong>{t(title)}</strong>
                 <small>{t(desc)}</small></span>
               <span className="voice-preference-choice" aria-hidden="true" />
             </label>
-            {engine !== "off" && <button type="button" className="voice-preview-button" aria-label={`${t("Dengarkan contoh suara")} ${t(title)}`}
+            {engine !== "off" && <button type="button" className="voice-preview-button" data-voice-managed="playback" data-voice-menu="voice-preview" aria-label={`${t("Dengarkan contoh suara")} ${t(title)}`}
               onClick={() => void preview(engine)}><Play size={16} aria-hidden="true" />{t("Dengarkan")}</button>}
           </div>)}
         </fieldset>
         <div className="voice-options-settings">
           <div className="voice-setting-row"><label htmlFor="menu-reader"><strong>{t("Pembaca menu")}</strong>
             <small>{t("Bacakan menu saat dipilih atau mendapat fokus.")}</small></label>
-            <Switch id="menu-reader" checked={draft.menuEnabled} onCheckedChange={menuEnabled => setDraft({ ...draft, menuEnabled })} /></div>
+            <Switch id="menu-reader" data-voice-menu={draft.menuEnabled ? "sound-on" : "sound-off"} checked={draft.menuEnabled} onCheckedChange={menuEnabled => setDraft({ ...draft, menuEnabled })} /></div>
           <div className="voice-setting-row"><label htmlFor="tutor-reader"><strong>{t("Suara Tutor")}</strong>
             <small>{t("Bacakan jawaban baru saat belajar.")}</small></label>
-            <Switch id="tutor-reader" checked={draft.tutorEnabled} onCheckedChange={tutorEnabled => setDraft({ ...draft, tutorEnabled })} /></div>
+            <Switch id="tutor-reader" data-voice-menu={`tutor-reader-${draft.tutorEnabled ? "on" : "off"}`} checked={draft.tutorEnabled} onCheckedChange={tutorEnabled => setDraft({ ...draft, tutorEnabled })} /></div>
           <div className="voice-setting-row"><label htmlFor="voice-language"><strong>{t("Bahasa")}</strong></label>
-            <NativeSelect id="voice-language" value={language} disabled={languagePending} onChange={async event => {
+            <NativeSelect id="voice-language" data-voice-menu="language" value={language} disabled={languagePending} onChange={async event => {
               setLanguagePending(true); speechOutput.stop();
               try { await changeLanguage(event.target.value as "id" | "en"); setWarning(""); }
               catch { setWarning("Bahasa belum dapat disimpan. Coba lagi."); } finally { setLanguagePending(false); }
             }}><option value="id">Bahasa Indonesia</option><option value="en">English</option></NativeSelect></div>
         </div>
-        <details className="voice-extra-settings"><summary>{t("Tampilan dan navigasi")}<ChevronDown size={17} aria-hidden="true" /></summary>
+        <details className="voice-extra-settings"><summary data-voice-menu="display-settings">{t("Tampilan dan navigasi")}<ChevronDown size={17} aria-hidden="true" /></summary>
           <div className="voice-setting-row"><label htmlFor="voice-text-size"><strong>{t("Ukuran teks")}</strong></label>
-            <NativeSelect id="voice-text-size" value={draft.fontScale} onChange={event => setDraft({ ...draft, fontScale: event.target.value as VoiceSettings["fontScale"], lowVision: event.target.value !== "default" })}>
+            <NativeSelect id="voice-text-size" data-voice-menu="text-size" value={draft.fontScale} onChange={event => setDraft({ ...draft, fontScale: event.target.value as VoiceSettings["fontScale"], lowVision: event.target.value !== "default" })}>
               <option value="default">{t("Standar")}</option><option value="large">{t("Besar")}</option><option value="extra-large">{t("Sangat besar")}</option></NativeSelect></div>
-          <div className="voice-setting-row"><label htmlFor="voice-contrast"><strong>{t("Kontras tinggi")}</strong></label><Switch id="voice-contrast" checked={draft.highContrast} onCheckedChange={highContrast => setDraft({ ...draft, highContrast })} /></div>
-          <div className="voice-setting-row"><label htmlFor="voice-spacing"><strong>{t("Jarak bacaan lebih lega")}</strong></label><Switch id="voice-spacing" checked={draft.spacious} onCheckedChange={spacious => setDraft({ ...draft, spacious })} /></div>
-          <div className="voice-setting-row"><label htmlFor="voice-motion"><strong>{t("Kurangi animasi")}</strong></label><Switch id="voice-motion" checked={draft.reducedMotion} onCheckedChange={reducedMotion => setDraft({ ...draft, reducedMotion })} /></div>
-          <div className="voice-setting-row"><label htmlFor="voice-guided"><strong>{t("Navigasi dengan geser")}</strong><small>{t("Geser kanan atau kiri untuk pindah menu. Matikan saat memakai pembaca layar perangkat.")}</small></label><Switch id="voice-guided" checked={draft.guidedNavigation} onCheckedChange={guidedNavigation => setDraft({ ...draft, guidedNavigation })} /></div>
+          <div className="voice-setting-row"><label htmlFor="voice-contrast"><strong>{t("Kontras tinggi")}</strong></label><Switch id="voice-contrast" data-voice-menu={`contrast-${draft.highContrast ? "on" : "off"}`} checked={draft.highContrast} onCheckedChange={highContrast => setDraft({ ...draft, highContrast })} /></div>
+          <div className="voice-setting-row"><label htmlFor="voice-spacing"><strong>{t("Jarak bacaan lebih lega")}</strong></label><Switch id="voice-spacing" data-voice-menu={`spacing-${draft.spacious ? "on" : "off"}`} checked={draft.spacious} onCheckedChange={spacious => setDraft({ ...draft, spacious })} /></div>
+          <div className="voice-setting-row"><label htmlFor="voice-motion"><strong>{t("Kurangi animasi")}</strong></label><Switch id="voice-motion" data-voice-menu={`motion-${draft.reducedMotion ? "on" : "off"}`} checked={draft.reducedMotion} onCheckedChange={reducedMotion => setDraft({ ...draft, reducedMotion })} /></div>
+          <div className="voice-setting-row"><label htmlFor="voice-guided"><strong>{t("Navigasi dengan geser")}</strong><small>{t("Geser kanan atau kiri untuk pindah menu. Matikan saat memakai pembaca layar perangkat.")}</small></label><Switch id="voice-guided" data-voice-menu={`guided-${draft.guidedNavigation ? "on" : "off"}`} checked={draft.guidedNavigation} onCheckedChange={guidedNavigation => setDraft({ ...draft, guidedNavigation })} /></div>
         </details>
         <LoadingStatus active={languagePending} label="Mengganti bahasa…" compact />
-        {(previewActive && output.status !== "idle") && <div className="voice-preview-status" role="status" aria-live="polite">
+        {((previewActive || output.owner === "menu") && output.status !== "idle") && <div className="voice-preview-status" role="status" aria-live="polite" data-voice-ignore="true">
           <span>{output.status === "loading" && <Spinner className="loading-inline-icon" />}{t(output.status === "loading" ? "Menyiapkan suara…" : output.message || (output.status === "playing" ? "Sedang membacakan." : "Pembacaan dijeda."))}</span>
-          <button type="button" className="icon-button" aria-label={t("Hentikan suara")} onClick={() => speechOutput.stop("voice-setup")}><Square size={15} aria-hidden="true" /></button>
+          <button type="button" className="icon-button" aria-label={t("Hentikan suara")} onClick={() => speechOutput.stop(output.owner ?? undefined)}><Square size={15} aria-hidden="true" /></button>
         </div>}
         {warning && <p className="voice-preferences-warning" role="status">{t(warning)}</p>}
       </div>
-      <div className="voice-preferences-actions"><button type="button" className="button primary" onClick={save} disabled={languagePending}>{t(saved ? "Simpan pengaturan" : "Gunakan pilihan ini")}</button></div>
+      <div className="voice-preferences-actions"><button type="button" className="button primary" data-voice-menu="voice-save" onClick={save} disabled={languagePending}>{t(saved ? "Simpan pengaturan" : "Gunakan pilihan ini")}</button></div>
     </Dialog>
   </VoicePreferencesContext.Provider>;
 }

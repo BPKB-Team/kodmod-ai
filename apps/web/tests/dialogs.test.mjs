@@ -3,10 +3,10 @@ import { registerHooks } from 'node:module';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import ts from 'typescript';
-const boundary = { open: true, callbacks: new Set(), calls: [] };
+const boundary = { open: true, callbacks: new Set(), calls: [], announcements: [] };
 globalThis.kodmodDialogBoundary = boundary;
 globalThis.document = { documentElement: { lang: 'en' }, querySelector: () => boundary.open ? {} : null, body: {} };
-globalThis.window = { matchMedia: () => ({ matches: true }) };
+globalThis.window = { matchMedia: () => ({ matches: true }), dispatchEvent: event => boundary.announcements.push(event.detail) };
 globalThis.MutationObserver = class {
   constructor(callback) { this.callback = callback; }
   observe() { boundary.callbacks.add(this.callback); }
@@ -45,4 +45,15 @@ test('a confirmation also waits until the native dialog releases the top layer',
   boundary.open = false;
   for (const callback of boundary.callbacks) callback();
   assert.equal(await confirmation, true);
+});
+
+test('public login confirmation announces after the popup opens and includes both actions', async () => {
+  boundary.open = false; boundary.calls = []; boundary.announcements = [];
+  await confirmAction({ title: 'Masuk ke KODMOD?', text: 'Lanjutkan masuk menggunakan akun yang telah Anda isi.', confirmText: 'Ya, masuk' });
+  assert.equal(boundary.announcements.length, 0, 'Opening must happen before its spoken introduction');
+  const keys = [];
+  boundary.calls[0].didOpen({ querySelector: () => ({ setAttribute: (name, value) => keys.push([name, value]) }) });
+  assert.equal(boundary.announcements[0].menuKey, 'dialog-login');
+  assert.match(boundary.announcements[0].text, /Cancel.*Sign in/);
+  assert.deepEqual(keys.map(item => item[1]), ['dialog-cancel', 'login-confirm']);
 });

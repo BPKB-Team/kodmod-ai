@@ -2,7 +2,7 @@ const initialState = Object.freeze({ owner: null, status: "idle", fallback: fals
 
 export function createSpeechCoordinator({ loadAudio, makeAudio, speakDevice }) {
   let generation = 0, controller = null, output = null, state = initialState;
-  let menuTimer;
+  let menuTimer, explicitMenuUntil = 0;
   const listeners = new Set();
   function publish(next) {
     state = { ...state, ...next };
@@ -25,6 +25,10 @@ export function createSpeechCoordinator({ loadAudio, makeAudio, speakDevice }) {
   }
   function cancelQueuedMenu() { clearTimeout(menuTimer); menuTimer = undefined; }
   function queueMenu(request, canPlay = () => true, delay = 150) {
+    // Resizing or opening a popup can move another element under the pointer.
+    // That passive hover must not replace the user's explicit choice.
+    if (!request.interrupt && Date.now() < explicitMenuUntil) return;
+    if (request.interrupt) explicitMenuUntil = Date.now() + 700;
     cancelQueuedMenu();
     menuTimer = setTimeout(() => {
       menuTimer = undefined;
@@ -32,7 +36,7 @@ export function createSpeechCoordinator({ loadAudio, makeAudio, speakDevice }) {
     }, delay);
   }
   async function play(request) {
-    if (request.owner === "menu" && state.owner && state.owner !== "menu"
+    if (request.owner === "menu" && !request.interrupt && state.owner && state.owner !== "menu"
       && ["loading", "playing", "paused"].includes(state.status)) return;
     stop();
     const ticket = generation;
