@@ -1,6 +1,6 @@
 # Paket demo belajar umum KODMOD
 
-**Status: DRAF DATA DEMO — BELUM DIIMPOR KE WEBSITE.**
+**Status: SUDAH DIIMPOR KE INSTANCE LOKAL KODMOD (18 Oktober 2026).** Data akun dan aktivitas tersimpan di database lokal Docker Centre, jadi tidak ikut saat berkas repository di-push ke GitHub.
 
 Paket ini berisi 20 bahan belajar orisinal berbahasa Indonesia dengan contoh umum dan tidak terikat kurikulum negara tertentu. Nama pada roster dibuat sintetis dan diberi penanda `[DEMO]`.
 
@@ -61,7 +61,7 @@ Kolom aktivitas adalah **rencana/simulasi**, bukan riwayat yang sudah tercatat d
 4. Masuk sebagai beberapa akun dari tiap pola. Uji baca materi, Tutor, kuis mini Tutor, asesmen mandiri, tugas/kuis terbit di `/siswa/tugas`, progres, TTS, perpindahan halaman, dan pembacaan opsi.
 5. Bandingkan progres dengan interaksi yang benar-benar dilakukan; jangan mengisi angka ringkasan secara manual.
 
-Gunakan infrastruktur terisolasi `apps/ai-engine/docker/docker-compose.test.yml`: database `kodmod_test` berada pada port host 5434 secara default. Port 5433 pada Compose aplikasi adalah database aplikasi `kodmod`. Pastikan nama database dan port tujuan sebelum mengimpor data demo. Paket ini belum diimpor; pengujian UI dengan fixture sementara tidak membuat 50 akun atau mengunggah 20 materi tersebut ke aplikasi.
+Gunakan infrastruktur terisolasi `apps/ai-engine/docker/docker-compose.test.yml`: database `kodmod_test` berada pada port host 5434 secara default. Port 5433 pada Compose aplikasi adalah database aplikasi `kodmod`. Pastikan nama database dan port tujuan sebelum mengimpor data demo. Import yang tercatat pada status di atas dilakukan ke database aplikasi lokal; pengujian UI dengan fixture sementara tetap tidak membuat akun atau mengunggah materi.
 
 ## Referensi untuk memeriksa fakta
 
