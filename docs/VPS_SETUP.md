@@ -4,6 +4,19 @@ Checkout server: `/home/kodmod-admin/kodmod-ai`, project Compose `kodmod`.
 Data aplikasi memakai named volumes; monitoring berada di
 `/srv/kodmod/data/monitoring`. Jangan memakai Compose lokal Windows pada VPS.
 
+## Rilis 18 Oktober 2026
+
+Web, API, dan worker memakai image `vps-20261018-c521bbe-sec1`, dari pembaruan
+`main` sampai `c521bbe` beserta patch dependency frontend. Migrasi produksi
+berada pada `0011_provider_usage`; pemeriksaan kesesuaian schema lulus.
+Login ketiga peran, chat OpenAI, HTTPS, backup, dan monitoring telah diuji
+kembali melalui kode. Pembuatan audio dan transkripsi ElevenLabs memerlukan
+tindakan pemilik akun provider. Pencarian VPS menggunakan `pgvector`;
+Qdrant telah diuji pada lingkungan sementara.
+
+Hasil, batas pengujian, dan tindak lanjut ada di
+[laporan rilis VPS 18 Oktober](VPS_UPDATE_2026-10-18.md).
+
 ## Konfigurasi privat
 
 Edit `/home/kodmod-admin/kodmod-ai/apps/ai-engine/.env` untuk provider:
