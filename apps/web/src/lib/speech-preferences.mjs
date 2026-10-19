@@ -13,7 +13,7 @@ export function parseDisplaySettings(value = {}) {
     spacious: value.spacious === true, reducedMotion: value.reducedMotion === true };
 }
 
-const AUDIO_CACHE_VERSION = "kodmod-elevenlabs-v2";
+const AUDIO_CACHE_VERSION = "kodmod-elevenlabs-v3";
 const inFlightAudio = new Map();
 let inMemoryPreference = null;
 let cacheGeneration = 0;

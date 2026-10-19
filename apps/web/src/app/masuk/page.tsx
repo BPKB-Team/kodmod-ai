@@ -10,7 +10,7 @@ export default async function LoginPage() {
   if (current) redirect(homeFor(current.user.role));
   return (
     <AuthShell>
-      <span className="auth-label"><UiText>{"Ruang belajar Anda"}</UiText></span>
+      <span className="auth-badge-pill"><UiText>{"Ruang belajar Anda"}</UiText></span>
       <h1><UiText>{"Senang bertemu lagi."}</UiText></h1>
       <p className="auth-description"><UiText>{"Masuk untuk melanjutkan perjalananmu di KODMOD."}</UiText></p>
       <LoginForm />
