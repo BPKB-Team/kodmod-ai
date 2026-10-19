@@ -272,24 +272,32 @@ export function TutorAgentDemo() {
 
         {/* Quick Scenario Triggers */}
         <div className="tutor-interactive-footer">
-          <span className="tutor-prompt-title">{t("Atau coba topik cepat:")}</span>
-          <div className="tutor-prompt-chips">
-            {SCENARIOS.map((sc, i) => (
-              <button
-                key={sc.id}
-                type="button"
-                className={`tutor-prompt-chip ${activeIdx === i ? "is-selected" : ""}`}
-                onClick={() => {
-                  setCustomInput("");
-                  runSequence(i);
-                }}
-                data-voice-menu={`demo-topic-${sc.id}`}
-                aria-label={`${t("Pilih topik")}: ${isEn ? sc.topicEn : sc.topic}`}
-              >
-                <span>{isEn ? sc.topicEn : sc.topic}</span>
-                <ArrowRight size={13} aria-hidden="true" />
-              </button>
-            ))}
+          <div className="tutor-prompt-title-row">
+            <span className="tutor-prompt-badge">💡 {t("Atau coba topik cepat:")}</span>
+          </div>
+          <div className="tutor-prompt-chips" role="radiogroup" aria-label={t("Pilih topik")}>
+            {SCENARIOS.map((sc, i) => {
+              const icons = ["🌱", "🍳", "⚡", "💧"];
+              return (
+                <button
+                  key={sc.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={activeIdx === i}
+                  className={`tutor-prompt-chip ${activeIdx === i ? "is-selected" : ""}`}
+                  onClick={() => {
+                    setCustomInput("");
+                    runSequence(i);
+                  }}
+                  data-voice-menu={`demo-topic-${sc.id}`}
+                  aria-label={`${t("Pilih topik")}: ${isEn ? sc.topicEn : sc.topic}`}
+                >
+                  <span className="tutor-chip-icon" aria-hidden="true">{icons[i]}</span>
+                  <span className="tutor-chip-text">{isEn ? sc.topicEn : sc.topic}</span>
+                  <ArrowRight size={14} className="tutor-chip-arrow" aria-hidden="true" />
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
