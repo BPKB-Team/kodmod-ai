@@ -1539,7 +1539,19 @@ html[data-reduced-motion="true"] .spin-pulse {
 }
 
 .tutor-chip-icon {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  transition: transform 0.12s ease;
+}
+
+.tutor-prompt-chip.is-selected .tutor-chip-icon {
+  color: #ffffff;
+}
+
+.tutor-prompt-chip:hover .tutor-chip-icon {
+  transform: scale(1.1);
 }
 
 .tutor-chip-text {

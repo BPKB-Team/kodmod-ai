@@ -404,6 +404,20 @@
   box-shadow: 0 3px 0 #184db8, 0 0 16px rgba(37, 101, 233, 0.35);
 }
 
+.auth-role-btn svg {
+  color: #38bdf8;
+  transition: transform 0.12s ease;
+  flex-shrink: 0;
+}
+
+.auth-role-btn.is-active svg {
+  color: #ffffff;
+}
+
+.auth-role-btn:hover svg {
+  transform: scale(1.1);
+}
+
 .auth-role-btn:active {
   transform: translateY(2px);
   box-shadow: 0 1px 0 #184db8;

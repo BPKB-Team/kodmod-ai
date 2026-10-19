@@ -105,7 +105,10 @@ export default async function HomePage() {
       <section className="lp-agentic-demo-section" id="demo-tutor" aria-labelledby="agentic-demo-heading">
         <div className="lp-container">
           <div className="lp-agentic-section-header">
-            <span className="lp-agentic-badge" data-voice-menu="demo-badge" tabIndex={0}>✦ {t("Simulasi Tutor AI")}</span>
+            <span className="lp-agentic-badge" data-voice-menu="demo-badge" tabIndex={0}>
+              <Sparkles size={14} aria-hidden="true" />
+              <span>{t("Simulasi Tutor AI")}</span>
+            </span>
             <h2 id="agentic-demo-heading" className="lp-agentic-title" data-voice-menu="demo-heading" tabIndex={0}>{t("Coba Langsung Simulasi Tutor AI")}</h2>
             <p className="lp-agentic-desc">
               {t("Ketik pertanyaan materi pelajaran yang ingin kamu pelajari, atau pilih topik cepat di bawah. Saksikan langkah berpikir AI yang menyusun analogi khusus audio untuk membantu pemahaman konsep secara mendalam.")}

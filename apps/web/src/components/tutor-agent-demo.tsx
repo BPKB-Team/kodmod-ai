@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useId, useSyncExternalStore } from "react";
-import { Sparkles, Brain, Volume2, ArrowRight, Check, Pause, Play } from "lucide-react";
+import { Sparkles, Brain, Volume2, ArrowRight, Check, Pause, Play, Leaf, Utensils, Zap, Droplets, Lightbulb } from "lucide-react";
 import { speechOutput } from "@/lib/browser-speech";
 import { useVoicePreferences } from "./voice-preferences-provider";
 import { useI18n } from "./language-provider";
@@ -298,11 +298,15 @@ export function TutorAgentDemo() {
         {/* Quick Scenario Triggers */}
         <div className="tutor-interactive-footer">
           <div className="tutor-prompt-title-row">
-            <span className="tutor-prompt-badge">💡 {t("Atau coba topik cepat:")}</span>
+            <span className="tutor-prompt-badge">
+              <Lightbulb size={14} aria-hidden="true" />
+              <span>{t("Atau coba topik cepat:")}</span>
+            </span>
           </div>
           <div className="tutor-prompt-chips" role="radiogroup" aria-label={t("Pilih topik")}>
             {SCENARIOS.map((sc, i) => {
-              const icons = ["🌱", "🍳", "⚡", "💧"];
+              const SCENARIO_ICONS = [Leaf, Utensils, Zap, Droplets];
+              const ScenarioIcon = SCENARIO_ICONS[i] ?? Sparkles;
               return (
                 <button
                   key={sc.id}
@@ -317,7 +321,9 @@ export function TutorAgentDemo() {
                   data-voice-menu={`demo-topic-${sc.id}`}
                   aria-label={`${t("Pilih topik")}: ${isEn ? sc.topicEn : sc.topic}`}
                 >
-                  <span className="tutor-chip-icon" aria-hidden="true">{icons[i]}</span>
+                  <span className="tutor-chip-icon" aria-hidden="true">
+                    <ScenarioIcon size={15} aria-hidden="true" />
+                  </span>
                   <span className="tutor-chip-text">{isEn ? sc.topicEn : sc.topic}</span>
                   <ArrowRight size={14} className="tutor-chip-arrow" aria-hidden="true" />
                 </button>

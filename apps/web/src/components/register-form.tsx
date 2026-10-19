@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, GraduationCap, School } from "lucide-react";
 import { register } from "@/app/actions";
 import { Password } from "./forms";
 import { ActionFeedback, useConfirmedAction } from "./action-feedback";
@@ -77,7 +77,7 @@ export function RegisterForm() {
             data-voice-menu="role-student"
             aria-label={`${t("Daftar sebagai")}: ${t("Siswa")}`}
           >
-            <span aria-hidden="true">🎓</span>
+            <GraduationCap size={18} aria-hidden="true" />
             <span>{t("Siswa")}</span>
           </button>
           <button
@@ -89,14 +89,14 @@ export function RegisterForm() {
             data-voice-menu="role-teacher"
             aria-label={`${t("Daftar sebagai")}: ${t("Guru")}`}
           >
-            <span aria-hidden="true">👨‍🏫</span>
+            <School size={18} aria-hidden="true" />
             <span>{t("Guru")}</span>
           </button>
         </div>
         <input type="hidden" name="role" value={fields.role} />
       </div>
 
-      <ActionFeedback state={state} pending={pending} pendingLabel="Membuat akun…" />
+      <ActionFeedback state={state} />
       <Button
         type="submit"
         className="auth-submit-btn"
