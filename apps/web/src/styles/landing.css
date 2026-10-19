@@ -370,9 +370,32 @@
   color: #687b93;
   margin-bottom: 0;
 }
+/* ========================================================
+   Section 4: Tentang KODMOD (TERANG)
+   ======================================================== */
+.lp-about-section {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+.lp-about-section .lp-section-heading h2 {
+  color: #0f172a;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.lp-about-section .lp-section-heading > p {
+  color: #475569;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+/* ========================================================
+   Section 5: Cara Belajar (GELAP)
+   ======================================================== */
 .lp-flow-section {
-  background: #f3f7fc;
-  border-block: 1px solid #e4ebf5;
+  background: radial-gradient(ellipse at 50% 0%, #102a5c 0%, #081a38 55%, #040e1f 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 .lp-section-heading {
   display: flex;
@@ -384,9 +407,14 @@
 .lp-section-heading h2 {
   margin-bottom: 0;
 }
-.lp-section-heading > p {
-  color: #60738c;
-  font-size: 1rem;
+.lp-flow-section .lp-section-heading h2 {
+  color: #f8fafc;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.lp-flow-section .lp-section-heading > p {
+  color: #94a3b8;
+  font-size: 1.05rem;
 }
 .lp-flow-layout {
   display: grid;
@@ -397,8 +425,10 @@
 .lp-student-art {
   position: relative;
   overflow: hidden;
-  border-radius: 20px;
+  border-radius: 24px;
   background: #0a2042;
+  border: 1.5px solid rgba(147, 197, 253, 0.25);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   max-height: 460px;
 }
 .lp-student-art > img {
@@ -407,6 +437,8 @@
   height: auto;
   aspect-ratio: 1.07;
   object-fit: cover;
+  animation: floatStudentArt 7s ease-in-out infinite;
+  will-change: transform;
 }
 .lp-art-overlay {
   position: absolute;
@@ -432,34 +464,65 @@
 }
 .lp-steps li {
   display: flex;
-  gap: 22px;
-  padding: 25px 0;
-  border-bottom: 1px solid #dce5f0;
-}
-.lp-steps li:first-child {
-  padding-top: 0;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 20px 22px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: rgba(10, 27, 56, 0.65);
+  border: 1.5px solid rgba(147, 197, 253, 0.16);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .lp-steps li:last-child {
-  border: none;
-  padding-bottom: 0;
+  margin-bottom: 0;
+}
+.lp-steps li:hover {
+  transform: translateY(-2px);
+  background: rgba(16, 42, 85, 0.88);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.lp-steps li:focus-visible {
+  outline: 3px solid #f0b429 !important;
+  outline-offset: 2px !important;
 }
 .lp-step-number {
-  font-family: "Plus Jakarta Sans Variable", sans-serif;
-  color: #3d75c6;
-  font-size: 0.82rem;
-  padding-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.25);
+  border: 1.5px solid #38bdf8;
+  color: #38bdf8;
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 0;
+  flex-shrink: 0;
 }
 .lp-steps h3 {
-  font-size: 1.1rem;
-  letter-spacing: -0.025em;
-  margin-bottom: 8px;
+  font-size: 1.08rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+  margin: 0 0 6px 0;
 }
 .lp-steps p {
-  color: #5b6e87;
-  font-size: 1rem;
-  line-height: 1.6;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  line-height: 1.55;
   margin: 0;
-  max-width: 390px;
+  max-width: none;
+}
+
+/* ========================================================
+   Section 6: Untuk Guru (TERANG)
+   ======================================================== */
+.lp-teacher-section {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e2e8f0;
 }
 .lp-teacher {
   display: grid;
@@ -467,83 +530,203 @@
   gap: 65px;
   align-items: center;
 }
+.lp-teacher h2 {
+  color: #0f172a;
+  font-weight: 800;
+}
+.lp-teacher p {
+  font-size: 1.08rem;
+  line-height: 1.75;
+  color: #475569;
+}
 .lp-checks {
   list-style: none;
   padding: 0;
-  margin: 25px 0 30px;
+  margin: 24px 0 28px;
 }
 .lp-checks li {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
   font-size: 1rem;
-  margin: 12px 0;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 10px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lp-checks li:hover {
+  transform: translateX(4px);
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+.lp-checks li:focus-visible {
+  outline: 3px solid #f0b429 !important;
+  outline-offset: 2px !important;
 }
 .lp-checks svg {
-  color: #276be0;
+  color: #2563eb;
+  flex-shrink: 0;
 }
 .lp-btn-outline {
-  border: 1px solid #c4d3e7;
-  color: #174985;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 26px;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #1d4ed8;
+  border: 2px solid #2563eb;
+  box-shadow: 0 4px 0 #1d4ed8;
+  font-size: 1rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.12s ease;
 }
 .lp-btn-outline:hover {
-  background: #edf4ff;
+  background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #1d4ed8;
+}
+.lp-btn-outline:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1d4ed8;
 }
 .lp-teacher-art {
   position: relative;
   background: radial-gradient(ellipse at 50% 50%, #c5dcff, #edf4ff 65%);
-  border: 1px solid #d9e7fa;
-  border-radius: 20px;
+  border: 2px solid #bfdbfe;
+  border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 .lp-teacher-art > img {
   width: 100%;
   height: auto;
   display: block;
+  animation: floatTeacherArt 8s ease-in-out infinite;
+  will-change: transform;
 }
 .lp-teacher-art .lp-art-caption {
   color: #506d94;
 }
+
+/* ========================================================
+   Section 7: Aksesibilitas (GELAP)
+   ======================================================== */
 .lp-access-section {
-  background: #edf3fb;
-  padding: 65px 0;
+  background: radial-gradient(ellipse at 50% 100%, #102a5c 0%, #061329 65%, #020917 100%);
+  padding: 85px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 .lp-access-layout h2 {
-  font-size: 1.9rem;
+  font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.25;
 }
 .lp-access-items {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 48px;
-  margin-top: 40px;
+  gap: 28px;
+  margin-top: 44px;
+}
+.lp-access-items > div {
+  background: rgba(10, 27, 56, 0.72);
+  border: 1.5px solid rgba(147, 197, 253, 0.18);
+  border-bottom: 4px solid rgba(56, 189, 248, 0.45);
+  border-radius: 20px;
+  padding: 30px 24px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lp-access-items > div:hover {
+  transform: translateY(-4px);
+  background: rgba(16, 42, 85, 0.88);
+  border-color: rgba(56, 189, 248, 0.6);
+  border-bottom-color: #38bdf8;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+}
+.lp-access-items > div:focus-visible {
+  outline: 3px solid #f0b429 !important;
+  outline-offset: 2px !important;
 }
 .lp-access-items svg {
-  color: #2b66bd;
-  margin-bottom: 16px;
+  width: 32px;
+  height: 32px;
+  color: #38bdf8;
+  margin-bottom: 18px;
+  transition: transform 0.2s ease;
+}
+.lp-access-items > div:hover svg {
+  transform: scale(1.1);
 }
 .lp-access-items h3 {
-  font-size: 1rem;
-  letter-spacing: -0.02em;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0 0 10px 0;
 }
 .lp-access-items p {
-  font-size: 0.98rem;
-  color: #52677f;
-  max-width: 290px;
+  font-size: 0.95rem;
+  color: #94a3b8;
+  line-height: 1.6;
   margin: 0;
+  max-width: none;
+}
+
+/* ========================================================
+   Section 8: FAQ (TERANG)
+   ======================================================== */
+.lp-faq-section {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 85px 0;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
 }
 .lp-faq {
   display: grid;
   grid-template-columns: 1fr 1.8fr;
   gap: 70px;
 }
+.lp-faq h2 {
+  color: #0f172a;
+  font-weight: 800;
+}
 .lp-faq > div > p {
-  color: #667c99;
+  color: #64748b;
+  font-size: 1.05rem;
+  line-height: 1.6;
 }
 .lp-faq-list details {
-  border-bottom: 1px solid #dee7f2;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-bottom: 4px solid #cbd5e1;
+  border-radius: 16px;
+  margin-bottom: 14px;
+  padding: 0 24px;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .lp-faq-list details:first-child {
-  border-top: 1px solid #dee7f2;
+  border-top: 2px solid #e2e8f0;
+}
+.lp-faq-list details:hover {
+  border-color: #93c5fd;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+.lp-faq-list details[open] {
+  border-color: #3b82f6;
+  border-bottom-color: #2563eb;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
 }
 .lp-faq-list summary {
   display: flex;
@@ -551,28 +734,33 @@
   align-items: center;
   gap: 24px;
   cursor: pointer;
-  padding: 23px 0;
+  padding: 20px 0;
   list-style: none;
-  font-weight: 600;
-  font-size: 1.02rem;
+  font-weight: 750;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+.lp-faq-list summary:focus-visible {
+  outline: 3px solid #f0b429 !important;
+  outline-offset: 2px !important;
 }
 .lp-faq-list summary::-webkit-details-marker,
 .lp-mobile-nav summary::-webkit-details-marker {
   display: none;
 }
 .lp-faq-list summary svg {
-  color: #6280a6;
+  color: #2563eb;
   transition: transform 0.2s;
 }
 .lp-faq-list details[open] summary svg {
   transform: rotate(180deg);
 }
 .lp-faq-list details > p {
-  font-size: 1rem;
-  color: #52677f;
+  font-size: 0.98rem;
+  color: #475569;
   line-height: 1.75;
-  margin-bottom: 23px;
-  max-width: 620px;
+  margin-bottom: 22px;
+  max-width: none;
 }
 .lp-cta {
   text-align: center;
@@ -623,15 +811,80 @@
   color: #667c99;
   font-size: 0.8rem;
 }
-@media (min-width: 1000px) and (prefers-reduced-motion: no-preference) {
-  .lp-hero-art {
-    animation: lp-float 8s ease-in-out infinite;
+/* ========================================================
+   Lightweight GPU-Accelerated Micro-Animations for Illustrations
+   ======================================================== */
+@keyframes floatHeroArt {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(0.4deg); }
+}
+@keyframes floatBadgeTop {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes floatBadgeBottom {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(7px); }
+}
+@keyframes floatStudentArt {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-6px) scale(1.01); }
+}
+@keyframes floatTeacherArt {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-6px) scale(1.01); }
+}
+@keyframes slowOrbitDrift {
+  from { transform: rotate(-25deg) scaleY(0.73); }
+  to { transform: rotate(335deg) scaleY(0.73); }
+}
+
+.lp-hero-art {
+  animation: floatHeroArt 6s ease-in-out infinite;
+  will-change: transform;
+}
+.lp-floating-top {
+  animation: floatBadgeTop 5s ease-in-out infinite;
+  will-change: transform;
+}
+.lp-floating-bottom {
+  animation: floatBadgeBottom 5.5s ease-in-out infinite 0.5s;
+  will-change: transform;
+}
+.lp-orbit-one {
+  animation: slowOrbitDrift 70s linear infinite;
+  will-change: transform;
+}
+.lp-orbit-two {
+  animation: slowOrbitDrift 110s linear infinite reverse;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero-art,
+  .lp-floating-top,
+  .lp-floating-bottom,
+  .lp-student-art > img,
+  .lp-teacher-art > img,
+  .lp-orbit-one,
+  .lp-orbit-two,
+  .tutor-pulse-beacon,
+  .spin-pulse {
+    animation: none !important;
+    transform: none !important;
   }
-  @keyframes lp-float {
-    50% {
-      transform: translateY(-12px);
-    }
-  }
+}
+html[data-reduced-motion="true"] .lp-hero-art,
+html[data-reduced-motion="true"] .lp-floating-top,
+html[data-reduced-motion="true"] .lp-floating-bottom,
+html[data-reduced-motion="true"] .lp-student-art > img,
+html[data-reduced-motion="true"] .lp-teacher-art > img,
+html[data-reduced-motion="true"] .lp-orbit-one,
+html[data-reduced-motion="true"] .lp-orbit-two,
+html[data-reduced-motion="true"] .tutor-pulse-beacon,
+html[data-reduced-motion="true"] .spin-pulse {
+  animation: none !important;
+  transform: none !important;
 }
 @media (max-width: 1050px) {
   .lp-container {
@@ -995,12 +1248,12 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  background: rgba(8, 24, 52, 0.85);
-  border: 1.5px solid rgba(147, 197, 253, 0.35);
-  border-radius: 20px;
-  padding: 22px;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(24px);
+  background: #ffffff;
+  border: 2px solid #bfdbfe;
+  border-bottom: 5px solid #93c5fd;
+  border-radius: 24px;
+  padding: 24px 26px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(37, 99, 235, 0.06);
 }
 
 .tutor-card-header {
@@ -1008,7 +1261,7 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(147, 197, 253, 0.14);
+  border-bottom: 1px solid #e2e8f0;
   margin-bottom: 14px;
 }
 
@@ -1020,14 +1273,14 @@
 
 .tutor-avatar-sparkle {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   background: linear-gradient(135deg, #2565e9, #0ea5e9);
   display: grid;
   place-items: center;
   color: #ffffff;
-  box-shadow: 0 0 16px rgba(14, 165, 233, 0.5);
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
 }
 
 .tutor-pulse-beacon {
@@ -1053,9 +1306,9 @@
 }
 
 .tutor-name {
-  font-size: 0.98rem;
+  font-size: 1.02rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: #0f172a;
 }
 
 .tutor-pill-live {
@@ -1063,25 +1316,25 @@
   align-items: center;
   gap: 5px;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 750;
   padding: 2px 8px;
   border-radius: 9999px;
-  background: rgba(37, 99, 235, 0.28);
-  color: #7dd3fc;
-  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .live-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 8px #38bdf8;
+  background: #2563eb;
+  box-shadow: 0 0 8px #2563eb;
 }
 
 .tutor-sublabel {
-  font-size: 0.76rem;
-  color: #94a3b8;
+  font-size: 0.78rem;
+  color: #64748b;
   display: block;
 }
 
@@ -1089,14 +1342,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 10px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
 }
 
 .tutor-volume-icon {
-  color: #38bdf8;
+  color: #2563eb;
 }
 
 .tutor-soundwave-bars {
@@ -1109,7 +1362,7 @@
 .sw-bar {
   width: 3px;
   height: 4px;
-  background: #38bdf8;
+  background: #2563eb;
   border-radius: 2px;
 }
 
@@ -1124,35 +1377,35 @@
 }
 
 .tutor-dialog-question {
-  background: rgba(15, 34, 69, 0.65);
-  border-radius: 12px;
-  padding: 12px 14px;
-  border-left: 3px solid #38bdf8;
+  background: #eff6ff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  border-left: 4px solid #2563eb;
   margin-bottom: 14px;
 }
 
 .tutor-user-tag {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #7dd3fc;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #1d4ed8;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 4px;
 }
 
 .tutor-question-text {
-  color: #f1f5f9;
-  font-size: 0.92rem;
-  font-weight: 600;
-  line-height: 1.45;
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.5;
   margin: 0;
 }
 
 .tutor-thinking-box {
-  background: rgba(30, 58, 110, 0.4);
-  border: 1px dashed rgba(56, 189, 248, 0.45);
-  border-radius: 12px;
-  padding: 14px;
+  background: #f0f7ff;
+  border: 1.5px dashed #3b82f6;
+  border-radius: 14px;
+  padding: 14px 16px;
   margin-bottom: 14px;
 }
 
@@ -1160,9 +1413,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #38bdf8;
-  font-size: 0.82rem;
-  font-weight: 750;
+  color: #1d4ed8;
+  font-size: 0.84rem;
+  font-weight: 800;
   margin-bottom: 8px;
 }
 
@@ -1178,16 +1431,16 @@
 
 .tutor-thought-item {
   display: block;
-  font-size: 0.84rem;
-  color: #e2e8f0;
+  font-size: 0.88rem;
+  color: #1e293b;
   line-height: 1.5;
   min-height: 40px;
 }
 
 .tutor-thinking-progress {
-  height: 4px;
+  height: 5px;
   width: 100%;
-  background: rgba(148, 163, 184, 0.2);
+  background: #dbeafe;
   border-radius: 9999px;
   margin-top: 10px;
   overflow: hidden;
@@ -1200,8 +1453,8 @@
 }
 
 .tutor-response-box {
-  background: rgba(15, 30, 58, 0.85);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 14px;
   padding: 14px 16px;
   margin-bottom: 14px;
@@ -1211,22 +1464,22 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.74rem;
-  font-weight: 750;
-  color: #60a5fa;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #16a34a;
   margin-bottom: 8px;
 }
 
 .tutor-response-text {
-  color: #f8fafc;
-  font-size: 0.92rem;
-  line-height: 1.6;
+  color: #0f172a;
+  font-size: 0.94rem;
+  line-height: 1.65;
   margin: 0;
 }
 
 .tutor-stream-cursor {
   display: inline-block;
-  color: #38bdf8;
+  color: #2563eb;
   font-weight: 900;
   animation: blink 0.7s infinite;
   margin-left: 2px;
@@ -1237,73 +1490,118 @@
   50% { opacity: 0; }
 }
 
+/* Quick Scenario Triggers ("ini yg di ss di perbagus") */
 .tutor-interactive-footer {
-  border-top: 1px solid rgba(147, 197, 253, 0.12);
-  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 14px;
 }
 
-.tutor-prompt-title {
-  display: block;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: #94a3b8;
+.tutor-prompt-title-row {
+  margin-bottom: 10px;
+}
+
+.tutor-prompt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #1e3a8a;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 8px;
+  background: #eff6ff;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
 }
 
 .tutor-prompt-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tutor-prompt-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 9999px;
-  background: rgba(30, 58, 110, 0.45);
-  border: 1px solid rgba(125, 211, 252, 0.28);
-  color: #cbd5e1;
-  font-size: 0.78rem;
-  font-weight: 650;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  color: #1e293b;
+  font-size: 0.88rem;
+  font-weight: 750;
   cursor: pointer;
-  transition: all 0.15s ease;
+  box-shadow: 0 3px 0 #cbd5e1;
+  transition: all 0.12s ease;
+}
+
+.tutor-chip-icon {
+  font-size: 1rem;
+}
+
+.tutor-chip-text {
+  letter-spacing: -0.01em;
+}
+
+.tutor-chip-arrow {
+  color: #64748b;
+  transition: transform 0.12s ease;
 }
 
 .tutor-prompt-chip:hover {
-  background: rgba(37, 99, 235, 0.4);
-  border-color: #38bdf8;
-  color: #ffffff;
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  box-shadow: 0 4px 0 #cbd5e1;
   transform: translateY(-1px);
 }
 
+.tutor-prompt-chip:hover .tutor-chip-arrow {
+  color: #1d4ed8;
+  transform: translateX(2px);
+}
+
 .tutor-prompt-chip.is-selected {
-  background: #2565e9;
-  border-color: #60a5fa;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: #2563eb;
   color: #ffffff;
-  box-shadow: 0 0 12px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 3px 0 #1e40af, 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.tutor-prompt-chip.is-selected .tutor-chip-arrow {
+  color: #ffffff;
+}
+
+.tutor-prompt-chip:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1e40af;
+}
+
+.tutor-prompt-chip:focus-visible {
+  outline: 3px solid #f0b429 !important;
+  outline-offset: 2px !important;
 }
 
 .tutor-input-bar {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(10, 24, 48, 0.75);
-  border: 1.5px solid rgba(147, 197, 253, 0.28);
+  background: #f8fafc;
+  border: 2px solid #cbd5e1;
   border-radius: 14px;
   padding: 6px 8px 6px 16px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
   margin-bottom: 16px;
   transition: all 0.2s ease;
 }
 
 .tutor-input-bar:focus-within {
-  border-color: #60a5fa;
-  background: rgba(14, 34, 68, 0.9);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18), inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .tutor-text-input {
@@ -1312,7 +1610,7 @@
   background: transparent;
   border: none;
   outline: none;
-  color: #f8fafc;
+  color: #0f172a;
   font-size: 0.95rem;
   font-family: inherit;
   padding: 8px 0;
@@ -1327,14 +1625,14 @@
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   border: 1.5px solid #60a5fa;
   color: #ffffff;
   font-size: 0.88rem;
   font-weight: 750;
   cursor: pointer;
-  box-shadow: 0 3px 0 #1e40af, 0 4px 12px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 3px 0 #1e40af, 0 4px 12px rgba(37, 99, 235, 0.3);
   transition: all 0.12s ease;
   white-space: nowrap;
 }
@@ -1342,7 +1640,7 @@
 .tutor-submit-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   transform: translateY(-1px);
-  box-shadow: 0 4px 0 #1e40af, 0 6px 16px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 4px 0 #1e40af, 0 6px 16px rgba(37, 99, 235, 0.45);
 }
 
 .tutor-submit-btn:active:not(:disabled) {
@@ -1367,33 +1665,33 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 8px;
-  background: rgba(37, 99, 235, 0.2);
-  border: 1px solid rgba(125, 211, 252, 0.3);
-  color: #7dd3fc;
-  font-size: 0.74rem;
-  font-weight: 700;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 750;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .tutor-replay-btn:hover {
-  background: rgba(37, 99, 235, 0.4);
-  border-color: #38bdf8;
-  color: #ffffff;
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #1e40af;
 }
 
 /* ========================================================
-   Agentic AI Tutor Interactive Demonstration Section
+   Agentic AI Tutor Interactive Demonstration Section (LIGHT THEME)
    ======================================================== */
 .lp-agentic-demo-section {
   position: relative;
-  padding: 80px 0 90px 0;
-  background: radial-gradient(circle at 50% 0%, #0c2552 0%, #051433 55%, #020917 100%);
-  color: #ffffff;
-  border-top: 1px solid rgba(96, 165, 250, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 85px 0 95px 0;
+  background: linear-gradient(180deg, #f0f6ff 0%, #e8f1fd 50%, #f4f8fe 100%);
+  color: #0f172a;
+  border-top: 1px solid rgba(147, 197, 253, 0.4);
+  border-bottom: 1px solid rgba(147, 197, 253, 0.4);
   overflow: hidden;
 }
 
@@ -1409,22 +1707,22 @@
   gap: 8px;
   padding: 6px 16px;
   border-radius: 9999px;
-  background: rgba(37, 99, 235, 0.25);
-  border: 1.5px solid rgba(96, 165, 250, 0.4);
-  color: #93c5fd;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1.5px solid #3b82f6;
+  color: #1d4ed8;
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   margin-bottom: 14px;
-  box-shadow: 0 0 24px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.15);
 }
 
 .lp-agentic-title {
   font-size: clamp(1.8rem, 3.2vw, 2.6rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: #ffffff;
+  color: #0f172a;
   line-height: 1.22;
   margin: 0 0 16px 0;
 }
@@ -1432,7 +1730,7 @@
 .lp-agentic-desc {
   font-size: 1.05rem;
   line-height: 1.7;
-  color: #cbd5e1;
+  color: #475569;
   margin: 0;
 }
 
