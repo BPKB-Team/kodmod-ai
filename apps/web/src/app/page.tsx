@@ -105,7 +105,10 @@ export default async function HomePage() {
       <section className="lp-agentic-demo-section" id="demo-tutor" aria-labelledby="agentic-demo-heading">
         <div className="lp-container">
           <div className="lp-agentic-section-header">
-            <span className="lp-agentic-badge" data-voice-menu="demo-badge" tabIndex={0}>✦ {t("Simulasi Tutor AI")}</span>
+            <span className="lp-agentic-badge" data-voice-menu="demo-badge" tabIndex={0}>
+              <Sparkles size={14} aria-hidden="true" />
+              <span>{t("Simulasi Tutor AI")}</span>
+            </span>
             <h2 id="agentic-demo-heading" className="lp-agentic-title" data-voice-menu="demo-heading" tabIndex={0}>{t("Coba Langsung Simulasi Tutor AI")}</h2>
             <p className="lp-agentic-desc">
               {t("Ketik pertanyaan materi pelajaran yang ingin kamu pelajari, atau pilih topik cepat di bawah. Saksikan langkah berpikir AI yang menyusun analogi khusus audio untuk membantu pemahaman konsep secara mendalam.")}
@@ -201,7 +204,7 @@ export default async function HomePage() {
             ["Pilih materi belajar", "Baca atau dengarkan materi yang sudah dibagikan guru.", "step-2"],
             ["Tanyakan dan latih pemahamanmu", "Bertanya kepada Tutor, kemudian kerjakan latihan atau tugas.", "step-3"],
             ["Lanjutkan dari progresmu", "Lihat hasil, baca pembahasan yang tersedia, dan lanjutkan belajar.", "step-4"],
-          ].map(([title, copy, stepKey], index) => <li key={title} data-voice-menu={stepKey} tabIndex={0}><span className="lp-step-number" aria-hidden="true">{index + 1}</span><div><h3>{t(title)}</h3><p>{t(copy)}</p></div></li>)}</ol>
+          ].map(([title, copy, stepKey], index) => <li key={title} data-voice-menu={stepKey} tabIndex={0}><span className="lp-step-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><div><h3>{t(title)}</h3><p>{t(copy)}</p></div></li>)}</ol>
         </div>
       </div></section>
       <section id="untuk-guru" className="lp-teacher-section"><div className="lp-container lp-section lp-teacher"><div>
