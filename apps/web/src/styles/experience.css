@@ -821,9 +821,21 @@
 .kodmod-dialog .kodmod-dialog-body {
   margin: 1rem 0 0;
   color: #52677f;
-  font-size: 1.05rem;
-  line-height: 1.7;
+  font-size: 1.02rem;
+  line-height: 1.75;
   overflow-wrap: anywhere;
+  white-space: pre-line;
+  text-align: center;
+}
+.kodmod-dialog .kodmod-dialog-body.is-structured,
+.kodmod-dialog.kodmod-dialog-structured .kodmod-dialog-body {
+  text-align: left;
+  line-height: 1.8;
+  color: #2b4260;
+}
+.kodmod-dialog.kodmod-dialog-structured {
+  max-width: 540px;
+  padding: 2rem 2.25rem 1.75rem;
 }
 .kodmod-dialog .kodmod-dialog-actions {
   gap: 12px;

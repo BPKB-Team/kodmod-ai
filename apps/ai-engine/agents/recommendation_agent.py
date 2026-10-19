@@ -88,11 +88,20 @@ async def recommendation_node(state: KODMODState) -> dict[str, Any]:
         parsed = _fallback(summary)
 
     recs = _normalize_recs(parsed.get("recommendations", []))
-    intro = parsed.get("spoken_intro", "Inilah rekomendasi untukmu.")
+    intro = parsed.get("spoken_intro", "Inilah rekomendasi untukmu.").strip()
+    rec_texts = [r["text"].strip() for r in recs if r.get("text")]
 
-    spoken = (
-        intro + " " + " ".join(f"{i + 1}. {r['text']}" for i, r in enumerate(recs) if r.get("text"))
-    )
+    # Build clean structured response with paragraph and line breaks
+    parts: list[str] = []
+    base_response = state.get("generated_response", "").strip()
+    if base_response:
+        parts.append(base_response)
+    if intro:
+        parts.append(intro)
+    if rec_texts:
+        parts.append("\n".join(f"{i + 1}. {t}" for i, t in enumerate(rec_texts)))
+
+    formatted_response = "\n\n".join(parts)
 
     log.info("Generated %d recommendations", len(recs))
 
@@ -102,7 +111,7 @@ async def recommendation_node(state: KODMODState) -> dict[str, Any]:
             **summary,
             "structured_recommendations": recs,
         },
-        "generated_response": ((state.get("generated_response", "") + " " + spoken).strip()),
+        "generated_response": formatted_response.strip(),
         "next_action": "accessibility_polish",
         "last_node": "recommendation",
     }

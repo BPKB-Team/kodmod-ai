@@ -60,7 +60,7 @@ _VISUAL_REFS = re.compile(
 
 _MARKDOWN = re.compile(r"(\*\*|__|`{1,3}|^#+\s*|^\s*[-*+]\s+)", flags=re.MULTILINE)
 
-_LONG_SENTENCE = re.compile(r"([^.!?]{120,}?)([.!?])\s+")
+_LONG_SENTENCE = re.compile(r"([^.!?\r\n]{120,}?)([.!?])(?:\s+|$)")
 
 
 async def accessibility_node(state: KODMODState) -> dict[str, Any]:
@@ -139,12 +139,13 @@ def _strip_markdown(text: str) -> str:
 def _normalize_dashes(text: str) -> str:
     """Turn typographic dashes into punctuation that reads and speaks cleanly.
 
-    A screen reader announces an em-dash as a pause of unpredictable length, or
-    sometimes as nothing at all, and the product style avoids them in any case.
-    A dash used as a parenthetical or an aside becomes a comma.
+    Replaces em-dashes and isolated dashes with commas, but preserves
+    word-internal hyphens in Indonesian reduplicated words (e.g. "langkah-langkah",
+    "anak-anak", "benar-benar") and negative numbers (e.g. "-5").
     """
-    text = re.sub(r"\s*[-–]\s*", ", ", text)
-    return re.sub(r",\s*,", ",", text)
+    text = re.sub(r"\s*[—–]\s*", ", ", text)
+    text = re.sub(r"(?<=\s)-(?=\s)", ", ", text)
+    return re.sub(r",\s*,+", ",", text)
 
 
 def _replace_visual_refs(text: str) -> str:
@@ -153,16 +154,23 @@ def _replace_visual_refs(text: str) -> str:
 
 
 def _split_long_sentences(text: str) -> str:
-    """Insert breaks in sentences over ~120 chars at the nearest comma."""
+    """Break excessively long run-on sentences (>160 chars) at major conjunctions.
 
+    Preserves natural comma breathing pauses instead of breaking dependent clauses.
+    """
     def splitter(match: re.Match) -> str:
         sentence = match.group(1)
         terminator = match.group(2)
-        # Try to break at the last comma in the first 120 chars
-        head = sentence[:120]
-        idx = head.rfind(",")
-        if idx > 40:
-            return f"{sentence[:idx]}.{sentence[idx + 1 :]}{terminator} "
+        if len(sentence) < 160:
+            return match.group(0)
+        conj_match = re.search(
+            r"[,;]\s+(sehingga|karena|tetapi|namun|sedangkan|padahal)\b",
+            sentence[60:],
+            flags=re.IGNORECASE,
+        )
+        if conj_match:
+            split_point = 60 + conj_match.start()
+            return f"{sentence[:split_point]}. {sentence[split_point + 1:].strip()}{terminator} "
         return match.group(0)
 
     return _LONG_SENTENCE.sub(splitter, text)

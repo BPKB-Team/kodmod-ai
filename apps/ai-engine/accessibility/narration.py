@@ -102,9 +102,10 @@ def describe_visuals_in_text(
 
         out = _VISUAL_FALLBACK.sub(_replace, out)
 
-    # 3. Collapse whitespace artifacts.
-    out = re.sub(r"\s+", " ", out).strip()
-    out = re.sub(r"\s+([.,;:!?])", r"\1", out)
+    # 3. Collapse whitespace artifacts while preserving paragraph structure.
+    out = re.sub(r"[^\S\r\n]+", " ", out)
+    out = re.sub(r"\n{3,}", "\n\n", out).strip()
+    out = re.sub(r"[^\S\r\n]+([.,;:!?])", r"\1", out)
     return out
 
 

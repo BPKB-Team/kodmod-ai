@@ -54,3 +54,15 @@ test("converts subscripts, fractions, roots, and percent", () => {
 test("supports English translation when language is en", () => {
   assert.equal(normalizeSpeechText("3⁴ × 9² = 3⁸", "en"), "3 to the power of 4 times 9 to the power of 2 equals 3 to the power of 8");
 });
+
+test("translates numbered list items in quiz completion response into spoken ordinals", () => {
+  const popupText = "Latihan selesai. Nilai latihanmu 55 persen. Ada dua langkah ringan yang bisa membantumu makin mantap. 1. Kamu sudah berusaha dengan baik. Coba latihan garis bilangan untuk perubahan suhu dan pengurangan bilangan negatif. 2. Saat menghitung, kamu bisa tandai suhu awal dan arah perubahannya di garis bilangan.";
+  const spoken = normalizeSpeechText(popupText, "id");
+
+  // Must not have raw "1. " or "2. " that cause "satu titik" or "dua titik"
+  assert.ok(!spoken.includes("1. "));
+  assert.ok(!spoken.includes("2. "));
+  assert.ok(spoken.includes("Pertama, Kamu sudah berusaha"));
+  assert.ok(spoken.includes("Kedua, Saat menghitung"));
+});
+

@@ -72,8 +72,37 @@ export async function confirmAction(options: Confirmation) {
   return result.isConfirmed;
 }
 
+export function formatDialogMessage(message: string): { formattedText: string; isStructured: boolean } {
+  if (!message || typeof message !== "string") {
+    return { formattedText: "", isStructured: false };
+  }
+
+  let text = message.trim();
+  const hasNumberedList = /(?:^|[\n.!?:]\s*)(\d{1,2}[\.)]\s+)/.test(text);
+  const hasMultipleSentences = (text.match(/[.!?](\s+|$)/g) || []).length >= 2;
+  const isLong = text.length > 90;
+
+  if (hasNumberedList || (isLong && hasMultipleSentences)) {
+    // Break after score / summary sentences before intro
+    text = text.replace(/([.!?])\s+(Ada\s+(?:dua|tiga|empat|lima|beberapa|\d+)\s+langkah\b|Inilah\s+rekomendasi\b)/gi, "$1\n\n$2");
+
+    // Add colon after intro phrase if followed by numbers or list
+    text = text.replace(/(Ada\s+(?:dua|tiga|empat|lima|beberapa|\d+)\s+langkah\s+[^.!?]+)\.\s+(?=\d{1,2}[\.)]|Pertama,)/gi, "$1:\n\n");
+
+    // Ensure each numbered item or ordinal is on a new paragraph
+    text = text.replace(/(?:(?<=[^\n])\s+|^)(\d{1,2}[\.)]\s+)/g, "\n\n$1");
+    text = text.replace(/(?:(?<=[^\n])\s+|^)((?:Pertama|Kedua|Ketiga|Keempat|Kelima|First|Second|Third|Fourth|Fifth),\s+)/g, "\n\n$1");
+
+    text = text.replace(/\n{3,}/g, "\n\n").trim();
+    return { formattedText: text, isStructured: true };
+  }
+
+  return { formattedText: text, isStructured: false };
+}
+
 export async function notifyResult(message: string, error = false) {
   await waitForNativeDialog();
+  const { formattedText, isStructured } = formatDialogMessage(message);
   const title = t(error ? "Belum berhasil" : "Berhasil");
   const publicMessages: Record<string, string> = {
     "Username atau kata sandi tidak sesuai.": "login-invalid",
@@ -86,12 +115,20 @@ export async function notifyResult(message: string, error = false) {
   const menuKey = publicMessages[message] ?? (error && /^\/(masuk|daftar)(\/|$)/.test(window.location?.pathname ?? "") ? "dialog-error" : undefined);
   await dialog().fire({
     titleText: title,
-    text: t(message),
+    text: t(formattedText),
+    customClass: {
+      popup: isStructured ? "kodmod-dialog kodmod-dialog-structured" : "kodmod-dialog",
+      title: "kodmod-dialog-title",
+      htmlContainer: isStructured ? "kodmod-dialog-body is-structured" : "kodmod-dialog-body",
+      confirmButton: "button primary",
+      cancelButton: "button secondary",
+      actions: "kodmod-dialog-actions",
+    },
     icon: error ? "error" : "success",
     iconColor: error ? "#c44343" : "#23856d",
     didOpen(popup) {
       popup.querySelector<HTMLElement>(".swal2-confirm")?.setAttribute("data-voice-menu", "dialog-ok");
-      announceDialog(`${title}. ${t(message)}. ${t("Mengerti")}.`, menuKey);
+      announceDialog(`${title}. ${t(formattedText)}. ${t("Mengerti")}.`, menuKey);
     },
   });
 }

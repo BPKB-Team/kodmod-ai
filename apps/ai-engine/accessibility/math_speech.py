@@ -42,6 +42,32 @@ VULGAR_FRACTIONS = {
     "⅞": ("tujuh per delapan", "seven eighths"),
 }
 
+ORDINALS_ID = {
+    "1": "Pertama",
+    "2": "Kedua",
+    "3": "Ketiga",
+    "4": "Keempat",
+    "5": "Kelima",
+    "6": "Keenam",
+    "7": "Ketujuh",
+    "8": "Kedelapan",
+    "9": "Kesembilan",
+    "10": "Kesepuluh",
+}
+
+ORDINALS_EN = {
+    "1": "First",
+    "2": "Second",
+    "3": "Third",
+    "4": "Fourth",
+    "5": "Fifth",
+    "6": "Sixth",
+    "7": "Seventh",
+    "8": "Eighth",
+    "9": "Ninth",
+    "10": "Tenth",
+}
+
 
 def _map_super(match: re.Match) -> str:
     chars = match.group(0)
@@ -174,9 +200,28 @@ def normalize_math_speech(text: str, language: str = "id") -> str:
     out = re.sub(r"(?<=\d)\s*°\s*C\b", " degrees Celsius" if is_en else " derajat Celsius", out)
     out = re.sub(r"(?<=\d)\s*°(?!\s*C)", " degrees" if is_en else " derajat", out)
 
+    # 8. Numbered lists (e.g. " 1. ", " 2. ") -> natural spoken transitions ("Pertama, ", "Kedua, ")
+    def _ordinal_sub(m: re.Match) -> str:
+        num = m.group(1)
+        word = (
+            ORDINALS_EN.get(num, f"Step {num}")
+            if is_en
+            else ORDINALS_ID.get(num, f"Langkah {num}")
+        )
+        return f"{word}, "
+
+    out = re.sub(r"(?:(?<=[\n.!?:]\s)|(?<=[\n.!?:])|^)(\d{1,2})[\.)]\s+", _ordinal_sub, out)
+
+    # 9. Natural spoken ratios (e.g. "Bagian 4 / 19" -> "Bagian 4 dari 19")
+    out = re.sub(r"(\bBagian\s+\d+)\s*\/\s*(\d+\b)", r"\1 dari \2", out, flags=re.IGNORECASE)
+
+    # 10. Strip visual markdown bullets
+    out = re.sub(r"(?:^|\n)\s*[-*•·]\s+", "\n", out)
+
     # Punctuation spacing cleanup
-    out = re.sub(r"\s+([,.:;?!])", r"\1", out)
+    out = re.sub(r"[^\S\r\n]+([,.:;?!])", r"\1", out)
     out = re.sub(r"([,.:;?!])(?=[^\s,.:;?!])", r"\1 ", out)
-    out = re.sub(r"\s{2,}", " ", out).strip()
+    out = re.sub(r"[^\S\r\n]{2,}", " ", out)
+    out = re.sub(r"\n{3,}", "\n\n", out).strip()
 
     return out

@@ -16,6 +16,32 @@ const SUBSCRIPTS = {
   "ₐ": "a", "ₑ": "e", "ₒ": "o", "ₓ": "x",
 };
 
+const ORDINALS_ID = {
+  "1": "Pertama",
+  "2": "Kedua",
+  "3": "Ketiga",
+  "4": "Keempat",
+  "5": "Kelima",
+  "6": "Keenam",
+  "7": "Ketujuh",
+  "8": "Kedelapan",
+  "9": "Kesembilan",
+  "10": "Kesepuluh",
+};
+
+const ORDINALS_EN = {
+  "1": "First",
+  "2": "Second",
+  "3": "Third",
+  "4": "Fourth",
+  "5": "Fifth",
+  "6": "Sixth",
+  "7": "Seventh",
+  "8": "Eighth",
+  "9": "Ninth",
+  "10": "Tenth",
+};
+
 const VULGAR_FRACTIONS = {
   "½": { id: "satu per dua", en: "one half" },
   "⅓": { id: "satu per tiga", en: "one third" },
@@ -123,6 +149,18 @@ export function normalizeSpeechText(text, language = "id") {
   out = out.replace(/(?<=\d)\s*%/g, isEn ? " percent" : " persen");
   out = out.replace(/(?<=\d)\s*°\s*C\b/g, isEn ? " degrees Celsius" : " derajat Celsius");
   out = out.replace(/(?<=\d)\s*°(?!\s*C)/g, isEn ? " degrees" : " derajat");
+
+  // 8. Numbered lists (e.g. " 1. ", " 2. ") -> natural spoken transitions ("Pertama, ", "Kedua, ")
+  out = out.replace(/(?:(?<=[\n.!?:]\s*)|^)(\d{1,2})[\.)]\s+/g, (_match, num) => {
+    const word = isEn ? (ORDINALS_EN[num] ?? `Step ${num}`) : (ORDINALS_ID[num] ?? `Langkah ${num}`);
+    return ` ${word}, `;
+  });
+
+  // 9. Natural spoken ratios (e.g. "Bagian 4 / 19" -> "Bagian 4 dari 19")
+  out = out.replace(/(\bBagian\s+\d+)\s*\/\s*(\d+\b)/gi, "$1 dari $2");
+
+  // 10. Strip visual markdown bullets so TTS doesn't utter punctuation marks
+  out = out.replace(/(?:^|\n)\s*[-*•·]\s+/g, "\n");
 
   // Punctuation cleanup
   out = out.replace(/\s+([,.:;?!])/g, "$1");
