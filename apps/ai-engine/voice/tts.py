@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
+from accessibility.math_speech import normalize_math_speech
 from config.settings import settings
 from voice import elevenlabs
 from voice.audio_cache import cached_audio
@@ -182,7 +183,7 @@ def _to_ssml(text: str, voice: str) -> str:
     return (
         f'<speak version="1.0" xml:lang="id-ID" '
         f'xmlns="http://www.w3.org/2001/10/synthesis">'
-        f'<voice name="{voice}"><prosody rate="0.95">{body}</prosody></voice>'
+        f'<voice name="{voice}"><prosody rate="0.90">{body}</prosody></voice>'
         f"</speak>"
     )
 
@@ -193,11 +194,12 @@ async def synthesise_to_file(
     text: str,
     *,
     voice: str | None = None,
-    rate: float = 1.0,
+    rate: float = 0.92,
     language: str = "id",
     scope: str = "internal",
 ) -> Path:
     """Synthesise text to an audio file and return its path."""
+    text = normalize_math_speech(text, language=language)
     backend = settings.TTS_BACKEND
     voice = voice or (
         settings.ELEVENLABS_TTS_VOICE_ID if backend == "elevenlabs" else settings.TTS_VOICE
@@ -219,11 +221,12 @@ async def synthesise_bytes(
     text: str,
     *,
     voice: str | None = None,
-    rate: float = 1.0,
+    rate: float = 0.92,
     language: str = "id",
     scope: str = "internal",
 ) -> bytes:
     """Synthesise text and return raw audio bytes (mp3/wav depending on backend)."""
+    text = normalize_math_speech(text, language=language)
     if settings.TTS_BACKEND == "elevenlabs":
         audio, _ = await _cached_elevenlabs(
             text,
@@ -232,7 +235,7 @@ async def synthesise_bytes(
             scope,
         )
         return audio
-    path = await synthesise_to_file(text, voice=voice, rate=rate)
+    path = await synthesise_to_file(text, voice=voice, rate=rate, language=language, scope=scope)
     try:
         return Path(path).read_bytes()
     finally:

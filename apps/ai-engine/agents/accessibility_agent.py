@@ -35,6 +35,7 @@ import logging
 import re
 from typing import Any
 
+from accessibility.math_speech import normalize_math_speech
 from accessibility.narration import describe_visuals_in_text
 from accessibility.simplifier import simplify_with_llm
 from graphs.state import KODMODState
@@ -88,6 +89,7 @@ async def accessibility_node(state: KODMODState) -> dict[str, Any]:
     cleaned = describe_visuals_in_text(cleaned)
     cleaned = _split_long_sentences(cleaned)
     cleaned = _normalize_numbers(cleaned) if language != "en" else cleaned
+    cleaned = normalize_math_speech(cleaned, language=language)
 
     # ---- Step 2: optional LLM simplification ----------------------------
     if simplify or _should_simplify(cleaned):

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { session } from "@/lib/session";
 import { validLanguage } from "@/lib/i18n.mjs";
+import { normalizeSpeechText } from "@/lib/speech-text-normalizer";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
   const language = typeof body === "object" && body !== null && "language" in body ? body.language : undefined;
   if (language !== undefined && !validLanguage(language)) return new Response(null, { status: 400 });
 
+  const spokenText = normalizeSpeechText(text, language);
+
   let upstream: Response;
   try {
     upstream = await fetch(`${apiOrigin()}/voice/tts`, {
@@ -42,7 +45,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${current.token}`,
       },
-      body: JSON.stringify({ text, language }),
+      body: JSON.stringify({ text: spokenText, language }),
       cache: "no-store",
       signal: AbortSignal.any([request.signal, AbortSignal.timeout(75_000)]),
     });

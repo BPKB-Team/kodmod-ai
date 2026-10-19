@@ -1,14 +1,20 @@
 "use client";
 import { createSpeechCoordinator, type SpeechRequest } from "./speech-output.mjs";
 import { getSpeechAudio } from "./speech-audio-cache";
+import { normalizeSpeechText } from "./speech-text-normalizer";
 
 export const speechOutput = createSpeechCoordinator({
-  loadAudio: async (request, signal) => (await getSpeechAudio(request.text, {
-    language: request.language, menuKey: request.menuKey, signal,
-  })).blob,
+  loadAudio: async (request, signal) => {
+    const spokenText = normalizeSpeechText(request.text, request.language);
+    return (await getSpeechAudio(spokenText, {
+      language: request.language, menuKey: request.menuKey, signal,
+    })).blob;
+  },
   makeAudio(blob, ended, failed) {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
+    // Slower, clearer learning speed for visually impaired students
+    audio.playbackRate = 0.92;
     audio.onended = ended;
     audio.onerror = () => failed(new Error("Audio playback failed."));
     return {
@@ -19,9 +25,12 @@ export const speechOutput = createSpeechCoordinator({
   speakDevice(request: SpeechRequest, ended, failed) {
     if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined")
       throw new Error("Device speech is unavailable.");
+    const spokenText = normalizeSpeechText(request.text, request.language);
     const synthesis = window.speechSynthesis;
-    const utterance = new SpeechSynthesisUtterance(request.text);
+    const utterance = new SpeechSynthesisUtterance(spokenText);
     utterance.lang = request.language === "en" ? "en-US" : "id-ID";
+    // Calmer, articulate rate (default 1.0 is often rushed on Windows/mobile TTS engines)
+    utterance.rate = 0.88;
     const voices = synthesis.getVoices();
     utterance.voice = voices.find(voice => voice.lang.toLowerCase().startsWith(request.language)) ?? null;
     let rejectStart: ((error: Error) => void) | null = null;

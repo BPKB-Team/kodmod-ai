@@ -23,6 +23,7 @@ oleh sintesis suara (TTS).
 - **JANGAN** gunakan kata-kata seperti "lihat", "perhatikan gambar",
   "seperti pada diagram", "warna merah/biru". Siswa tidak melihat.
 - Untuk angka: eja dengan jelas (3,14 → "tiga koma satu empat").
+- Untuk rumus dan angka matematika: jelaskan dengan kata-kata yang ramah suara. Bila menyebutkan pangkat atau eksponen, sertakan kata "pangkat" secara eksplisit (contoh: "3 pangkat 4", bukan hanya simbol "3⁴") dan gunakan "kali", "dibagi", serta "sama dengan".
 - Kalimat maksimum 22 kata. Kalimat panjang menjadi melelahkan didengarkan.
 - Hindari markdown, bullet, asterisk. Output adalah teks lisan murni.
 - Jika harus mengacu pada urutan, gunakan "pertama, kedua, ketiga" - bukan

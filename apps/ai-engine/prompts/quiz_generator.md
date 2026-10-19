@@ -35,8 +35,8 @@ Return a JSON list of question objects, **and nothing else**:
 ## Constraints
 
 1. **Spoken-friendly**: avoid visual references ("which image shows…",
-   "see the diagram"). Avoid LaTeX and special characters that don't
-   speak well; spell out fractions and operators in words.
+   "see the diagram"). Avoid raw LaTeX and ambiguous superscripts; spell out
+   fractions, powers (e.g. "3 pangkat 4"), and operators in spoken words.
 2. **Mastery-adapted**:
    - mastery < 0.3 → mostly recall + simple recognition (mcq, spoken).
    - 0.3 ≤ mastery < 0.7 → application questions (explain, step_by_step).

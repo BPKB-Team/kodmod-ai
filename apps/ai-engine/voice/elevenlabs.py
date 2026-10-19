@@ -82,7 +82,7 @@ def _tts_payload(text: str) -> dict[str, Any]:
         "stability": getattr(settings, "ELEVENLABS_TTS_STABILITY", 0.5),
         "similarity_boost": getattr(settings, "ELEVENLABS_TTS_SIMILARITY_BOOST", 0.75),
         "style": getattr(settings, "ELEVENLABS_TTS_STYLE", 0.0),
-        "speed": getattr(settings, "ELEVENLABS_TTS_SPEED", 1.0),
+        "speed": getattr(settings, "ELEVENLABS_TTS_SPEED", 0.92),
         "use_speaker_boost": getattr(settings, "ELEVENLABS_TTS_SPEAKER_BOOST", False),
     }
     payload["voice_settings"] = voice_settings
