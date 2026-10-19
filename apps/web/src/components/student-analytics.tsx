@@ -128,6 +128,7 @@ export function StudentAnalytics({
             type="button"
             role="tab"
             aria-selected={window === item.value}
+            aria-label={`${t("Rentang waktu")} ${t(item.label)}`}
             className={window === item.value ? "active" : ""}
             onClick={() => void changeWindow(item.value)}
             disabled={loading}
@@ -156,25 +157,25 @@ export function StudentAnalytics({
       </div>
 
       <div className="analytics-stat-grid">
-        <article className="panel analytics-stat-card">
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Akurasi latihan dan tugas")}: ${percent(data.quiz_accuracy)}. ${data.n_quiz_attempts} ${t("jawaban tercatat")}.`}>
           <span className="analytics-stat-icon blue"><BookOpenCheck size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Akurasi latihan dan tugas"}</UiText></span>
           <strong>{percent(data.quiz_accuracy)}</strong>
           <small>{data.n_quiz_attempts}<UiText>{" jawaban tercatat"}</UiText></small>
         </article>
-        <article className="panel analytics-stat-card">
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Waktu belajar")}: ${studyTimeLabel(data.total_minutes, language)}. ${data.interaction_count} ${t("interaksi dengan tutor")}.`}>
           <span className="analytics-stat-icon purple"><Clock3 size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Waktu belajar"}</UiText></span>
           <strong>{studyTimeLabel(data.total_minutes, language)}</strong>
           <small>{data.interaction_count}<UiText>{" interaksi dengan tutor"}</UiText></small>
         </article>
-        <article className="panel analytics-stat-card">
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Konsistensi")}: ${percent(data.engagement_index)}. ${t("ritme belajar pada periode ini")}.`}>
           <span className="analytics-stat-icon green"><TrendingUp size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Konsistensi"}</UiText></span>
           <strong>{percent(data.engagement_index)}</strong>
           <small><UiText>{"ritme belajar pada periode ini"}</UiText></small>
         </article>
-        <article className="panel analytics-stat-card">
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Tugas selesai")}: ${data.n_assignment_submissions ?? 0}. ${t("tugas dikumpulkan pada periode ini")}.`}>
           <span className="analytics-stat-icon blue"><BookOpenCheck size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Tugas selesai"}</UiText></span>
           <strong>{data.n_assignment_submissions ?? 0}</strong>

@@ -8,6 +8,7 @@ import { Brand } from "./ui";
 import { ExperienceToolbar } from "./experience-toolbar";
 import { UserProfileDropdown } from "./user-profile-dropdown";
 import { useI18n } from "./language-provider";
+import { speechOutput } from "@/lib/browser-speech";
 import type { User } from "@/lib/types";
 
 interface StudentTopNavProps {
@@ -55,6 +56,7 @@ export function StudentTopNav({ user }: StudentTopNavProps) {
         const isModal = document.querySelector(".swal2-shown, dialog[open]");
         if (!isInput && !isModal) {
           e.preventDefault();
+          speechOutput.stop();
           router.push("/siswa");
         }
       }
@@ -75,6 +77,7 @@ export function StudentTopNav({ user }: StudentTopNavProps) {
                 className="student-back-to-hub-btn"
                 data-voice-menu="back-home"
                 aria-label={t("Kembali ke Menu Utama Belajar. Pintasan tombol Escape.")}
+                onClick={() => speechOutput.stop()}
               >
                 <ArrowLeft size={18} aria-hidden="true" />
                 <span className="student-back-label">{t("Menu Utama")}</span>

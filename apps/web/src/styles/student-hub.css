@@ -742,3 +742,402 @@
     padding: 18px 16px;
   }
 }
+
+/* ==========================================================================
+   Student Subpages: Tactile Class & Material Components
+   ========================================================================== */
+.student-back-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #1e3a8a;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 3px 0 #94a3b8, 0 4px 10px rgba(15, 23, 42, 0.04);
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-back-link:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #2563eb, 0 8px 16px rgba(37, 99, 235, 0.15);
+}
+
+.student-back-link:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.student-back-link:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #2563eb;
+}
+
+/* Tactile Class & Material Grids */
+.student-class-grid,
+.student-material-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+@media (max-width: 640px) {
+  .student-class-grid,
+  .student-material-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.student-tactile-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.65rem;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 5px 0 #94a3b8, 0 8px 20px rgba(15, 39, 74, 0.05);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.16s ease;
+}
+
+.student-tactile-card:hover {
+  transform: translateY(-4px);
+  border-color: #2563eb;
+  box-shadow: 0 9px 0 #1d4ed8, 0 14px 28px rgba(37, 99, 235, 0.16);
+}
+
+.student-tactile-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  box-shadow: 0 7px 0 #1d4ed8, 0 0 0 4px rgba(37, 99, 235, 0.25);
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.student-tactile-card:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #1d4ed8;
+}
+
+.student-tactile-card h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 1rem 0 0.45rem;
+  letter-spacing: -0.02em;
+}
+
+.student-tactile-card p {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #475569;
+  margin: 0 0 1.25rem;
+}
+
+.student-tactile-card .class-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.85rem;
+  border-top: 1px dashed #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+/* Student Class Detail View */
+.student-main-content .class-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.student-main-content .material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.student-main-content .material-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 3px 0 #94a3b8, 0 4px 10px rgba(15, 23, 42, 0.03);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-main-content .material-row:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  background: #f8faff;
+  box-shadow: 0 6px 0 #1d4ed8, 0 8px 18px rgba(37, 99, 235, 0.12);
+}
+
+.student-main-content .material-row:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+  border-color: #2563eb;
+}
+
+.student-main-content .material-row:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1d4ed8;
+}
+
+.student-main-content .material-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #1e3a8a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.student-main-content .material-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.student-main-content .material-info strong {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.student-main-content .material-info small {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+/* ==========================================================================
+   Student Assessment & Quiz (Tactile Game Options A-D)
+   ========================================================================== */
+.student-main-content .quiz-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.student-main-content .quiz-start-card,
+.student-main-content .quiz-question-card {
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  border-radius: 24px;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 0 #94a3b8, 0 10px 24px rgba(15, 39, 74, 0.05);
+  background: #ffffff;
+}
+
+.student-main-content .quiz-options {
+  display: grid;
+  gap: 12px;
+  margin: 1.5rem 0;
+  border: none;
+  padding: 0;
+}
+
+.student-main-content .quiz-options legend {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 0.75rem;
+}
+
+.student-main-content .quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 2px solid #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 4px 0 #94a3b8, 0 4px 10px rgba(15, 23, 42, 0.03);
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-main-content .quiz-option:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #1d4ed8, 0 8px 18px rgba(37, 99, 235, 0.14);
+}
+
+.student-main-content .quiz-option.selected {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 #1e3a8a, 0 0 0 2px rgba(29, 78, 216, 0.25);
+}
+
+.student-main-content .quiz-option:focus-within {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.student-main-content .quiz-option-key {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 0 #0f172a;
+}
+
+.student-main-content .quiz-option.selected .quiz-option-key {
+  background: #2563eb;
+  box-shadow: 0 2px 0 #1d4ed8;
+}
+
+.student-main-content .quiz-progress {
+  padding: 1.25rem 1.65rem;
+  border-radius: 18px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 4px 0 #94a3b8;
+}
+
+/* ==========================================================================
+   Student Progress & Analytics (Tactile Metric Cards & Audio Player)
+   ========================================================================== */
+.student-main-content .analytics-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.student-main-content .analytics-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.student-main-content .analytics-toolbar h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0 0 4px;
+}
+
+.student-main-content .analytics-window-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.student-main-content .analytics-window-tabs button {
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #94a3b8;
+  transition: all 0.15s ease;
+}
+
+.student-main-content .analytics-window-tabs button:hover {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #2563eb;
+}
+
+.student-main-content .analytics-window-tabs button.active {
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #1e3a8a;
+  box-shadow: 0 3px 0 #0f172a;
+}
+
+.student-main-content .analytics-hero {
+  border-radius: 24px;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 0 #94a3b8, 0 10px 24px rgba(15, 39, 74, 0.05);
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
+  background: #ffffff;
+}
+
+.student-main-content .analytics-stat-card {
+  padding: 1.25rem 1.45rem;
+  border-radius: 20px;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 5px 0 #94a3b8, 0 6px 16px rgba(15, 39, 74, 0.04);
+  background: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.student-main-content .analytics-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: #2563eb;
+  box-shadow: 0 8px 0 #1d4ed8, 0 12px 24px rgba(37, 99, 235, 0.12);
+}
+
+.student-main-content .analytics-stat-card:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.student-main-content .analytics-card {
+  padding: 1.5rem 1.75rem;
+  border-radius: 22px;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 5px 0 #94a3b8, 0 8px 20px rgba(15, 39, 74, 0.04);
+  background: #ffffff;
+}
+
+.student-main-content .analytics-voice-card {
+  background: linear-gradient(135deg, #f0f6ff 0%, #e6f1fe 100%);
+  border-color: #93c5fd;
+}
