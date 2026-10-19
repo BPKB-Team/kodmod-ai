@@ -215,18 +215,28 @@
 }
 
 .auth-card-brand {
-  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
 .auth-brand-logo {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   text-decoration: none;
   color: #ffffff;
   font-weight: 850;
-  font-size: 1.15rem;
+  font-size: 1.18rem;
   letter-spacing: -0.03em;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.auth-brand-logo:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
 }
 
 .auth-brand-dot {
