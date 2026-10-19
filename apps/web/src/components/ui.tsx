@@ -3,11 +3,17 @@ import { useI18n } from "./language-provider";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { speechOutput } from "@/lib/browser-speech";
 
 export function Brand({ href = "/" }: { href?: string } = {}) {
   const { t } = useI18n();
   return (
-    <Link className="brand" href={href} aria-label={t("KODMOD, halaman utama")}>
+    <Link
+      className="brand"
+      href={href}
+      aria-label={t("KODMOD, halaman utama")}
+      onClick={() => speechOutput.stop()}
+    >
       <Image
         src="/brand/logo.png"
         alt="KODMOD"

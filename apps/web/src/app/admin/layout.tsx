@@ -17,7 +17,7 @@ export default async function AdminLayout({
   return (
     <div className="admin-shell">
       <aside className="sidebar">
-        <Brand />
+        <Brand href="/admin" />
         <div className="sidebar-label">{t("Ruang administrasi")}</div>
         <AdminNav />
         <div className="sidebar-bottom">

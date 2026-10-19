@@ -45,7 +45,7 @@ export async function LearningShell({
   return (
     <div className="admin-shell learning-shell">
       <aside className="sidebar">
-        <Brand />
+        <Brand href={teacher ? "/guru" : "/siswa"} />
         <div className="sidebar-label">
           {t("Ruang mengajar")}
         </div>
