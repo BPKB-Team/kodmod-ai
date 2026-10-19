@@ -36,7 +36,23 @@ class QuizQuestionOut(BaseModel):
     difficulty: str = "medium"
 
 
-class QuizStartResponse(BaseModel):
+class QuizInteractionView(BaseModel):
+    policy_version: Literal[1, 2] = 1
+    question_state: Literal["answering", "review", "complete"] = "answering"
+    available_actions: list[Literal["answer", "hint", "advance"]] = Field(default_factory=lambda: ["answer"])
+    current_question: QuizQuestionOut | None = None
+    last_review: str | None = None
+    hint_text: str | None = None
+
+
+class QuizActionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    action_id: uuid.UUID
+    question_id: uuid.UUID
+    action: Literal["hint", "advance"]
+
+
+class QuizStartResponse(QuizInteractionView):
     quiz_session_id: uuid.UUID
     first_question: QuizQuestionOut
     total_questions: int
@@ -55,7 +71,7 @@ class QuizSubmitRequest(BaseModel):
         return value.strip() if isinstance(value, str) else value
 
 
-class QuizSubmitResponse(BaseModel):
+class QuizSubmitResponse(QuizInteractionView):
     score: float = Field(ge=0.0, le=1.0)
     is_correct: bool
     feedback: str
@@ -65,7 +81,7 @@ class QuizSubmitResponse(BaseModel):
     cumulative_score: float = 0.0
 
 
-class QuizRecoveryResponse(BaseModel):
+class QuizRecoveryResponse(QuizInteractionView):
     quiz_session_id: uuid.UUID
     kind: Literal["assessment", "tutor"] = "assessment"
     status: Literal["in_progress", "completed"]

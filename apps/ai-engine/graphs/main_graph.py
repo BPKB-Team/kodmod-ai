@@ -108,6 +108,10 @@ def route_after_scoring(state: KODMODState) -> str:
     score = state.get("quiz_score", 0.0)
     threshold = settings.QUIZ_PASS_THRESHOLD
     attempts = state.get("current_question_attempts", 0)
+    if state.get("quiz_policy_version", 1) == 2:
+        if state.get("assessment_kind") == "assessment" or score >= threshold:
+            return "update_student_model"
+        return "tutoring"
     if score >= threshold or attempts >= settings.QUIZ_MAX_ATTEMPTS_PER_QUESTION:
         return "update_student_model"
     return "tutoring"  # remediation loop

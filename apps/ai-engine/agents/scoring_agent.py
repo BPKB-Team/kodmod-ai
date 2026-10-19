@@ -234,6 +234,7 @@ def _build_attempt(
 async def _empty_attempt(state: KODMODState, reason: str) -> dict[str, Any]:
     log.warning("Scoring skipped: %s", reason)
     question_attempts = state.get("current_question_attempts", 0) + 1
+
     await _persist_progress(
         state,
         state.get("quiz_attempts", []),
@@ -251,12 +252,21 @@ async def _empty_attempt(state: KODMODState, reason: str) -> dict[str, Any]:
 async def _emit(state: KODMODState, attempt: QuizAttempt) -> dict[str, Any]:
     question_attempts = state.get("current_question_attempts", 0) + 1
 
+    if state.get("quiz_policy_version", 1) == 2 and state.get("assessment_kind") == "tutor" and attempt["score"] < settings.QUIZ_PASS_THRESHOLD:
+        # Grader prose may include the key. Hints are generated separately and validated.
+        attempt = {**attempt, "feedback": (
+            "Not quite yet. You may request a hint, try again, or continue."
+            if state.get("learning_profile", {}).get("language") == "en"
+            else "Belum tepat. Kamu boleh meminta petunjuk, mencoba lagi, atau lanjut soal."
+        )}
+
     # Still wrong on the last allowed try: route_after_scoring is about to
     # force the quiz onward regardless of score, so say that plainly instead
     # of the grader's normal wrong-answer feedback, which would otherwise
     # invite a retry that isn't coming.
     if (
         attempt["score"] < settings.QUIZ_PASS_THRESHOLD
+        and state.get("quiz_policy_version", 1) == 1
         and question_attempts >= settings.QUIZ_MAX_ATTEMPTS_PER_QUESTION
     ):
         feedback = (
