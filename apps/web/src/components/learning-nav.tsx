@@ -63,9 +63,9 @@ export function LearningNav({ base }: { base: string }) {
     <nav id={navigationId} className={`admin-nav${menuOpen ? " is-open" : ""}`} aria-label={t("Menu ruang belajar")}>
       {[
         { href: base, title: "Ringkasan", icon: LayoutDashboard },
-        { href: `${base}/kelas`, title: "Kelas", icon: Library },
         ...(base === "/guru"
           ? [
+              { href: "/guru/kelas", title: "Kelas", icon: Library },
               { href: "/guru/materi", title: "Materi", icon: BookOpen },
               { href: "/guru/kuis", title: "Kuis & Tugas", icon: ListChecks },
               { href: "/guru/review-kuis", title: "Review kuis", icon: FileCheck2 },
@@ -74,11 +74,12 @@ export function LearningNav({ base }: { base: string }) {
           : []),
         ...(base === "/siswa"
           ? [
-              { href: "/siswa/materi", title: "Materi", icon: BookOpen },
               { href: "/siswa/tutor", title: "Tutor AI", icon: MessageCircle },
-              { href: "/siswa/latihan", title: "Asesmen mandiri", icon: ListChecks },
+              { href: "/siswa/latihan", title: "Latihan & Kuis", icon: ListChecks },
               { href: "/siswa/tugas", title: "Tugas", icon: ClipboardList },
               { href: "/siswa/progres", title: "Progres", icon: LineChart },
+              { href: "/siswa/kelas", title: "Kelas", icon: Library },
+              { href: "/siswa/materi", title: "Materi", icon: BookOpen },
             ]
           : []),
       ].map(({ href, title, icon: Icon }) => {

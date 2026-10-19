@@ -20,12 +20,12 @@ import type { Classroom, StudentMaterial } from "@/lib/class-types";
 import type { User } from "@/lib/types";
 
 const GAME_PAD_ROUTES = [
-  "/siswa/kelas",
-  "/siswa/materi",
   "/siswa/tutor",
   "/siswa/latihan",
   "/siswa/tugas",
   "/siswa/progres",
+  "/siswa/kelas",
+  "/siswa/materi",
 ];
 
 interface StudentGameHubProps {
@@ -52,24 +52,6 @@ export function StudentGameHub({
     {
       num: "1",
       href: GAME_PAD_ROUTES[0],
-      voiceKey: "classes",
-      title: "Kelas Saya",
-      desc: "Ruang kelas dan guru pendamping",
-      stat: `${activeClasses.length} ${t("Kelas Aktif")}`,
-      icon: Library,
-    },
-    {
-      num: "2",
-      href: GAME_PAD_ROUTES[1],
-      voiceKey: "materials",
-      title: "Pustaka Materi",
-      desc: "Semua modul dan bahan bacaan",
-      stat: `${materials.length} ${t("Materi")}`,
-      icon: BookOpen,
-    },
-    {
-      num: "3",
-      href: GAME_PAD_ROUTES[2],
       voiceKey: "tutor",
       title: "Tutor AI",
       desc: "Tanya jawab langsung dengan suara",
@@ -77,8 +59,8 @@ export function StudentGameHub({
       icon: Sparkles,
     },
     {
-      num: "4",
-      href: GAME_PAD_ROUTES[3],
+      num: "2",
+      href: GAME_PAD_ROUTES[1],
       voiceKey: "practice",
       title: "Latihan & Kuis",
       desc: "Asesmen mandiri langkah demi langkah",
@@ -86,8 +68,8 @@ export function StudentGameHub({
       icon: ListChecks,
     },
     {
-      num: "5",
-      href: GAME_PAD_ROUTES[4],
+      num: "3",
+      href: GAME_PAD_ROUTES[2],
       voiceKey: "assignments",
       title: "Tugas Siswa",
       desc: "Daftar penugasan dari bapak ibu guru",
@@ -95,13 +77,31 @@ export function StudentGameHub({
       icon: ClipboardList,
     },
     {
-      num: "6",
-      href: GAME_PAD_ROUTES[5],
+      num: "4",
+      href: GAME_PAD_ROUTES[3],
       voiceKey: "progress",
       title: "Progres Belajar",
       desc: "Laporan capaian dan evaluasi suara",
       stat: `${completedCount} ${t("Selesai")}`,
       icon: LineChart,
+    },
+    {
+      num: "5",
+      href: GAME_PAD_ROUTES[4],
+      voiceKey: "classes",
+      title: "Kelas Saya",
+      desc: "Ruang kelas dan guru pendamping",
+      stat: `${activeClasses.length} ${t("Kelas Aktif")}`,
+      icon: Library,
+    },
+    {
+      num: "6",
+      href: GAME_PAD_ROUTES[5],
+      voiceKey: "materials",
+      title: "Pustaka Materi",
+      desc: "Semua modul dan bahan bacaan",
+      stat: `${materials.length} ${t("Materi")}`,
+      icon: BookOpen,
     },
   ];
 
