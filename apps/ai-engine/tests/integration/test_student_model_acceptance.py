@@ -174,6 +174,12 @@ async def test_unreleased_formal_evidence_cannot_change_public_insights(
     first = await aggregator.StudentAggregator().summarise(
         student_id=actors["student"].id, window="all", include_recommendations=False
     )
+    from analytics.progress_guidance import build_guidance_snapshot
+
+    async with factory() as session:
+        before_snapshot = await build_guidance_snapshot(
+            session, student=actors["student"], timezone="UTC"
+        )
     async with factory() as session:
         event = await session.scalar(select(db.AssignmentMasteryEvent))
         event.score = 0
@@ -183,6 +189,11 @@ async def test_unreleased_formal_evidence_cannot_change_public_insights(
     second = await aggregator.StudentAggregator().summarise(
         student_id=actors["student"].id, window="all", include_recommendations=False
     )
+    async with factory() as session:
+        after_snapshot = await build_guidance_snapshot(
+            session, student=actors["student"], timezone="UTC"
+        )
+    assert before_snapshot.source_snapshot_hash == after_snapshot.source_snapshot_hash
     for key in [
         "visible_evidence_hash",
         "overall_mastery",

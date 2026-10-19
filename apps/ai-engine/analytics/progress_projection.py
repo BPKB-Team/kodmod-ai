@@ -134,7 +134,7 @@ def visible_concept_projection(events, *, now=None):
     }
 
 
-async def public_progress(session, student_id, *, start=None):
+async def public_progress(session, student_id, *, start=None, include_events=False):
     now = datetime.now(UTC)
     materials = (
         await session.execute(
@@ -272,6 +272,7 @@ async def public_progress(session, student_id, *, start=None):
         outcomes_q = outcomes_q.where(QuizQuestionOutcome.closed_at >= start)
     outcomes = (await session.scalars(outcomes_q)).all()
     return {
+        **({"_visible_events": events} if include_events else {}),
         **visible_concept_projection(events, now=now),
         "mapped_concepts": len(mapped_ids),
         "unmapped_materials": sum(not m["concept_ids"] for m in material_rows),
