@@ -15,6 +15,7 @@ import {
   Volume2,
 } from "lucide-react";
 import { UiText, useI18n } from "./language-provider";
+import { findGridNeighbor } from "@/lib/student-grid-navigation.mjs";
 import type { Classroom, StudentMaterial } from "@/lib/class-types";
 import type { User } from "@/lib/types";
 
@@ -125,23 +126,23 @@ export function StudentGameHub({
         return;
       }
 
-      // Arrow keys spatial navigation across 2x3 or 3x2 grid
+      // Arrow keys follow the cards' visual positions at each responsive size.
       const focusedIndex = padRefs.current.findIndex((el) => el === active);
-      if (focusedIndex !== -1) {
-        let nextIndex = -1;
-        if (e.key === "ArrowRight") {
-          nextIndex = (focusedIndex + 1) % GAME_PAD_ROUTES.length;
-        } else if (e.key === "ArrowLeft") {
-          nextIndex = (focusedIndex - 1 + GAME_PAD_ROUTES.length) % GAME_PAD_ROUTES.length;
-        } else if (e.key === "ArrowDown") {
-          nextIndex = focusedIndex + 2 < GAME_PAD_ROUTES.length ? focusedIndex + 2 : (focusedIndex + 1) % GAME_PAD_ROUTES.length;
-        } else if (e.key === "ArrowUp") {
-          nextIndex = focusedIndex - 2 >= 0 ? focusedIndex - 2 : (focusedIndex - 1 + GAME_PAD_ROUTES.length) % GAME_PAD_ROUTES.length;
-        }
-        if (nextIndex !== -1 && padRefs.current[nextIndex]) {
-          e.preventDefault();
-          padRefs.current[nextIndex]?.focus();
-        }
+      if (focusedIndex === -1) return;
+      if (
+        e.key !== "ArrowRight" &&
+        e.key !== "ArrowLeft" &&
+        e.key !== "ArrowDown" &&
+        e.key !== "ArrowUp"
+      ) return;
+
+      const rects = padRefs.current.map((element) =>
+        element?.getBoundingClientRect() ?? null
+      );
+      const nextIndex = findGridNeighbor(rects, focusedIndex, e.key);
+      if (nextIndex !== -1) {
+        e.preventDefault();
+        padRefs.current[nextIndex]?.focus();
       }
     };
 
