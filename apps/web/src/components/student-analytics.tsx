@@ -70,10 +70,10 @@ export function StudentAnalytics({
     if ((data.timezone ?? "UTC") === timezone) return;
     let active = true;
     const params = new URLSearchParams({window, timezone});
-    void Promise.all([
-      fetch(`/api/analytics/me?${params}`, {cache:"no-store"}).then(r => readJson<StudentAnalytics>(r,"Data progres belum dapat dimuat.")),
-      fetch(`/api/analytics/me/spoken?${params}`, {cache:"no-store"}).then(r => readJson<StudentAnalyticsSpoken>(r,"Ringkasan suara belum dapat dimuat.")),
-    ]).then(([summary, audio]) => { if (active) { setData(summary); setSpoken(audio.spoken); } }).catch(() => { /* Explicit refresh remains available. */ });
+    void fetch(`/api/analytics/me/spoken?${params}`, {cache:"no-store"})
+      .then(r => readJson<StudentAnalyticsSpoken>(r,"Ringkasan suara belum dapat dimuat."))
+      .then(payload => { if (active) { setData(payload.summary); setSpoken(payload.spoken); } })
+      .catch(() => { /* Explicit refresh remains available. */ });
     return () => { active = false; };
   }, [data.timezone, window, timezone]);
   const hasLearningActivity = data.n_sessions > 0 || data.n_quiz_attempts > 0;
@@ -84,19 +84,11 @@ export function StudentAnalytics({
     setLoading(true);
     setError("");
     try {
-      const [summaryResponse, spokenResponse] = await Promise.all([
-        fetch(`/api/analytics/me?${query(next)}`, { cache: "no-store" }),
-        fetch(`/api/analytics/me/spoken?${query(next)}`, { cache: "no-store" }),
-      ]);
-      const summary = await readJson<StudentAnalytics>(
-        summaryResponse,
+      const spokenPayload = await readJson<StudentAnalyticsSpoken>(
+        await fetch(`/api/analytics/me/spoken?${query(next)}`, {cache:"no-store"}),
         "Data progres belum dapat dimuat.",
       );
-      const spokenPayload = await readJson<StudentAnalyticsSpoken>(
-        spokenResponse,
-        "Ringkasan suara belum dapat dimuat.",
-      );
-      setData(summary);
+      setData(spokenPayload.summary);
       setSpoken(spokenPayload.spoken);
     } catch (caught) {
       setWindow(data.window);
@@ -110,16 +102,11 @@ export function StudentAnalytics({
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`/api/analytics/me?${query(window)}`, { cache: "no-store" });
-      const next = await readJson<StudentAnalytics>(response, "Data progres belum dapat dimuat.");
-      setData(next);
-      const spokenResponse = await fetch(`/api/analytics/me/spoken?${query(window)}`, {
-        cache: "no-store",
-      });
       const spokenPayload = await readJson<StudentAnalyticsSpoken>(
-        spokenResponse,
-        "Ringkasan suara belum dapat dimuat.",
+        await fetch(`/api/analytics/me/spoken?${query(window)}`, {cache:"no-store"}),
+        "Data progres belum dapat dimuat.",
       );
+      setData(spokenPayload.summary);
       setSpoken(spokenPayload.spoken);
       await notifyResult("Data progres sudah diperbarui.");
     } catch (caught) {
@@ -130,6 +117,7 @@ export function StudentAnalytics({
   }
 
   return (
+    <details className="analytics-details"><summary><UiText>{"Detail statistik dan riwayat"}</UiText></summary>
     <section className="analytics-workspace" aria-label={t("Progres belajar siswa")}>
       <LoadingStatus active={loading} label="Memuat progres belajar…" />
       <div className="analytics-toolbar">
@@ -215,6 +203,7 @@ export function StudentAnalytics({
       </div>
 
       <div className="analytics-answer-breakdown">
+        <span><UiText>{"Percobaan bantuan"}</UiText><strong>{data.n_support_attempts ?? 0}</strong></span>
         <span><UiText>{"Jawaban latihan"}</UiText><strong>{data.n_practice_answers ?? data.n_quiz_attempts}</strong></span>
         <span><UiText>{"Jawaban tugas"}</UiText><strong>{data.n_assignment_answers ?? 0}</strong></span>
       </div>
@@ -225,6 +214,7 @@ export function StudentAnalytics({
         <progress value={data.completed_units ?? 0} max={data.total_units || 1} aria-label={t("Bagian materi selesai")} />
         <p>{data.assessed_concepts ?? 0} <UiText>{"konsep memiliki bukti latihan"}</UiText>. {data.mapped_concepts ?? 0} <UiText>{"konsep terpetakan pada materi saat ini"}</UiText>.</p>
         <p className="muted"><UiText>{"Selesai belajar dan penanda baca tidak menambah penguasaan konsep secara otomatis."}</UiText></p>
+        {data.last_activity_at && <p><UiText>{"Aktivitas terakhir tercatat"}</UiText>: <time dateTime={data.last_activity_at}>{new Intl.DateTimeFormat(language === "en" ? "en" : "id", {dateStyle:"medium",timeStyle:"short",timeZone:data.timezone??"UTC"}).format(new Date(data.last_activity_at))}</time></p>}
         <small><UiText>{"Penguasaan konsep bersifat kumulatif; aktivitas mengikuti periode yang dipilih."}</UiText> {data.timezone}</small>
       </article>}
       <div className="analytics-columns">
@@ -285,23 +275,7 @@ export function StudentAnalytics({
         </article>
       </div>
 
-      <article className="panel analytics-card analytics-recommendations-card">
-        <div className="analytics-card-heading">
-          <div>
-            <span className="analytics-kicker"><UiText>{"REKOMENDASI PERSONAL"}</UiText></span>
-            <h3><UiText>{"Langkah yang bisa kamu ambil"}</UiText></h3>
-          </div>
-          <Sparkles size={20} aria-hidden="true" />
-        </div>
-        <div className="analytics-recommendations">
-          {data.active_recommendations.length ? data.active_recommendations.map((item) => (
-            <div className="analytics-recommendation" key={item.id}>
-              <span>{item.priority}</span>
-              <div><strong>{item.title}</strong><p>{item.body}</p></div>
-            </div>
-          )) : <p className="analytics-empty"><UiText>{"Belum ada rekomendasi baru. Teruskan ritmemu."}</UiText></p>}
-        </div>
-      </article>
-    </section>
+
+    </section></details>
   );
 }

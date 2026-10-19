@@ -1,0 +1,32 @@
+.progress-guidance { display: grid; gap: 1.15rem; margin-block: 1.5rem 2rem; }
+.progress-guidance-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.progress-guidance-toolbar p { color: var(--muted, #526680); font-size: .94rem; max-width: 65ch; }
+.progress-focus-card { display: flex; align-items: center; gap: 1.25rem; border: 2px solid #c6d8fb; box-shadow: 0 4px 0 #d9e5fa; padding: clamp(1.25rem, 3vw, 2rem); }
+.progress-focus-symbol { display: grid; place-items: center; flex: 0 0 56px; height: 56px; background: #eaf1ff; color: #205be0; border-radius: 16px; }
+.progress-focus-copy { flex: 1; min-width: 0; }
+.progress-focus-copy h2 { font-size: clamp(1.3rem, 2.2vw, 1.75rem); margin: 0 0 .55rem; }
+.progress-focus-copy p { max-width: 65ch; margin: .45rem 0; line-height: 1.6; }
+.progress-focus-copy small, .progress-step-content small { color: var(--muted, #526680); }
+.progress-focus-copy details { margin-block: .65rem 0; }
+.progress-focus-copy summary { cursor: pointer; color: #205be0; width: fit-content; padding-block: .4rem; }
+.progress-insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; }
+.progress-insight { display: flex; align-items: flex-start; gap: .8rem; padding: 1.25rem; }
+.progress-insight > svg { flex: 0 0 20px; color: #205be0; margin-top: .15rem; }
+.progress-insight h3 { font-size: 1rem; margin: 0 0 .5rem; }
+.progress-insight p { font-size: .95rem; line-height: 1.6; margin: 0; }
+.progress-plan { padding: 1.5rem; }
+.progress-plan > h2 { font-size: 1.3rem; margin-top: 0; }
+.progress-plan ol { list-style: none; padding: 0; margin: 1.1rem 0 0; }
+.progress-plan-step { display: flex; align-items: center; gap: 1rem; padding-block: 1.1rem; border-top: 1px solid #dce6f4; }
+.progress-step-symbol { color: #205be0; flex: 0 0 24px; }
+.progress-step-content { flex: 1; min-width: 0; }
+.progress-step-content h3 { font-size: 1rem; margin: .25rem 0; }
+.progress-step-content p { margin: .2rem 0; line-height: 1.5; }
+.progress-step-status { font-size: .86rem; font-weight: 700; color: #526680; }
+.progress-step-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.progress-guidance .button, .progress-focus-copy summary { min-height: 44px; }
+@media(max-width: 680px) { .progress-focus-card, .progress-guidance-toolbar { align-items: stretch; flex-direction: column; } .progress-focus-symbol { align-self: flex-start; flex-basis: 56px; width: 56px; } .progress-plan-step { flex-wrap: wrap; } .progress-step-actions { flex-basis: 100%; padding-left: 2.5rem; } .progress-step-actions .button { flex: 1; } }
+
+.analytics-details { margin-block: 1.5rem; }
+.analytics-details > summary { cursor: pointer; font-size: 1.12rem; font-weight: 750; min-height: 44px; padding: 1rem; border: 1px solid #c9d8ec; border-radius: 12px; }
+.analytics-details[open] > summary { margin-bottom: 1rem; }

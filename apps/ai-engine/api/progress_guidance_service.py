@@ -175,6 +175,7 @@ async def guidance(session, student, *, timezone="UTC"):
         state = "no_available_material"
     return {
         "status": state,
+        "timezone": snapshot.timezone,
         "updating": bool(job and job.state in {"pending", "running", "retry"}),
         "as_of": snapshot.as_of.isoformat(),
         "source_snapshot_hash": snapshot.source_snapshot_hash,

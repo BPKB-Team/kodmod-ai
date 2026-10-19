@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -363,6 +364,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                 {phase === "complete" ? (
                   <div className="quiz-complete-summary">
                     <strong>{summary || <UiText>{"Latihan selesai."}</UiText>}</strong>
+                    <Link className="button secondary" href="/siswa/progres"><UiText>{"Lihat Progres"}</UiText></Link>
                     {embedded ? <button type="button" className="button primary" onClick={onReturn}><UiText>{"Kembali belajar"}</UiText></button> : <button type="button" className="button primary" onClick={() => void startQuiz()}>
                       <RefreshCw size={17} aria-hidden="true" /><UiText>{"Coba lagi"}</UiText></button>}
                   </div>

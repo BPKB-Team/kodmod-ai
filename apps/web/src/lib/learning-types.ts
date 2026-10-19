@@ -2,6 +2,7 @@ import type { QuizRecoveryResponse } from "./quiz-types";
 import type { MaterialLearningProgress } from "./class-types";
 
 export type LearningSession = {
+  scope?: "full_material" | "planned_review" | "self_explain";
   learning_progress?: MaterialLearningProgress | null;
   session_id: string;
   revision: number;

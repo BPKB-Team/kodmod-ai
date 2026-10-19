@@ -33,13 +33,14 @@ const actions: Record<string, { label: string; Icon: typeof ArrowRight }> = {
   finish: { label: "Selesaikan belajar", Icon: CheckCircle2 },
 };
 
-export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
+export function GuidedTutor({ materials, initialSessions, initialMaterialId, initialLesson }: {
   materials: StudentMaterial[];
   initialSessions: LearningSession[];
   initialMaterialId?: string;
+  initialLesson?: LearningSession | null;
 }) {
   const { t, language } = useI18n();
-  const initial = initialMaterialId ? initialSessions.find((row) => row.material_id === initialMaterialId) : initialSessions[0];
+  const initial = initialLesson ?? (initialMaterialId ? initialSessions.find((row) => row.material_id === initialMaterialId) : initialSessions[0]);
   const [lesson, setLesson] = useState<LearningSession | null>(initial ?? null);
   const [sessions, setSessions] = useState(initialSessions);
   const [materialId, setMaterialId] = useState(initialMaterialId ?? initial?.material_id ?? "");
@@ -93,7 +94,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
   async function act(action: string, retry = false) {
     if (!lesson || inFlight.current || (!retry && uncertain)) return;
     const text = draft.trim();
-    if (action === "question" && !text && !retry) return;
+    if (["question", "self_explain"].includes(action) && !text && !retry) return;
     if (!retry && ["quiz", "check", "finish"].includes(action) && !(await confirmAction({
       title: action === "finish" ? "Selesaikan sesi belajar?" : "Mulai cek pemahaman?",
       text: action === "finish" ? "Penjelasan dan hasil mini kuis tetap tersimpan." : "Jawaban yang sudah dikirim akan disimpan. Selesaikan mini kuis sebelum melanjutkan materi.",
@@ -101,7 +102,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
     }))) return;
     const request = retry && pending.current ? pending.current : {
       path: `/api/learning/sessions/${lesson.session_id}/actions`,
-      body: { request_id: createQuizSubmissionId(), revision: lesson.revision, action, language, ...(action === "question" ? { text } : {}) },
+      body: { request_id: createQuizSubmissionId(), revision: lesson.revision, action, language, ...(["question", "self_explain"].includes(action) ? { text } : {}) },
     };
     pending.current = request;
     inFlight.current = true; setBusy(true); setError("");
@@ -271,9 +272,10 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
           <p className="guided-source"><BookOpen size={16} aria-hidden="true" /><UiText>{"Sumber"}</UiText>{`: ${lesson.source_filename || lesson.material_title}`}</p>
           {lesson.quiz?.status === "completed" && <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><div><strong><UiText>{"Mini kuis selesai"}</UiText> · {lesson.quiz.score_summary ? quizPointsLabel(lesson.quiz.score_summary, language) : t("Hasil tersimpan")}</strong><p>{lesson.quiz.policy_version === 2 ? lesson.quiz.last_review : t("Hasil latihan tersimpan.")}</p></div></div>}
           {lesson.phase === "learning" ? <>
-            <form onSubmit={(event) => { event.preventDefault(); void act("question"); }} className="guided-question-form"><label className="field"><UiText>{"Ada yang belum jelas?"}</UiText><Textarea value={draft} maxLength={4000} rows={3} aria-label={t("Tuliskan pertanyaan materi atau gunakan tombol suara.")} onChange={(event) => setDraft(event.target.value)} disabled={busy || uncertain} placeholder={t("Tuliskan pertanyaan atau gunakan tombol suara.")} /></label><Button type="submit" loading={busy && busyAction === "question"} loadingText={t("Menyiapkan jawaban…")} disabled={busy || uncertain || !draft.trim()}><Send size={17} aria-hidden="true" /><UiText>{"Tanyakan pada Tutor"}</UiText></Button></form>
-            <footer className="guided-actions" aria-label={t("Langkah belajar berikutnya")}>{Object.entries(actions).filter(([action]) => lesson.available_actions.includes(action)).map(([action, { label, Icon }]) => <Button key={action} type="button" variant={action === "continue" || action === "finish" ? "default" : "outline"} className="guided-action-button" aria-label={t(label)} loading={busy && busyAction === action} loadingText={t("Memproses…")} disabled={busy || uncertain} onClick={() => void act(action)}><Icon size={17} aria-hidden="true" />{t(label)}</Button>)}</footer>
+            <form onSubmit={(event) => { event.preventDefault(); void act(lesson.scope === "self_explain" ? "self_explain" : "question"); }} className="guided-question-form"><label className="field"><UiText>{lesson.scope === "self_explain" ? "Jelaskan pemahamanmu dengan kata-katamu sendiri" : "Ada yang belum jelas?"}</UiText><Textarea value={draft} maxLength={4000} rows={3} aria-label={t(lesson.scope === "self_explain" ? "Jelaskan pemahamanmu lewat teks atau suara." : "Tuliskan pertanyaan materi atau gunakan tombol suara.")} onChange={(event) => setDraft(event.target.value)} disabled={busy || uncertain} placeholder={t("Tuliskan pertanyaan atau gunakan tombol suara.")} /></label><Button type="submit" loading={busy && busyAction === "question"} loadingText={t("Menyiapkan jawaban…")} disabled={busy || uncertain || !draft.trim() || (lesson.scope === "self_explain" && draft.trim().length < 20)}><Send size={17} aria-hidden="true" /><UiText>{lesson.scope === "self_explain" ? "Kirim penjelasan" : "Tanyakan pada Tutor"}</UiText></Button></form>
+            <footer className="guided-actions" aria-label={t("Langkah belajar berikutnya")}>{Object.entries(actions).filter(([action]) => lesson.available_actions.includes(action)).map(([action, { label, Icon }]) => <Button key={action} type="button" variant={action === "continue" || action === "finish" ? "default" : "outline"} className="guided-action-button" aria-label={t(action === "finish" && lesson.scope === "planned_review" ? "Bagian selesai" : label)} loading={busy && busyAction === action} loadingText={t("Memproses…")} disabled={busy || uncertain} onClick={() => void act(action)}><Icon size={17} aria-hidden="true" />{t(action === "finish" && lesson.scope === "planned_review" ? "Bagian selesai" : label)}</Button>)}</footer>
           </> : <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><UiText>{"Sesi belajar selesai. Pilih materi lain untuk melanjutkan."}</UiText></div>}
+        {lesson.scope !== "full_material" && <Link className="button secondary" href="/siswa/progres"><UiText>{"Kembali ke Progres"}</UiText></Link>}
         </Card>}
       </>}
     </div>

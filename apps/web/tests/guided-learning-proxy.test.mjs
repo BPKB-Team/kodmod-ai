@@ -27,6 +27,9 @@ const hooks = registerHooks({
 const learning = await import("../src/app/api/learning/[...path]/route.ts");
 const quiz = await import("../src/app/api/quiz/start/route.ts");
 const quizActions = await import("../src/app/api/quiz/[sessionId]/actions/route.ts");
+const guidanceRead=await import("../src/app/api/analytics/me/guidance/route.ts");
+const guidanceRefresh=await import("../src/app/api/analytics/me/guidance/refresh/route.ts");
+const planSteps=await import("../src/app/api/analytics/me/plans/[...path]/route.ts");
 hooks.deregister();
 const id = "10000000-0000-4000-8000-000000000001";
 const context = (...path) => ({ params: Promise.resolve({ path }) });
@@ -93,4 +96,20 @@ test("quiz actions preserve action identity and reject injected ownership or pat
   assert.equal((await quizActions.POST(request(body),context("../auth"))).status,404);
   boundary.current=null;
   assert.equal((await quizActions.POST(request(body),context(id))).status,401);
+});
+
+
+test("guidance routes preserve request IDs, self-only scope and strict step paths",async()=>{
+ boundary.current=student("id");
+ const body={request_id:id,expected_revision:2};
+ const ctx=path=>({params:Promise.resolve({path})});
+ assert.equal((await guidanceRead.GET(new Request("http://local?timezone=Asia%2FJakarta"))).status,200);
+ assert.match(boundary.calls.at(-1).url,/analytics\/me\/guidance\?timezone=Asia%2FJakarta/);
+ assert.equal((await planSteps.POST(request(body),ctx([id,"steps",id,"start"]))).status,200);
+ assert.deepEqual(JSON.parse(boundary.calls.at(-1).options.body),body);
+ assert.equal((await planSteps.POST(request(body),ctx(["..","steps",id,"start"]))).status,404);
+ assert.equal((await planSteps.POST(request({...body,student_id:id}),ctx([id,"steps",id,"skip"]))).status,400);
+ assert.equal((await guidanceRefresh.POST(request({...body,timezone:"UTC"}))).status,200);
+ boundary.current=null;
+ assert.equal((await guidanceRead.GET(new Request("http://local"))).status,401);
 });
