@@ -177,7 +177,7 @@ Database tes menggunakan `kodmod_test` dan port 5434, Redis tes 6380, provider s
 
 Panel pemantauan AI mencatat token yang dilaporkan model/embedding, volume suara, cache, latensi dan status. Tidak mencatat isi percakapan atau API key. Tarif opsional di backend `PROVIDER_PRICES_JSON` menghasilkan estimasi USD; nilai yang tidak diketahui tampil sebagai belum tersedia. Pantau `kodmod_provider_usage_dropped_total` untuk kegagalan penyimpanan metadata. Angka lokal bukan pengganti tagihan resmi penyedia.
 
-Sebelum update: backup, review migration, simpan commit/image tag sebelumnya, lalu `git pull --ff-only` dan jalankan `up -d --build --wait` dengan konfigurasi produksi yang sama. Gunakan `KODMOD_TAG` unik untuk menyimpan image rilis; default `vps` akan ditimpa build berikutnya. Jangan menjalankan migrasi downgrade otomatis sebagai rollback pada database siswa.
+Setiap update VPS wajib melewati [pemeriksaan sebelum update](VPS_SETUP.md#pemeriksaan-wajib-sebelum-update) sebelum checkout server, build, migrasi, atau restart. Simpan commit/tag image sebelumnya, gunakan `KODMOD_TAG` unik untuk rilis, dan jangan menjalankan migrasi downgrade otomatis sebagai rollback pada database siswa.
 
 ### Reranker lokal opsional
 

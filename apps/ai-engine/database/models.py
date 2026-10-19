@@ -137,8 +137,10 @@ class User(Base):
     )
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    sessions = relationship("LearningSession", back_populates="student")
-    mastery = relationship("MasteryScore", back_populates="student")
+    sessions = relationship(
+        "LearningSession", back_populates="student", cascade="all, delete-orphan"
+    )
+    mastery = relationship("MasteryScore", back_populates="student", cascade="all, delete-orphan")
 
     @property
     def is_student(self) -> bool:
@@ -518,7 +520,9 @@ class LearningSession(Base):
     guided_state: Mapped[dict | None] = mapped_column(JSON)
 
     student = relationship("User", back_populates="sessions")
-    interactions = relationship("InteractionLog", back_populates="session")
+    interactions = relationship(
+        "InteractionLog", back_populates="session", cascade="all, delete-orphan"
+    )
 
 
 class LearningActionReceipt(Base):

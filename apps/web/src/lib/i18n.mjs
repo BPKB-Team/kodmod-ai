@@ -295,7 +295,7 @@ export const english = {
   "Daftar semua kelas yang kamu ikuti. Buka kelas untuk melihat materi dan belajar.": "List of all classes you joined. Open a class to view lessons and study.",
   "Belum ada kelas yang terdaftar.": "No classes registered yet.",
   "Minta gurumu menambahkan akunmu ke dalam kelas untuk mulai belajar.": "Ask your teacher to add your account to a class to start learning.",
-  " · Buka di Tutor AI": " · Open in AI Tutor",
+  "· Buka di Tutor AI": "· Open in AI Tutor",
   "Guru belum menerbitkan materi untuk kelas ini. Silakan tanyakan kepada gurumu.": "The teacher has not published materials for this class yet. Please ask your teacher.",
   "Belum ada materi dari kelasmu.": "No materials from your class yet.",
   "Materi yang diterbitkan guru di kelasmu akan otomatis muncul di sini. Hubungi gurumu jika belum ada materi.": "Materials published by teachers in your class will automatically appear here. Contact your teacher if there are no materials.",

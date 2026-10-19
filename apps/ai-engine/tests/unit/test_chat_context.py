@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import httpx
 import pytest
 from fastapi import FastAPI
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from api import chat_service
@@ -182,6 +182,25 @@ async def test_material_selection_is_saved_and_returned_in_session_context(scope
     assert rows[0]["context"] == history_context
     detail = (await workspace.client.get(f"/chat/sessions/{session_id}")).json()
     assert detail["context"] == history_context
+
+
+async def test_deleting_chat_session_also_deletes_its_turns(scoped_chat):
+    workspace = scoped_chat
+    response = await workspace.client.post("/chat/message", json=scoped_body(workspace))
+    assert response.status_code == 200, response.text
+    session_id = response.json()["session_id"]
+
+    deleted = await workspace.client.delete(f"/chat/sessions/{session_id}")
+    assert deleted.status_code == 204, deleted.text
+
+    async with workspace.sessions() as session:
+        assert await session.get(LearningSession, uuid.UUID(session_id)) is None
+        assert (
+            await session.scalar(
+                select(InteractionLog.id).where(InteractionLog.session_id == uuid.UUID(session_id))
+            )
+            is None
+        )
 
 
 async def test_a_resumed_session_rechecks_revoked_class_access(scoped_chat):

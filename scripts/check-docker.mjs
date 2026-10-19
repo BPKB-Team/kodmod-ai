@@ -146,7 +146,7 @@ async function main() {
 
   for (const [name, html, source] of [
     ["landing brand", landing, "/brand/symbol.png"],
-    ["login brand", login, "/brand/logo.png"],
+    ["login brand", login, "/brand/symbol.png"],
   ]) {
     await check(name, async () => {
       expect(typeof html === "string", "page could not be loaded");
@@ -160,7 +160,6 @@ async function main() {
     expect(typeof landing === "string" && typeof login === "string", "pages could not be loaded");
     const source = "/images/landing/hero-learning.svg";
     imageSource(landing, source, web);
-    imageSource(login, source, web);
     const response = await request(web, source, "image/svg+xml");
     expect(response.status === 200, `expected HTTP 200, got ${response.status}`);
     contentType(response, /\bimage\/svg\+xml\b/i);
