@@ -3,16 +3,16 @@
 import logging
 import uuid
 
+from config.settings import settings
+from database.models import ClassMaterial, Classroom, Enrollment, User
+from database.session import async_session
 from fastapi import HTTPException
+from rag.ingestion import build_material_records
+from rag.stores.pgvector_store import replace_material_chunks
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.material_concepts import current_concepts
-from config.settings import settings
-from database.models import ClassMaterial, Classroom, Enrollment, User
-from database.session import async_session
-from rag.ingestion import build_material_records
-from rag.stores.pgvector_store import replace_material_chunks
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +22,8 @@ async def resolve_tutoring_context(
     class_id: uuid.UUID | None,
     material_id: uuid.UUID | None,
     user: User,
+    *,
+    require_ready: bool = True,
 ) -> dict | None:
     """Recheck access and current indexing before every student Tutor turn."""
     if class_id is None:
@@ -61,7 +63,7 @@ async def resolve_tutoring_context(
                 ClassMaterial.n_chunks > 0,
             )
         )
-    if not ready:
+    if require_ready and not ready:
         raise HTTPException(
             409,
             "Materi belum siap untuk Tutor AI. Tunggu indeks selesai atau minta guru memproses ulang.",

@@ -39,7 +39,9 @@ class QuizQuestionOut(BaseModel):
 class QuizInteractionView(BaseModel):
     policy_version: Literal[1, 2] = 1
     question_state: Literal["answering", "review", "complete"] = "answering"
-    available_actions: list[Literal["answer", "hint", "advance"]] = Field(default_factory=lambda: ["answer"])
+    available_actions: list[Literal["answer", "hint", "advance"]] = Field(
+        default_factory=lambda: ["answer"]
+    )
     current_question: QuizQuestionOut | None = None
     last_review: str | None = None
     hint_text: str | None = None

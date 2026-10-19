@@ -26,6 +26,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Literal
 
+from config.settings import settings
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     JSON,
@@ -44,8 +45,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
-from config.settings import settings
 
 # Roles and statuses are stored as plain strings guarded by CHECK constraints
 # rather than native PG enums: adding a value later is an ordinary migration
@@ -78,7 +77,8 @@ class ProviderUsage(Base):
     __table_args__ = (
         CheckConstraint("provider IN ('openai','elevenlabs')", name="ck_provider_usage_provider"),
         CheckConstraint(
-            "status IN ('success','error','cancelled','cache_hit')", name="ck_provider_usage_status"
+            "status IN ('success','error','cancelled','cache_hit')",
+            name="ck_provider_usage_status",
         ),
         CheckConstraint("latency_ms >= 0", name="ck_provider_usage_latency"),
         CheckConstraint(
@@ -192,7 +192,9 @@ class Classroom(Base):
 class Enrollment(Base):
     __tablename__ = "enrollments"
     class_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("classrooms.id", ondelete="CASCADE"), primary_key=True
+        UUID(as_uuid=True),
+        ForeignKey("classrooms.id", ondelete="CASCADE"),
+        primary_key=True,
     )
     student_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
@@ -274,7 +276,9 @@ class BackgroundJob(Base):
 class MaterialProgress(Base):
     __tablename__ = "material_progress"
     material_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("class_materials.id", ondelete="CASCADE"), primary_key=True
+        UUID(as_uuid=True),
+        ForeignKey("class_materials.id", ondelete="CASCADE"),
+        primary_key=True,
     )
     student_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
@@ -356,11 +360,15 @@ class MaterialConcept(Base):
 
     __tablename__ = "material_concepts"
     material_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("class_materials.id", ondelete="CASCADE"), primary_key=True
+        UUID(as_uuid=True),
+        ForeignKey("class_materials.id", ondelete="CASCADE"),
+        primary_key=True,
     )
     mapping_version: Mapped[int] = mapped_column(Integer, primary_key=True)
     concept_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("concepts.id", ondelete="RESTRICT"), primary_key=True
+        UUID(as_uuid=True),
+        ForeignKey("concepts.id", ondelete="RESTRICT"),
+        primary_key=True,
     )
     content_version: Mapped[int] = mapped_column(Integer)
     is_primary: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -370,7 +378,8 @@ class MaterialConcept(Base):
     approved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     __table_args__ = (
         CheckConstraint(
-            "mapping_version >= 1 AND content_version >= 1", name="ck_material_concept_versions"
+            "mapping_version >= 1 AND content_version >= 1",
+            name="ck_material_concept_versions",
         ),
         Index(
             "uq_material_primary_concept",
@@ -477,7 +486,9 @@ class CurriculumChunk(Base):
         UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), index=True
     )
     material_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("class_materials.id", ondelete="CASCADE"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("class_materials.id", ondelete="CASCADE"),
+        index=True,
     )
     material_version: Mapped[int | None] = mapped_column(Integer)
     material_mapping_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
@@ -533,7 +544,9 @@ class LearningActionReceipt(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("learning_sessions.id", ondelete="CASCADE"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("learning_sessions.id", ondelete="CASCADE"),
+        index=True,
     )
     revision: Mapped[int] = mapped_column(Integer, nullable=False)
     request_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -546,7 +559,9 @@ class InteractionLog(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("learning_sessions.id", ondelete="CASCADE"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("learning_sessions.id", ondelete="CASCADE"),
+        index=True,
     )
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     role: Mapped[str] = mapped_column(String(20))  # student | assistant | system
@@ -583,7 +598,9 @@ class QuizDraftVersion(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     draft_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("quiz_drafts.id", ondelete="RESTRICT"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("quiz_drafts.id", ondelete="RESTRICT"),
+        index=True,
     )
     version: Mapped[int] = mapped_column(Integer)
     subject_id: Mapped[uuid.UUID] = mapped_column(
@@ -608,7 +625,8 @@ class QuizDraftVersion(Base):
             name="ck_editorial_version_state",
         ),
         CheckConstraint(
-            "release_policy IN ('after_submission','after_due')", name="ck_editorial_release"
+            "release_policy IN ('after_submission','after_due')",
+            name="ck_editorial_release",
         ),
         CheckConstraint("version >= 1 AND review_revision >= 0", name="ck_editorial_revision"),
     )
@@ -619,7 +637,9 @@ class QuizDraftQuestion(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     version_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("quiz_draft_versions.id", ondelete="RESTRICT"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("quiz_draft_versions.id", ondelete="RESTRICT"),
+        index=True,
     )
     order_index: Mapped[int] = mapped_column(Integer)
     prompt: Mapped[str] = mapped_column(Text)
@@ -637,7 +657,8 @@ class QuizDraftQuestion(Base):
             "order_index >= 1 AND order_index <= 20", name="ck_editorial_question_order"
         ),
         CheckConstraint(
-            "difficulty IN ('easy','medium','hard')", name="ck_editorial_question_difficulty"
+            "difficulty IN ('easy','medium','hard')",
+            name="ck_editorial_question_difficulty",
         ),
     )
 
@@ -647,7 +668,9 @@ class QuizReviewEvent(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     version_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("quiz_draft_versions.id", ondelete="RESTRICT"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("quiz_draft_versions.id", ondelete="RESTRICT"),
+        index=True,
     )
     actor_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT")
@@ -665,7 +688,9 @@ class QuizAssignment(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     version_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("quiz_draft_versions.id", ondelete="RESTRICT"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("quiz_draft_versions.id", ondelete="RESTRICT"),
+        index=True,
     )
     class_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("classrooms.id", ondelete="RESTRICT"), index=True
@@ -679,7 +704,8 @@ class QuizAssignment(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     __table_args__ = (
         CheckConstraint(
-            "opens_at IS NULL OR due_at IS NULL OR opens_at < due_at", name="ck_assignment_schedule"
+            "opens_at IS NULL OR due_at IS NULL OR opens_at < due_at",
+            name="ck_assignment_schedule",
         ),
     )
 
@@ -689,7 +715,9 @@ class AssignmentAttempt(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     assignment_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("quiz_assignments.id", ondelete="RESTRICT"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("quiz_assignments.id", ondelete="RESTRICT"),
+        index=True,
     )
     student_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), index=True
@@ -719,7 +747,9 @@ class AssignmentAnswer(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     attempt_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("assignment_attempts.id", ondelete="RESTRICT"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("assignment_attempts.id", ondelete="RESTRICT"),
+        index=True,
     )
     question_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("quiz_draft_questions.id", ondelete="RESTRICT")
@@ -797,7 +827,9 @@ class AssessmentSubmission(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     quiz_session_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("quiz_sessions.id", ondelete="CASCADE"), index=True
+        UUID(as_uuid=True),
+        ForeignKey("quiz_sessions.id", ondelete="CASCADE"),
+        index=True,
     )
     student_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
@@ -806,9 +838,50 @@ class AssessmentSubmission(Base):
         UUID(as_uuid=True), ForeignKey("quiz_questions.id", ondelete="CASCADE")
     )
     quiz_attempt_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("quiz_attempts.id", ondelete="CASCADE"), unique=True
+        UUID(as_uuid=True),
+        ForeignKey("quiz_attempts.id", ondelete="CASCADE"),
+        unique=True,
     )
     attempt_index: Mapped[int] = mapped_column(Integer)
+    request_fingerprint: Mapped[str] = mapped_column(String(64))
+    response_payload: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class QuizQuestionOutcome(Base):
+    __tablename__ = "quiz_question_outcomes"
+    __table_args__ = (
+        UniqueConstraint("quiz_session_id", "question_id", name="uq_quiz_question_outcome"),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    quiz_session_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("quiz_sessions.id", ondelete="CASCADE"),
+        index=True,
+    )
+    question_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("quiz_questions.id", ondelete="CASCADE")
+    )
+    first_submission_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("assessment_submissions.id", ondelete="RESTRICT")
+    )
+    status: Mapped[str] = mapped_column(String(16))
+    first_score: Mapped[float] = mapped_column(Float, default=0)
+    assisted: Mapped[bool] = mapped_column(Boolean, default=False)
+    closed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class QuizActionReceipt(Base):
+    __tablename__ = "quiz_action_receipts"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    quiz_session_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("quiz_sessions.id", ondelete="CASCADE"),
+        index=True,
+    )
+    student_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE")
+    )
     request_fingerprint: Mapped[str] = mapped_column(String(64))
     response_payload: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

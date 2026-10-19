@@ -5,7 +5,18 @@ from __future__ import annotations
 import logging
 import uuid
 
+from database.models import User
+from database.session import async_session
 from fastapi import APIRouter, Depends, HTTPException, Request
+from models.quiz import (
+    QuizActionRequest,
+    QuizInteractionView,
+    QuizRecoveryResponse,
+    QuizStartRequest,
+    QuizStartResponse,
+    QuizSubmitRequest,
+    QuizSubmitResponse,
+)
 
 from api.assessment_service import (
     active_assessments,
@@ -14,15 +25,6 @@ from api.assessment_service import (
     submit_assessment,
 )
 from api.dependencies import require_student
-from database.models import User
-from database.session import async_session
-from models.quiz import (
-    QuizRecoveryResponse,
-    QuizStartRequest,
-    QuizStartResponse,
-    QuizSubmitRequest,
-    QuizSubmitResponse,
-)
 
 log = logging.getLogger(__name__)
 router = APIRouter(tags=["quiz"])
@@ -82,3 +84,23 @@ async def _load_mastery(student_id: str) -> tuple[dict, dict]:
 
     model = await StudentModel.load(student_id)
     return await model.mastery_scores(), dict(model._confidence)
+
+
+@router.post("/{session_id}/actions", response_model=QuizInteractionView)
+async def quiz_action(
+    session_id: uuid.UUID,
+    body: QuizActionRequest,
+    student: User = Depends(require_student),
+):
+    from api.quiz_actions import apply_quiz_action
+
+    try:
+        async with async_session() as session:
+            return await apply_quiz_action(session, student, session_id, body)
+    except HTTPException:
+        raise
+    except Exception:
+        log.exception("Could not accept quiz action %s", body.action_id)
+        raise HTTPException(
+            503, "Aksi belum dapat dipastikan. Kirim ulang aksi yang sama."
+        ) from None

@@ -6,11 +6,6 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
-from fastapi import FastAPI
-from sqlalchemy import func, select, text
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.pool import NullPool
-
 from api import learning_service
 from api.dependencies import current_user, db_session
 from api.routes import (
@@ -22,6 +17,11 @@ from api.routes import (
     quiz,
 )
 from database import models
+from fastapi import FastAPI
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
+
 from tests.assessment_test import AssessmentGraph
 
 
@@ -36,7 +36,9 @@ async def learning_http(monkeypatch):
         async with admin_engine.begin() as connection:
             await connection.execute(text(f'CREATE SCHEMA "{schema}"'))
         engine = create_async_engine(
-            url, poolclass=NullPool, connect_args={"server_settings": {"search_path": schema}}
+            url,
+            poolclass=NullPool,
+            connect_args={"server_settings": {"search_path": schema}},
         )
     else:
         engine = create_async_engine("sqlite+aiosqlite:///:memory:")
@@ -61,6 +63,8 @@ async def learning_http(monkeypatch):
         "quiz_attempts",
         "mastery_scores",
         "assessment_submissions",
+        "quiz_question_outcomes",
+        "quiz_action_receipts",
         "mastery_events",
     ]
     async with engine.begin() as conn:
@@ -91,7 +95,11 @@ async def learning_http(monkeypatch):
         password_hash="fixture",
     )
     admin = models.User(
-        id=uuid.uuid4(), username="admin", full_name="Admin", role="admin", password_hash="fixture"
+        id=uuid.uuid4(),
+        username="admin",
+        full_name="Admin",
+        role="admin",
+        password_hash="fixture",
     )
     room = models.Classroom(id=uuid.uuid4(), name="X", subject="Matematika", teacher_id=teacher.id)
     material = models.ClassMaterial(
@@ -237,7 +245,8 @@ async def test_teach_question_continue_repeat_restore_and_retry(learning_http):
     state = repeated.json()
     assert state["language"] == "en" and state["unit_index"] == 1
     question = await client.post(
-        path + "/actions", json=action_body(state, "question", text="What is an example?")
+        path + "/actions",
+        json=action_body(state, "question", text="What is an example?"),
     )
     assert question.status_code == 200
     recovered = (await client.get(path)).json()
@@ -279,6 +288,17 @@ async def test_mini_quiz_holds_learning_and_survives_restart(learning_http):
         },
     )
     assert response.status_code == 200, response.text
+    assert response.json()["question_state"] == "review"
+    assert not response.json()["quiz_complete"]
+    advanced = await client.post(
+        f"/quiz/{state['quiz']['quiz_session_id']}/actions",
+        json={
+            "action_id": str(uuid.uuid4()),
+            "question_id": state["quiz"]["current_question"]["question_id"],
+            "action": "advance",
+        },
+    )
+    assert advanced.status_code == 200, advanced.text
     resumed = (await client.get(path)).json()
     assert resumed["phase"] == "learning" and "continue" in resumed["available_actions"]
     async with factory() as session:
@@ -307,11 +327,23 @@ async def test_three_question_mini_quiz_finishes_before_learning_resumes(learnin
             },
         )
         assert response.status_code == 200, response.text
-        assert response.json()["quiz_complete"] == (index == 2)
+        assert response.json()["question_state"] == "review"
+        advanced = await client.post(
+            f"/quiz/{state['quiz']['quiz_session_id']}/actions",
+            json={
+                "action_id": str(uuid.uuid4()),
+                "question_id": question["question_id"],
+                "action": "advance",
+            },
+        )
+        assert advanced.status_code == 200, advanced.text
+        assert (advanced.json()["question_state"] == "complete") == (index == 2)
     assert (await client.get(path)).json()["phase"] == "learning"
 
 
-async def test_failed_commit_keeps_original_revision_and_retry_can_complete(learning_http):
+async def test_failed_commit_keeps_original_revision_and_retry_can_complete(
+    learning_http,
+):
     client, factory, controls, material, _, _ = learning_http
     state = await open_lesson(client, material)
     path = f"/learning/sessions/{state['session_id']}"
@@ -346,7 +378,9 @@ async def test_initial_teaching_does_not_return_success_before_commit(learning_h
     assert (await open_lesson(client, material))["text"]
 
 
-async def test_source_revision_and_revocation_stop_resume_without_deleting_state(learning_http):
+async def test_source_revision_and_revocation_stop_resume_without_deleting_state(
+    learning_http,
+):
     client, factory, _, material, _, _ = learning_http
     state = await open_lesson(client, material)
     async with factory() as session:
@@ -398,7 +432,10 @@ def test_short_reviewed_subchapters_are_separate_learning_units():
     )
     units = learning_service.learning_units(content)
     assert len(units) == 2
-    assert [unit["title"] for unit in units] == ["Pengertian Pecahan", "Pecahan Senilai"]
+    assert [unit["title"] for unit in units] == [
+        "Pengertian Pecahan",
+        "Pecahan Senilai",
+    ]
     assert "".join(unit["text"] for unit in units) == content
 
 

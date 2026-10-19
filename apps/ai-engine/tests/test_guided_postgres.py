@@ -9,10 +9,10 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-from sqlalchemy import create_engine, func, inspect, select, text
-
 from api import learning_service
 from database.models import LearningActionReceipt, LearningSession, User
+from sqlalchemy import create_engine, func, inspect, select, text
+
 from tests.unit.test_guided_learning import action_body, open_lesson
 from tests.unit.test_guided_learning import learning_http as learning_http
 
@@ -22,10 +22,9 @@ pytestmark = pytest.mark.skipif(
 
 
 async def test_admin_material_update_waits_for_class_before_locking_material(learning_http):
-    from fastapi import BackgroundTasks
-
     from api.routes import admin_materials, classrooms
     from database.models import ClassMaterial, Classroom
+    from fastapi import BackgroundTasks
 
     _, factory, _, material, _, admin = learning_http
     async with factory() as teacher_session, factory() as admin_session:
@@ -173,6 +172,12 @@ def test_guided_migration_upgrade_downgrade_preserves_existing_lessons():
             )
             command.upgrade(config, "head")
             assert "audit_events" in inspect(connection).get_table_names(schema=schema)
+            assert "quiz_question_outcomes" in inspect(connection).get_table_names(schema=schema)
+            command.downgrade(config, "0011_provider_usage")
+            assert "quiz_question_outcomes" not in inspect(connection).get_table_names(
+                schema=schema
+            )
+            command.upgrade(config, "head")
             assert (
                 connection.scalar(text(f'SELECT version_num FROM "{schema}".alembic_version'))
                 == ScriptDirectory.from_config(config).get_current_head()

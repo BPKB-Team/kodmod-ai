@@ -14,12 +14,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Literal, cast
 
-from fastapi import HTTPException
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from analytics.student_model import StudentModel
-from api.material_service import resolve_tutoring_context
 from database.models import (
     AssessmentSubmission,
     ClassMaterial,
@@ -31,6 +26,7 @@ from database.models import (
     QuizSession,
     User,
 )
+from fastapi import HTTPException
 from graphs.state import KODMODState, build_learning_profile, initial_state
 from models.quiz import (
     QuizQuestionOut,
@@ -40,6 +36,10 @@ from models.quiz import (
     QuizSubmitRequest,
     QuizSubmitResponse,
 )
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from api.material_service import resolve_tutoring_context
 
 # Durable learning JSON, excluding provider metadata and reducer messages.
 STATE_KEYS = (
@@ -64,6 +64,13 @@ STATE_KEYS = (
     "material_mapping_version",
     "approved_material_concepts",
     "assessment_kind",
+    "quiz_policy_version",
+    "question_state",
+    "last_review",
+    "review_question_id",
+    "hint_text",
+    "hinted_questions",
+    "first_answer_assisted",
     "quiz_source_docs",
     "tutoring_context",
     "retrieved_docs",
@@ -140,7 +147,8 @@ async def invoke(graph, state: dict, sid: uuid.UUID) -> dict:
         language=state.get("learning_profile", {}).get("language"),
     ):
         return await graph.ainvoke(
-            state, config={"configurable": {"thread_id": f"assessment:{sid}:{uuid.uuid4()}"}}
+            state,
+            config={"configurable": {"thread_id": f"assessment:{sid}:{uuid.uuid4()}"}},
         )
 
 
@@ -171,6 +179,7 @@ async def start_assessment(
         KODMODState(
             assessment_managed=True,
             assessment_kind=kind,
+            quiz_policy_version=2,
             material_version=material.content_version if material else None,
             material_mapping_version=material.mapping_version if material else None,
             approved_material_concepts=context.get("approved_material_concepts", [])
@@ -185,7 +194,10 @@ async def start_assessment(
             detected_language=body.language,
             mastery_scores=dict(model._scores),
             mastery_confidence=dict(model._confidence),
-            learning_profile={**build_learning_profile(student), "language": body.language},
+            learning_profile={
+                **build_learning_profile(student),
+                "language": body.language,
+            },
         )
     )
     if context:
@@ -218,6 +230,8 @@ async def start_assessment(
         current_question_index=0,
         current_question_attempts=0,
         mastery_applied_attempts=0,
+        quiz_policy_version=2,
+        question_state="answering",
     )
     session.add(
         QuizSession(
@@ -249,10 +263,15 @@ async def start_assessment(
         quiz_session_id=sid,
         first_question=question_out(questions[0], 0),
         total_questions=len(questions),
+        policy_version=2,
+        current_question=question_out(questions[0], 0),
+        available_actions=["answer", "hint", "advance"] if kind == "tutor" else ["answer"],
     )
 
 
-async def validate_assessment_source(session: AsyncSession, owned: QuizSession, student: User):
+async def validate_assessment_source(
+    session: AsyncSession, owned: QuizSession, student: User, *, check_versions=True
+):
     canonical = owned.assessment_state or {}
     if canonical.get("class_id") or canonical.get("material_id"):
         await resolve_tutoring_context(
@@ -260,9 +279,17 @@ async def validate_assessment_source(session: AsyncSession, owned: QuizSession, 
             as_uuid(canonical.get("class_id")),
             as_uuid(canonical.get("material_id")),
             student,
+            require_ready=check_versions,
         )
         material = await session.get(ClassMaterial, as_uuid(canonical.get("material_id")))
-        if material is None or canonical.get("material_version") != material.content_version:
+        if check_versions and (
+            material is None
+            or canonical.get("material_version") != material.content_version
+            or (
+                canonical.get("quiz_policy_version", 1) == 2
+                and canonical.get("material_mapping_version") != material.mapping_version
+            )
+        ):
             raise HTTPException(409, "Materi kuis sudah berubah. Minta guru meninjau sesi ini.")
 
 
@@ -288,7 +315,13 @@ async def recover_assessment(
         .order_by(AssessmentSubmission.attempt_index.desc())
         .limit(1)
     )
+    extra = {}
+    if state.get("quiz_policy_version", 1) == 2:
+        from api.quiz_actions import interaction
+
+        extra = interaction(owned).model_dump(exclude={"current_question"})
     return QuizRecoveryResponse(
+        **extra,
         quiz_session_id=sid,
         kind=state.get("assessment_kind", "assessment"),
         status=cast(Literal["in_progress", "completed"], owned.status),
@@ -299,7 +332,9 @@ async def recover_assessment(
         total_questions=owned.total_questions,
         answered_questions=min(index, owned.total_questions),
         current_question=question_out(questions[index], index)
-        if owned.status == "in_progress" and index < len(questions)
+        if owned.status == "in_progress"
+        and index < len(questions)
+        and state.get("question_state") != "review"
         else None,
         last_result=QuizSubmitResponse.model_validate(receipt.response_payload)
         if receipt
@@ -312,7 +347,10 @@ async def active_assessments(session: AsyncSession, student: User, *, kind="asse
     rows = (
         await session.scalars(
             select(QuizSession)
-            .where(QuizSession.student_id == student.id, QuizSession.status == "in_progress")
+            .where(
+                QuizSession.student_id == student.id,
+                QuizSession.status == "in_progress",
+            )
             .order_by(QuizSession.started_at.desc())
             .limit(50)
         )
@@ -345,6 +383,10 @@ async def submit_assessment(
     )
     if owned is None:
         raise HTTPException(404, "Sesi kuis tidak ditemukan.")
+    if (owned.assessment_state or {}).get("quiz_policy_version", 1) == 2:
+        from api.quiz_actions import submit_v2
+
+        return await submit_v2(session, graph, student, body, owned)
     await validate_assessment_source(session, owned, student)
     fingerprint = hashlib.sha256(
         json.dumps(
@@ -552,6 +594,10 @@ async def submit_assessment(
     owned.assessment_state = snapshot(final)
     owned.correct_count = sum(bool(a.get("is_correct")) for a in attempts)
     if complete:
-        owned.status, owned.ended_at, owned.final_score = "completed", datetime.now(UTC), cumulative
+        owned.status, owned.ended_at, owned.final_score = (
+            "completed",
+            datetime.now(UTC),
+            cumulative,
+        )
     await session.flush()
     return response

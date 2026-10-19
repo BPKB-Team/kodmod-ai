@@ -11,13 +11,12 @@ from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
-from fastapi import FastAPI
-from sqlalchemy import func, select, text
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
 from api.dependencies import current_user
 from api.routes import quiz
 from database import models
+from fastapi import FastAPI
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 
 class AssessmentGraph:
@@ -107,6 +106,8 @@ async def assessment_http(monkeypatch):
         "quiz_attempts",
         "mastery_scores",
         "assessment_submissions",
+        "quiz_question_outcomes",
+        "quiz_action_receipts",
         "mastery_events",
     ]
     async with engine.begin() as connection:
@@ -137,7 +138,10 @@ async def assessment_http(monkeypatch):
     )
     subject = models.Subject(id=uuid.uuid4(), name="Matematika")
     concept = models.Concept(
-        id=uuid.uuid4(), subject_id=subject.id, name="Pecahan", slug="assessment-pecahan"
+        id=uuid.uuid4(),
+        subject_id=subject.id,
+        name="Pecahan",
+        slug="assessment-pecahan",
     )
     async with factory() as session:
         session.add_all([owner, stranger, subject])
@@ -175,6 +179,18 @@ async def assessment_http(monkeypatch):
         return {str(concept.id): 0.5}, {str(concept.id): 0.5}
 
     monkeypatch.setattr(quiz, "async_session", transaction)
+    # These pre-existing regression fixtures deliberately construct persisted v1
+    # sessions. V2 tests opt in by replacing the stored policy after creation.
+    real_start = quiz.start_assessment
+
+    async def start_legacy(session, graph, student, body, **kwargs):
+        result = await real_start(session, graph, student, body, **kwargs)
+        row = await session.get(models.QuizSession, result.quiz_session_id)
+        row.assessment_state = {**row.assessment_state, "quiz_policy_version": 1}
+        return result.model_copy(update={"policy_version": 1, "available_actions": ["answer"]})
+
+    monkeypatch.setattr(quiz, "start_assessment", start_legacy)
+
     monkeypatch.setattr(quiz, "_load_mastery", mastery)
     app = FastAPI()
     graph = AssessmentGraph()
@@ -258,7 +274,9 @@ async def test_finished_session_rejects_a_new_submission(assessment_http):
     assert await attempt_count(factory) == 1
 
 
-async def test_duplicate_submission_returns_original_result_and_one_mastery_effect(assessment_http):
+async def test_duplicate_submission_returns_original_result_and_one_mastery_effect(
+    assessment_http,
+):
     client, factory, _, graph, concept, _ = assessment_http
     body = submission(await start(client, concept))
     first = await client.post("/quiz/submit", json=body)
@@ -297,7 +315,9 @@ async def test_failed_commit_is_retryable_without_checkpoint_replay(assessment_h
     assert await attempt_count(factory) == 1
 
 
-async def test_start_does_not_report_success_when_database_commit_fails(assessment_http):
+async def test_start_does_not_report_success_when_database_commit_fails(
+    assessment_http,
+):
     client, _, controls, _, concept, _ = assessment_http
     controls["fail_commit"] = True
     response = await client.post(
@@ -361,7 +381,8 @@ async def test_real_graph_remediation_and_completion_share_the_canonical_transac
     assert wrong.status_code == 200, wrong.text
     assert wrong.json()["next_question"]["order_index"] == 0
     correct = await client.post(
-        "/quiz/submit", json={**body, "submission_id": str(uuid.uuid4()), "student_answer": "A"}
+        "/quiz/submit",
+        json={**body, "submission_id": str(uuid.uuid4()), "student_answer": "A"},
     )
     assert correct.status_code == 200, correct.text
     assert correct.json()["next_question"]["order_index"] == 1
@@ -415,11 +436,16 @@ async def test_legacy_session_requires_restart_without_invoking_graph(assessment
     assert await attempt_count(factory) == 0
 
 
-async def test_unmapped_class_scope_never_persists_global_concept_evidence(assessment_http):
+async def test_unmapped_class_scope_never_persists_global_concept_evidence(
+    assessment_http,
+):
     client, factory, controls, _, concept, _ = assessment_http
     async with factory() as session:
         room = models.Classroom(
-            id=uuid.uuid4(), teacher_id=controls["actor"].id, name="Test", subject="Matematika"
+            id=uuid.uuid4(),
+            teacher_id=controls["actor"].id,
+            name="Test",
+            subject="Matematika",
         )
         session.add(room)
         await session.flush()
@@ -435,12 +461,19 @@ async def test_unmapped_class_scope_never_persists_global_concept_evidence(asses
             n_chunks=1,
         )
         session.add_all(
-            [material, models.Enrollment(class_id=room.id, student_id=controls["actor"].id)]
+            [
+                material,
+                models.Enrollment(class_id=room.id, student_id=controls["actor"].id),
+            ]
         )
         await session.commit()
     opened = await client.post(
         "/quiz/start",
-        json={"class_id": str(room.id), "material_id": str(material.id), "n_questions": 1},
+        json={
+            "class_id": str(room.id),
+            "material_id": str(material.id),
+            "n_questions": 1,
+        },
     )
     assert opened.status_code == 200, opened.text
     started = opened.json()
@@ -479,7 +512,9 @@ async def test_assessment_start_uses_graph_learning_profile_schema(assessment_ht
         assert quiz_session.assessment_state["learning_profile"] == expected
 
 
-async def test_assessment_reads_decayed_mastery_and_updates_from_that_value(assessment_http):
+async def test_assessment_reads_decayed_mastery_and_updates_from_that_value(
+    assessment_http,
+):
     client, factory, _, graph, concept, _ = assessment_http
     async with factory() as session:
         mastery = await session.scalar(select(models.MasteryScore))
