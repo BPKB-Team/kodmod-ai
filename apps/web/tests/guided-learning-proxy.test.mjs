@@ -26,6 +26,7 @@ const hooks = registerHooks({
 });
 const learning = await import("../src/app/api/learning/[...path]/route.ts");
 const quiz = await import("../src/app/api/quiz/start/route.ts");
+const quizActions = await import("../src/app/api/quiz/[sessionId]/actions/route.ts");
 hooks.deregister();
 const id = "10000000-0000-4000-8000-000000000001";
 const context = (...path) => ({ params: Promise.resolve({ path }) });
@@ -78,4 +79,18 @@ test("an outdated learning revision offers session recovery without leaking prov
   assert.match(body.message, /Muat ulang sesi/);
   assert.ok(!body.message.includes("Private upstream error"));
   boundary.status = 200;
+});
+
+
+test("quiz actions preserve action identity and reject injected ownership or paths", async () => {
+  boundary.current = student("id");
+  const body = {action_id:id,question_id:id,action:"advance"};
+  const context = value => ({params:Promise.resolve({sessionId:value})});
+  assert.equal((await quizActions.POST(request(body),context(id))).status,200);
+  assert.deepEqual(JSON.parse(boundary.calls.at(-1).options.body),body);
+  assert.ok(boundary.calls.at(-1).url.endsWith(`/quiz/${id}/actions`));
+  assert.equal((await quizActions.POST(request({...body,student_id:id}),context(id))).status,400);
+  assert.equal((await quizActions.POST(request(body),context("../auth"))).status,404);
+  boundary.current=null;
+  assert.equal((await quizActions.POST(request(body),context(id))).status,401);
 });

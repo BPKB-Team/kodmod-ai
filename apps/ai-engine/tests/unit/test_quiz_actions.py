@@ -44,6 +44,7 @@ async def test_independent_wrong_review_recovery_and_advance(assessment_http):
     assert response.status_code == 200, response.text
     result = response.json()
     assert result["question_state"] == "review"
+    assert result["review_question"]["question_id"] == body["question_id"]
     assert result["available_actions"] == ["advance"]
     assert "A" in result["last_review"]
     assert (await client.get(f"/quiz/sessions/{opened['quiz_session_id']}")).json()[

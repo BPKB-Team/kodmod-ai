@@ -43,6 +43,7 @@ class QuizInteractionView(BaseModel):
         default_factory=lambda: ["answer"]
     )
     current_question: QuizQuestionOut | None = None
+    review_question: QuizQuestionOut | None = None
     last_review: str | None = None
     hint_text: str | None = None
 

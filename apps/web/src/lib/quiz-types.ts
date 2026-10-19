@@ -7,7 +7,18 @@ export type QuizQuestion = {
   difficulty: string;
 };
 
-export type QuizStartResponse = {
+export type QuizActionRequest = { action_id:string; question_id:string; action:"hint"|"advance" };
+export type QuizInteractionView = {
+  policy_version?: 1|2;
+  question_state?: "answering"|"review"|"complete";
+  available_actions?: ("answer"|"hint"|"advance")[];
+  current_question?: QuizQuestion|null;
+  review_question?: QuizQuestion|null;
+  last_review?: string|null;
+  hint_text?: string|null;
+};
+
+export type QuizStartResponse = QuizInteractionView & {
   quiz_session_id: string;
   first_question: QuizQuestion;
   total_questions: number;
@@ -21,7 +32,7 @@ export type QuizSubmitRequest = {
   response_latency_ms?: number;
 };
 
-export type QuizSubmitResponse = {
+export type QuizSubmitResponse = QuizInteractionView & {
   score: number;
   is_correct: boolean;
   feedback: string;
@@ -31,7 +42,7 @@ export type QuizSubmitResponse = {
   cumulative_score: number;
 };
 
-export type QuizRecoveryResponse = {
+export type QuizRecoveryResponse = QuizInteractionView & {
   quiz_session_id: string;
   kind: "assessment" | "tutor";
   status: "in_progress" | "completed";

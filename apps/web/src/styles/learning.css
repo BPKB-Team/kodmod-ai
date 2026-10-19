@@ -2581,3 +2581,8 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Explicit, reachable quiz actions on mobile and keyboard. */
+.quiz-policy-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }
+.quiz-policy-actions .button { min-height: 44px; }
+@media (max-width: 560px) { .quiz-policy-actions .button { flex: 1 1 140px; } }

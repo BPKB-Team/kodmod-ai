@@ -107,7 +107,10 @@ export async function readQuizSubmissionResponse(response) {
     || typeof body.is_correct !== "boolean" || typeof body.feedback !== "string"
     || typeof body.quiz_complete !== "boolean"
     || !(body.final_summary === null || typeof body.final_summary === "string")
-    || (body.quiz_complete ? body.next_question !== null : !isQuestion(body.next_question))) {
+    || (body.policy_version === 2 ?
+      !["answering", "review", "complete"].includes(body.question_state) ||
+      (body.question_state === "review" ? !isQuestion(body.review_question) : body.question_state === "answering" ? !isQuestion(body.current_question) : false)
+      : (body.quiz_complete ? body.next_question !== null : !isQuestion(body.next_question)))) {
     throw new QuizSubmissionError(UNKNOWN_RESULT);
   }
   return body;

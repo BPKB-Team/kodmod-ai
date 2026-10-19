@@ -1,6 +1,9 @@
 // Interface copy only. Lesson text, quiz questions, and conversation turns keep
 // their original language. New interface strings belong here or in i18n.mjs.
 export const englishUi = {
+  "Petunjuk": "Hint",
+  "Lanjut soal": "Next question",
+  "Selesaikan latihan": "Finish practice",
   "{minutes} menit": "{minutes} min",
   "{hours} jam {minutes} mnt": "{hours} h {minutes} min",
   "{hours} jam": "{hours} h",

@@ -62,6 +62,7 @@ def interaction(owned: QuizSession) -> QuizInteractionView:
         if phase != "review" and not complete and index < len(questions)
         else None,
         last_review=state.get("last_review"),
+        review_question=question_out(questions[max(0, index-1)], max(0, index-1)) if (phase == "review" or complete) and questions else None,
         hint_text=state.get("hint_text"),
     )
 
