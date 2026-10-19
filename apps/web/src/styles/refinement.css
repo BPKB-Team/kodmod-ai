@@ -1,5 +1,5 @@
 /* KODMOD: navy, cobalt, ice blue. Controls remain visible at 400% zoom. */
-.experience-toolbar { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; position: relative; }
+.experience-toolbar { display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; position: relative; }
 .experience-button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 42px; min-height: 42px; border-radius: 12px; border: 1px solid #d7e4f6; color: #24548e; background: #f5f9ff; cursor: pointer; font: inherit; }
 .experience-button:hover { background: #e6f0ff; border-color: #8aadf0; }
 .experience-button[aria-pressed=false] { color: #52677f; background: #fff; }
@@ -1442,4 +1442,120 @@
     justify-content: center;
   }
 }
+
+/* Responsive mobile optimizations for landing page & navigation */
+@media (max-width: 900px) {
+  .landing-refined .lp-hero-layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    gap: 36px;
+    padding-block: 28px 44px;
+  }
+  .landing-refined .lp-hero-copy {
+    max-width: 100%;
+  }
+  .landing-refined .lp-hero-visual {
+    width: 100%;
+    max-width: 440px;
+    margin-inline: auto;
+  }
+  .landing-refined .lp-floating {
+    display: none;
+  }
+  .landing-refined .lp-capability-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-refined .lp-nav-wrap {
+    padding: 10px 16px 12px;
+    gap: 8px 12px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .landing-refined .lp-brand {
+    order: 1;
+    font-size: 1.25rem;
+  }
+  .landing-refined .lp-brand img {
+    width: 28px;
+    height: auto;
+  }
+  .landing-refined .lp-header-actions {
+    display: contents;
+  }
+  .landing-refined .lp-login {
+    order: 2;
+    margin-left: auto;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+  }
+  .landing-refined .lp-mobile-nav {
+    order: 3;
+  }
+  .landing-refined .experience-toolbar {
+    order: 4;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(16, 36, 66, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+  }
+  .landing-refined .experience-button {
+    min-width: 38px;
+    min-height: 38px;
+    border-radius: 10px;
+  }
+  .landing-refined .sound-toggle {
+    padding-inline: 8px;
+  }
+  .landing-refined .toolbar-language {
+    min-height: 38px;
+    width: 42px;
+    min-width: 42px;
+    border-radius: 10px;
+  }
+  .landing-refined .lp-desktop-nav {
+    display: none;
+  }
+  .landing-refined .lp-container {
+    padding-inline: 16px;
+  }
+  .landing-refined .lp-hero h1 {
+    font-size: clamp(1.9rem, 7.5vw, 2.6rem);
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 580px) {
+  .landing-refined .lp-capability-grid {
+    grid-template-columns: 1fr;
+  }
+  .landing-refined .lp-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 12px;
+  }
+  .landing-refined .lp-actions .lp-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .landing-refined .lp-slogan-pill {
+    max-width: 100%;
+    font-size: 0.72rem;
+  }
+  .landing-refined .lp-agentic-subtitle {
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+}
+
 

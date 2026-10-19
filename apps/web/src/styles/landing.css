@@ -1963,4 +1963,41 @@ html[data-reduced-motion="true"] .spin-pulse {
   .lp-pillars-title-wrap {
     text-align: left;
   }
+  .tutor-agent-card {
+    padding: 16px 14px;
+    border-radius: 18px;
+  }
+  .tutor-card-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .tutor-input-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .tutor-text-input {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 4px 0;
+  }
+  .tutor-submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .tutor-prompt-chip {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+  .tutor-prompt-badge {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+  .lp-agentic-title {
+    font-size: clamp(1.6rem, 6vw, 2.2rem) !important;
+  }
+  .lp-agentic-desc {
+    font-size: 0.88rem !important;
+  }
 }
