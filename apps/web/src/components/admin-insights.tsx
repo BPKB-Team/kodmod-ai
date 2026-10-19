@@ -6,6 +6,8 @@ import { UiText, useI18n, UiDate } from "@/components/language-provider";
 import { useState } from "react";
 import {
   Activity,
+  ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   CircleAlert,
   Clock3,
@@ -47,6 +49,12 @@ export function AdminInsights({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [page, setPage] = useState(1);
+  const pageSize = 6;
+  const totalPages = Math.max(1, Math.ceil(activity.items.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pagedItems = activity.items.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   async function fetchActivity(cat: string) {
     const url =
       cat === "all"
@@ -66,6 +74,7 @@ export function AdminInsights({
       ]);
       setOverview(await readJson<AdminOverview>(overviewResponse, "Overview belum dapat dimuat."));
       setActivity(newActivity);
+      setPage(1);
       await notifyResult("Insight operasional sudah diperbarui.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Insight operasional belum dapat dimuat.");
@@ -82,6 +91,7 @@ export function AdminInsights({
     try {
       const newActivity = await fetchActivity(cat);
       setActivity(newActivity);
+      setPage(1);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Aktivitas belum dapat dimuat.");
     } finally {
@@ -143,22 +153,16 @@ export function AdminInsights({
           </div>
 
           <div
-            className="admin-activity-filter-bar"
-            style={{ display: "flex", flexWrap: "wrap", gap: "6px", margin: "8px 0 16px" }}
+            className="ai-filter-group"
+            style={{ margin: "8px 0 16px", flexWrap: "wrap" }}
             role="group"
-            aria-label="Filter kategori aktivitas"
+            aria-label={t("Filter kategori aktivitas")}
           >
             {categoryFilters.map((filter) => (
               <button
                 key={filter.id}
                 type="button"
-                className={`button ${selectedCategory === filter.id ? "primary" : "secondary"}`}
-                style={{
-                  fontSize: "11px",
-                  padding: "4px 10px",
-                  height: "28px",
-                  borderRadius: "14px",
-                }}
+                className={`ai-filter-tab ${selectedCategory === filter.id ? "active" : ""}`}
                 onClick={() => void handleFilterChange(filter.id)}
                 disabled={loading}
               >
@@ -167,9 +171,9 @@ export function AdminInsights({
             ))}
           </div>
 
-          {activity.items.length ? (
+          {pagedItems.length ? (
             <div className="admin-activity-list">
-              {activity.items.map((item) => (
+              {pagedItems.map((item) => (
                 <div className="admin-activity-item" key={`${item.type}-${item.id}`}>
                   <span className="admin-activity-dot" aria-hidden="true" />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -201,6 +205,34 @@ export function AdminInsights({
             </div>
           ) : (
             <div className="admin-insight-empty"><Clock3 size={22} aria-hidden="true" /><p><UiText>{"Belum ada aktivitas dalam kategori ini."}</UiText></p></div>
+          )}
+
+          {activity.items.length > pageSize && (
+            <div className="admin-pagination" style={{ marginTop: "1rem", borderRadius: "10px" }}>
+              <span>
+                <UiText>{"Halaman"}</UiText> {currentPage} <UiText>{"dari"}</UiText> {totalPages} · {activity.items.length} <UiText>{"aktivitas"}</UiText>
+              </span>
+              <div className="pagination-actions">
+                <button
+                  type="button"
+                  className={`pagination-btn ${currentPage <= 1 ? "disabled" : ""}`}
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  <ArrowLeft size={16} aria-hidden="true" />
+                  <UiText>{"Sebelumnya"}</UiText>
+                </button>
+                <button
+                  type="button"
+                  className={`pagination-btn ${currentPage >= totalPages ? "disabled" : ""}`}
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  <UiText>{"Berikutnya"}</UiText>
+                  <ArrowRight size={16} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
           )}
         </article>
         <article className="panel admin-activity-card">

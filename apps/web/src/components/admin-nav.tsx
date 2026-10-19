@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Activity, LayoutDashboard, Users, ChevronRight, FileCheck2, Bot, BookOpen } from "lucide-react";
+import { speechOutput } from "@/lib/browser-speech";
 import { useI18n } from "./language-provider";
 import { LogoutButton } from "./logout-button";
 const links = [
@@ -15,6 +16,11 @@ const links = [
 export function AdminNav() {
   const { t } = useI18n();
   const path = usePathname();
+
+  const handleNavClick = () => {
+    speechOutput.stop();
+  };
+
   return (
     <nav className="admin-nav" aria-label={t("Navigasi admin")}>
       {links.map(({ href, label, Icon }) => {
@@ -24,6 +30,7 @@ export function AdminNav() {
           <Link
             key={href}
             href={href}
+            onClick={handleNavClick}
             data-voice-menu={{ "/admin": "dashboard", "/admin/pengguna": "users", "/admin/materi": "materials", "/admin/review-kuis": "review", "/admin/aktivitas": "activity", "/admin/pemantauan-ai": "ai-monitor" }[href]}
             aria-current={active ? "page" : undefined}
           >

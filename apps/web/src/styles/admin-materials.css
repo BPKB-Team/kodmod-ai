@@ -59,6 +59,16 @@
   box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
 }
 .admin-material-pagination { display: flex; gap: 1rem; margin-top: 1.5rem; }
+.admin-material-grid + .admin-pagination,
+section.panel + .admin-pagination {
+  margin-top: 1.5rem;
+  border: 1px solid #dce7f4;
+  border-radius: 14px;
+  background: #ffffffda;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 18px rgba(16, 42, 85, 0.04);
+}
 .admin-material-form { display: grid; gap: 1.5rem; padding: clamp(1.2rem, 3vw, 2rem); }
 .admin-material-form textarea { line-height: 1.8; }
 .admin-material-publish { display: flex; align-items: center; gap: 1rem; }
