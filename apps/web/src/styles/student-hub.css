@@ -54,20 +54,11 @@
   align-items: center;
 }
 
-/* Student Content Breadcrumb Bar */
-.student-breadcrumb-bar {
+/* Student Back to Menu Utama Bar */
+.student-back-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-}
-
-.student-breadcrumb-divider {
-  color: #94a3b8;
-  font-weight: 700;
-  font-size: 1.1rem;
-  user-select: none;
+  margin-bottom: 1.5rem;
 }
 
 /* Tactile Game Back Button */
@@ -114,26 +105,13 @@
   color: #ffffff;
 }
 
-.student-current-page-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #e0ecfc;
-  border: 1px solid #bfdbfe;
-  color: #1e40af;
-  font-weight: 700;
-  font-size: 0.85rem;
-  padding: 6px 14px;
-  border-radius: 999px;
-}
-
 .student-header-right {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
-/* Full Width Main Workspace */
+/* Full Width Main Workspace with Section Re-ordering */
 .student-main-content {
   flex: 1;
   width: 100%;
@@ -141,6 +119,27 @@
   margin: 0 auto;
   padding: clamp(1.25rem, 3vw, 2.5rem);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-main-content > .page-heading {
+  order: 1;
+  margin-bottom: 1.25rem;
+}
+
+.student-main-content > .learning-back {
+  order: 2;
+  margin-bottom: 1rem;
+}
+
+.student-main-content > .student-back-bar {
+  order: 2;
+  margin-bottom: 1.5rem;
+}
+
+.student-main-content > *:not(.page-heading):not(.student-back-bar):not(.learning-back) {
+  order: 3;
 }
 
 /* Student Game Hub Dashboard */
@@ -1178,15 +1177,6 @@
   box-shadow: 0 4px 0 #ffff00;
 }
 
-[data-contrast="high"] .student-current-page-pill {
-  background: #000000;
-  color: #ffffff;
-  border: 2px solid #ffffff;
-}
-
-[data-contrast="high"] .student-breadcrumb-divider {
-  color: #ffff00;
-}
 
 [data-contrast="high"] .student-main-content .analytics-voice-card {
   background: #000000;

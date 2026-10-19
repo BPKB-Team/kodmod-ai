@@ -10,7 +10,7 @@ import "@/styles/student-hub.css";
 import { ExperienceToolbar } from "./experience-toolbar";
 import { getServerI18n } from "@/lib/server-language";
 import { UserProfileDropdown } from "./user-profile-dropdown";
-import { StudentTopNav, StudentBreadcrumb } from "./student-top-nav";
+import { StudentTopNav, StudentBackBar } from "./student-top-nav";
 
 export async function LearningShell({
   role,
@@ -29,7 +29,7 @@ export async function LearningShell({
       <div className="student-app-shell">
         <StudentTopNav user={user} />
         <main id="konten-utama" tabIndex={-1} className="workspace-main student-main-content">
-          <StudentBreadcrumb />
+          <StudentBackBar />
           {children}
         </main>
         <footer className="student-footer">

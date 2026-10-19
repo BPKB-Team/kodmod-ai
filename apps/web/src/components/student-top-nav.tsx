@@ -15,15 +15,6 @@ interface StudentTopNavProps {
   user: User;
 }
 
-const pageTitles: Record<string, string> = {
-  "/siswa/kelas": "Kelas Saya",
-  "/siswa/materi": "Pustaka Materi",
-  "/siswa/tutor": "Tutor AI",
-  "/siswa/latihan": "Asesmen Mandiri",
-  "/siswa/tugas": "Tugas Siswa",
-  "/siswa/progres": "Progres Belajar",
-};
-
 export function StudentTopNav({ user }: StudentTopNavProps) {
   const { t } = useI18n();
 
@@ -49,25 +40,11 @@ export function StudentTopNav({ user }: StudentTopNavProps) {
   );
 }
 
-export function StudentBreadcrumb() {
+export function StudentBackBar() {
   const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const isHub = pathname === "/siswa";
-
-  // Match active title for sub-pages
-  let activeTitle = "";
-  if (!isHub) {
-    for (const [route, label] of Object.entries(pageTitles)) {
-      if (pathname === route || pathname.startsWith(`${route}/`)) {
-        activeTitle = label;
-        break;
-      }
-    }
-    if (!activeTitle) {
-      activeTitle = "Ruang Belajar";
-    }
-  }
 
   // Keyboard shortcut: Escape returns to Game Hub when on sub-pages
   useEffect(() => {
@@ -93,7 +70,7 @@ export function StudentBreadcrumb() {
   if (isHub) return null;
 
   return (
-    <nav className="student-breadcrumb-bar" aria-label={t("Navigasi kembali")}>
+    <div className="student-back-bar">
       <Link
         href="/siswa"
         className="student-back-to-hub-btn"
@@ -105,14 +82,6 @@ export function StudentBreadcrumb() {
         <span className="student-back-label">{t("Menu Utama")}</span>
         <kbd className="student-kbd-hint">Esc</kbd>
       </Link>
-      {activeTitle && (
-        <>
-          <span className="student-breadcrumb-divider" aria-hidden="true">/</span>
-          <span className="student-current-page-pill" aria-current="page">
-            {t(activeTitle)}
-          </span>
-        </>
-      )}
-    </nav>
+    </div>
   );
 }
