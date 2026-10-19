@@ -28,3 +28,8 @@ def test_fresh_migrations_add_material_context_only_after_class_tables_exist():
         "ALTER TABLE curriculum_chunks ADD COLUMN material_id"
     )
     assert "0004_class_material_rag" in sql
+    recommendations = re.search(r"CREATE TABLE recommendations \((.*?)\n\);", initial, re.S).group(
+        1
+    )
+    assert "plan_id" not in recommendations and "expires_at" not in recommendations
+    assert sql.count("ALTER TABLE recommendations ADD COLUMN plan_id") == 1

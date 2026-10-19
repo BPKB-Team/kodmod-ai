@@ -259,12 +259,44 @@ async def fetch_active_recommendations(student_id: uuid.UUID, limit: int = 5) ->
                         Recommendation.student_id == student_id, Recommendation.consumed.is_(False)
                     )
                     .order_by(Recommendation.priority.asc(), Recommendation.created_at.desc())
-                    .limit(limit)
+                    .limit(max(20, limit * 4))
                 )
             )
             .scalars()
             .all()
         )
+        permitted = []
+        from fastapi import HTTPException
+
+        from analytics.progress_projection import aware
+        from api.progress_guidance_service import require_target
+        from database.models import LearningPlan, LearningPlanStep, User
+
+        now = datetime.now(UTC)
+        student = None
+        for row in rows:
+            if row.expires_at and aware(row.expires_at) <= now:
+                continue
+            if row.plan_id:
+                plan = await session.get(LearningPlan, row.plan_id)
+                step = (
+                    await session.get(LearningPlanStep, row.plan_step_id)
+                    if row.plan_step_id
+                    else None
+                )
+                if (
+                    not plan
+                    or plan.status != "active"
+                    or not step
+                    or step.status not in {"pending", "in_progress"}
+                ):
+                    continue
+                student = student or await session.get(User, student_id)
+                try:
+                    await require_target(session, student, step.target)
+                except HTTPException:
+                    continue
+            permitted.append(row)
         return [
             {
                 "id": str(r.id),
@@ -273,5 +305,5 @@ async def fetch_active_recommendations(student_id: uuid.UUID, limit: int = 5) ->
                 "body": r.body,
                 "priority": r.priority,
             }
-            for r in rows
+            for r in permitted[:limit]
         ]

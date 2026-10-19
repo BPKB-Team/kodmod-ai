@@ -15,15 +15,15 @@ from types import SimpleNamespace
 import httpx
 import pytest
 import pytest_asyncio
-from api.dependencies import current_user
-from api.routes import quiz
-from database import models
 from fastapi import FastAPI
 from sqlalchemy import func, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.schema import CreateSchema, DropSchema
 
+from api.dependencies import current_user
+from api.routes import quiz
+from database import models
 from tests.assessment_test import AssessmentGraph, start, submission
 
 pytestmark = [
@@ -101,6 +101,8 @@ async def isolated_assessment_http(monkeypatch):
             "users",
             "subjects",
             "concepts",
+            "learning_plans",
+            "learning_plan_steps",
             "quiz_sessions",
             "quiz_questions",
             "quiz_attempts",

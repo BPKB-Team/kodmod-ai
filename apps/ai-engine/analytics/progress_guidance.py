@@ -7,12 +7,11 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from analytics.progress_projection import aware, public_progress
 from api.learning_progress import canonical_manifest
 from api.learning_service import learning_units
 from database.models import ClassMaterial
 from models.progress_guidance import GuidanceSnapshot, PlanCandidate, ProgressFact, ProgressInsight
-
-from analytics.progress_projection import aware, public_progress
 
 
 def substantive(text):
@@ -26,7 +25,7 @@ async def build_guidance_snapshot(session, *, student, timezone: str) -> Guidanc
     ZoneInfo(timezone)
     now = datetime.now(UTC)
     start = now - timedelta(days=30)
-    public, _ = await public_progress(session, student.id, start=start, include_events=True)
+    public, outcomes = await public_progress(session, student.id, start=start, include_events=True)
     recent = [e for e in public.pop("_visible_events") if aware(e["at"]) >= start]
     facts = [
         ProgressFact(
@@ -40,6 +39,23 @@ async def build_guidance_snapshot(session, *, student, timezone: str) -> Guidanc
             },
         )
     ]
+    facts.append(
+        ProgressFact(
+            fact_id="practice_activity",
+            kind="practice_activity",
+            data={
+                "question_count": len(outcomes),
+                "mean_first_score": round(sum(o.first_score for o in outcomes) / len(outcomes), 3)
+                if outcomes
+                else None,
+                "outcome_hash": hashlib.sha256(
+                    json.dumps(
+                        sorted((str(o.id), o.first_score, o.status) for o in outcomes)
+                    ).encode()
+                ).hexdigest(),
+            },
+        )
+    )
     concepts = {}
     for concept in sorted(public["concept_evidence"], key=lambda c: c["concept_id"])[:30]:
         events = [e for e in recent if e["concept_id"] == concept["concept_id"]]
@@ -105,12 +121,21 @@ async def build_guidance_snapshot(session, *, student, timezone: str) -> Guidanc
         next_index = min(row["completed_units"], len(units) - 1)
         index = next((i for i in good if i >= next_index), good[0])
         cid = next((c for c in row["concept_ids"] if concepts.get(c) == "practice_concept"), None)
-        reason_ids = [fact_id, "coverage"] + ([f"concept:{cid}"] if cid else [])
-        for kind, priority in [
+        strong_id = next(
+            (c for c in row["concept_ids"] if concepts.get(c) == "strong_concept"), None
+        )
+        choices = [
             ("review_unit", 0 if row["status"] == "in_progress" else 2 if cid else 3),
             ("practice", 1 if not any(c in concepts for c in row["concept_ids"]) else 2),
-        ]:
-            identity = f"{material.id}:{manifest.unit_manifest_hash}:{index}:{kind}"
+        ]
+        if strong_id and not cid:
+            choices.append(("self_explain", 3))
+        for kind, priority in choices:
+            target_cid = strong_id if kind == "self_explain" else cid
+            reason_ids = [fact_id, "coverage"] + ([f"concept:{target_cid}"] if target_cid else [])
+            identity = (
+                f"{material.id}:{manifest.unit_manifest_hash}:{index}:{kind}:{target_cid or ''}"
+            )
             candidates.append(
                 PlanCandidate(
                     candidate_id=hashlib.sha256(identity.encode()).hexdigest()[:32],
@@ -118,14 +143,18 @@ async def build_guidance_snapshot(session, *, student, timezone: str) -> Guidanc
                     class_id=row["class_id"],
                     material_id=row["id"],
                     material_title=row["title"],
-                    concept_id=cid,
+                    concept_id=target_cid,
                     unit_id=manifest.units[index].unit_id,
                     unit_index=index,
                     content_version=material.content_version,
                     mapping_version=material.mapping_version,
                     unit_manifest_hash=manifest.unit_manifest_hash,
-                    supported_question_count=1,
-                    estimated_minutes=3 if kind == "practice" else 5,
+                    supported_question_count=0 if kind == "self_explain" else 1,
+                    estimated_minutes=3
+                    if kind == "practice"
+                    else 4
+                    if kind == "self_explain"
+                    else 5,
                     allowed_reason_fact_ids=reason_ids,
                     priority=priority,
                 )

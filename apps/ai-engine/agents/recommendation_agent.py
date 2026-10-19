@@ -143,6 +143,8 @@ def recommendations_from_plan(plan, snapshot, language="id"):
             if english
             else ("Pelajari satu bagian" if review else "Cek pemahamanmu")
         )
+        if candidate.kind == "self_explain":
+            title = "Explain in your own words" if english else "Jelaskan dengan kata-katamu"
         body = f"{candidate.material_title} — {'section' if english else 'bagian'} {candidate.unit_index + 1}."
         supporting = [
             facts[f]
@@ -171,6 +173,12 @@ def recommendations_from_plan(plan, snapshot, language="id"):
                 else "Materi yang tersedia ini membantu mengumpulkan bukti belajar awal."
             )
         )
+        if candidate.kind == "self_explain":
+            reason = (
+                "Use the source to explain your understanding in your own words."
+                if english
+                else "Gunakan sumber ini untuk menjelaskan pemahamanmu dengan kata-katamu sendiri."
+            )
         views.append(
             RecommendationView(
                 candidate_id=candidate_id,
@@ -178,7 +186,7 @@ def recommendations_from_plan(plan, snapshot, language="id"):
                 body=body,
                 reason_text=reason,
                 estimated_minutes=candidate.estimated_minutes,
-                href=f"/siswa/{'tutor' if review else 'latihan'}?"
+                href=f"/siswa/{'latihan' if candidate.kind == 'practice' else 'tutor'}?"
                 + urlencode({"class_id": candidate.class_id, "material_id": candidate.material_id}),
             )
         )

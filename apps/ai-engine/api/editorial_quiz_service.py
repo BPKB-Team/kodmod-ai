@@ -10,6 +10,12 @@ import logging
 import uuid
 from datetime import UTC, datetime
 
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from api.assignment_mastery import apply_assignment_mastery
 from database.models import (
     AssignmentAnswer,
     AssignmentAttempt,
@@ -24,7 +30,6 @@ from database.models import (
     Subject,
     User,
 )
-from fastapi import HTTPException
 from models.editorial_quiz import (
     AssignInput,
     AssignmentOut,
@@ -37,11 +42,6 @@ from models.editorial_quiz import (
     StudentQuestion,
     VersionOut,
 )
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.assignment_mastery import apply_assignment_mastery
 
 log = logging.getLogger(__name__)
 
@@ -482,5 +482,8 @@ async def submit_attempt(session, assignment, attempt, expected_revision, submis
     attempt.revision += 1
     output = await result_out(session, assignment, attempt)
     attempt.receipt = output.model_dump(mode="json")
+    from api.progress_guidance_service import queue_plan_refresh
+
+    await queue_plan_refresh(session, attempt.student_id)
     await commit(session)
     return output

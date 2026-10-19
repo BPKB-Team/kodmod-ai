@@ -3,16 +3,16 @@
 import logging
 import uuid
 
-from config.settings import settings
-from database.models import ClassMaterial, Classroom, Enrollment, User
-from database.session import async_session
 from fastapi import HTTPException
-from rag.ingestion import build_material_records
-from rag.stores.pgvector_store import replace_material_chunks
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.material_concepts import current_concepts
+from config.settings import settings
+from database.models import ClassMaterial, Classroom, Enrollment, User
+from database.session import async_session
+from rag.ingestion import build_material_records
+from rag.stores.pgvector_store import replace_material_chunks
 
 log = logging.getLogger(__name__)
 
@@ -181,6 +181,10 @@ async def index_class_material(
             row.n_chunks = len(records)
             row.rag_status = "ready"
             row.rag_error = None
+            from api.progress_guidance_service import queue_affected_plans
+
+            await session.flush()
+            await queue_affected_plans(session, row.class_id)
             await session.commit()
         if settings.VECTOR_BACKEND == "qdrant":
             from rag.stores.qdrant_store import sync_material_replacement

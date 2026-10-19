@@ -11,12 +11,13 @@ from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
-from api.dependencies import current_user
-from api.routes import quiz
-from database import models
 from fastapi import FastAPI
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+from api.dependencies import current_user
+from api.routes import quiz
+from database import models
 
 
 class AssessmentGraph:
@@ -101,6 +102,8 @@ async def assessment_http(monkeypatch):
         "background_jobs",
         "subjects",
         "concepts",
+        "learning_plans",
+        "learning_plan_steps",
         "quiz_sessions",
         "quiz_questions",
         "quiz_attempts",

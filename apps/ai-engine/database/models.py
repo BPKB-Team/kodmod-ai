@@ -26,7 +26,6 @@ import uuid
 from datetime import UTC, datetime
 from typing import Literal
 
-from config.settings import settings
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     JSON,
@@ -45,6 +44,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from config.settings import settings
 
 # Roles and statuses are stored as plain strings guarded by CHECK constraints
 # rather than native PG enums: adding a value later is an ordinary migration
@@ -1010,6 +1011,70 @@ class AnalyticsReport(Base):
     generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 
+class LearningPlan(Base):
+    __tablename__ = "learning_plans"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    student_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    cycle_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), default=uuid.uuid4)
+    revision: Mapped[int] = mapped_column(Integer, default=0)
+    source_snapshot_hash: Mapped[str] = mapped_column(String(64))
+    policy_version: Mapped[str] = mapped_column(String(30), default="progress-v1")
+    prompt_version: Mapped[str] = mapped_column(String(30), default="planner-v1")
+    language: Mapped[str] = mapped_column(String(5), default="id")
+    timezone: Mapped[str] = mapped_column(String(80), default="UTC")
+    goal: Mapped[dict | None] = mapped_column(JSON)
+    reason_fact_ids: Mapped[list] = mapped_column(JSON, default=list)
+    history: Mapped[list] = mapped_column(JSON, default=list)
+    status: Mapped[str] = mapped_column(String(20), default="active")
+    used_fallback: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+    next_check_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    __table_args__ = (
+        Index(
+            "uq_active_learning_plan",
+            "student_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+            sqlite_where=text("status = 'active'"),
+        ),
+    )
+
+
+class LearningPlanStep(Base):
+    __tablename__ = "learning_plan_steps"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    plan_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("learning_plans.id", ondelete="CASCADE"), index=True
+    )
+    order_index: Mapped[int] = mapped_column(Integer)
+    candidate_id: Mapped[str] = mapped_column(String(64))
+    target: Mapped[dict] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    session_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    evidence_receipt_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class PlanActionReceipt(Base):
+    __tablename__ = "plan_action_receipts"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    student_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    plan_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("learning_plans.id", ondelete="CASCADE")
+    )
+    request_fingerprint: Mapped[str] = mapped_column(String(64))
+    response_payload: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
 class Recommendation(Base):
     __tablename__ = "recommendations"
 
@@ -1017,6 +1082,13 @@ class Recommendation(Base):
     student_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
+    plan_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("learning_plans.id", ondelete="SET NULL"), index=True
+    )
+    plan_step_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("learning_plan_steps.id", ondelete="SET NULL"), index=True
+    )
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     kind: Mapped[str] = mapped_column(String(40))  # next_lesson | practice | habit
     title: Mapped[str] = mapped_column(String(300))
     body: Mapped[str] = mapped_column(Text)

@@ -11,6 +11,7 @@ from database.models import BackgroundJob
 from database.session import async_session
 
 ERROR = "Pemrosesan belum berhasil. Coba proses ulang atau pilih bagian dokumen yang lebih kecil."
+CLAIMABLE_KINDS = ("material_import", "material_index", "document_index", "progress_plan")
 
 
 async def enqueue(
@@ -64,13 +65,14 @@ async def enqueue_material(session, material, *, retry=False):
     )
 
 
-async def claim():
+async def claim(*, kinds=None):
     now = datetime.now(UTC)
     async with async_session() as session:
-        await expire_exhausted(session, now)
+        await expire_exhausted(session, now, kinds=kinds)
         row = await session.scalar(
             select(BackgroundJob)
             .where(
+                BackgroundJob.kind.in_(kinds if kinds is not None else CLAIMABLE_KINDS),
                 BackgroundJob.attempts < BackgroundJob.max_attempts,
                 or_(
                     and_(
@@ -109,14 +111,22 @@ def mark_target_error(target, row, status):
         target.status, target.error_message = status, ERROR
 
 
-async def expire_exhausted(session, now):
+async def expire_exhausted(session, now, *, kinds=None):
     """Update the visible target and receipt with the publisher's lock order."""
     exhausted = and_(
         BackgroundJob.state == "running",
         BackgroundJob.lease_expires_at <= now,
         BackgroundJob.attempts >= BackgroundJob.max_attempts,
     )
-    candidates = (await session.scalars(select(BackgroundJob).where(exhausted).limit(50))).all()
+    candidates = (
+        await session.scalars(
+            select(BackgroundJob)
+            .where(
+                exhausted, BackgroundJob.kind.in_(kinds if kinds is not None else CLAIMABLE_KINDS)
+            )
+            .limit(50)
+        )
+    ).all()
     for candidate in candidates:
         target = None
         if candidate.kind in {"material_index", "document_index"}:

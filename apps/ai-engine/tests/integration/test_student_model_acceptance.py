@@ -4,12 +4,12 @@ import uuid
 from contextlib import asynccontextmanager
 
 import pytest
+from sqlalchemy import func, select
+
 from analytics import aggregator, student_model
 from api.main import app
 from api.routes import quiz
 from database import models as db
-from sqlalchemy import func, select
-
 from tests import editorial_test
 from tests.assessment_test import AssessmentGraph, start, submission
 from tests.editorial_test import editorial_http as editorial_http
@@ -19,6 +19,8 @@ pytestmark = [pytest.mark.integration, pytest.mark.db, pytest.mark.asyncio(loop_
 
 async def ensure_progress_tables(factory):
     names = {
+        "background_jobs",
+        "plan_action_receipts",
         "mastery_scores",
         "quiz_question_outcomes",
         "quiz_action_receipts",
@@ -204,3 +206,68 @@ async def test_unreleased_formal_evidence_cannot_change_public_insights(
     ]:
         assert first[key] == second[key]
     assert not first["mastery_available"]
+
+
+async def test_feedback_release_enqueues_new_public_snapshot_without_rewriting_mastery(
+    editorial_http, monkeypatch
+):
+    from datetime import UTC, datetime, timedelta
+
+    from api import durable_jobs, material_worker, progress_guidance_worker
+
+    client, factory, actors, subject, _, headers = editorial_http
+    await ensure_progress_tables(factory)
+    async with factory() as dbsession:
+        concept = db.Concept(
+            subject_id=subject.id, name="Scheduled concept", slug="scheduled-concept"
+        )
+        dbsession.add(concept)
+        await dbsession.commit()
+    questions = editorial_test.draft_body(subject)["questions"]
+    questions[0]["concept_id"] = str(concept.id)
+    _, assignment = await editorial_test.assigned(
+        editorial_http, questions=questions, release_policy="after_due"
+    )
+    attempt = await editorial_test.answered(editorial_http, assignment, option="a")
+    submitted = await client.post(
+        f"/student/assignments/{assignment['id']}/submit",
+        json={"expected_revision": attempt["revision"]},
+        headers=headers("student") | {"Idempotency-Key": str(uuid.uuid4())},
+    )
+    assert submitted.status_code == 200, submitted.text
+
+    @asynccontextmanager
+    async def transaction():
+        async with factory() as dbsession:
+            try:
+                yield dbsession
+                await dbsession.commit()
+            except Exception:
+                await dbsession.rollback()
+                raise
+
+    for module in [durable_jobs, material_worker, progress_guidance_worker]:
+        monkeypatch.setattr(module, "async_session", transaction)
+    refreshed = await client.post(
+        "/analytics/me/guidance/refresh",
+        json={"request_id": str(uuid.uuid4()), "expected_revision": 0, "timezone": "UTC"},
+        headers=headers("student"),
+    )
+    assert refreshed.status_code == 202, refreshed.text
+    job = await durable_jobs.claim(kinds=["progress_plan"])
+    await material_worker.run_job(job)
+    async with factory() as dbsession:
+        plan = await dbsession.scalar(select(db.LearningPlan))
+        old_hash = plan.source_snapshot_hash
+        plan.next_check_at = datetime.now(UTC) - timedelta(minutes=1)
+        row = await dbsession.get(db.QuizAssignment, uuid.UUID(assignment["id"]))
+        row.due_at = datetime.now(UTC) - timedelta(seconds=1)
+        before = (await dbsession.scalar(select(db.MasteryScore))).n_attempts
+        await dbsession.commit()
+    await progress_guidance_worker.reconcile_due_plans()
+    async with factory() as dbsession:
+        pending = await dbsession.scalar(
+            select(db.BackgroundJob).where(db.BackgroundJob.state == "pending")
+        )
+        assert pending and pending.payload["snapshot_hash"] != old_hash
+        assert (await dbsession.scalar(select(db.MasteryScore))).n_attempts == before

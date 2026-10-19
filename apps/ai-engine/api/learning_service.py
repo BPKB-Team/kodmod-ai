@@ -10,18 +10,7 @@ import uuid
 from datetime import UTC, datetime
 from itertools import pairwise
 
-from database.models import (
-    ClassMaterial,
-    InteractionLog,
-    LearningActionReceipt,
-    LearningSession,
-    User,
-)
 from fastapi import HTTPException
-from graphs.guided_learning import build_guided_graph
-from graphs.state import build_learning_profile
-from models.learning import LearningAction, LearningOut, LearningStart, LearningUnitManifest
-from models.quiz import QuizStartRequest
 from sqlalchemy import select
 
 from api.assessment_service import recover_assessment, start_assessment
@@ -32,6 +21,17 @@ from api.learning_progress import (
     record_learning_unit,
 )
 from api.material_service import resolve_tutoring_context
+from database.models import (
+    ClassMaterial,
+    InteractionLog,
+    LearningActionReceipt,
+    LearningSession,
+    User,
+)
+from graphs.guided_learning import build_guided_graph
+from graphs.state import build_learning_profile
+from models.learning import LearningAction, LearningOut, LearningStart, LearningUnitManifest
+from models.quiz import QuizStartRequest
 
 guided_graph = build_guided_graph()
 
@@ -111,7 +111,12 @@ async def lesson_out(session, row, student, material=None):
             actions.append("continue")
         else:
             actions.append("finish")
+        if state.get("scope") == "planned_review":
+            actions = ["question", "repeat", "finish"]
+        elif state.get("scope") == "self_explain":
+            actions = ["question", "repeat", "self_explain"]
     return LearningOut(
+        scope=state.get("scope", "full_material"),
         learning_progress=await active_learning_progress(session, student.id, material),
         session_id=row.id,
         revision=state["revision"],
@@ -311,7 +316,8 @@ async def apply_learning_action(session, assessment_graph, student, sid, body: L
             material=material,
             manifest=manifest,
             completed_unit_id=manifest.units[state["unit_index"]].unit_id,
-            finish=body.action == "finish",
+            finish=body.action == "finish"
+            and state.get("scope", "full_material") == "full_material",
         )
     if body.action in ("quiz", "check"):
         started = await start_assessment(
@@ -328,7 +334,9 @@ async def apply_learning_action(session, assessment_graph, student, sid, body: L
             source_docs=[unit_source(row, material, state)],
         )
         state["quiz_id"], state["phase"] = str(started.quiz_session_id), "quiz"
-    elif body.action == "finish":
+    elif body.action in {"finish", "self_explain"}:
+        if body.action == "self_explain":
+            await teach(session, row, material, student, state, "question", body.text or "")
         row.ended_at, state["phase"] = datetime.now(UTC), "completed"
         row.summary = state["text"]
     else:
@@ -350,4 +358,59 @@ async def apply_learning_action(session, assessment_graph, student, sid, body: L
         )
     )
     await session.flush()
+    from api.progress_guidance_service import apply_plan_learning_event, queue_plan_refresh
+
+    if body.action in {"finish", "self_explain"}:
+        await apply_plan_learning_event(session, receipt_id=body.request_id, student_id=student.id)
+    elif body.action == "continue":
+        await queue_plan_refresh(session, student.id)
     return output
+
+
+async def start_planned_lesson(session, student, material, candidate):
+    """An isolated review session pins the full manifest and never skips another session."""
+    from database.models import QuizSession
+
+    active = (
+        await session.scalars(
+            select(LearningSession).where(
+                LearningSession.student_id == student.id, LearningSession.ended_at.is_(None)
+            )
+        )
+    ).all()
+    for current in active:
+        state = current.guided_state or {}
+        if state.get("quiz_id"):
+            quiz = await session.get(QuizSession, uuid.UUID(state["quiz_id"]))
+            if quiz and quiz.status == "in_progress":
+                raise HTTPException(
+                    409, "Selesaikan mini kuis yang sedang berjalan terlebih dahulu."
+                )
+    context = await resolve_tutoring_context(session, material.class_id, material.id, student)
+    units = learning_units(material.content)
+    state = {
+        "revision": 0,
+        "phase": "learning",
+        "scope": "self_explain" if candidate.kind == "self_explain" else "planned_review",
+        "language": student.preferred_language,
+        "material_version": material.content_version,
+        "unit_index": candidate.unit_index,
+        "units": units,
+        "unit_manifest": canonical_manifest(material).model_dump(),
+        "text": "",
+        "subject": context["subject_name"],
+    }
+    row = LearningSession(
+        student_id=student.id,
+        class_id=material.class_id,
+        material_id=material.id,
+        title=material.title,
+        mode="guided_tutoring",
+        guided_state=copy.deepcopy(state),
+    )
+    session.add(row)
+    await session.flush()
+    await teach(session, row, material, student, state, "teach")
+    row.guided_state = copy.deepcopy(state)
+    await session.flush()
+    return row

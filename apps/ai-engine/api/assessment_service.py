@@ -14,7 +14,12 @@ import uuid
 from datetime import UTC, datetime
 from typing import Literal, cast
 
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from analytics.student_model import StudentModel
+from api.material_service import resolve_tutoring_context
 from database.models import (
     AssessmentSubmission,
     ClassMaterial,
@@ -26,7 +31,6 @@ from database.models import (
     QuizSession,
     User,
 )
-from fastapi import HTTPException
 from graphs.state import KODMODState, build_learning_profile, initial_state
 from models.quiz import (
     QuizQuestionOut,
@@ -36,10 +40,6 @@ from models.quiz import (
     QuizSubmitRequest,
     QuizSubmitResponse,
 )
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.material_service import resolve_tutoring_context
 
 # Durable learning JSON, excluding provider metadata and reducer messages.
 STATE_KEYS = (
@@ -213,7 +213,8 @@ async def start_assessment(
     if len(questions) != body.n_questions:
         raise ValueError("Graph did not generate a valid quiz")
     for question in questions:
-        question["question_id"] = str(as_uuid(question.get("question_id")) or uuid.uuid4())
+        # Provider/cached question identifiers are never shared between owned sessions.
+        question["question_id"] = str(uuid.uuid4())
         cid = as_uuid(question.get("concept_id"))
         if context:
             allowed = {c["id"] for c in state["approved_material_concepts"]}
@@ -606,4 +607,8 @@ async def submit_assessment(
             cumulative,
         )
     await session.flush()
+    if complete:
+        from api.progress_guidance_service import queue_plan_refresh
+
+        await queue_plan_refresh(session, student.id)
     return response

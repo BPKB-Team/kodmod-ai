@@ -2,9 +2,10 @@
 
 from typing import TypedDict
 
+from langgraph.graph import END, START, StateGraph
+
 from agents.planner_agent import fallback_plan, planner_node, validate_plan_proposal
 from agents.recommendation_agent import recommendations_from_plan
-from langgraph.graph import END, START, StateGraph
 from models.progress_guidance import (
     GuidanceSnapshot,
     PlanProposal,

@@ -19,20 +19,23 @@ class LearningAction(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     request_id: uuid.UUID
     revision: int = Field(ge=0, strict=True)
-    action: Literal["question", "continue", "repeat", "quiz", "check", "finish"]
+    action: Literal["question", "continue", "repeat", "quiz", "check", "finish", "self_explain"]
     text: str | None = Field(default=None, min_length=1, max_length=4000)
     language: Literal["id", "en"] = "id"
 
     @model_validator(mode="after")
     def validate_question(self):
-        if self.action == "question" and not self.text:
+        if self.action == "self_explain" and len(self.text or "") < 20:
+            raise ValueError("Jelaskan pemahamanmu sedikit lebih rinci, minimal 20 karakter.")
+        if self.action in {"question", "self_explain"} and not self.text:
             raise ValueError("Tuliskan pertanyaan terlebih dahulu.")
-        if self.action != "question" and self.text is not None:
+        if self.action not in {"question", "self_explain"} and self.text is not None:
             raise ValueError("Teks hanya dikirim untuk pertanyaan.")
         return self
 
 
 class LearningOut(BaseModel):
+    scope: Literal["full_material", "planned_review", "self_explain"] = "full_material"
     learning_progress: dict | None = None
     session_id: uuid.UUID
     revision: int

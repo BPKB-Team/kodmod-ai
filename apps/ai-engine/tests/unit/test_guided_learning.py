@@ -6,6 +6,11 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
+from fastapi import FastAPI
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
+
 from api import learning_service
 from api.dependencies import current_user, db_session
 from api.routes import (
@@ -17,11 +22,6 @@ from api.routes import (
     quiz,
 )
 from database import models
-from fastapi import FastAPI
-from sqlalchemy import func, select, text
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlalchemy.pool import NullPool
-
 from tests.assessment_test import AssessmentGraph
 
 
@@ -60,6 +60,8 @@ async def learning_http(monkeypatch):
         "material_progress",
         "learning_action_receipts",
         "interaction_logs",
+        "learning_plans",
+        "learning_plan_steps",
         "quiz_sessions",
         "quiz_questions",
         "quiz_attempts",

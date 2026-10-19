@@ -11,6 +11,12 @@ import json
 import uuid
 from datetime import UTC, datetime
 
+from fastapi import HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from api.quiz_points import points_for_score
+from api.quiz_policy import QuizPolicy, decide_transition
 from database.models import (
     AssessmentSubmission,
     Concept,
@@ -22,13 +28,7 @@ from database.models import (
     QuizSession,
     User,
 )
-from fastapi import HTTPException
 from models.quiz import QuizActionRequest, QuizInteractionView, QuizSubmitResponse
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.quiz_points import points_for_score
-from api.quiz_policy import QuizPolicy, decide_transition
 
 
 def fingerprint(body, exclude):
@@ -42,10 +42,9 @@ def fingerprint(body, exclude):
 
 
 def interaction(owned: QuizSession) -> QuizInteractionView:
-    from models.quiz import ScoreSummary
-
     from api.assessment_service import question_out
     from api.quiz_points import session_result_text
+    from models.quiz import ScoreSummary
 
     state = owned.assessment_state
     index = state.get("current_question_index", 0)
@@ -417,4 +416,8 @@ async def apply_quiz_action(
         )
     )
     await session.flush()
+    if owned.status == "completed":
+        from api.progress_guidance_service import apply_plan_learning_event
+
+        await apply_plan_learning_event(session, receipt_id=body.action_id, student_id=student.id)
     return response

@@ -137,6 +137,9 @@ async def update_material(
     await session.flush()
     if material.published and material.rag_status != "ready":
         await enqueue_material(session, material)
+    from api.progress_guidance_service import queue_affected_plans
+
+    await queue_affected_plans(session, classroom.id)
     await session.commit()
     return catalog_item(material, classroom, teacher, content=True)
 

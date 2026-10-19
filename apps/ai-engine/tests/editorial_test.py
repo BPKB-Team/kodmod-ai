@@ -49,6 +49,8 @@ async def editorial_http(request):
         "assignment_attempts",
         "assignment_answers",
         "audit_events",
+        "learning_plans",
+        "learning_plan_steps",
     }
     async with engine.begin() as connection:
         if not pg:

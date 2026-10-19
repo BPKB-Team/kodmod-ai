@@ -1,5 +1,6 @@
 """Typed facts, bounded planner proposals and deterministic public recommendations."""
 
+import uuid
 from datetime import datetime
 from typing import Any, Literal
 
@@ -20,7 +21,7 @@ class PlanCandidate(BaseModel):
     material_title: str
     concept_id: str | None = None
     unit_id: str
-    unit_index: int
+    unit_index: int = Field(ge=0)
     content_version: int
     mapping_version: int
     unit_manifest_hash: str
@@ -70,3 +71,16 @@ class RecommendationView(BaseModel):
     reason_text: str
     estimated_minutes: int
     href: str
+
+
+class GuidanceRefreshRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: uuid.UUID
+    expected_revision: int = Field(ge=0, strict=True)
+    timezone: str = Field(default="UTC", min_length=1, max_length=80)
+
+
+class PlanStepActionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    request_id: uuid.UUID
+    expected_revision: int = Field(ge=0, strict=True)

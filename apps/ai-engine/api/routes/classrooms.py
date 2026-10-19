@@ -6,17 +6,6 @@ Every nested resource repeats the class membership check on the server.
 import uuid
 from datetime import UTC, datetime
 
-from database.models import (
-    BackgroundJob,
-    ClassActivity,
-    ClassMaterial,
-    Classroom,
-    Enrollment,
-    MaterialImport,
-    MaterialProgress,
-    Subject,
-    User,
-)
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, select
@@ -34,6 +23,17 @@ from api.material_concepts import (
     select_subject,
 )
 from api.material_imports import safe_filename
+from database.models import (
+    BackgroundJob,
+    ClassActivity,
+    ClassMaterial,
+    Classroom,
+    Enrollment,
+    MaterialImport,
+    MaterialProgress,
+    Subject,
+    User,
+)
 
 router = APIRouter(tags=["classes"])
 
@@ -344,6 +344,9 @@ async def update_class(
     for material in changed_materials:
         if material.published and not row.is_archived:
             await enqueue_material(session, material)
+    from api.progress_guidance_service import queue_affected_plans
+
+    await queue_affected_plans(session, class_id)
     await session.commit()
     return result
 
@@ -386,6 +389,9 @@ async def review_mapping(
     result = await mapping_out(session, material, classroom)
     if material.published:
         await enqueue_material(session, material)
+    from api.progress_guidance_service import queue_affected_plans
+
+    await queue_affected_plans(session, class_id)
     await session.commit()
     return result
 
@@ -501,6 +507,10 @@ async def remove_member(
         raise HTTPException(404, "Anggota tidak ditemukan.")
     await session.delete(member)
     record(session, row, user, "member.removed", student_id)
+    await session.flush()
+    from api.progress_guidance_service import queue_plan_refresh
+
+    await queue_plan_refresh(session, student_id)
 
 
 @router.post("/{class_id}/materials", status_code=201)
@@ -520,6 +530,9 @@ async def create_material(
     record(session, row, user, "material.created", material.id)
     if material.published:
         await enqueue_material(session, material)
+    from api.progress_guidance_service import queue_affected_plans
+
+    await queue_affected_plans(session, class_id)
     await session.commit()
     return material_info(material)
 
@@ -770,6 +783,9 @@ async def edit_material(
     await session.flush()
     if row.published and row.rag_status != "ready":
         await enqueue_material(session, row)
+    from api.progress_guidance_service import queue_affected_plans
+
+    await queue_affected_plans(session, class_id)
     await session.commit()
     return material_info(row)
 

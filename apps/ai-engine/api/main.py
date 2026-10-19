@@ -53,6 +53,7 @@ from api.routes import (
     exercise,
     health,
     learning,
+    progress_guidance,
     quiz,
     student,
     subjects,
@@ -172,6 +173,7 @@ app.include_router(admin_materials.router, prefix="/admin")
 app.include_router(subjects.router, prefix="/subjects")
 app.include_router(subjects.documents_router, prefix="/documents")
 app.include_router(analytics.router, prefix="/analytics")
+app.include_router(progress_guidance.router, prefix="/analytics")
 app.include_router(exercise.router, prefix="/exercise", tags=["exercise"])
 app.include_router(content.router, prefix="/content", tags=["content"])
 app.include_router(voice.router, prefix="/voice", tags=["voice"])

@@ -32,6 +32,10 @@ async def keep_lease(job):
 
 
 async def process(job):
+    if job.kind == "progress_plan":
+        from api.progress_guidance_worker import process_progress_plan
+
+        return await process_progress_plan(job)
     if job.kind == "material_import":
         async with async_session() as session:
             artifact = await session.get(MaterialImport, job.target_id)
@@ -158,6 +162,10 @@ async def run_job(job):
             row = await session.get(ClassMaterial, job.target_id)
             classroom = await session.get(Classroom, row.class_id) if row else None
             actor_id = classroom.teacher_id if classroom else None
+        elif job.kind == "progress_plan":
+            import uuid
+
+            actor_id = uuid.UUID(job.payload["student_id"])
     with usage_context(
         request_id=job.id, actor_id=actor_id, target_id=job.target_id, target_type=job.kind
     ):
@@ -170,6 +178,9 @@ async def main():
     try:
         while True:
             HEARTBEAT_PATH.touch()
+            from api.progress_guidance_worker import reconcile_due_plans
+
+            await reconcile_due_plans()
             job = await jobs.claim()
             if job:
                 await run_job(job)
