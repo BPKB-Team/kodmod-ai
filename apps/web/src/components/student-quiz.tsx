@@ -12,6 +12,7 @@ import type { QuizQuestion, QuizStartResponse, QuizSubmitRequest, QuizRecoveryRe
 import type { StudentMaterial } from "@/lib/class-types";
 import { useQuizExitGuard } from "./use-quiz-exit-guard";
 import { prepareQuizSubmission, quizProgress, readQuizSubmissionResponse, submissionFailureAction } from "@/lib/quiz-submission.mjs";
+import { quizPointsLabel, legacyItemPointsLabel } from "@/lib/quiz-points-display";
 import { prepareQuizAction, readQuizInteraction, quizUiState } from "@/lib/quiz-actions.mjs";
 import { VoiceControls } from "./voice-controls";
 import { LoadingStatus } from "./loading-feedback";
@@ -54,7 +55,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
   const [restartRequired, setRestartRequired] = useState(false);
   const [answerAttempt, setAnswerAttempt] = useState(0);
   const [answer, setAnswer] = useState("");
-  const [feedback, setFeedback] = useState(initialSession?.last_review ?? initialSession?.last_result?.feedback ?? "");
+  const [feedback, setFeedback] = useState(initialSession && initialSession.policy_version !== 2 && initialSession.status === "completed" ? t("Latihan selesai.") : initialSession?.last_review ?? initialSession?.last_result?.feedback ?? "");
   const [interaction, setInteraction] = useState<QuizInteractionView>(initialSession ?? {});
   const [actionBusy, setActionBusy] = useState(false);
   const [pendingActionKind, setPendingActionKind] = useState<"hint" | "advance" | null>(null);
@@ -62,8 +63,8 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
   const heading = useRef<HTMLHeadingElement>(null);
   const [isCorrect, setIsCorrect] = useState(initialSession?.last_result?.is_correct ?? false);
   const [score, setScore] = useState(initialSession?.last_result?.score ?? 0);
-  const [cumulativeScore, setCumulativeScore] = useState(initialSession?.last_result?.cumulative_score ?? 0);
-  const [summary, setSummary] = useState("");
+  const [itemPoints, setItemPoints] = useState<number | null>(initialSession?.last_result?.item_points ?? null);
+  const [summary, setSummary] = useState(initialSession?.policy_version === 2 ? initialSession.final_summary ?? "" : "");
   const [count, setCount] = useState("5");
   const [difficulty, setDifficulty] = useState("adaptive");
   const [error, setError] = useState("");
@@ -119,7 +120,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
       setSummary("");
       setAnswer("");
       setNextQuestion(null);
-      setCumulativeScore(0);
+      setItemPoints(null);
       const payload: Record<string, number | string> = { n_questions: Number(count) };
       payload.class_id = selectedMaterial.class_id;
       payload.material_id = selectedMaterial.id;
@@ -172,14 +173,14 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
       setSubmissionPending(false);
       setInteraction(result);
       setScore(result.score);
-      setCumulativeScore(result.cumulative_score);
-      setFeedback(result.feedback);
+      setItemPoints(result.item_points ?? null);
+      setFeedback(result.quiz_complete && result.policy_version !== 2 ? t("Latihan selesai.") : result.feedback);
       setIsCorrect(result.is_correct);
       setNextQuestion(result.next_question);
-      setSummary(result.final_summary || "");
+      setSummary(result.policy_version === 2 ? result.final_summary || "" : t("Latihan selesai."));
       setPhase(result.quiz_complete ? "complete" : "review");
       if (result.quiz_complete) {
-        completionMessage = result.final_summary || "Latihan selesai. Terima kasih sudah mencoba.";
+        completionMessage = result.policy_version === 2 ? result.final_summary || "Latihan selesai." : t("Latihan selesai.");
       }
     } catch (caught) {
       const action = pendingSubmission.current ? submissionFailureAction(caught) : "edit";
@@ -212,6 +213,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
       pendingAction.current = null;
       setPendingActionKind(null);
       setInteraction(result);
+      setSummary(result.final_summary ?? "");
       setQuestion(result.current_question ?? result.review_question ?? question);
       setFeedback(result.hint_text ?? (result.question_state === "complete" ? result.last_review ?? "" : ""));
       if (action === "advance") { setAnswer(""); beginAnswer(); }
@@ -293,7 +295,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
               <strong><UiText>{"Soal "}</UiText>{questionNumber}<UiText>{" dari "}</UiText>{totalQuestions}
               </strong>
             </div>
-            <span className="quiz-score-label"><UiText>{"Skor sementara "}</UiText>{Math.round(cumulativeScore * 100)}%</span>
+            {v2 && interaction.score_summary && <span className="quiz-score-label">{quizPointsLabel(interaction.score_summary, language)}</span>}
             <progress value={answeredQuestions} max={totalQuestions || 1} aria-label={`${answeredQuestions} dari ${totalQuestions} soal selesai`} />
             {!embedded && phase === "complete" && <button type="button" className="button secondary small" onClick={() => void startQuiz()}>
               <RefreshCw size={16} aria-hidden="true" /><UiText>{"Latihan baru"}</UiText></button>
@@ -355,7 +357,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                 <div className="quiz-feedback-heading">
                   {isCorrect ? <CheckCircle2 size={22} aria-hidden="true" /> : <XCircle size={22} aria-hidden="true" />}
                   <strong>{isCorrect ? <UiText>{"Jawabanmu tepat"}</UiText> : <UiText>{"Mari kita periksa lagi"}</UiText>}</strong>
-                  <span>{Math.round(score * 100)}<UiText>{" poin"}</UiText></span>
+                  {v2 ? itemPoints !== null && <span>{itemPoints} / 100 <UiText>{"poin"}</UiText></span> : <span>{legacyItemPointsLabel(score, language)}</span>}
                 </div>
                 <p>{feedback}</p>
                 {phase === "complete" ? (

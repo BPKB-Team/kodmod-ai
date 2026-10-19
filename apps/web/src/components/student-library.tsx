@@ -1,4 +1,5 @@
 "use client";
+import { materialLearningLabel } from "@/lib/quiz-points-display";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 
@@ -21,7 +22,7 @@ export function StudentLibrary({
 }: {
   materials: StudentMaterial[];
 }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [classId, setClassId] = useState("");
@@ -37,8 +38,8 @@ export function StudentLibrary({
         .includes(query.trim().toLocaleLowerCase("id")) &&
       (status === "all" ||
         (status === "saved" && m.progress.bookmarked) ||
-        (status === "done" && m.progress.completed) ||
-        (status === "pending" && !m.progress.completed)),
+        (status === "done" && m.learning_progress?.status === "completed") ||
+        (status === "pending" && m.learning_progress?.status !== "completed")),
   );
   return (
     <>
@@ -114,7 +115,7 @@ export function StudentLibrary({
               className="panel student-material-card student-tactile-card"
               href={`/siswa/tutor?class_id=${m.class_id}&material_id=${m.id}`}
               key={m.id}
-              aria-label={`${m.title}. Kelas ${m.class_name}. Mata pelajaran ${m.subject}. ${m.progress.completed ? "Sudah dipelajari." : "Belum selesai."} Buka ruang belajar bersama Tutor AI.`}
+              aria-label={`${m.title}. Kelas ${m.class_name}. Mata pelajaran ${m.subject}. ${materialLearningLabel(m.learning_progress, language)}. Buka ruang belajar bersama Tutor AI.`}
             >
               <div className="student-material-top">
                 <span className="class-symbol">
@@ -129,12 +130,9 @@ export function StudentLibrary({
               <p>{m.class_name}</p>
               <div className="student-material-bottom">
                 <span>
-                  {m.progress.completed ? (
-                    <>
-                      <CheckCircle2 size={16} aria-hidden="true" /><UiText>{"Sudah dipelajari"}</UiText></>
-                  ) : (
-                    <UiText>{"Belajar dengan Tutor"}</UiText>
-                  )}
+                  {m.learning_progress?.status === "completed" && <CheckCircle2 size={16} aria-hidden="true" />}
+                  {materialLearningLabel(m.learning_progress, language)}
+                  {m.progress.completed && <small> · {t("Selesai dibaca")}</small>}
                 </span>
                 <ArrowUpRight size={19} aria-hidden="true" />
               </div>

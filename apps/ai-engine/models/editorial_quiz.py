@@ -8,6 +8,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from models.quiz import ScoreSummary
+
 
 class Input(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
@@ -140,6 +142,7 @@ class VersionOut(BaseModel):
 
 
 class AssignmentOut(BaseModel):
+    score_summary: ScoreSummary | None = None
     id: uuid.UUID
     version_id: uuid.UUID
     version: int
@@ -176,6 +179,7 @@ class AttemptOut(BaseModel):
 
 
 class ResultOut(BaseModel):
+    score_summary: ScoreSummary | None = None
     attempt_id: uuid.UUID
     assignment_id: uuid.UUID
     score: float

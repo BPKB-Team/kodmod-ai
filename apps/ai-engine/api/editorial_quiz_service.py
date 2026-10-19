@@ -10,12 +10,6 @@ import logging
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import HTTPException
-from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.assignment_mastery import apply_assignment_mastery
 from database.models import (
     AssignmentAnswer,
     AssignmentAttempt,
@@ -30,6 +24,7 @@ from database.models import (
     Subject,
     User,
 )
+from fastapi import HTTPException
 from models.editorial_quiz import (
     AssignInput,
     AssignmentOut,
@@ -42,6 +37,11 @@ from models.editorial_quiz import (
     StudentQuestion,
     VersionOut,
 )
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from api.assignment_mastery import apply_assignment_mastery
 
 log = logging.getLogger(__name__)
 
@@ -188,6 +188,7 @@ async def assignment_out(session, assignment, version=None, classroom=None, atte
     version = version or await session.get(QuizDraftVersion, assignment.version_id)
     classroom = classroom or await session.get(Classroom, assignment.class_id)
     return AssignmentOut(
+        score_summary=formal_points(attempt) if attempt else None,
         id=assignment.id,
         version_id=version.id,
         version=version.version,
@@ -423,6 +424,7 @@ async def result_out(session, assignment, attempt):
                 }
             )
     return ResultOut(
+        score_summary=formal_points(attempt),
         attempt_id=attempt.id,
         assignment_id=assignment.id,
         score=attempt.score,
@@ -431,6 +433,24 @@ async def result_out(session, assignment, attempt):
         submitted_at=utc(attempt.submitted_at),
         feedback_released=release,
         review=review,
+    )
+
+
+def formal_points(attempt):
+    if attempt.state != "submitted" or attempt.score is None or attempt.correct_count is None:
+        return None
+    from models.quiz import ScoreSummary
+
+    return ScoreSummary.model_validate(
+        {
+            "points_earned": 100 * attempt.correct_count,
+            "points_possible": 100 * attempt.total_questions,
+            "points_per_question": 100,
+            "answered_questions": attempt.total_questions,
+            "total_questions": attempt.total_questions,
+            "skipped_questions": 0,
+            "assisted_questions": 0,
+        }
     )
 
 

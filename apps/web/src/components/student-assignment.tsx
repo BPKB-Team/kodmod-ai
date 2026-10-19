@@ -1,4 +1,5 @@
 "use client";
+import { quizPointsLabel } from "@/lib/quiz-points-display";
 import { UiText, useI18n, UiDate } from "@/components/language-provider";
 
 
@@ -90,7 +91,7 @@ export function StudentAssignment({
   initialAttempt: AssignmentAttempt | null;
   initialResult: AssignmentResult | null;
 }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const [attempt, setAttempt] = useState(initialAttempt);
   const [result, setResult] = useState(initialResult);
   const [index, setIndex] = useState(0);
@@ -279,8 +280,7 @@ export function StudentAssignment({
           <span className="editorial-kicker"><UiText>{"TUGAS SELESAI"}</UiText></span>
           <h2><UiText>{"Terima kasih sudah mencoba."}</UiText></h2>
           <div className="editorial-final-score">
-            {result.score}
-            <span>/100</span>
+            {result.score_summary ? quizPointsLabel(result.score_summary, language) : `${result.correct_count} / ${result.total_questions} ${t("jawaban benar")}`}
           </div>
           <p>
             {result.correct_count}<UiText>{" dari "}</UiText>{result.total_questions}<UiText>{" jawaban benar."}</UiText></p>

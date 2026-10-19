@@ -8,7 +8,14 @@ export type QuizQuestion = {
 };
 
 export type QuizActionRequest = { action_id:string; question_id:string; action:"hint"|"advance" };
+export type ScoreSummary = {
+  points_earned:number; points_possible:number; points_per_question:100;
+  answered_questions:number; total_questions:number; skipped_questions:number; assisted_questions:number;
+};
 export type QuizInteractionView = {
+  score_summary?: ScoreSummary | null;
+  score_presentation?: "session_total"|"legacy_item_only";
+  final_summary?: string|null;
   policy_version?: 1|2;
   question_state?: "answering"|"review"|"complete";
   available_actions?: ("answer"|"hint"|"advance")[];
@@ -33,6 +40,7 @@ export type QuizSubmitRequest = {
 };
 
 export type QuizSubmitResponse = QuizInteractionView & {
+  item_points?: number|null;
   score: number;
   is_correct: boolean;
   feedback: string;

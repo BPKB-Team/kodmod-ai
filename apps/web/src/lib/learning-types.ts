@@ -1,6 +1,8 @@
 import type { QuizRecoveryResponse } from "./quiz-types";
+import type { MaterialLearningProgress } from "./class-types";
 
 export type LearningSession = {
+  learning_progress?: MaterialLearningProgress | null;
   session_id: string;
   revision: number;
   phase: "learning" | "quiz" | "completed";

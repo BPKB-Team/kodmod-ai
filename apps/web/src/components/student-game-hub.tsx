@@ -42,8 +42,8 @@ export function StudentGameHub({
   const { t } = useI18n();
   const router = useRouter();
   const activeClasses = classes.filter((c) => !c.is_archived);
-  const completedCount = materials.filter((m) => m.progress?.completed).length;
-  const nextMaterial = materials.find((m) => !m.progress?.completed);
+  const completedCount = materials.filter((m) => m.learning_progress?.status === "completed").length;
+  const nextMaterial = materials.find((m) => m.learning_progress?.status !== "completed");
 
   // References to game pad anchor elements for arrow-key spatial navigation
   const padRefs = useRef<(HTMLAnchorElement | null)[]>([]);

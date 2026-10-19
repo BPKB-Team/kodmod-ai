@@ -54,6 +54,15 @@ OUTPUT - JSON ONLY:
 
 
 async def recommendation_node(state: KODMODState) -> dict[str, Any]:
+    if (
+        state.get("assessment_managed")
+        and state.get("presentation_context", "session") == "session"
+    ):
+        return {
+            "generated_response": state.get("generated_response", ""),
+            "next_action": "accessibility_polish",
+            "last_node": "recommendation",
+        }
     summary = state.get("analytics_summary", {})
     profile = state.get("learning_profile", {})
     language = profile.get("language", "id")

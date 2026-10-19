@@ -27,6 +27,7 @@ from models.quiz import QuizActionRequest, QuizInteractionView, QuizSubmitRespon
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.quiz_points import points_for_score
 from api.quiz_policy import QuizPolicy, decide_transition
 
 
@@ -267,6 +268,8 @@ async def submit_v2(session, graph, student, body, owned):
     )
     if decision.close_question:
         feedback = review(question, attempt, english=english)
+    elif final.get("hint_text"):
+        feedback = final["hint_text"]
     attempt["feedback"] = feedback
     attempt["response_latency_ms"] = body.response_latency_ms
     assisted = dict(state.get("first_answer_assisted", {}))
@@ -308,7 +311,7 @@ async def submit_v2(session, graph, student, body, owned):
     session.add(receipt)
     await session.flush()
     if decision.close_question:
-        await finalize_question_outcome(session, owned, body.question_id)
+        outcome = await finalize_question_outcome(session, owned, body.question_id)
         state["score_summary"] = owned.assessment_state["score_summary"]
         state.update(
             current_question_index=index + 1,
@@ -318,6 +321,7 @@ async def submit_v2(session, graph, student, body, owned):
         )
     owned.assessment_state = snapshot(state)
     response = QuizSubmitResponse(
+        item_points=points_for_score(outcome.first_score) if decision.close_question else None,
         **interaction(owned).model_dump(),
         score=score,
         is_correct=correct,

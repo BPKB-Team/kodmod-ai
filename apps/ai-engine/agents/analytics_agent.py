@@ -65,7 +65,7 @@ async def analytics_node(state: KODMODState) -> dict[str, Any]:
                 if language == "en"
                 else "Hasil latihan tersimpan. Perkembangan belajarmu bisa dilihat di halaman Progres."
             )
-            if state.get("quiz_policy_version", 1) == 2
+            if state.get("presentation_context", "session") == "session"
             else (
                 f"Practice complete. Your score is {round(preview['avg_quiz_score'] * 100)} percent."
                 if language == "en"
@@ -114,7 +114,15 @@ async def analytics_node(state: KODMODState) -> dict[str, Any]:
         "recommendations": [],
     }
 
-    spoken = generate_student_spoken_summary(raw, language=language)
+    spoken = (
+        generate_student_spoken_summary(raw, language=language)
+        if state.get("presentation_context", "session") == "progress"
+        else (
+            f"You have {raw.get('n_sessions', 0)} recorded learning sessions. Details are available on Progress."
+            if language == "en"
+            else f"Tercatat {raw.get('n_sessions', 0)} sesi belajar. Rincian perkembanganmu tersedia di halaman Progres."
+        )
+    )
 
     log.info(
         "Analytics for %s: mastery=%.2f sessions=%d engagement=%.2f",

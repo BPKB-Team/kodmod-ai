@@ -16,6 +16,13 @@ export type AnalyticsRecommendation = {
 };
 
 export type StudentAnalytics = {
+  mastery_available?: boolean; assessed_concepts?: number; mapped_concepts?: number; unmapped_materials?: number;
+  materials_started?: number; materials_completed?: number; completed_units?: number; total_units?: number;
+  n_official_questions?: number; n_support_attempts?: number; n_assisted_questions?: number;
+  timezone?: string; window_start?: string | null; window_end?: string; last_activity_at?: string | null;
+  learning_materials?: Array<{id:string;title:string;status:string;completed_units:number;total_units:number}>;
+  duration_kind?: string;
+
   student_id: string;
   student_name: string;
   window: AnalyticsWindow;

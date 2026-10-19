@@ -11,21 +11,21 @@ export async function StudentOverview() {
     "student",
     "/student/materials",
   );
-  const done = materials.filter((m) => m.progress.completed).length;
-  const next = materials.find((m) => !m.progress.completed);
+  const done = materials.filter((m) => m.learning_progress?.status === "completed").length;
+  const next = materials.find((m) => m.learning_progress?.status !== "completed");
   return (
     <section className="panel student-overview" aria-label={t("Ringkasan bacaan")}>
       <div>
         <span className="student-overview-label">
           <BookOpen size={18} aria-hidden="true" /><UiText>{"Perjalanan bacaanmu"}</UiText></span>
         <h2>
-          {done}<UiText>{" dari "}</UiText>{materials.length}<UiText>{" materi ditandai selesai"}</UiText></h2>
+          {done}<UiText>{" dari "}</UiText>{materials.length}<UiText>{" materi selesai bersama Tutor"}</UiText></h2>
         <progress
           value={done}
           max={materials.length || 1}
-          aria-label={t("{count} dari {total} materi ditandai selesai", { count: done, total: materials.length })}
+          aria-label={t("{count} dari {total} materi selesai bersama Tutor", { count: done, total: materials.length })}
         />
-        <p><UiText>{"Penanda pribadi untuk mengatur belajar, bukan nilai penguasaan materi."}</UiText></p>
+        <p><UiText>{"Penyelesaian bersama Tutor dicatat per bagian materi. Penguasaan konsep dinilai lewat latihan."}</UiText></p>
       </div>
       <div className="student-overview-links">
         {next && (

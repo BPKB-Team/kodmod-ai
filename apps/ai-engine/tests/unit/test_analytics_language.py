@@ -1,7 +1,6 @@
 """Localized deterministic analytics must work without an LLM call."""
 
 import pytest
-
 from analytics.insights import (
     generate_cohort_alerts,
     generate_insights,
@@ -66,7 +65,12 @@ async def test_agent_managed_assessment_notice_uses_english():
     from agents.analytics_agent import analytics_node
 
     result = await analytics_node(
-        {"assessment_managed": True, "language": "en", "cumulative_quiz_score": 1}
+        {
+            "assessment_managed": True,
+            "language": "en",
+            "cumulative_quiz_score": 1,
+            "presentation_context": "progress",
+        }
     )
     assert result["generated_response"] == "Practice complete. Your score is 100 percent."
 
@@ -100,3 +104,12 @@ async def test_no_llm_and_failed_polish_keep_the_selected_language(monkeypatch, 
     fallback = await generate_insights(data, audience=audience, language="en", use_llm=True)
     assert fallback == deterministic
     assert "past 30 days" in fallback["spoken"]
+
+
+async def test_session_summary_never_announces_percentage_statistics():
+    from agents.analytics_agent import analytics_node
+
+    result = await analytics_node(
+        {"assessment_managed": True, "language": "en", "cumulative_quiz_score": 1}
+    )
+    assert "percent" not in result["generated_response"] and "%" not in result["generated_response"]

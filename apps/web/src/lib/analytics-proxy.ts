@@ -20,8 +20,13 @@ export async function forwardStudentAnalytics(request: Request, spoken = false) 
 
   try {
     const suffix = spoken ? "/me/spoken" : "/me";
+    const timezone = new URL(request.url).searchParams.get("timezone");
+    if (timezone) {
+      try { if (timezone.length > 80) throw new Error(); new Intl.DateTimeFormat("en", {timeZone:timezone}); }
+      catch { return NextResponse.json({message:"Zona waktu tidak valid."},{status:422}); }
+    }
     const payload = await backend(
-      `/analytics${suffix}?window=${queryFor(request)}`,
+      `/analytics${suffix}?window=${queryFor(request)}${timezone ? `&timezone=${encodeURIComponent(timezone)}` : ""}`,
       current.token,
     );
     return NextResponse.json(payload);

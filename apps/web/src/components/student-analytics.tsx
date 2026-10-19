@@ -3,7 +3,7 @@ import { LoadingStatus } from "./loading-feedback";
 import { UiText, useI18n } from "@/components/language-provider";
 
 
-import { useState } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import {
   AlertTriangle,
   BookOpenCheck,
@@ -42,6 +42,12 @@ async function readJson<T>(response: Response, fallback: string) {
   return (await response.json()) as T;
 }
 
+function subscribeTimezone(listener: () => void) {
+  globalThis.window.addEventListener("focus", listener);
+  return () => globalThis.window.removeEventListener("focus", listener);
+}
+function browserTimezone() { return Intl.DateTimeFormat().resolvedOptions().timeZone; }
+
 export function StudentAnalytics({
   initial,
   initialSpoken,
@@ -55,7 +61,21 @@ export function StudentAnalytics({
   const [window, setWindow] = useState<AnalyticsWindow>(initial.window);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const hasConceptMastery = data.weak_concepts.length > 0 || data.strong_concepts.length > 0;
+  const hasConceptMastery = data.mastery_available ?? (data.weak_concepts.length > 0 || data.strong_concepts.length > 0);
+  const officialAnswers = data.n_official_questions ?? data.n_quiz_attempts;
+  const accuracyText = officialAnswers ? percent(data.quiz_accuracy) : t("Belum dinilai");
+  const timezone = useSyncExternalStore(subscribeTimezone, browserTimezone, () => initial.timezone ?? "UTC");
+  const query = (period: AnalyticsWindow) => new URLSearchParams({window:period, timezone}).toString();
+  useEffect(() => {
+    if ((data.timezone ?? "UTC") === timezone) return;
+    let active = true;
+    const params = new URLSearchParams({window, timezone});
+    void Promise.all([
+      fetch(`/api/analytics/me?${params}`, {cache:"no-store"}).then(r => readJson<StudentAnalytics>(r,"Data progres belum dapat dimuat.")),
+      fetch(`/api/analytics/me/spoken?${params}`, {cache:"no-store"}).then(r => readJson<StudentAnalyticsSpoken>(r,"Ringkasan suara belum dapat dimuat.")),
+    ]).then(([summary, audio]) => { if (active) { setData(summary); setSpoken(audio.spoken); } }).catch(() => { /* Explicit refresh remains available. */ });
+    return () => { active = false; };
+  }, [data.timezone, window, timezone]);
   const hasLearningActivity = data.n_sessions > 0 || data.n_quiz_attempts > 0;
 
   async function changeWindow(next: AnalyticsWindow) {
@@ -65,8 +85,8 @@ export function StudentAnalytics({
     setError("");
     try {
       const [summaryResponse, spokenResponse] = await Promise.all([
-        fetch(`/api/analytics/me?window=${next}`, { cache: "no-store" }),
-        fetch(`/api/analytics/me/spoken?window=${next}`, { cache: "no-store" }),
+        fetch(`/api/analytics/me?${query(next)}`, { cache: "no-store" }),
+        fetch(`/api/analytics/me/spoken?${query(next)}`, { cache: "no-store" }),
       ]);
       const summary = await readJson<StudentAnalytics>(
         summaryResponse,
@@ -90,10 +110,10 @@ export function StudentAnalytics({
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`/api/analytics/me?window=${window}`, { cache: "no-store" });
+      const response = await fetch(`/api/analytics/me?${query(window)}`, { cache: "no-store" });
       const next = await readJson<StudentAnalytics>(response, "Data progres belum dapat dimuat.");
       setData(next);
-      const spokenResponse = await fetch(`/api/analytics/me/spoken?window=${window}`, {
+      const spokenResponse = await fetch(`/api/analytics/me/spoken?${query(window)}`, {
         cache: "no-store",
       });
       const spokenPayload = await readJson<StudentAnalyticsSpoken>(
@@ -168,15 +188,15 @@ export function StudentAnalytics({
       </div>
 
       <div className="analytics-stat-grid">
-        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Akurasi latihan dan tugas")}: ${percent(data.quiz_accuracy)}. ${data.n_quiz_attempts} ${t("jawaban tercatat")}.`}>
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Akurasi latihan dan tugas")}: ${accuracyText}. ${officialAnswers} ${t("soal tercatat")}.`}>
           <span className="analytics-stat-icon blue"><BookOpenCheck size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Akurasi latihan dan tugas"}</UiText></span>
-          <strong>{percent(data.quiz_accuracy)}</strong>
-          <small>{data.n_quiz_attempts}<UiText>{" jawaban tercatat"}</UiText></small>
+          <strong>{accuracyText}</strong>
+          <small>{officialAnswers}<UiText>{" soal tercatat"}</UiText></small>
         </article>
-        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Waktu belajar")}: ${studyTimeLabel(data.total_minutes, language)}. ${data.interaction_count} ${t("interaksi dengan tutor")}.`}>
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Durasi sesi")}: ${studyTimeLabel(data.total_minutes, language)}. ${data.interaction_count} ${t("interaksi dengan tutor")}.`}>
           <span className="analytics-stat-icon purple"><Clock3 size={19} aria-hidden="true" /></span>
-          <span className="analytics-stat-label"><UiText>{"Waktu belajar"}</UiText></span>
+          <span className="analytics-stat-label"><UiText>{"Durasi sesi"}</UiText></span>
           <strong>{studyTimeLabel(data.total_minutes, language)}</strong>
           <small>{data.interaction_count}<UiText>{" interaksi dengan tutor"}</UiText></small>
         </article>
@@ -199,6 +219,14 @@ export function StudentAnalytics({
         <span><UiText>{"Jawaban tugas"}</UiText><strong>{data.n_assignment_answers ?? 0}</strong></span>
       </div>
 
+      {data.learning_materials && <article className="panel analytics-card">
+        <h3><UiText>{"Progres bersama Tutor"}</UiText></h3>
+        <p>{data.materials_completed ?? 0} <UiText>{"materi selesai"}</UiText> · {data.completed_units ?? 0} / {data.total_units ?? 0} <UiText>{"bagian selesai"}</UiText></p>
+        <progress value={data.completed_units ?? 0} max={data.total_units || 1} aria-label={t("Bagian materi selesai")} />
+        <p>{data.assessed_concepts ?? 0} <UiText>{"konsep memiliki bukti latihan"}</UiText>. {data.mapped_concepts ?? 0} <UiText>{"konsep terpetakan pada materi saat ini"}</UiText>.</p>
+        <p className="muted"><UiText>{"Selesai belajar dan penanda baca tidak menambah penguasaan konsep secara otomatis."}</UiText></p>
+        <small><UiText>{"Penguasaan konsep bersifat kumulatif; aktivitas mengikuti periode yang dipilih."}</UiText> {data.timezone}</small>
+      </article>}
       <div className="analytics-columns">
         <article className="panel analytics-card">
           <div className="analytics-card-heading">
@@ -223,7 +251,7 @@ export function StudentAnalytics({
             </div>
           ) : (
             <p className="analytics-empty"><UiText>{hasLearningActivity
-              ? "Aktivitasmu sudah tercatat. Fokus konsep tampil setelah materi terhubung dengan konsep yang disetujui."
+              ? "Aktivitasmu tercatat. Label konsep memerlukan setidaknya 3 soal mandiri dari 2 sesi."
               : "Belum ada konsep yang perlu perhatian khusus."}</UiText></p>
           )}
         </article>
@@ -251,7 +279,7 @@ export function StudentAnalytics({
             </div>
           ) : (
             <p className="analytics-empty"><UiText>{hasLearningActivity
-              ? "Aktivitasmu sudah tercatat. Konsep kuat tampil setelah materi terhubung dengan konsep yang disetujui."
+              ? "Kumpulkan beberapa jawaban mandiri untuk menilai kekuatan konsep secara lebih andal."
               : "Selesaikan satu latihan untuk melihat kekuatanmu."}</UiText></p>
           )}
         </article>

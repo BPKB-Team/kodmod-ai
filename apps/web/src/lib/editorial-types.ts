@@ -1,3 +1,4 @@
+import type { ScoreSummary } from "./quiz-types";
 export type Option = { id: string; label: string };
 export type StudentQuestion = {
   id: string;
@@ -51,6 +52,7 @@ export type QuizDraft = {
   assignments: Assignment[];
 };
 export type Assignment = {
+  score_summary?: ScoreSummary | null;
   id: string;
   version_id: string;
   version: number;
@@ -75,6 +77,7 @@ export type AssignmentAttempt = {
   answers: Record<string, string>;
 };
 export type AssignmentResult = {
+  score_summary?: ScoreSummary | null;
   attempt_id: string;
   assignment_id: string;
   score: number;

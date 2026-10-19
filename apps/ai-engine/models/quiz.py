@@ -88,6 +88,7 @@ class QuizSubmitRequest(BaseModel):
 
 
 class QuizSubmitResponse(QuizInteractionView):
+    item_points: int | None = Field(default=None, ge=0, le=100)
     score: float = Field(ge=0.0, le=1.0)
     is_correct: bool
     feedback: str

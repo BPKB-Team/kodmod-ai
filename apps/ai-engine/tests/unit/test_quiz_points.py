@@ -44,3 +44,28 @@ def test_skips_assisted_and_session_narration():
     assert "100" in session_result_text(summary, language="id")
     assert "%" not in session_result_text(summary, language="id")
     assert "percent" not in session_result_text(summary, language="en")
+
+
+async def test_formal_points_preserve_teacher_item_release():
+    import uuid
+    from datetime import UTC, datetime, timedelta
+    from unittest.mock import AsyncMock
+
+    from api.editorial_quiz_service import result_out
+
+    assignment = Outcome(
+        id=uuid.uuid4(), version_id=uuid.uuid4(), due_at=datetime.now(UTC) + timedelta(days=1)
+    )
+    attempt = Outcome(
+        id=uuid.uuid4(),
+        state="submitted",
+        score=50,
+        correct_count=1,
+        total_questions=2,
+        submitted_at=datetime.now(UTC),
+    )
+    db = Outcome(get=AsyncMock(return_value=Outcome(release_policy="after_due")))
+    result = await result_out(db, assignment, attempt)
+    assert result.score_summary.points_earned == 100
+    assert result.score_summary.points_possible == 200
+    assert not result.feedback_released and result.review == []

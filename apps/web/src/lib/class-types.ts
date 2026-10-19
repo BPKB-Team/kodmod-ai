@@ -12,6 +12,7 @@ export type Classroom = {
   created_at: string;
 };
 export type Material = {
+  learning_progress?: MaterialLearningProgress | null;
   progress?: ReadingProgress;
   id: string;
   title: string;
@@ -27,6 +28,15 @@ export type Material = {
   indexed_version?: number;
   mapping_version?: number;
   indexed_mapping_version?: number;
+};
+export type MaterialLearningProgress = {
+  content_version?: number;
+  unit_manifest_hash?: string;
+  completed_units: number;
+  total_units: number;
+  status: "not_started" | "in_progress" | "completed";
+  completed_at?: string | null;
+  last_activity_at?: string | null;
 };
 export type ReadingProgress = {
   completed: boolean;

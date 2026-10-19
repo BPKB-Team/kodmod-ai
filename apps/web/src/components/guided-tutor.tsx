@@ -1,4 +1,5 @@
 "use client";
+import { quizPointsLabel, materialLearningLabel } from "@/lib/quiz-points-display";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -143,6 +144,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
       <div className="guided-other-paths"><Link href="/siswa/latihan"><UiText>{"Asesmen mandiri"}</UiText><ArrowRight size={16} aria-hidden="true" /></Link><Link href="/siswa/tugas"><UiText>{"Tugas"}</UiText><ArrowRight size={16} aria-hidden="true" /></Link></div>
     </aside>
     <div className="guided-main" aria-busy={busy}>
+      {lesson?.learning_progress && <p className="info-note" role="status">{materialLearningLabel(lesson.learning_progress, language)}</p>}
       {error && <div className="alert error-message" role="alert"><p>{t(error)}</p>{uncertain && <Button type="button" variant="outline" disabled={busy} onClick={() => void act("repeat", true)}><UiText>{"Coba kirim kembali"}</UiText></Button>}</div>}
       {!lesson ? (
         <div className="guided-selection-container">
@@ -267,7 +269,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
           <div className="guided-explanation" role="region" aria-label={t("Penjelasan Tutor")}><p>{lesson.text}</p></div>
           <VoiceControls text={lesson.text} language={lesson.language} autoPlayKey={autoPlayKey} onTranscript={lesson.phase === "learning" && !busy && !uncertain ? setDraft : undefined} />
           <p className="guided-source"><BookOpen size={16} aria-hidden="true" /><UiText>{"Sumber"}</UiText>{`: ${lesson.source_filename || lesson.material_title}`}</p>
-          {lesson.quiz?.status === "completed" && <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><div><strong><UiText>{"Mini kuis selesai"}</UiText> · {Math.round((lesson.quiz.last_result?.cumulative_score ?? 0) * 100)}%</strong><p>{lesson.quiz.last_result?.feedback}</p></div></div>}
+          {lesson.quiz?.status === "completed" && <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><div><strong><UiText>{"Mini kuis selesai"}</UiText> · {lesson.quiz.score_summary ? quizPointsLabel(lesson.quiz.score_summary, language) : t("Hasil tersimpan")}</strong><p>{lesson.quiz.policy_version === 2 ? lesson.quiz.last_review : t("Hasil latihan tersimpan.")}</p></div></div>}
           {lesson.phase === "learning" ? <>
             <form onSubmit={(event) => { event.preventDefault(); void act("question"); }} className="guided-question-form"><label className="field"><UiText>{"Ada yang belum jelas?"}</UiText><Textarea value={draft} maxLength={4000} rows={3} aria-label={t("Tuliskan pertanyaan materi atau gunakan tombol suara.")} onChange={(event) => setDraft(event.target.value)} disabled={busy || uncertain} placeholder={t("Tuliskan pertanyaan atau gunakan tombol suara.")} /></label><Button type="submit" loading={busy && busyAction === "question"} loadingText={t("Menyiapkan jawaban…")} disabled={busy || uncertain || !draft.trim()}><Send size={17} aria-hidden="true" /><UiText>{"Tanyakan pada Tutor"}</UiText></Button></form>
             <footer className="guided-actions" aria-label={t("Langkah belajar berikutnya")}>{Object.entries(actions).filter(([action]) => lesson.available_actions.includes(action)).map(([action, { label, Icon }]) => <Button key={action} type="button" variant={action === "continue" || action === "finish" ? "default" : "outline"} className="guided-action-button" aria-label={t(label)} loading={busy && busyAction === action} loadingText={t("Memproses…")} disabled={busy || uncertain} onClick={() => void act(action)}><Icon size={17} aria-hidden="true" />{t(label)}</Button>)}</footer>

@@ -1,6 +1,17 @@
 // Interface copy only. Lesson text, quiz questions, and conversation turns keep
 // their original language. New interface strings belong here or in i18n.mjs.
 export const englishUi = {
+  "Hasil latihan tersimpan.": "Practice result saved.", "Hasil tersimpan": "Result saved",
+  "Durasi sesi": "Session duration", "soal tercatat": "recorded questions", " soal tercatat": " recorded questions",
+  "Progres bersama Tutor": "Progress with Tutor", "materi selesai": "materials completed", "bagian selesai": "sections completed",
+  "Bagian materi selesai": "Completed material sections", "konsep memiliki bukti latihan": "concepts have practice evidence",
+  "konsep terpetakan pada materi saat ini": "concepts are mapped to current materials",
+  "Selesai belajar dan penanda baca tidak menambah penguasaan konsep secara otomatis.": "Lesson completion and reading markers do not automatically increase concept mastery.",
+  "Penguasaan konsep bersifat kumulatif; aktivitas mengikuti periode yang dipilih.": "Concept mastery is cumulative; activity follows the selected period.",
+  "Aktivitasmu tercatat. Label konsep memerlukan setidaknya 3 soal mandiri dari 2 sesi.": "Your activity is recorded. Concept labels need at least 3 independent questions from 2 sessions.",
+  "Kumpulkan beberapa jawaban mandiri untuk menilai kekuatan konsep secara lebih andal.": "Collect more independent answers for a more reliable view of concept strengths.",
+  "Selesai dibaca": "Finished reading", "materi selesai bersama Tutor": "materials completed with Tutor",
+  "Penyelesaian bersama Tutor dicatat per bagian materi. Penguasaan konsep dinilai lewat latihan.": "Tutor completion is recorded per material section. Practice assesses concept mastery.",
   "Petunjuk": "Hint",
   "Lanjut soal": "Next question",
   "Selesaikan latihan": "Finish practice",

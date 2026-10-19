@@ -175,6 +175,7 @@ class KODMODState(TypedDict, total=False):
     assessment_managed: bool  # REST owns the database transaction and durable evidence
     assessment_kind: Literal["assessment", "tutor"]
     quiz_policy_version: int
+    hint_text: str | None
     score_summary: dict[str, Any]
     presentation_context: Literal["session", "progress"]
     material_version: int | None
