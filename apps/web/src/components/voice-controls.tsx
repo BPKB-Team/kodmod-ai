@@ -1,5 +1,4 @@
 "use client";
-import { LoadingStatus } from "./loading-feedback";
 import { Spinner } from "./ui/spinner";
 import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { Headphones, Mic, Pause, Play, Settings2, Square } from "lucide-react";
@@ -117,7 +116,6 @@ export function VoiceControls({ text, onTranscript, autoPlayKey, language: conte
       <button type="button" className="button secondary" onClick={stop} disabled={!active && capture === "idle"}><Square size={16} aria-hidden="true" />{t("Hentikan suara")}</button>
       <button type="button" className="button secondary" onClick={() => void play()} disabled={!text.trim() || busy || capture === "recording" || state === "loading"}>{t("Ulangi")}</button>
     </div>
-    <LoadingStatus active={busy} label={busyLabel} compact />
     <p className={`voice-status ${state === "error" || state === "blocked" ? "voice-status-error" : ""}`} role="status">
       {!busy && state !== "loading" && t(output.owner === owner && output.message ? output.message : message || (state === "playing" ? "Sedang membacakan." : state === "paused" ? "Pembacaan dijeda." : ""))}
     </p>
