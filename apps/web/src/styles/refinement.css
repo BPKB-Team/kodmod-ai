@@ -24,12 +24,49 @@
 .landing-refined .lp-floating-top { top: 13%; right: -10px; }
 .landing-refined .lp-floating-bottom { bottom: 14%; left: 0; }
 .landing-refined .lp-section-heading { align-items: end; margin-bottom: 42px; }
-.lp-capability-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 28px; }
-.lp-capability { padding: 24px 0; border-top: 1px solid #dbe6f4; }
-.lp-feature-icon { display: inline-flex; color: #2565e9; margin-bottom: 17px; }
-.lp-capability h3 { font-size: 1.03rem; font-weight: 700; margin: 0 0 12px; }
-.lp-capability p { margin: 0; font-size: .97rem; color: #52677f; line-height: 1.75; }
-.landing-refined .lp-student-art { background: #e7effa; }
+.landing-refined .lp-capability-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 24px; }
+.landing-refined .lp-capability {
+  padding: 26px 22px;
+  border: 2px solid #e2e8f0;
+  border-bottom: 4px solid #cbd5e1;
+  border-radius: 20px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+}
+.landing-refined .lp-capability:hover {
+  transform: translateY(-4px);
+  border-color: #3b82f6;
+  border-bottom-color: #2563eb;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+.landing-refined .lp-capability:focus-visible {
+  outline: 3px solid #f0b429 !important;
+  outline-offset: 2px !important;
+}
+.landing-refined .lp-feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #2563eb;
+  transition: transform 0.2s ease;
+}
+.landing-refined .lp-capability:hover .lp-feature-icon {
+  transform: scale(1.08);
+}
+.landing-refined .lp-capability:nth-child(2) .lp-feature-icon { background: #f5f3ff; border-color: #ddd6fe; color: #7c3aed; }
+.landing-refined .lp-capability:nth-child(3) .lp-feature-icon { background: #fffbeb; border-color: #fde68a; color: #d97706; }
+.landing-refined .lp-capability:nth-child(4) .lp-feature-icon { background: #ecfdf5; border-color: #a7f3d0; color: #059669; }
+.landing-refined .lp-capability h3 { font-size: 1.08rem; font-weight: 800; color: #0f172a; margin: 0 0 10px; }
+.landing-refined .lp-capability p { margin: 0; font-size: 0.95rem; color: #475569; line-height: 1.65; }
 .landing-refined .lp-cta .lp-actions { justify-content: center; }
 .auth-topbar { display: flex; justify-content: space-between; align-items: center; gap: 15px; width: 100%; }
 .auth-topbar .back-link { margin-bottom: 0; }

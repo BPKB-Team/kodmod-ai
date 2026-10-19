@@ -180,15 +180,17 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      <section id="tentang" className="lp-section lp-container">
-        <div className="lp-section-heading" data-voice-menu="heading-about"><h2>{t("Semua kebutuhan belajar,")}<br />{t("lebih mudah dijangkau.")}</h2><p>{t("Dirancang untuk siswa tunanetra dan low vision, dengan pendampingan guru.")}</p></div>
-        <div className="lp-capability-grid">
-          {[
-            [BookOpen, "Materi belajar", "Buka materi dari kelasmu dan lanjutkan bacaan dari bagian terakhir.", "feature-materials"],
-            [MessageCircle, "Tutor AI", "Bahas materi, minta contoh sederhana, dan dengarkan penjelasannya.", "feature-tutor"],
-            [ListChecks, "Latihan & penugasan", "Uji pemahaman melalui latihan dan kuis yang ditugaskan guru.", "feature-practice"],
-            [TrendingUp, "Progres belajar", "Lihat hasil belajar dan tentukan bagian yang perlu dilatih lagi.", "feature-progress"],
-          ].map(([Icon, title, copy, voiceKey]) => { const FeatureIcon = Icon as typeof BookOpen; return <article key={title as string} className="lp-capability" data-voice-menu={voiceKey as string} tabIndex={0}><span className="lp-feature-icon"><FeatureIcon size={24} aria-hidden="true" /></span><h3>{t(title as string)}</h3><p>{t(copy as string)}</p></article>; })}
+      <section id="tentang" className="lp-about-section">
+        <div className="lp-container lp-section">
+          <div className="lp-section-heading" data-voice-menu="heading-about"><h2>{t("Semua kebutuhan belajar,")}<br />{t("lebih mudah dijangkau.")}</h2><p>{t("Dirancang untuk siswa tunanetra dan low vision, dengan pendampingan guru.")}</p></div>
+          <div className="lp-capability-grid">
+            {[
+              [BookOpen, "Materi belajar", "Buka materi dari kelasmu dan lanjutkan bacaan dari bagian terakhir.", "feature-materials"],
+              [MessageCircle, "Tutor AI", "Bahas materi, minta contoh sederhana, dan dengarkan penjelasannya.", "feature-tutor"],
+              [ListChecks, "Latihan & penugasan", "Uji pemahaman melalui latihan dan kuis yang ditugaskan guru.", "feature-practice"],
+              [TrendingUp, "Progres belajar", "Lihat hasil belajar dan tentukan bagian yang perlu dilatih lagi.", "feature-progress"],
+            ].map(([Icon, title, copy, voiceKey]) => { const FeatureIcon = Icon as typeof BookOpen; return <article key={title as string} className="lp-capability" data-voice-menu={voiceKey as string} tabIndex={0}><span className="lp-feature-icon"><FeatureIcon size={24} aria-hidden="true" /></span><h3>{t(title as string)}</h3><p>{t(copy as string)}</p></article>; })}
+          </div>
         </div>
       </section>
       <section id="cara-belajar" className="lp-flow-section"><div className="lp-container lp-section">
@@ -202,22 +204,22 @@ export default async function HomePage() {
           ].map(([title, copy, stepKey], index) => <li key={title} data-voice-menu={stepKey} tabIndex={0}><span className="lp-step-number" aria-hidden="true">{index + 1}</span><div><h3>{t(title)}</h3><p>{t(copy)}</p></div></li>)}</ol>
         </div>
       </div></section>
-      <section id="untuk-guru" className="lp-container lp-section lp-teacher"><div>
+      <section id="untuk-guru" className="lp-teacher-section"><div className="lp-container lp-section lp-teacher"><div>
         <div data-voice-menu="section-teacher">
           <h2>{t("Siapkan pembelajaran.")}<br />{t("Dampingi setiap siswa.")}</h2>
           <p>{t("Kelola kelas, bagikan materi, dan siapkan kuis dengan review sebelum dipublikasikan. Pantau hasil siswa untuk menentukan langkah belajar berikutnya.")}</p>
         </div>
-        <ul className="lp-checks">{["Unggah materi dan atur publikasinya", "Review kuis, lalu tugaskan ke kelas", "Pantau hasil dan progres siswa"].map(copy => <li key={copy}><Check size={18} aria-hidden="true" />{t(copy)}</li>)}</ul>
+        <ul className="lp-checks">{["Unggah materi dan atur publikasinya", "Review kuis, lalu tugaskan ke kelas", "Pantau hasil dan progres siswa"].map(copy => <li key={copy} tabIndex={0} data-voice-menu={`check-${copy.slice(0, 8)}`}><Check size={18} aria-hidden="true" /><span>{t(copy)}</span></li>)}</ul>
         <Link href="/daftar" className="lp-btn lp-btn-outline" data-voice-menu="register">{t("Daftar sebagai guru")}<ArrowRight size={18} aria-hidden="true" /></Link>
-      </div><div className="lp-teacher-art"><Image src="/images/landing/teacher-support.svg" alt="" width={1200} height={900} /></div></section>
-      <section className="lp-access-section"><div className="lp-container lp-access-layout"><div><h2>{t("Pilih cara belajar")}<br />{t("yang nyaman untukmu.")}</h2></div>
+      </div><div className="lp-teacher-art"><Image src="/images/landing/teacher-support.svg" alt="" width={1200} height={900} /></div></div></section>
+      <section className="lp-access-section" id="aksesibilitas"><div className="lp-container lp-access-layout"><div><h2>{t("Pilih cara belajar")}<br />{t("yang nyaman untukmu.")}</h2></div>
         <div className="lp-access-items">{[
           [Keyboard, "Keyboard & pembaca layar", "Fokus terlihat, label jelas, dan navigasi berurutan.", "access-1"],
           [BookOpen, "Tampilan yang bisa disesuaikan", "Aktifkan teks lebih besar dan pilihan navigasi geser.", "access-2"],
           [AudioLines, "Kendali suara di tanganmu", "Atur pembaca menu dan suara Tutor secara terpisah.", "access-3"],
         ].map(([Icon, title, copy, accessKey]) => { const AccessIcon = Icon as typeof Keyboard; return <div key={title as string} data-voice-menu={accessKey as string} tabIndex={0}><AccessIcon aria-hidden="true" /><h3>{t(title as string)}</h3><p>{t(copy as string)}</p></div>; })}</div>
       </div></section>
-      <section id="faq" className="lp-container lp-section lp-faq"><div><h2>{t("Pertanyaan umum")}</h2><p>{t("Hal yang perlu kamu tahu sebelum mulai.")}</p></div><div className="lp-faq-list">
+      <section id="faq" className="lp-faq-section"><div className="lp-container lp-section lp-faq"><div><h2>{t("Pertanyaan umum")}</h2><p>{t("Hal yang perlu kamu tahu sebelum mulai.")}</p></div><div className="lp-faq-list">
         {[
           ["Bagaimana cara membuat akun?", "Pilih Daftar, isi nama, username dan kata sandi, lalu pilih peran siswa atau guru. Tidak perlu kode undangan.", "faq-1"],
           ["Apakah saya harus menggunakan suara?", "Kamu bisa menggunakan teks. Pembaca menu dan suara Tutor dapat diatur terpisah dari tombol pengaturan suara.", "faq-2"],
@@ -225,7 +227,7 @@ export default async function HomePage() {
           ["Bagaimana Tutor menggunakan materi?", "Pilih materi kelas di ruang Tutor agar penjelasan mengacu pada materi yang kamu pelajari.", "faq-4"],
           ["Apakah tersedia Bahasa Inggris?", "Pilih EN dari menu bahasa. Tampilan dan jawaban Tutor mengikuti bahasa pilihanmu. Materi guru tetap menggunakan bahasa aslinya.", "faq-5"],
         ].map(([question, answer, faqKey]) => <details key={question} data-voice-menu={faqKey}><summary>{t(question)}<ChevronDown size={19} aria-hidden="true" /></summary><p>{t(answer)}</p></details>)}
-      </div></section>
+      </div></div></section>
       <section className="lp-cta-refined" id="mulai-belajar">
         <div className="lp-cta-bg-glow" aria-hidden="true" />
         <div className="lp-container">
