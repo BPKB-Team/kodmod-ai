@@ -209,7 +209,11 @@ export default async function HomePage() {
           <h2>{t("Siapkan pembelajaran.")}<br />{t("Dampingi setiap siswa.")}</h2>
           <p>{t("Kelola kelas, bagikan materi, dan siapkan kuis dengan review sebelum dipublikasikan. Pantau hasil siswa untuk menentukan langkah belajar berikutnya.")}</p>
         </div>
-        <ul className="lp-checks">{["Unggah materi dan atur publikasinya", "Review kuis, lalu tugaskan ke kelas", "Pantau hasil dan progres siswa"].map(copy => <li key={copy} tabIndex={0} data-voice-menu={`check-${copy.slice(0, 8)}`}><Check size={18} aria-hidden="true" /><span>{t(copy)}</span></li>)}</ul>
+        <ul className="lp-checks">{[
+          ["Unggah materi dan atur publikasinya", "teacher-check-material"],
+          ["Review kuis, lalu tugaskan ke kelas", "teacher-check-quiz"],
+          ["Pantau hasil dan progres siswa", "teacher-check-progress"],
+        ].map(([copy, voiceKey]) => <li key={copy} tabIndex={0} data-voice-menu={voiceKey}><Check size={18} aria-hidden="true" /><span>{t(copy)}</span></li>)}</ul>
         <Link href="/daftar" className="lp-btn lp-btn-outline" data-voice-menu="register">{t("Daftar sebagai guru")}<ArrowRight size={18} aria-hidden="true" /></Link>
       </div><div className="lp-teacher-art"><Image src="/images/landing/teacher-support.svg" alt="" width={1200} height={900} /></div></div></section>
       <section className="lp-access-section" id="aksesibilitas"><div className="lp-container lp-access-layout"><div><h2>{t("Pilih cara belajar")}<br />{t("yang nyaman untukmu.")}</h2></div>

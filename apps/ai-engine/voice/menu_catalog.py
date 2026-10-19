@@ -38,6 +38,7 @@ MENU_AUDIO = {
     "analytics": ("Analitik siswa", "Student analytics"),
     "users": ("Pengguna", "Users"),
     "activity": ("Aktivitas dan layanan", "Activity and services"),
+    "ai-monitor": ("Pemantauan AI", "AI monitoring"),
     "sound": ("Pengaturan suara dan bahasa", "Voice and language settings"),
     "sound-on": ("Suara menu aktif", "Menu voice is on"),
     "sound-off": ("Suara menu mati", "Menu voice is off"),
@@ -131,6 +132,22 @@ MENU_AUDIO = {
         "Ulangi penjelasan audio.",
         "Replay audio explanation.",
     ),
+    "demo-answer-plants": (
+        "Bayangkan daun seperti tangan terbuka yang hangat. Saat matahari menyinari daun, daun menyerap rasa hangat itu, lalu mencampurnya dengan air dari akar untuk memasak makanan manis bagi seluruh tanaman!",
+        "Imagine leaves as warm, open hands. When the sun shines on them, they absorb that soothing warmth and blend it with water from the roots to cook sweet food for the entire plant!",
+    ),
+    "demo-answer-kitchen": (
+        "Tepat sekali! Daun adalah restorannya, klorofil adalah kompornya, air dan udara adalah bahannya, serta matahari adalah energi nyala apinya. Semuanya diolah menjadi glukosa lezat untuk energi tumbuh!",
+        "Exactly! The leaf is the kitchen, chlorophyll is the stove, water and air are the fresh ingredients, and sunlight is the flame. Together they whip up sweet glucose energy!",
+    ),
+    "demo-answer-quiz": (
+        "Tentu! Pertanyaan: Apa peran utama pigmen klorofil pada daun hijau? A) Menyerap cahaya matahari, atau B) Menghirup air dari tanah? Coba sebutkan pilihanmu!",
+        "Here you go! Question: What is the primary role of chlorophyll in green leaves? A) Absorbing sunlight, or B) Drawing water from soil? Which one do you pick?",
+    ),
+    "demo-answer-watercycle": (
+        "Bayangkan secangkir teh hangat yang mengeluarkan uap ke atas. Matahari menghangatkan air laut hingga naik menjadi awan sejuk di langit. Ketika awan itu terbawa angin ke gunung dan mendingin, butir-butir airnya turun kembali sebagai tetesan hujan yang segar!",
+        "Imagine a warm cup of tea with steam gently rising up. The sun warms the sea until it drifts upward into cool clouds. When wind guides the clouds to high mountains and they cool down, droplets fall back down as fresh raindrops!",
+    ),
     "demo-topic-plants": (
         "Topik Fotosintesis IPA.",
         "Photosynthesis Science topic.",
@@ -214,6 +231,18 @@ MENU_AUDIO = {
     "section-teacher": (
         "Ruang kerja guru yang inklusif. Siapkan pembelajaran, dampingi setiap siswa, dan kelola kelas dengan mudah.",
         "Inclusive teacher workspace. Prepare learning, accompany each student, and manage classes with ease.",
+    ),
+    "teacher-check-material": (
+        "Unggah materi dan atur publikasinya.",
+        "Upload learning materials and manage their publication.",
+    ),
+    "teacher-check-quiz": (
+        "Tinjau kuis, lalu tugaskan ke kelas.",
+        "Review quizzes, then assign them to a class.",
+    ),
+    "teacher-check-progress": (
+        "Pantau hasil dan progres siswa.",
+        "Monitor student results and progress.",
     ),
     "access-1": (
         "Keyboard dan pembaca layar. Fokus terlihat, label jelas, dan navigasi berurutan.",

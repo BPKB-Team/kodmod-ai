@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Sparkles, Brain, Volume2, ArrowRight, Check, RotateCcw } from "lucide-react";
+import { useState, useEffect, useRef, useId, useSyncExternalStore } from "react";
+import { Sparkles, Brain, Volume2, ArrowRight, Check, Pause, Play } from "lucide-react";
+import { speechOutput } from "@/lib/browser-speech";
+import { useVoicePreferences } from "./voice-preferences-provider";
 import { useI18n } from "./language-provider";
 
 interface PromptScenario {
@@ -76,6 +78,10 @@ const SCENARIOS: PromptScenario[] = [
 
 export function TutorAgentDemo() {
   const { language, t } = useI18n();
+  const { engine } = useVoicePreferences();
+  const voiceOwner = useId();
+  const output = useSyncExternalStore(speechOutput.subscribe, speechOutput.getState, speechOutput.getState);
+  const audioStatus = output.owner === voiceOwner ? output.status : "idle";
   const [activeIdx, setActiveIdx] = useState(0);
   const [phase, setPhase] = useState<"question" | "thinking" | "answering" | "ready">("ready");
   const [thoughtIdx, setThoughtIdx] = useState(0);
@@ -92,6 +98,7 @@ export function TutorAgentDemo() {
   const topic = isEn ? scenario.topicEn : scenario.topic;
 
   const runSequence = (idx: number, customQ?: string) => {
+    speechOutput.stop(voiceOwner);
     if (timerRef.current) clearTimeout(timerRef.current);
     setActiveIdx(idx);
     if (customQ) {
@@ -144,12 +151,26 @@ export function TutorAgentDemo() {
   };
 
   const displayedText = phase === "answering" ? streamedText : fullAnswer;
+  const playAnswer = () => {
+    if (audioStatus === "playing" || audioStatus === "paused") {
+      void speechOutput.togglePause(voiceOwner);
+      return;
+    }
+    void speechOutput.play({
+      owner: voiceOwner,
+      text: fullAnswer,
+      engine: engine === "device" ? "device" : "app",
+      language,
+      menuKey: `demo-answer-${scenario.id}`,
+    });
+  };
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
+      speechOutput.stop(voiceOwner);
     };
-  }, []);
+  }, [voiceOwner]);
 
   return (
     <div className="tutor-agent-showcase" aria-label={t("Simulasi Tutor AI")}>
@@ -183,7 +204,7 @@ export function TutorAgentDemo() {
 
           <div className="tutor-sound-indicator" title={t("Audio visualizer")}>
             <Volume2 size={16} className="tutor-volume-icon" />
-            <div className={`tutor-soundwave-bars ${phase === "answering" || phase === "ready" ? "playing" : ""}`}>
+            <div className={`tutor-soundwave-bars ${audioStatus === "playing" ? "playing" : ""}`}>
               <span className="sw-bar" />
               <span className="sw-bar" />
               <span className="sw-bar" />
@@ -255,14 +276,18 @@ export function TutorAgentDemo() {
               <button
                 type="button"
                 className="tutor-replay-btn"
-                onClick={() => runSequence(activeIdx)}
-                aria-label={t("Ulangi penjelasan")}
+                onClick={playAnswer}
+                disabled={phase === "answering" || audioStatus === "loading"}
+                aria-label={t(audioStatus === "playing" ? "Jeda" : audioStatus === "paused" ? "Putar lagi" : "Dengarkan")}
                 data-voice-menu="demo-replay"
               >
-                <RotateCcw size={13} aria-hidden="true" />
-                <span>{t("Ulangi")}</span>
+                {audioStatus === "playing" ? <Pause size={13} aria-hidden="true" /> : audioStatus === "paused" ? <Play size={13} aria-hidden="true" /> : <Volume2 size={13} aria-hidden="true" />}
+                <span>{t(audioStatus === "loading" ? "Menyiapkan…" : audioStatus === "playing" ? "Jeda" : audioStatus === "paused" ? "Putar lagi" : "Dengarkan")}</span>
               </button>
             </div>
+            {(audioStatus === "error" || audioStatus === "blocked") && output.message && (
+              <p className="voice-status voice-status-error" role="status" aria-live="polite">{t(output.message)}</p>
+            )}
             <p className="tutor-response-text">
               {displayedText}
               {phase === "answering" && <span className="tutor-stream-cursor">|</span>}
