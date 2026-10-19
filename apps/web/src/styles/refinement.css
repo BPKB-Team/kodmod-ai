@@ -1383,7 +1383,8 @@
 .lp-footer-bottom-layout {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  text-align: center;
   flex-wrap: wrap;
   gap: 16px;
   font-size: 0.8125rem;

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Sliders, Volume2, ShieldCheck, Sparkles, Globe } from "lucide-react";
+import { Sliders, Volume2, Sparkles } from "lucide-react";
 import { useI18n } from "./language-provider";
 import { useVoicePreferences } from "./voice-preferences-provider";
 
@@ -98,36 +98,16 @@ export function LandingFooter() {
                 <span>{t("Navigasi keyboard")}</span>
               </a>
             </li>
-            <li>
-              <span className="lp-footer-static-info" data-voice-menu="footer-accessibility" tabIndex={0}>
-                <ShieldCheck size={15} aria-hidden="true" />
-                <span>{t("Komitmen Aksesibilitas WCAG 2.1 AA")}</span>
-              </span>
-            </li>
-            <li>
-              <span className="lp-footer-static-info" data-voice-menu="sdg-badge" tabIndex={0}>
-                <Globe size={15} aria-hidden="true" />
-                <span>{t("Mendukung UN SDG 4: Quality Education")}</span>
-              </span>
-            </li>
           </ul>
         </div>
       </div>
 
-      {/* Baris Bawah (Copyright & Badge) */}
+      {/* Baris Bawah (Copyright) */}
       <div className="lp-footer-bottom-bar">
         <div className="lp-container lp-footer-bottom-layout">
           <span className="lp-footer-copyright">
             © {new Date().getFullYear()} KODMOD. {t("BEYOND ACCESS, BEYOND SIGHT")}. {t("Hak Cipta Dilindungi")}.
           </span>
-          <div className="lp-footer-bottom-badges">
-            <span className="lp-footer-badge-tag" data-voice-menu="footer-accessibility" tabIndex={0}>
-              WCAG 2.1 AA
-            </span>
-            <span className="lp-footer-badge-tag" data-voice-menu="sdg-badge" tabIndex={0}>
-              UN SDG 4
-            </span>
-          </div>
         </div>
       </div>
     </footer>
