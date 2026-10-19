@@ -26,6 +26,31 @@ const pageTitles: Record<string, string> = {
 
 export function StudentTopNav({ user }: StudentTopNavProps) {
   const { t } = useI18n();
+
+  return (
+    <header className="student-header" role="banner">
+      <div className="student-header-inner">
+        <div className="student-header-left">
+          <Brand href="/siswa" />
+        </div>
+
+        <div className="student-header-right">
+          <div className="student-header-toolbar-wrap">
+            <ExperienceToolbar />
+          </div>
+          <UserProfileDropdown
+            user={user}
+            roleLabel={t("Siswa")}
+            role="student"
+          />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export function StudentBreadcrumb() {
+  const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const isHub = pathname === "/siswa";
@@ -65,44 +90,29 @@ export function StudentTopNav({ user }: StudentTopNavProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isHub, router]);
 
-  return (
-    <header className="student-header" role="banner">
-      <div className="student-header-inner">
-        <div className="student-header-left">
-          <Brand href="/siswa" />
-          {!isHub && (
-            <div className="student-nav-context">
-              <Link
-                href="/siswa"
-                className="student-back-to-hub-btn"
-                data-voice-menu="back-home"
-                aria-label={t("Kembali ke Menu Utama Belajar. Pintasan tombol Escape.")}
-                onClick={() => speechOutput.stop()}
-              >
-                <ArrowLeft size={18} aria-hidden="true" />
-                <span className="student-back-label">{t("Menu Utama")}</span>
-                <kbd className="student-kbd-hint">Esc</kbd>
-              </Link>
-              {activeTitle && (
-                <span className="student-current-page-pill" aria-current="page">
-                  {t(activeTitle)}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+  if (isHub) return null;
 
-        <div className="student-header-right">
-          <div className="student-header-toolbar-wrap">
-            <ExperienceToolbar />
-          </div>
-          <UserProfileDropdown
-            user={user}
-            roleLabel={t("Siswa")}
-            role="student"
-          />
-        </div>
-      </div>
-    </header>
+  return (
+    <nav className="student-breadcrumb-bar" aria-label={t("Navigasi kembali")}>
+      <Link
+        href="/siswa"
+        className="student-back-to-hub-btn"
+        data-voice-menu="back-home"
+        aria-label={t("Kembali ke Menu Utama Belajar. Pintasan tombol Escape.")}
+        onClick={() => speechOutput.stop()}
+      >
+        <ArrowLeft size={16} aria-hidden="true" />
+        <span className="student-back-label">{t("Menu Utama")}</span>
+        <kbd className="student-kbd-hint">Esc</kbd>
+      </Link>
+      {activeTitle && (
+        <>
+          <span className="student-breadcrumb-divider" aria-hidden="true">/</span>
+          <span className="student-current-page-pill" aria-current="page">
+            {t(activeTitle)}
+          </span>
+        </>
+      )}
+    </nav>
   );
 }

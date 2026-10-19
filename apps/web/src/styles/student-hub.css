@@ -52,16 +52,22 @@
 .student-header-left {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
 }
 
-
-.student-nav-context {
+/* Student Content Breadcrumb Bar */
+.student-breadcrumb-bar {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 1.25rem;
   flex-wrap: wrap;
+}
+
+.student-breadcrumb-divider {
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 1.1rem;
+  user-select: none;
 }
 
 /* Tactile Game Back Button */
@@ -1141,3 +1147,21 @@
   background: linear-gradient(135deg, #f0f6ff 0%, #e6f1fe 100%);
   border-color: #93c5fd;
 }
+
+[data-contrast="high"] .student-back-to-hub-btn {
+  background: #000000;
+  color: #ffff00;
+  border: 2px solid #ffff00;
+  box-shadow: 0 4px 0 #ffff00;
+}
+
+[data-contrast="high"] .student-current-page-pill {
+  background: #000000;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+[data-contrast="high"] .student-breadcrumb-divider {
+  color: #ffff00;
+}
+
