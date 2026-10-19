@@ -97,12 +97,14 @@ Untuk pengujian lokal, jalankan dari PowerShell:
 pwsh -NoProfile -File F:\Docker_Centre\kodmod\docker.ps1 demo-users
 ```
 
-Seeder membuat atau mereset password untuk `siswa.demo` (student), `guru.demo` (teacher), dan `admin.demo` (admin) menjadi `password`. Menjalankan ulang menjaga ketiga akun demo tetap bisa dipakai dengan kredensial yang sama. Seeder tidak mengubah pengguna lain, termasuk `baysatriow`. Password ini hanya untuk database pengujian lokal; jangan gunakan pada database produksi atau saat membagikan tunnel publik.
+Seeder lokal membuat atau mereset password `siswa.demo` (student), `guru.demo` (teacher), dan `admin.demo` (admin) menjadi `password`. Menjalankan ulang menjaga ketiga akun demo tetap bisa dipakai dengan kredensial yang sama. Seeder tidak mengubah pengguna lain, termasuk `baysatriow`. Ini default untuk database pengujian lokal; password tersebut tidak aman untuk deployment publik.
 
-Pada VPS publik gunakan `sudo bash scripts/seed-demo-vps.sh` dari checkout
-server. Helper menjalankan seeder dengan `--passwords-stdin` dan password
-acak berbeda untuk setiap akun. Kredensial berada pada file privat
-`.runtime/demo-accounts.json`; lihat [akun demo VPS](VPS_SETUP.md#akun-demo-pada-vps).
+Pada VPS gunakan `sudo bash scripts/seed-demo-vps.sh` dari checkout server.
+Instalasi baru memakai password acak berbeda; file privat
+`.runtime/demo-accounts.json` dapat mempertahankan password bersama `password`
+untuk tiga akun demo yang diminta pemilik. Helper menjalankan seeder dengan
+`--passwords-stdin` dan tidak mengubah akun lain. Password tersebut tidak aman
+untuk akun admin pada aplikasi publik; lihat [akun demo VPS](VPS_SETUP.md#akun-demo-pada-vps).
 
 ## VPS Linux
 
