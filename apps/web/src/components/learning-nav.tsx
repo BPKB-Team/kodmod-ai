@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { speechOutput } from "@/lib/browser-speech";
 import { useI18n } from "./language-provider";
 import { LogoutButton } from "./logout-button";
 import {
@@ -15,6 +16,7 @@ import {
   FileCheck2,
   ClipboardList,
   Menu,
+  X,
 } from "lucide-react";
 
 export function LearningNav({ base }: { base: string }) {
@@ -22,11 +24,42 @@ export function LearningNav({ base }: { base: string }) {
   const path = usePathname();
   const navigationId = useId();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen]);
+
+  const handleNavClick = () => {
+    speechOutput.stop();
+    setMenuOpen(false);
+  };
+
   return (
     <>
-    <button type="button" className="learning-nav-toggle" aria-expanded={menuOpen} aria-controls={navigationId}
-      onClick={() => setMenuOpen(open => !open)}><Menu size={20} aria-hidden="true" />{t("Menu ruang belajar")}
-      <ChevronRight size={18} aria-hidden="true" /></button>
+    <button
+      type="button"
+      className="learning-nav-toggle"
+      aria-expanded={menuOpen}
+      aria-controls={navigationId}
+      aria-label={t(menuOpen ? "Tutup menu ruang belajar" : "Menu ruang belajar")}
+      onClick={() => setMenuOpen(open => !open)}
+    >
+      {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+      <span>{t("Menu ruang belajar")}</span>
+      <ChevronRight size={18} aria-hidden="true" />
+    </button>
+    {menuOpen && (
+      <div
+        className="learning-nav-backdrop"
+        aria-hidden="true"
+        onClick={() => setMenuOpen(false)}
+      />
+    )}
     <nav id={navigationId} className={`admin-nav${menuOpen ? " is-open" : ""}`} aria-label={t("Menu ruang belajar")}>
       {[
         { href: base, title: "Ringkasan", icon: LayoutDashboard },
@@ -54,7 +87,7 @@ export function LearningNav({ base }: { base: string }) {
           <Link
             key={href}
             href={href}
-            onClick={() => setMenuOpen(false)}
+            onClick={handleNavClick}
             data-voice-menu={
               href === base
                 ? "dashboard"
