@@ -4,12 +4,12 @@ import uuid
 from contextlib import asynccontextmanager
 
 import pytest
-from sqlalchemy import func, select
-
 from analytics import aggregator, student_model
 from api.main import app
 from api.routes import quiz
 from database import models as db
+from sqlalchemy import func, select
+
 from tests import editorial_test
 from tests.assessment_test import AssessmentGraph, start, submission
 from tests.editorial_test import editorial_http as editorial_http
@@ -17,15 +17,13 @@ from tests.editorial_test import editorial_http as editorial_http
 pytestmark = [pytest.mark.integration, pytest.mark.db, pytest.mark.asyncio(loop_scope="function")]
 
 
-@pytest.mark.parametrize(("formal_option", "practice_answer"), [("b", "A"), ("a", "B")])
-async def test_reviewed_grade_and_adaptive_answers_share_one_student_model(
-    editorial_http, monkeypatch, formal_option, practice_answer
-):
-    client, factory, actors, subject, _, headers = editorial_http
-    # Create only this flow's tables and their FK dependencies in the fixture's
-    # private PostgreSQL schema. Never touch the shared application schema.
+async def ensure_progress_tables(factory):
     names = {
         "mastery_scores",
+        "quiz_question_outcomes",
+        "quiz_action_receipts",
+        "material_learning_progress",
+        "material_concepts",
         "mastery_events",
         "assignment_mastery_events",
         "quiz_sessions",
@@ -50,6 +48,16 @@ async def test_reviewed_grade_and_adaptive_answers_share_one_student_model(
                 c, tables=[t for t in db.Base.metadata.sorted_tables if t.name in names]
             )
         )
+
+
+@pytest.mark.parametrize(("formal_option", "practice_answer"), [("b", "A"), ("a", "B")])
+async def test_reviewed_grade_and_adaptive_answers_share_one_student_model(
+    editorial_http, monkeypatch, formal_option, practice_answer
+):
+    client, factory, actors, subject, _, headers = editorial_http
+    # Create only this flow's tables and their FK dependencies in the fixture's
+    # private PostgreSQL schema. Never touch the shared application schema.
+    await ensure_progress_tables(factory)
     async with factory() as session:
         concept = db.Concept(subject_id=subject.id, name="Pecahan", slug="shared-evidence")
         session.add(concept)
@@ -90,14 +98,24 @@ async def test_reviewed_grade_and_adaptive_answers_share_one_student_model(
     # own tests. HTTP authentication, grading, receipts and SQL are real.
     client.headers.update(headers("student"))
     started = await start(client, concept)
-    count = 1 if practice_answer == "A" else 3
+    count = 1
     for index in range(count):
         answer_body = submission(started, answer=practice_answer)
         accepted = await client.post("/quiz/submit", json=answer_body)
         duplicate = await client.post("/quiz/submit", json=answer_body)
         assert accepted.status_code == duplicate.status_code == 200, accepted.text
         assert accepted.json() == duplicate.json()
-        assert accepted.json()["quiz_complete"] == (index == count - 1)
+        assert accepted.json()["question_state"] == "review"
+        completed = await client.post(
+            f"/quiz/{started['quiz_session_id']}/actions",
+            json={
+                "action_id": str(uuid.uuid4()),
+                "question_id": answer_body["question_id"],
+                "action": "advance",
+            },
+        )
+        assert completed.status_code == 200, completed.text
+        assert completed.json()["question_state"] == "complete"
         if index < count - 1:
             pending_model = await student_model.StudentModel.load(str(actors["student"].id))
             assert pending_model._scores[str(concept.id)] == pytest.approx(baseline)
@@ -122,3 +140,56 @@ async def test_reviewed_grade_and_adaptive_answers_share_one_student_model(
             await session.scalar(select(func.count()).select_from(db.AssignmentMasteryEvent)) == 1
         )
         assert await session.scalar(select(func.count()).select_from(db.MasteryEvent)) == count
+
+
+async def test_unreleased_formal_evidence_cannot_change_public_insights(
+    editorial_http, monkeypatch
+):
+    client, factory, actors, subject, _, headers = editorial_http
+    await ensure_progress_tables(factory)
+    async with factory() as dbsession:
+        concept = db.Concept(subject_id=subject.id, name="Private concept", slug="private-concept")
+        dbsession.add(concept)
+        await dbsession.commit()
+    questions = editorial_test.draft_body(subject)["questions"]
+    questions[0]["concept_id"] = str(concept.id)
+    _, assignment = await editorial_test.assigned(
+        editorial_http, questions=questions, release_policy="after_due"
+    )
+    attempt = await editorial_test.answered(editorial_http, assignment, option="a")
+    result = await client.post(
+        f"/student/assignments/{assignment['id']}/submit",
+        json={"expected_revision": attempt["revision"]},
+        headers=headers("student") | {"Idempotency-Key": str(uuid.uuid4())},
+    )
+    assert result.status_code == 200, result.text
+    assert not result.json()["feedback_released"]
+
+    @asynccontextmanager
+    async def transaction():
+        async with factory() as session:
+            yield session
+
+    monkeypatch.setattr(aggregator, "async_session", transaction)
+    first = await aggregator.StudentAggregator().summarise(
+        student_id=actors["student"].id, window="all", include_recommendations=False
+    )
+    async with factory() as session:
+        event = await session.scalar(select(db.AssignmentMasteryEvent))
+        event.score = 0
+        score = await session.scalar(select(db.MasteryScore))
+        score.mastery = 0.1
+        await session.commit()
+    second = await aggregator.StudentAggregator().summarise(
+        student_id=actors["student"].id, window="all", include_recommendations=False
+    )
+    for key in [
+        "visible_evidence_hash",
+        "overall_mastery",
+        "assessed_concepts",
+        "strong_concepts",
+        "weak_concepts",
+        "concept_evidence",
+    ]:
+        assert first[key] == second[key]
+    assert not first["mastery_available"]

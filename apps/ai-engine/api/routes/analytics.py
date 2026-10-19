@@ -13,37 +13,52 @@ from __future__ import annotations
 
 import uuid
 from typing import Literal
-
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from analytics.aggregator import CohortAggregator, StudentAggregator
 from analytics.insights import generate_cohort_alerts, generate_student_spoken_summary
+from database.models import User
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from api.dependencies import current_user, db_session, require_student, require_teacher
 from api.teacher_access import require_teacher_student
-from database.models import User
 
 router = APIRouter(tags=["analytics"])
 
 Window = Literal["today", "week", "month", "all"]
 
 
+def valid_timezone(value):
+    try:
+        ZoneInfo(value)
+    except (ZoneInfoNotFoundError, ValueError):
+        raise HTTPException(422, "Zona waktu tidak valid.") from None
+    return value
+
+
 @router.get("/me")
 async def my_analytics(
     window: Window = Query(default="week"),
+    timezone: str = Query(default="UTC", max_length=80),
     student: User = Depends(require_student),
 ) -> dict:
     """Your own progress: mastery, quiz accuracy, engagement, misconceptions."""
-    return await StudentAggregator().summarise(student_id=student.id, window=window)
+    return await StudentAggregator().summarise(
+        student_id=student.id, window=window, timezone=valid_timezone(timezone)
+    )
 
 
 @router.get("/me/spoken")
 async def my_analytics_spoken(
     window: Window = Query(default="week"),
+    timezone: str = Query(default="UTC", max_length=80),
     student: User = Depends(require_student),
 ) -> dict:
     """Your own progress, plus a few sentences written to be heard."""
-    summary = await StudentAggregator().summarise(student_id=student.id, window=window)
+    summary = await StudentAggregator().summarise(
+        student_id=student.id, window=window, timezone=valid_timezone(timezone)
+    )
     return {
         "summary": summary,
         "spoken": generate_student_spoken_summary(summary, language=student.preferred_language),

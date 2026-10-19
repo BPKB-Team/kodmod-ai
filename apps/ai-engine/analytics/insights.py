@@ -19,7 +19,6 @@ from __future__ import annotations
 import logging
 
 from langchain_core.messages import HumanMessage, SystemMessage
-
 from tools.llm_client import get_recommendation_llm, language_instruction
 
 logger = logging.getLogger(__name__)
@@ -93,11 +92,11 @@ def generate_student_spoken_summary(analytics: dict, *, language: str = "id") ->
         )
         return " ".join(parts)
 
-    if weak or strong:
+    if analytics.get("mastery_available", bool(weak or strong)):
         parts.append(
-            f"{period}, you completed {n_sessions} learning sessions with average mastery of {_pct(overall, language)}."
+            f"{period}, {n_sessions} learning sessions were recorded. Your current concept mastery estimate is {_pct(overall, language)}, based on available evidence."
             if english
-            else f"{period} kamu sudah belajar {n_sessions} sesi dengan tingkat penguasaan rata-rata {_pct(overall)}."
+            else f"{period} tercatat {n_sessions} sesi belajar. Estimasi penguasaan konsep saat ini {_pct(overall)}, berdasarkan bukti yang tersedia."
         )
     else:
         if n_sessions:
@@ -118,6 +117,12 @@ def generate_student_spoken_summary(analytics: dict, *, language: str = "id") ->
             else "Penguasaan konsep akan tampil setelah latihan dikaitkan dengan konsep yang disetujui."
         )
 
+    if "materials_completed" in analytics:
+        parts.append(
+            f"You completed {analytics['materials_completed']} materials with Tutor."
+            if english
+            else f"Kamu menyelesaikan {analytics['materials_completed']} materi bersama Tutor."
+        )
     if accuracy >= 0.8:
         parts.append(
             f"Your quiz and assignment accuracy is excellent at {_pct(accuracy, language)}. Keep it up!"

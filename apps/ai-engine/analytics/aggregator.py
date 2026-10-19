@@ -28,10 +28,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, cast
+from zoneinfo import ZoneInfo
 
-from sqlalchemy import func, or_, select
-
-from analytics.student_model import mastery_at
 from api.teacher_access import teacher_roster_query
 from database.models import (
     AssignmentAttempt,
@@ -41,21 +39,28 @@ from database.models import (
     MasteryScore,
     Misconception,
     QuizAttempt,
+    QuizQuestionOutcome,
     QuizSession,
     User,
 )
 from database.session import async_session
 from memory.long_term import fetch_active_recommendations
+from sqlalchemy import func, or_, select
+
+from analytics.progress_projection import aware, official_practice_totals, public_progress
+from analytics.student_model import mastery_at
 
 logger = logging.getLogger(__name__)
 
 WindowName = Literal["today", "week", "month", "all"]
 
 
-def _window_start(window: WindowName) -> datetime | None:
-    now = datetime.now(UTC)
+def _window_start(window: WindowName, timezone: str = "UTC", *, now=None) -> datetime | None:
+    now = now or datetime.now(UTC)
+    zone = ZoneInfo(timezone)
     if window == "today":
-        return datetime(now.year, now.month, now.day, tzinfo=UTC)
+        local = now.astimezone(zone)
+        return datetime(local.year, local.month, local.day, tzinfo=zone).astimezone(UTC)
     if window == "week":
         return now - timedelta(days=7)
     if window == "month":
@@ -73,6 +78,10 @@ def _duration_minutes(
     """Return evidenced session time, including open sessions through last activity."""
     if started_at is None:
         return 0.0
+    started_at = aware(started_at)
+    ended_at = aware(ended_at) if ended_at else None
+    last_activity_at = aware(last_activity_at) if last_activity_at else None
+    window_start = aware(window_start) if window_start else None
     end = ended_at or last_activity_at
     if end is None:
         return 0.0
@@ -123,8 +132,9 @@ class StudentAggregator:
         student_id: uuid.UUID,
         window: WindowName = "week",
         include_recommendations: bool = True,
+        timezone: str = "UTC",
     ) -> dict:
-        start = _window_start(window)
+        start = _window_start(window, timezone)
 
         async with async_session() as session:
             student = await session.get(User, student_id)
@@ -170,6 +180,11 @@ class StudentAggregator:
                     or_(
                         QuizSession.started_at >= start,
                         QuizSession.id.in_(answered_session_ids),
+                        QuizSession.id.in_(
+                            select(QuizQuestionOutcome.quiz_session_id).where(
+                                QuizQuestionOutcome.closed_at >= start
+                            )
+                        ),
                     )
                 )
             quiz_sessions = (await session.execute(quiz_session_q)).scalars().all()
@@ -191,6 +206,7 @@ class StudentAggregator:
                 func.count(AssignmentAttempt.id),
                 func.coalesce(func.sum(AssignmentAttempt.total_questions), 0),
                 func.coalesce(func.sum(AssignmentAttempt.correct_count), 0),
+                func.max(AssignmentAttempt.submitted_at),
             ).where(
                 AssignmentAttempt.student_id == student_id,
                 AssignmentAttempt.state == "submitted",
@@ -201,7 +217,7 @@ class StudentAggregator:
             )
             if start:
                 assignments_q = assignments_q.where(AssignmentAttempt.submitted_at >= start)
-            assignment_count, assignment_answers, assignment_correct = (
+            assignment_count, assignment_answers, assignment_correct, assignment_last = (
                 await session.execute(assignments_q)
             ).one()
 
@@ -239,6 +255,30 @@ class StudentAggregator:
                     )
                 )
             ).scalar_one()
+            public, outcomes = await public_progress(session, student_id, start=start)
+            latest_activity = [
+                await session.scalar(
+                    select(func.max(InteractionLog.timestamp))
+                    .join(LearningSession, InteractionLog.session_id == LearningSession.id)
+                    .where(LearningSession.student_id == student_id)
+                ),
+                await session.scalar(
+                    select(func.max(QuizAttempt.answered_at))
+                    .join(QuizSession, QuizAttempt.quiz_session_id == QuizSession.id)
+                    .where(QuizSession.student_id == student_id)
+                ),
+                await session.scalar(
+                    select(func.max(QuizQuestionOutcome.closed_at))
+                    .join(QuizSession, QuizQuestionOutcome.quiz_session_id == QuizSession.id)
+                    .where(QuizSession.student_id == student_id)
+                ),
+                await session.scalar(
+                    select(func.max(AssignmentAttempt.submitted_at)).where(
+                        AssignmentAttempt.student_id == student_id,
+                        AssignmentAttempt.state == "submitted",
+                    )
+                ),
+            ]
 
         # ---------- Compute rollups ----------
         independent_assessments = [row for row in quiz_sessions if _is_independent_assessment(row)]
@@ -248,6 +288,10 @@ class StudentAggregator:
             current = quiz_activity.get(attempt.quiz_session_id)
             if current is None or (attempt.answered_at and attempt.answered_at > current):
                 quiz_activity[attempt.quiz_session_id] = attempt.answered_at
+        for outcome in outcomes:
+            current = quiz_activity.get(outcome.quiz_session_id)
+            if current is None or aware(outcome.closed_at) > aware(current):
+                quiz_activity[outcome.quiz_session_id] = outcome.closed_at
         total_minutes = _activity_total_minutes(
             learning_sessions=sessions,
             learning_activity=learning_activity,
@@ -259,11 +303,11 @@ class StudentAggregator:
         formal_answers = int(assignment_answers or 0)
         formal_correct = int(assignment_correct or 0)
         n_attempts = len(attempts) + formal_answers
-        n_correct = sum(1 for a in attempts if a.is_correct) + formal_correct
-        avg_score = (
-            (sum(a.score for a in attempts) + formal_correct) / n_attempts if n_attempts else 0.0
-        )
-        accuracy = (n_correct / n_attempts) if n_attempts else 0.0
+        official = official_practice_totals(quiz_sessions, attempts, outcomes)
+        denominator = official["denominator"] + formal_answers
+        n_correct = official["correct"] + formal_correct
+        avg_score = (official["score_sum"] + formal_correct) / denominator if denominator else 0.0
+        accuracy = (n_correct / denominator) if denominator else 0.0
 
         mastery_now = datetime.now(UTC)
         mastery: list[dict[str, Any]] = [
@@ -310,7 +354,37 @@ class StudentAggregator:
             ],
             "engagement_index": round(engagement_index, 3),
             "generated_at": datetime.now(UTC).isoformat(),
+            **public,
+            "n_official_questions": denominator,
+            "n_questions_answered": official["n_questions_answered"] + formal_answers,
+            "n_support_attempts": official["n_support_attempts"],
+            "n_assisted_questions": official["n_assisted_questions"],
+            "legacy_practice_attempts": official["legacy_attempts"],
+            "window_start": start.isoformat() if start else None,
+            "window_end": datetime.now(UTC).isoformat(),
+            "timezone": timezone,
+            "duration_kind": "session_elapsed",
+            "mastery_scope": "visible_cumulative",
+            "material_progress_scope": "current_versions",
+            "last_activity_scope": "all",
+            "last_activity_at": max(
+                [
+                    aware(t)
+                    for t in [
+                        *latest_activity,
+                        *[
+                            datetime.fromisoformat(m["last_activity_at"])
+                            for m in public["learning_materials"]
+                            if m["last_activity_at"]
+                        ],
+                    ]
+                    if t
+                ],
+                default=None,
+            ),
         }
+        if out["last_activity_at"]:
+            out["last_activity_at"] = out["last_activity_at"].isoformat()
 
         if include_recommendations:
             out["active_recommendations"] = await fetch_active_recommendations(student_id, limit=5)
