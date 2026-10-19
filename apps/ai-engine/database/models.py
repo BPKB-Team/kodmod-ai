@@ -273,6 +273,33 @@ class BackgroundJob(Base):
     )
 
 
+class MaterialLearningProgress(Base):
+    __tablename__ = "material_learning_progress"
+    __table_args__ = (
+        UniqueConstraint(
+            "student_id",
+            "material_id",
+            "content_version",
+            "unit_manifest_hash",
+            name="uq_material_learning_version",
+        ),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    student_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    material_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("class_materials.id", ondelete="CASCADE"), index=True
+    )
+    content_version: Mapped[int] = mapped_column(Integer)
+    unit_manifest_hash: Mapped[str] = mapped_column(String(64))
+    completed_unit_ids: Mapped[list] = mapped_column(JSON, default=list)
+    total_units: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20), default="in_progress")
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_activity_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
 class MaterialProgress(Base):
     __tablename__ = "material_progress"
     material_id: Mapped[uuid.UUID] = mapped_column(

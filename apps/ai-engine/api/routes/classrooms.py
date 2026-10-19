@@ -6,6 +6,17 @@ Every nested resource repeats the class membership check on the server.
 import uuid
 from datetime import UTC, datetime
 
+from database.models import (
+    BackgroundJob,
+    ClassActivity,
+    ClassMaterial,
+    Classroom,
+    Enrollment,
+    MaterialImport,
+    MaterialProgress,
+    Subject,
+    User,
+)
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, UploadFile
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, select
@@ -23,17 +34,6 @@ from api.material_concepts import (
     select_subject,
 )
 from api.material_imports import safe_filename
-from database.models import (
-    BackgroundJob,
-    ClassActivity,
-    ClassMaterial,
-    Classroom,
-    Enrollment,
-    MaterialImport,
-    MaterialProgress,
-    Subject,
-    User,
-)
 
 router = APIRouter(tags=["classes"])
 
@@ -231,6 +231,8 @@ async def student_materials(
             .order_by(ClassMaterial.created_at.desc(), ClassMaterial.id)
         )
     ).all()
+    from api.learning_progress import active_learning_progress
+
     return [
         {
             **material_info(material),
@@ -238,6 +240,7 @@ async def student_materials(
             "class_name": room.name,
             "subject": room.subject,
             "progress": progress_info(progress),
+            "learning_progress": await active_learning_progress(session, user.id, material),
         }
         for material, room, progress in rows
     ]
@@ -670,7 +673,16 @@ async def read_material(
         if user.role == "student"
         else None
     )
-    return {**material_info(row), "content": row.content, "progress": progress_info(progress)}
+    from api.learning_progress import active_learning_progress
+
+    return {
+        **material_info(row),
+        "content": row.content,
+        "progress": progress_info(progress),
+        "learning_progress": await active_learning_progress(session, user.id, row)
+        if user.role == "student"
+        else None,
+    }
 
 
 class ProgressWrite(BaseModel):

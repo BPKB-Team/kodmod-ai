@@ -10,11 +10,6 @@ import uuid
 from datetime import UTC, datetime
 from itertools import pairwise
 
-from fastapi import HTTPException
-from sqlalchemy import select
-
-from api.assessment_service import recover_assessment, start_assessment
-from api.material_service import resolve_tutoring_context
 from database.models import (
     ClassMaterial,
     InteractionLog,
@@ -22,10 +17,21 @@ from database.models import (
     LearningSession,
     User,
 )
+from fastapi import HTTPException
 from graphs.guided_learning import build_guided_graph
 from graphs.state import build_learning_profile
-from models.learning import LearningAction, LearningOut, LearningStart
+from models.learning import LearningAction, LearningOut, LearningStart, LearningUnitManifest
 from models.quiz import QuizStartRequest
+from sqlalchemy import select
+
+from api.assessment_service import recover_assessment, start_assessment
+from api.learning_progress import (
+    active_learning_progress,
+    build_unit_manifest,
+    canonical_manifest,
+    record_learning_unit,
+)
+from api.material_service import resolve_tutoring_context
 
 guided_graph = build_guided_graph()
 
@@ -81,6 +87,8 @@ async def owned_lesson(session, sid, student, *, lock=False):
     material = await session.get(ClassMaterial, row.material_id)
     if material is None or material.content_version != row.guided_state["material_version"]:
         raise HTTPException(409, "Materi telah diperbarui. Mulai sesi dari versi materi terbaru.")
+    if build_unit_manifest(material, row.guided_state["units"]) != canonical_manifest(material):
+        raise HTTPException(409, "Pembagian materi berubah. Mulai sesi dari versi terbaru.")
     return row, material
 
 
@@ -104,6 +112,7 @@ async def lesson_out(session, row, student, material=None):
         else:
             actions.append("finish")
     return LearningOut(
+        learning_progress=await active_learning_progress(session, student.id, material),
         session_id=row.id,
         revision=state["revision"],
         phase=phase,
@@ -243,6 +252,16 @@ async def start_lesson(session, student, body: LearningStart):
         "text": "",
         "subject": context["subject_name"],
     }
+    manifest = build_unit_manifest(material, state["units"])
+    state["unit_manifest"] = manifest.model_dump()
+    await record_learning_unit(
+        session,
+        student_id=student.id,
+        material=material,
+        manifest=manifest,
+        completed_unit_id=None,
+        finish=False,
+    )
     row = LearningSession(
         student_id=student.id,
         class_id=body.class_id,
@@ -282,6 +301,18 @@ async def apply_learning_action(session, assessment_graph, student, sid, body: L
     if body.action not in current.available_actions:
         raise HTTPException(409, "Selesaikan mini kuis terlebih dahulu atau muat ulang sesi.")
     state["language"], state["phase"] = body.language, "learning"
+    if body.action in ("continue", "finish"):
+        manifest = LearningUnitManifest.model_validate(
+            state.get("unit_manifest") or build_unit_manifest(material, state["units"]).model_dump()
+        )
+        await record_learning_unit(
+            session,
+            student_id=student.id,
+            material=material,
+            manifest=manifest,
+            completed_unit_id=manifest.units[state["unit_index"]].unit_id,
+            finish=body.action == "finish",
+        )
     if body.action in ("quiz", "check"):
         started = await start_assessment(
             session,

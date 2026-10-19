@@ -33,6 +33,7 @@ class LearningAction(BaseModel):
 
 
 class LearningOut(BaseModel):
+    learning_progress: dict | None = None
     session_id: uuid.UUID
     revision: int
     phase: Literal["learning", "quiz", "completed"]
@@ -49,3 +50,16 @@ class LearningOut(BaseModel):
     text: str
     available_actions: list[str]
     quiz: QuizRecoveryResponse | None = None
+
+
+class UnitIdentity(BaseModel):
+    base_id: str
+    unit_id: str
+    content_hash: str
+
+
+class LearningUnitManifest(BaseModel):
+    content_version: int
+    partitioner_version: str
+    unit_manifest_hash: str
+    units: list[UnitIdentity]

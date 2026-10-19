@@ -173,6 +173,9 @@ def test_guided_migration_upgrade_downgrade_preserves_existing_lessons():
             command.upgrade(config, "head")
             assert "audit_events" in inspect(connection).get_table_names(schema=schema)
             assert "quiz_question_outcomes" in inspect(connection).get_table_names(schema=schema)
+            assert "material_learning_progress" in inspect(connection).get_table_names(
+                schema=schema
+            )
             command.downgrade(config, "0011_provider_usage")
             assert "quiz_question_outcomes" not in inspect(connection).get_table_names(
                 schema=schema
