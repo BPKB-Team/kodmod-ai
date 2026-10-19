@@ -10,6 +10,7 @@ import { ExperienceToolbar } from "./experience-toolbar";
 import { getServerI18n } from "@/lib/server-language";
 import { UserProfileDropdown } from "./user-profile-dropdown";
 import { StudentTopNav, StudentBackBar } from "./student-top-nav";
+import { InnerFooter } from "./inner-footer";
 
 export async function LearningShell({
   role,
@@ -26,17 +27,37 @@ export async function LearningShell({
   if (!teacher) {
     return (
       <div className="student-app-shell">
+        <div className="student-bg-decoration" aria-hidden="true">
+          <div className="student-bg-glow glow-top-left" />
+          <div className="student-bg-glow glow-top-right" />
+          <div className="student-bg-glow glow-center" />
+          <div className="student-bg-soundwaves">
+            <svg viewBox="0 0 1200 240" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+              <path d="M0 120 C 150 70, 300 170, 450 120 C 600 70, 750 170, 900 120 C 1050 70, 1150 150, 1200 120" stroke="url(#audioWaveGrad1)" strokeWidth="2.5" strokeDasharray="6 8" opacity="0.45" />
+              <path d="M0 140 C 180 190, 320 80, 500 140 C 680 200, 820 90, 1000 140 C 1120 180, 1180 110, 1200 135" stroke="url(#audioWaveGrad2)" strokeWidth="2" opacity="0.3" />
+              <defs>
+                <linearGradient id="audioWaveGrad1" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#3b82f6" stopOpacity="0.05" />
+                  <stop offset="0.3" stopColor="#3b82f6" stopOpacity="0.35" />
+                  <stop offset="0.7" stopColor="#6366f1" stopOpacity="0.35" />
+                  <stop offset="1" stopColor="#6366f1" stopOpacity="0.05" />
+                </linearGradient>
+                <linearGradient id="audioWaveGrad2" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#0ea5e9" stopOpacity="0.05" />
+                  <stop offset="0.4" stopColor="#0ea5e9" stopOpacity="0.25" />
+                  <stop offset="0.8" stopColor="#8b5cf6" stopOpacity="0.25" />
+                  <stop offset="1" stopColor="#8b5cf6" stopOpacity="0.05" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
         <StudentTopNav user={user} />
         <main id="konten-utama" tabIndex={-1} className="workspace-main student-main-content">
           <StudentBackBar />
           {children}
         </main>
-        <footer className="student-footer">
-          <div className="student-footer-inner">
-            <strong>KODMOD</strong>
-            <span>{t("Ruang belajar untuk semua.")}</span>
-          </div>
-        </footer>
+        <InnerFooter className="student-footer" />
       </div>
     );
   }
@@ -70,9 +91,7 @@ export async function LearningShell({
         <main id="konten-utama" tabIndex={-1} className="workspace-main">
           {children}
         </main>
-        <footer className="workspace-footer">
-          KODMOD <span>{t("Ruang belajar untuk semua.")}</span>
-        </footer>
+        <InnerFooter className="workspace-footer" />
       </div>
     </div>
   );

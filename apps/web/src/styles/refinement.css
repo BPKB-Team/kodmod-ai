@@ -1584,3 +1584,134 @@
     line-height: 1.4;
   }
 }
+
+/* ==========================================================================
+   Refined Inner Application Footer (Student, Teacher, Admin Workspaces)
+   ========================================================================== */
+.inner-app-footer {
+  width: 100%;
+  margin-top: auto;
+  border-top: 1.5px solid #d8e5f5;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  padding: 1.15rem clamp(1rem, 2.5vw, 2.75rem);
+  box-shadow: 0 -4px 18px rgba(18, 51, 93, 0.03);
+  position: relative;
+  z-index: 10;
+}
+
+.inner-app-footer-inner {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.inner-app-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inner-footer-symbol {
+  width: 24px;
+  height: 25px;
+  flex-shrink: 0;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.2));
+}
+
+.inner-footer-titles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inner-footer-name {
+  color: #102a4e;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.inner-footer-sep {
+  color: #94a9c2;
+  font-weight: 700;
+}
+
+.inner-footer-tagline {
+  color: #557297;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.inner-app-footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inner-footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: #f0f6ff;
+  border: 1px solid #cce2fd;
+  color: #2563eb;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.inner-footer-badge svg {
+  flex-shrink: 0;
+  color: #2563eb;
+}
+
+.inner-footer-copy {
+  color: #7188a6;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+@media (max-width: 768px) {
+  .inner-app-footer {
+    padding: 1rem 1.25rem;
+  }
+  .inner-app-footer-inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.85rem;
+  }
+  .inner-app-footer-brand {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .inner-footer-titles {
+    justify-content: center;
+  }
+  .inner-app-footer-meta {
+    justify-content: center;
+  }
+}
+
+html[data-high-contrast="true"] .inner-app-footer {
+  background: #ffffff !important;
+  border-color: #5e7896 !important;
+}
+html[data-high-contrast="true"] .inner-footer-badge {
+  background: transparent !important;
+  border-color: #5e7896 !important;
+  color: #06172c !important;
+}
+html[data-high-contrast="true"] .inner-footer-badge svg {
+  color: #06172c !important;
+}

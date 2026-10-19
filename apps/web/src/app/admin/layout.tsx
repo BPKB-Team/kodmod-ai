@@ -6,6 +6,8 @@ import { requireSession } from "@/lib/session";
 import { ExperienceToolbar } from "@/components/experience-toolbar";
 import { getServerI18n } from "@/lib/server-language";
 import { UserProfileDropdown } from "@/components/user-profile-dropdown";
+import { InnerFooter } from "@/components/inner-footer";
+
 export default async function AdminLayout({
   children,
 }: {
@@ -38,9 +40,7 @@ export default async function AdminLayout({
         <main id="konten-utama" tabIndex={-1} className="workspace-main">
           {children}
         </main>
-        <footer className="workspace-footer">
-          KODMOD <span>{t("Ruang belajar untuk semua.")}</span>
-        </footer>
+        <InnerFooter className="workspace-footer" />
       </div>
     </div>
   );
