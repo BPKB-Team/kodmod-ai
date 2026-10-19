@@ -255,19 +255,49 @@ kedua nameserver belum memiliki A, periksa publikasi record pada zona
 
 ## Pembaruan kode
 
-Review perubahan checkout dan lakukan backup sebelum menarik perubahan.
-Jangan menimpa perubahan deployment lokal dengan `git reset --hard`.
-Gunakan tag image unik untuk rilis berikutnya:
+### Pemeriksaan wajib sebelum update
+
+Aturan ini berlaku setiap kali kode, image, migrasi, atau konfigurasi produksi
+akan diperbarui. Selesaikan preflight sebelum menarik perubahan ke checkout
+server, membangun image, menjalankan migrasi, atau me-restart layanan:
+
+1. Catat commit checkout dan tag image yang sedang aktif. Periksa
+   `git status --short --branch`; jangan menimpa perubahan lokal server atau
+   memakai `git reset --hard`. Ambil metadata remote dengan `git fetch`, lalu
+   tinjau commit serta diff dari versi aktif ke target update. Jangan
+   mengasumsikan `main` sebagai target; pastikan branch/ref dan commit target
+   memang yang diminta.
+2. Tinjau perubahan konfigurasi Compose, dependency, dan seluruh migrasi
+   database. Jalankan tes, lint, typecheck, serta build yang sesuai dengan
+   bagian yang berubah. Validasi konfigurasi produksi memakai
+   `sudo bash scripts/release.sh check` tanpa menampilkan isi `.env`.
+3. Periksa kondisi produksi sebelum update:
+   `sudo bash scripts/release.sh compose ps --all`,
+   `sudo bash scripts/release.sh smoke`, dan
+   `sudo node scripts/check-monitoring.mjs`. Catat kegagalan yang sudah ada
+   agar tidak dianggap sebagai regresi update.
+4. Pastikan tersedia snapshot penuh terbaru berstatus `COMPLETE` dan checksum
+   valid, serta catat commit dan tag image untuk rollback. Jika backup belum
+   memenuhi syarat, buat dan verifikasi backup terlebih dahulu.
+
+Jangan lanjutkan update bila working tree memiliki perubahan yang belum
+dipahami, target/diff belum jelas, preflight gagal, atau backup tidak valid.
+Laporkan temuan dan minta pemeriksaan pemilik VPS sebelum mengubah runtime.
+Setelah semua pemeriksaan lulus, gunakan tag image unik untuk rilis berikutnya:
 
 ```bash
 sudo bash scripts/backup-vps.sh
 sudo bash scripts/release.sh deploy TAG_RILIS_UNIK
 sudo bash scripts/release.sh smoke
+sudo node scripts/check-monitoring.mjs
 ```
 
 Tool deployment membuat backup database sebelum migrasi dan menyimpan tag
-image yang berhasil ke `.env`. Tidak ada downgrade database otomatis.
-Backup dan deployment memakai lock yang sama agar tidak berjalan bersamaan.
+image yang berhasil ke `.env`. Pastikan smoke dan monitoring sesudah deploy
+lulus sebelum menyatakan update berhasil; jika gagal, hentikan update lanjutan,
+laporkan hasil, dan gunakan prosedur rollback yang sesuai tanpa downgrade
+otomatis database. Backup dan deployment memakai lock yang sama agar tidak
+berjalan bersamaan.
 
 ## Validasi VPS, 5 Oktober 2026
 
