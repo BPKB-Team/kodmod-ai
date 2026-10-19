@@ -117,7 +117,7 @@ export function VoiceControls({ text, onTranscript, autoPlayKey, language: conte
       <button type="button" className="button secondary" onClick={stop} disabled={!active && capture === "idle"}><Square size={16} aria-hidden="true" />{t("Hentikan suara")}</button>
       <button type="button" className="button secondary" onClick={() => void play()} disabled={!text.trim() || busy || capture === "recording" || state === "loading"}>{t("Ulangi")}</button>
     </div>
-    <LoadingStatus active={busy || state === "loading"} label={busyLabel} compact />
+    <LoadingStatus active={busy} label={busyLabel} compact />
     <p className={`voice-status ${state === "error" || state === "blocked" ? "voice-status-error" : ""}`} role="status">
       {!busy && state !== "loading" && t(output.owner === owner && output.message ? output.message : message || (state === "playing" ? "Sedang membacakan." : state === "paused" ? "Pembacaan dijeda." : ""))}
     </p>
