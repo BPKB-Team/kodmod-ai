@@ -39,7 +39,16 @@ log = logging.getLogger(__name__)
 
 async def analytics_node(state: KODMODState) -> dict[str, Any]:
     """Compute analytics for the current student and update state."""
-    language = "en" if state.get("language") == "en" else "id"
+    language = (
+        "en"
+        if (
+            state.get("detected_language")
+            or state.get("learning_profile", {}).get("language")
+            or state.get("language")
+        )
+        == "en"
+        else "id"
+    )
     if state.get("assessment_managed"):
         # Pending evidence has not committed yet. Keep this preview in the graph;
         # dashboards aggregate the accepted SQL rows after the REST transaction.
@@ -52,6 +61,12 @@ async def analytics_node(state: KODMODState) -> dict[str, Any]:
         return {
             "analytics_summary": preview,
             "generated_response": (
+                "Practice result saved. You can review your learning progress separately."
+                if language == "en"
+                else "Hasil latihan tersimpan. Perkembangan belajarmu bisa dilihat di halaman Progres."
+            )
+            if state.get("quiz_policy_version", 1) == 2
+            else (
                 f"Practice complete. Your score is {round(preview['avg_quiz_score'] * 100)} percent."
                 if language == "en"
                 else f"Latihan selesai. Nilai latihanmu {round(preview['avg_quiz_score'] * 100)} persen."

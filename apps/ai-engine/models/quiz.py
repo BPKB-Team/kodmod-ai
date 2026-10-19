@@ -36,7 +36,20 @@ class QuizQuestionOut(BaseModel):
     difficulty: str = "medium"
 
 
+class ScoreSummary(BaseModel):
+    points_earned: int = Field(ge=0)
+    points_possible: int = Field(ge=0)
+    points_per_question: Literal[100] = 100
+    answered_questions: int = Field(ge=0)
+    total_questions: int = Field(ge=0)
+    skipped_questions: int = Field(ge=0)
+    assisted_questions: int = Field(ge=0)
+
+
 class QuizInteractionView(BaseModel):
+    final_summary: str | None = None
+    score_summary: ScoreSummary | None = None
+    score_presentation: Literal["session_total", "legacy_item_only"] = "legacy_item_only"
     policy_version: Literal[1, 2] = 1
     question_state: Literal["answering", "review", "complete"] = "answering"
     available_actions: list[Literal["answer", "hint", "advance"]] = Field(

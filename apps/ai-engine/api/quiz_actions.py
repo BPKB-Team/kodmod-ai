@@ -41,7 +41,10 @@ def fingerprint(body, exclude):
 
 
 def interaction(owned: QuizSession) -> QuizInteractionView:
+    from models.quiz import ScoreSummary
+
     from api.assessment_service import question_out
+    from api.quiz_points import session_result_text
 
     state = owned.assessment_state
     index = state.get("current_question_index", 0)
@@ -49,6 +52,14 @@ def interaction(owned: QuizSession) -> QuizInteractionView:
     phase = state.get("question_state", "answering")
     complete = owned.status == "completed"
     return QuizInteractionView(
+        score_presentation="session_total",
+        score_summary=state.get("score_summary"),
+        final_summary=session_result_text(
+            ScoreSummary.model_validate(state["score_summary"]),
+            language=state.get("detected_language", "id"),
+        )
+        if complete and state.get("score_summary")
+        else None,
         policy_version=2,
         question_state="complete" if complete else phase,
         available_actions=[]
@@ -62,7 +73,9 @@ def interaction(owned: QuizSession) -> QuizInteractionView:
         if phase != "review" and not complete and index < len(questions)
         else None,
         last_review=state.get("last_review"),
-        review_question=question_out(questions[max(0, index-1)], max(0, index-1)) if (phase == "review" or complete) and questions else None,
+        review_question=question_out(questions[max(0, index - 1)], max(0, index - 1))
+        if (phase == "review" or complete) and questions
+        else None,
         hint_text=state.get("hint_text"),
     )
 
@@ -172,6 +185,14 @@ async def finalize_question_outcome(
     ).all()
     owned.correct_count = sum(o.first_score >= 0.6 for o in outcomes)
     owned.final_score = sum(o.first_score for o in outcomes) / max(owned.total_questions, 1)
+    from api.quiz_points import build_score_summary
+
+    owned.assessment_state = {
+        **owned.assessment_state,
+        "score_summary": build_score_summary(
+            outcomes, total_questions=owned.total_questions
+        ).model_dump(),
+    }
     return outcome
 
 
@@ -288,6 +309,7 @@ async def submit_v2(session, graph, student, body, owned):
     await session.flush()
     if decision.close_question:
         await finalize_question_outcome(session, owned, body.question_id)
+        state["score_summary"] = owned.assessment_state["score_summary"]
         state.update(
             current_question_index=index + 1,
             current_question_attempts=0,
@@ -364,6 +386,7 @@ async def apply_quiz_action(
     else:
         if not pending:
             await finalize_question_outcome(session, owned, body.question_id)
+            state["score_summary"] = owned.assessment_state["score_summary"]
             state["last_review"] = review(
                 questions[index], english=state.get("detected_language") == "en"
             )

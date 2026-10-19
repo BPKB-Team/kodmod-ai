@@ -73,6 +73,7 @@ async def test_tutor_empty_skip_has_no_attempt_or_mastery(assessment_http):
     response = await act(client, opened, "advance")
     assert response.status_code == 200, response.text
     assert response.json()["current_question"]["order_index"] == 1
+    assert response.json()["score_summary"]["skipped_questions"] == 1
     async with factory() as db:
         assert await db.scalar(select(func.count()).select_from(models.QuizAttempt)) == 0
         assert await db.scalar(select(func.count()).select_from(models.MasteryEvent)) == 0
@@ -89,6 +90,7 @@ async def test_tutor_retry_uses_first_score_once(assessment_http):
     right = await client.post("/quiz/submit", json=submission(opened, "A"))
     assert right.status_code == 200, right.text
     assert right.json()["cumulative_score"] == 0
+    assert right.json()["score_summary"]["points_earned"] == 0
     async with factory() as db:
         assert await db.scalar(select(func.count()).select_from(models.MasteryEvent)) == 1
         assert (await db.scalar(select(models.MasteryEvent))).score == 0

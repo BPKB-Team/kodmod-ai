@@ -1,0 +1,46 @@
+from types import SimpleNamespace as Outcome
+
+import pytest
+
+
+def test_points_round_each_question_half_up_before_summing():
+    from api.quiz_points import build_score_summary, points_for_score
+
+    assert points_for_score(0.145) == 15
+    summary = build_score_summary(
+        [Outcome(first_score=x, status="answered", assisted=False) for x in [1, 1, 0]],
+        total_questions=3,
+    )
+    assert (summary.points_earned, summary.points_possible) == (200, 300)
+    assert (
+        build_score_summary(
+            [Outcome(first_score=0.145, status="answered", assisted=False)] * 2, total_questions=2
+        ).points_earned
+        == 30
+    )
+
+
+@pytest.mark.parametrize("invalid", [float("nan"), float("inf"), -0.1, 1.01])
+def test_invalid_scores_are_not_points(invalid):
+    from api.quiz_points import points_for_score
+
+    with pytest.raises(ValueError):
+        points_for_score(invalid)
+
+
+def test_skips_assisted_and_session_narration():
+    from api.quiz_points import build_score_summary, session_result_text
+
+    summary = build_score_summary(
+        [
+            Outcome(first_score=0, status="skipped", assisted=False),
+            Outcome(first_score=1, status="answered", assisted=True),
+        ],
+        total_questions=3,
+    )
+    assert summary.skipped_questions == 1 and summary.assisted_questions == 1
+    assert summary.answered_questions == 1
+    assert summary.points_earned == 100 and summary.points_possible == 300
+    assert "100" in session_result_text(summary, language="id")
+    assert "%" not in session_result_text(summary, language="id")
+    assert "percent" not in session_result_text(summary, language="en")

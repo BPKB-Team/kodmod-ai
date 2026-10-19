@@ -71,6 +71,7 @@ STATE_KEYS = (
     "hint_text",
     "hinted_questions",
     "first_answer_assisted",
+    "score_summary",
     "quiz_source_docs",
     "tutoring_context",
     "retrieved_docs",
@@ -233,6 +234,9 @@ async def start_assessment(
         quiz_policy_version=2,
         question_state="answering",
     )
+    from api.quiz_points import build_score_summary
+
+    final["score_summary"] = build_score_summary([], total_questions=len(questions)).model_dump()
     session.add(
         QuizSession(
             id=sid,
@@ -264,6 +268,8 @@ async def start_assessment(
         first_question=question_out(questions[0], 0),
         total_questions=len(questions),
         policy_version=2,
+        score_presentation="session_total",
+        score_summary=final["score_summary"],
         current_question=question_out(questions[0], 0),
         available_actions=["answer", "hint", "advance"] if kind == "tutor" else ["answer"],
     )

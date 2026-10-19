@@ -429,3 +429,17 @@ async def test_v2_review_receipt_survives_restart(isolated_assessment_http):
         recovered = (await client.get(f"/quiz/sessions/{body['quiz_session_id']}")).json()
         assert recovered["question_state"] == "review"
         assert recovered["last_review"] == original.json()["last_review"]
+
+
+async def test_v2_two_sessions_keep_independent_points_and_both_mastery_events(
+    isolated_assessment_http,
+):
+    fixture = isolated_assessment_http
+    first = submission(await v2_start(fixture))
+    second = submission(await v2_start(fixture))
+    results = await overlapping_submissions(fixture, first, second)
+    assert [r.status_code for r in results] == [200, 200]
+    assert all(r.json()["score_summary"]["points_earned"] == 100 for r in results)
+    async with fixture.factory() as db:
+        assert await db.scalar(select(func.count()).select_from(models.MasteryEvent)) == 2
+        assert (await db.scalar(select(models.MasteryScore))).n_attempts == 2
