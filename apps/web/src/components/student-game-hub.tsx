@@ -1,0 +1,328 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import {
+  Library,
+  BookOpen,
+  Sparkles,
+  ListChecks,
+  ClipboardList,
+  LineChart,
+  ArrowRight,
+  ArrowUpRight,
+  Gamepad2,
+  Volume2,
+} from "lucide-react";
+import { UiText, useI18n } from "./language-provider";
+import type { Classroom, StudentMaterial } from "@/lib/class-types";
+import type { User } from "@/lib/types";
+
+const GAME_PAD_ROUTES = [
+  "/siswa/kelas",
+  "/siswa/materi",
+  "/siswa/tutor",
+  "/siswa/latihan",
+  "/siswa/tugas",
+  "/siswa/progres",
+];
+
+interface StudentGameHubProps {
+  user: User;
+  classes: Classroom[];
+  materials: StudentMaterial[];
+}
+
+export function StudentGameHub({
+  user,
+  classes,
+  materials,
+}: StudentGameHubProps) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const activeClasses = classes.filter((c) => !c.is_archived);
+  const completedCount = materials.filter((m) => m.progress?.completed).length;
+  const nextMaterial = materials.find((m) => !m.progress?.completed);
+
+  // References to game pad anchor elements for arrow-key spatial navigation
+  const padRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  const gamePads = [
+    {
+      num: "1",
+      href: GAME_PAD_ROUTES[0],
+      voiceKey: "classes",
+      title: "Kelas Saya",
+      desc: "Ruang kelas dan guru pendamping",
+      stat: `${activeClasses.length} ${t("Kelas Aktif")}`,
+      theme: "pad-green",
+      icon: Library,
+    },
+    {
+      num: "2",
+      href: GAME_PAD_ROUTES[1],
+      voiceKey: "materials",
+      title: "Pustaka Materi",
+      desc: "Semua modul dan bahan bacaan",
+      stat: `${materials.length} ${t("Materi")}`,
+      theme: "pad-blue",
+      icon: BookOpen,
+    },
+    {
+      num: "3",
+      href: GAME_PAD_ROUTES[2],
+      voiceKey: "tutor",
+      title: "Tutor AI",
+      desc: "Tanya jawab langsung dengan suara",
+      stat: t("AI Interaktif"),
+      theme: "pad-purple",
+      icon: Sparkles,
+    },
+    {
+      num: "4",
+      href: GAME_PAD_ROUTES[3],
+      voiceKey: "practice",
+      title: "Latihan & Kuis",
+      desc: "Asesmen mandiri langkah demi langkah",
+      stat: t("Kuis Mandiri"),
+      theme: "pad-amber",
+      icon: ListChecks,
+    },
+    {
+      num: "5",
+      href: GAME_PAD_ROUTES[4],
+      voiceKey: "assignments",
+      title: "Tugas Siswa",
+      desc: "Daftar penugasan dari bapak ibu guru",
+      stat: t("Penugasan"),
+      theme: "pad-rose",
+      icon: ClipboardList,
+    },
+    {
+      num: "6",
+      href: GAME_PAD_ROUTES[5],
+      voiceKey: "progress",
+      title: "Progres Belajar",
+      desc: "Laporan capaian dan evaluasi suara",
+      stat: `${completedCount} ${t("Selesai")}`,
+      theme: "pad-teal",
+      icon: LineChart,
+    },
+  ];
+
+  // Hotkey listener: 1-6 for instant routing, arrow keys for spatial navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const active = document.activeElement;
+      const isInput =
+        active &&
+        ["INPUT", "TEXTAREA", "SELECT"].includes(active.tagName);
+      const isModal = document.querySelector(".swal2-shown, dialog[open]");
+      if (isInput || isModal) return;
+
+      // Number shortcuts 1 - 6
+      const keyNum = parseInt(e.key, 10);
+      if (keyNum >= 1 && keyNum <= 6) {
+        e.preventDefault();
+        const target = GAME_PAD_ROUTES[keyNum - 1];
+        if (target) {
+          router.push(target);
+        }
+        return;
+      }
+
+      // Arrow keys spatial navigation across 2x3 or 3x2 grid
+      const focusedIndex = padRefs.current.findIndex((el) => el === active);
+      if (focusedIndex !== -1) {
+        let nextIndex = -1;
+        if (e.key === "ArrowRight") {
+          nextIndex = (focusedIndex + 1) % GAME_PAD_ROUTES.length;
+        } else if (e.key === "ArrowLeft") {
+          nextIndex = (focusedIndex - 1 + GAME_PAD_ROUTES.length) % GAME_PAD_ROUTES.length;
+        } else if (e.key === "ArrowDown") {
+          nextIndex = focusedIndex + 2 < GAME_PAD_ROUTES.length ? focusedIndex + 2 : (focusedIndex + 1) % GAME_PAD_ROUTES.length;
+        } else if (e.key === "ArrowUp") {
+          nextIndex = focusedIndex - 2 >= 0 ? focusedIndex - 2 : (focusedIndex - 1 + GAME_PAD_ROUTES.length) % GAME_PAD_ROUTES.length;
+        }
+        if (nextIndex !== -1 && padRefs.current[nextIndex]) {
+          e.preventDefault();
+          padRefs.current[nextIndex]?.focus();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
+
+  return (
+    <div className="student-game-hub">
+      {/* Hero Welcome & Audio Navigation Instructions */}
+      <section className="student-hub-hero" aria-labelledby="hub-heading">
+        <div className="student-hub-hero-content">
+          <div className="student-hub-badge">
+            <Gamepad2 size={18} aria-hidden="true" />
+            <span>{t("Pusat Misi Belajar Siswa")}</span>
+          </div>
+          <h1 id="hub-heading" className="student-hub-title">
+            <UiText>{"Halo, "}</UiText>
+            {user.full_name || user.username}
+          </h1>
+          <p className="student-hub-description">
+            <UiText>
+              {
+                "Pilih ruang belajarmu di bawah. Tekan tombol angka 1 sampai 6 di keyboard untuk akses cepat atau sentuh tombol pilihanmu."
+              }
+            </UiText>
+          </p>
+          <div className="student-audio-nav-guide" role="note">
+            <Volume2 size={16} aria-hidden="true" />
+            <span>
+              <UiText>
+                {
+                  "Suara narasi aktif: Sentuh atau sorot tombol untuk mendengarkan penjelasannya."
+                }
+              </UiText>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Quest / Next Learning Mission */}
+      {nextMaterial && (
+        <section
+          className="student-next-mission-card"
+          aria-labelledby="mission-heading"
+        >
+          <div className="mission-card-badge">
+            <Sparkles size={16} aria-hidden="true" />
+            <span>{t("Misi Belajar Kamu Berikutnya")}</span>
+          </div>
+          <div className="mission-card-body">
+            <div>
+              <h2 id="mission-heading" className="mission-card-title">
+                {nextMaterial.title}
+              </h2>
+              <p className="mission-card-desc">
+                {nextMaterial.class_name ? `${nextMaterial.class_name} · ` : ""}
+                <UiText>
+                  {
+                    "Lanjutkan belajar langkah demi langkah bersama Tutor AI."
+                  }
+                </UiText>
+              </p>
+            </div>
+            <Link
+              href={`/siswa/tutor?class_id=${encodeURIComponent(
+                nextMaterial.class_id
+              )}&material_id=${encodeURIComponent(nextMaterial.id)}`}
+              className="button primary mission-action-btn"
+              data-voice-menu="tutor"
+              aria-label={`${t("Lanjutkan belajar")} ${nextMaterial.title} ${t(
+                "bersama Tutor AI"
+              )}`}
+            >
+              <span>{t("Lanjut Belajar")}</span>
+              <ArrowRight size={18} aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* The 6 Centered Game Pads */}
+      <section
+        className="student-game-grid-section"
+        aria-label={t("Menu Utama Belajar")}
+      >
+        <div className="student-game-grid">
+          {gamePads.map((pad, idx) => {
+            const Icon = pad.icon;
+            return (
+              <Link
+                key={pad.href}
+                href={pad.href}
+                ref={(el) => {
+                  padRefs.current[idx] = el;
+                }}
+                className={`game-pad-card ${pad.theme}`}
+                data-voice-menu={pad.voiceKey}
+                aria-label={`Menu ${pad.num}: ${t(pad.title)}. ${t(
+                  pad.desc
+                )}. ${pad.stat}. ${t("Tekan angka")} ${pad.num}.`}
+              >
+                <div className="game-pad-top">
+                  <span className="game-pad-key" aria-hidden="true">
+                    {pad.num}
+                  </span>
+                  <span className="game-pad-stat">{pad.stat}</span>
+                </div>
+
+                <div className="game-pad-icon-wrap" aria-hidden="true">
+                  <Icon size={34} strokeWidth={2.2} />
+                </div>
+
+                <div className="game-pad-info">
+                  <h2 className="game-pad-title">{t(pad.title)}</h2>
+                  <p className="game-pad-desc">{t(pad.desc)}</p>
+                </div>
+
+                <div className="game-pad-footer">
+                  <span className="game-pad-enter-text">
+                    {t("Buka")} <ArrowUpRight size={18} aria-hidden="true" />
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Classes Overview List */}
+      {activeClasses.length > 0 && (
+        <section
+          className="student-classes-overview"
+          aria-labelledby="classes-heading"
+        >
+          <div className="student-classes-header">
+            <h2 id="classes-heading" className="student-classes-title">
+              <UiText>{"Kelas Terdaftar Kamu"}</UiText>
+            </h2>
+            <Link
+              href="/siswa/kelas"
+              className="student-see-all-link"
+              data-voice-menu="classes"
+            >
+              <span>{t("Lihat semua kelas")}</span>
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </div>
+
+          <div className="student-classes-row">
+            {activeClasses.slice(0, 4).map((cls) => (
+              <Link
+                key={cls.id}
+                href={`/siswa/kelas/${cls.id}`}
+                className="student-class-mini-card"
+                data-voice-menu="classes"
+                aria-label={`${cls.name}. ${cls.subject}. ${cls.material_count} materi.`}
+              >
+                <div className="mini-card-top">
+                  <span className="mini-card-badge">{cls.subject}</span>
+                  <span className="mini-card-count">
+                    {cls.material_count} <UiText>{"materi"}</UiText>
+                  </span>
+                </div>
+                <h3 className="mini-card-name">{cls.name}</h3>
+                <p className="mini-card-teacher">
+                  <UiText>{"Guru: "}</UiText>
+                  {cls.teacher_name}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,682 @@
+/* ==========================================================================
+   KODMOD Student Hub (Game-Like Accessible Learning Workspace)
+   Tailored specifically for blind and visually impaired students:
+   - No cramped sidebar stealing horizontal reading space
+   - Centered tactile 3D game pads with hotkeys [1-6] and arrow navigation
+   - High contrast focus outlines & rich voice audio feedback
+   ========================================================================== */
+
+.student-app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  background: radial-gradient(ellipse at 50% -10%, #dbeafe 0%, #f1f6fd 45%, #eef4fc 100%);
+  color: #0f172a;
+}
+
+/* Sticky Accessible Top Navigation Header */
+.student-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1.5px solid #d0dfef;
+  box-shadow: 0 4px 18px rgba(15, 39, 74, 0.05);
+}
+
+.student-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0.65rem clamp(0.75rem, 2.5vw, 2.5rem);
+  min-height: 64px;
+}
+
+.student-header .brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.student-header .brand img {
+  width: 140px;
+  height: auto;
+  display: block;
+}
+
+.student-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.student-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
+}
+
+.student-nav-context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Tactile Game Back Button */
+.student-back-to-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #3b82f6;
+  box-shadow: 0 4px 0 #172554, 0 6px 14px rgba(30, 58, 138, 0.25);
+  text-decoration: none;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-back-to-hub-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #172554, 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.student-back-to-hub-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #172554;
+}
+
+.student-back-to-hub-btn:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 3px;
+}
+
+.student-kbd-hint {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.student-current-page-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #e0ecfc;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+
+.student-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Full Width Main Workspace */
+.student-main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  box-sizing: border-box;
+}
+
+/* Student Game Hub Dashboard */
+.student-game-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* Hero Section */
+.student-hub-hero {
+  background: linear-gradient(135deg, #091e3a 0%, #103464 55%, #184886 100%);
+  border-radius: 28px;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 36px rgba(10, 31, 60, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.student-hub-hero::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.28) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.student-hub-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #facc15;
+}
+
+.student-hub-title {
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 1rem 0 0.65rem;
+  color: #ffffff;
+}
+
+.student-hub-description {
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  color: #d1d5db;
+  line-height: 1.6;
+  max-width: 68ch;
+  margin: 0 0 1.25rem;
+}
+
+.student-audio-nav-guide {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(30, 58, 138, 0.55);
+  border: 1px solid rgba(147, 197, 253, 0.4);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #e0f2fe;
+}
+
+/* Next Mission Card */
+.student-next-mission-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 24px;
+  padding: 1.65rem 2rem;
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mission-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #92400e;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mission-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.mission-card-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #78350f;
+  margin: 0 0 0.35rem;
+}
+
+.mission-card-desc {
+  font-size: 0.95rem;
+  color: #92400e;
+  margin: 0;
+}
+
+.mission-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Game Navigation Grid (The 6 Central Tactile Game Pads)
+   ========================================================================== */
+.student-game-grid-section {
+  width: 100%;
+}
+
+.student-game-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2.2vw, 1.75rem);
+}
+
+@media (max-width: 1024px) {
+  .student-game-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .student-game-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.game-pad-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 235px;
+  padding: 1.65rem;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 2.5px solid var(--pad-border);
+  box-shadow: 0 7px 0 var(--pad-shadow), 0 12px 28px var(--pad-glow);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.16s ease;
+}
+
+.game-pad-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--pad-accent);
+  box-shadow: 0 13px 0 var(--pad-shadow), 0 20px 36px var(--pad-glow);
+}
+
+.game-pad-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: var(--pad-accent);
+  box-shadow: 0 11px 0 var(--pad-shadow), 0 0 0 4px var(--pad-focus-ring);
+  outline: 3px solid var(--pad-accent);
+  outline-offset: 3px;
+}
+
+.game-pad-card:active {
+  transform: translateY(4px);
+  box-shadow: 0 3px 0 var(--pad-shadow), 0 4px 10px var(--pad-glow);
+}
+
+.game-pad-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.game-pad-key {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 900;
+  background: var(--pad-accent);
+  color: #ffffff;
+  box-shadow: 0 3px 0 var(--pad-shadow);
+  letter-spacing: -0.02em;
+}
+
+.game-pad-stat {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--pad-bg-subtle);
+  color: var(--pad-text-accent);
+}
+
+.game-pad-icon-wrap {
+  width: 66px;
+  height: 66px;
+  border-radius: 20px;
+  background: var(--pad-bg-icon);
+  color: var(--pad-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0 0.75rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease;
+}
+
+.game-pad-card:hover .game-pad-icon-wrap {
+  transform: scale(1.08);
+}
+
+.game-pad-title {
+  font-size: 1.38rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+  margin: 0 0 0.35rem;
+}
+
+.game-pad-desc {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #475569;
+  margin: 0;
+}
+
+.game-pad-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--pad-border);
+}
+
+.game-pad-enter-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--pad-accent);
+  transition: gap 0.15s ease;
+}
+
+.game-pad-card:hover .game-pad-enter-text {
+  gap: 10px;
+}
+
+/* ==========================================================================
+   Color Themes per Game Pad
+   ========================================================================== */
+/* 1. Kelas Saya - Emerald Green */
+.pad-green {
+  --pad-accent: #059669;
+  --pad-border: #a7f3d0;
+  --pad-shadow: #047857;
+  --pad-glow: rgba(5, 150, 105, 0.18);
+  --pad-bg-icon: #ecfdf5;
+  --pad-bg-subtle: #d1fae5;
+  --pad-text-accent: #065f46;
+  --pad-focus-ring: rgba(5, 150, 105, 0.25);
+}
+
+/* 2. Pustaka Materi - Cobalt Blue */
+.pad-blue {
+  --pad-accent: #2563eb;
+  --pad-border: #bfdbfe;
+  --pad-shadow: #1d4ed8;
+  --pad-glow: rgba(37, 99, 235, 0.18);
+  --pad-bg-icon: #eff6ff;
+  --pad-bg-subtle: #dbeafe;
+  --pad-text-accent: #1e40af;
+  --pad-focus-ring: rgba(37, 99, 235, 0.25);
+}
+
+/* 3. Tutor AI - Electric Purple */
+.pad-purple {
+  --pad-accent: #7c3aed;
+  --pad-border: #ddd6fe;
+  --pad-shadow: #6d28d9;
+  --pad-glow: rgba(124, 58, 237, 0.2);
+  --pad-bg-icon: #f5f3ff;
+  --pad-bg-subtle: #ede9fe;
+  --pad-text-accent: #5b21b6;
+  --pad-focus-ring: rgba(124, 58, 237, 0.25);
+}
+
+/* 4. Latihan & Kuis - Warm Amber */
+.pad-amber {
+  --pad-accent: #d97706;
+  --pad-border: #fde68a;
+  --pad-shadow: #b45309;
+  --pad-glow: rgba(217, 119, 6, 0.18);
+  --pad-bg-icon: #fffbeb;
+  --pad-bg-subtle: #fef3c7;
+  --pad-text-accent: #92400e;
+  --pad-focus-ring: rgba(217, 119, 6, 0.25);
+}
+
+/* 5. Tugas Siswa - Vivid Rose */
+.pad-rose {
+  --pad-accent: #e11d48;
+  --pad-border: #fecdd3;
+  --pad-shadow: #be123c;
+  --pad-glow: rgba(225, 29, 72, 0.18);
+  --pad-bg-icon: #fff1f2;
+  --pad-bg-subtle: #ffe4e6;
+  --pad-text-accent: #9f1239;
+  --pad-focus-ring: rgba(225, 29, 72, 0.25);
+}
+
+/* 6. Progres Belajar - Deep Teal */
+.pad-teal {
+  --pad-accent: #0d9488;
+  --pad-border: #99f6e4;
+  --pad-shadow: #0f766e;
+  --pad-glow: rgba(13, 148, 136, 0.18);
+  --pad-bg-icon: #f0fdfa;
+  --pad-bg-subtle: #ccfbf1;
+  --pad-text-accent: #115e59;
+  --pad-focus-ring: rgba(13, 148, 136, 0.25);
+}
+
+/* ==========================================================================
+   Classes Section
+   ========================================================================== */
+.student-classes-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.student-classes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.student-classes-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+.student-see-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.student-see-all-link:hover {
+  text-decoration: underline;
+}
+
+.student-classes-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.student-class-mini-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 18px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  transition: all 0.15s ease;
+}
+
+.student-class-mini-card:hover {
+  transform: translateY(-3px);
+  border-color: #3b82f6;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+}
+
+.student-class-mini-card:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.mini-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mini-card-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.mini-card-count {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.mini-card-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.mini-card-teacher {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Footer */
+.student-footer {
+  border-top: 1px solid #cbd5e1;
+  background: #ffffff;
+  padding: 1.5rem clamp(1rem, 3vw, 2.5rem);
+  margin-top: auto;
+}
+
+.student-footer-inner {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.student-footer-inner strong {
+  color: #1e3a8a;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .student-header .brand img {
+    width: 110px;
+  }
+  .student-role-pill {
+    display: none;
+  }
+  .student-header-inner {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 0.6rem 0.85rem;
+    min-height: auto;
+  }
+  .student-header-left {
+    order: 1;
+    gap: 0.5rem;
+  }
+  .student-header-right {
+    order: 2;
+    margin-inline-start: auto;
+    display: flex;
+    align-items: center;
+  }
+  .student-header-toolbar-wrap {
+    order: 3;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-top: 6px;
+    border-top: 1px dashed #dbeafe;
+  }
+  .student-back-to-hub-btn {
+    padding: 6px 10px;
+    font-size: 0.84rem;
+  }
+  .student-kbd-hint {
+    display: none;
+  }
+  .student-current-page-pill {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+}
