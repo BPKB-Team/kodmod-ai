@@ -11,6 +11,7 @@ import {
   CircleAlert,
   Clock,
   Cpu,
+  Filter,
   RefreshCw,
   Search,
   Sparkles,
@@ -331,6 +332,9 @@ export function AdminAiMonitor({
             </form>
 
             <div className="ai-status-select-wrap">
+              <span className="ai-status-select-icon" aria-hidden="true">
+                <Filter size={14} />
+              </span>
               <NativeSelect
                 disabled={loading}
                 value={filterStatus}
