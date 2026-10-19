@@ -349,15 +349,16 @@
 }
 .sidebar-bottom {
   margin-top: auto;
-  padding-top: 1.25rem;
-  border-top: 1px solid #ffffff1a;
-  color: #97b0d2;
+  padding-top: 0.5rem;
+  padding-bottom: 3.5rem;
+  border-top: none;
+  color: #6b88ad;
+  font-size: 0.75rem;
+  line-height: 1.4;
 }
-.sidebar-bottom strong {
-  color: #d5e5fb;
-}
-.sidebar-bottom > svg {
-  color: #83b8ff;
+.sidebar-bottom p {
+  margin: 0;
+  color: inherit;
 }
 .workspace-header {
   position: sticky;

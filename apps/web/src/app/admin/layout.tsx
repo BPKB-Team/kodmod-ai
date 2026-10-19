@@ -1,6 +1,5 @@
 
 import type { ReactNode } from "react";
-import { ShieldCheck } from "lucide-react";
 import { Brand } from "@/components/ui";
 import { AdminNav } from "@/components/admin-nav";
 import { requireSession } from "@/lib/session";
@@ -21,8 +20,6 @@ export default async function AdminLayout({
         <div className="sidebar-label">{t("Ruang administrasi")}</div>
         <AdminNav />
         <div className="sidebar-bottom">
-          <ShieldCheck size={22} aria-hidden="true" />
-          <strong>KODMOD</strong>
           <p>{t("Ruang belajar untuk semua.")}</p>
         </div>
       </aside>

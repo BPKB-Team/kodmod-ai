@@ -1,6 +1,5 @@
 
 import type { ReactNode } from "react";
-import { BookOpen } from "lucide-react";
 import { Brand } from "./ui";
 import { LearningNav } from "./learning-nav";
 import { requireSession } from "@/lib/session";
@@ -51,8 +50,6 @@ export async function LearningShell({
         </div>
         <LearningNav base="/guru" />
         <div className="sidebar-bottom">
-          <BookOpen size={24} aria-hidden="true" />
-          <strong>KODMOD</strong>
           <p>{t("Ruang belajar untuk semua.")}</p>
         </div>
       </aside>

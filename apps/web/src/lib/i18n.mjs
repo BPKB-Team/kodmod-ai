@@ -331,7 +331,7 @@ export const english = {
   "Buat kelas, tambahkan siswa, lalu bagikan materi pertama.": "Create a class, add students, then share your first material.",
   "Siapkan kelas dan materi belajar.": "Prepare classes and learning materials.",
   "Siapkan materi, ajak siswa, dan bangun pengalaman belajar yang lebih terarah.": "Prepare materials, invite students, and build a more guided learning experience.",
-  "Materi, anggota, dan ruang belajar Anda dalam satu tempat.": "Your materials, members, and learning spaces in one place.",
+  "Materi, anggota, dan ruang belajar Anda dalam satu tempat.": "Your lessons, students, and classes in one place.",
   "Kelola kelas, materi, dan tugas siswa.": "Manage classes, materials, and student assignments.",
   "Kelas aktif": "Active classes",
   "Materi di kelas aktif": "Materials in active classes",

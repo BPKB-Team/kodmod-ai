@@ -13,11 +13,13 @@ test("mobile learning menu exposes its controlled navigation and closes after a 
   const React = (await import("react")).default;
   const { createRoot } = await import("react-dom/client");
   const icon = () => null;
+  let speechStopCalls = 0;
   const mocks = {
     "next/link": { __esModule: true, default: ({ children, ...props }) => React.createElement("a", { ...props, href: "#" }, children) },
     "next/navigation": { usePathname: () => "/siswa" },
     "./language-provider": { useI18n: () => ({ t: text => text }) },
     "./logout-button": { LogoutButton: () => React.createElement("button", null, "Keluar") },
+    "@/lib/browser-speech": { speechOutput: { stop: () => { speechStopCalls += 1; } } },
     "lucide-react": new Proxy({}, { get: () => icon }),
   };
   const source = readFileSync(new URL("../src/components/learning-nav.tsx", import.meta.url), "utf8");
@@ -35,6 +37,7 @@ test("mobile learning menu exposes its controlled navigation and closes after a 
     assert.equal(toggle.getAttribute("aria-expanded"), "true");
     await React.act(async () => [...nav.querySelectorAll("a")].find(link => link.textContent === "Materi").click());
     assert.equal(toggle.getAttribute("aria-expanded"), "false");
+    assert.equal(speechStopCalls, 1);
   } finally {
     await React.act(async () => root.unmount()); dom.window.close();
     for (const [key, descriptor] of previous) { if (descriptor) Object.defineProperty(globalThis, key, descriptor); else delete globalThis[key]; }
