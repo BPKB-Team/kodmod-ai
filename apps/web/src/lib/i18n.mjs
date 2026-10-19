@@ -499,6 +499,20 @@ export const english = {
   "Metadata operasional dan audit log sistem tanpa membocorkan kredensial.": "Operational metadata and system audit logs without exposing credentials.",
   "Status layanan": "Service status",
   "Konfigurasi provider dibaca dari backend dan tidak menampilkan API key.": "Provider configuration loaded from backend without displaying API keys.",
+  "Konfigurasi provider dibaca dari backend tanpa membocorkan kredensial.": "Provider configuration loaded from backend without exposing credentials.",
+  "Aktivitas & Layanan": "Activity & Services",
+  "Semua Status": "All Statuses",
+  "Total request 7 hari": "Total requests (7 days)",
+  "Efisiensi kuota audio": "Audio quota efficiency",
+  "Error atau fallback": "Errors or fallback",
+  "Berdasarkan token & audio": "Based on tokens & audio",
+  "ElevenLabs Speech Service": "ElevenLabs Speech Service",
+  "Total sesi belajar": "Total learning sessions",
+  "Cari berdasarkan nama atau username…": "Search by name or username…",
+  "Cari berdasarkan judul materi...": "Search by material title...",
+  "Peran:": "Role:",
+  "Status:": "Status:",
+  "Terapkan": "Apply",
 };
 
 export function translate(text, language = "id", values = {}) {

@@ -38,9 +38,11 @@ async function readJson<T>(response: Response, fallback: string) {
 export function AdminInsights({
   initialOverview,
   initialActivity,
+  isStandalonePage = false,
 }: {
   initialOverview: AdminOverview;
   initialActivity: AdminActivity;
+  isStandalonePage?: boolean;
 }) {
   const { t } = useI18n();
   const [overview, setOverview] = useState(initialOverview);
@@ -113,55 +115,85 @@ export function AdminInsights({
   return (
     <section className="admin-insights" aria-label={t("Insight operasional admin")}>
       <LoadingStatus active={loading} label="Memuat analitik dan aktivitas…" />
-      <div className="admin-insights-heading">
-        <div>
-          <span className="analytics-kicker"><Activity size={14} aria-hidden="true" /><UiText>{" OPERASIONAL"}</UiText></span>
-          <h2><UiText>{"Semua sinyal penting dalam satu pandangan."}</UiText></h2>
-          <p><UiText>{"Angka agregat untuk memantau kesehatan ruang belajar dan layanan pendukung."}</UiText></p>
+      {isStandalonePage ? (
+        <div className="admin-activity-page-header">
+          <div>
+            <span className="analytics-kicker">
+              <Activity size={14} aria-hidden="true" />
+              <UiText>{" OPERASIONAL"}</UiText>
+            </span>
+            <h1><UiText>{"Aktivitas & Layanan"}</UiText></h1>
+            <p><UiText>{"Pantau kesehatan operasional KODMOD dan status provider pendukung."}</UiText></p>
+          </div>
+          <button type="button" className="button secondary" onClick={() => void refresh()} disabled={loading}>
+            <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
+            <UiText>{"Perbarui Data"}</UiText>
+          </button>
         </div>
-        <button type="button" className="button secondary" onClick={() => void refresh()} disabled={loading}>
-          <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" /><UiText>{"Perbarui"}</UiText></button>
-      </div>
+      ) : (
+        <div className="admin-insights-heading">
+          <div>
+            <span className="analytics-kicker"><Activity size={14} aria-hidden="true" /><UiText>{" OPERASIONAL"}</UiText></span>
+            <h2><UiText>{"Semua sinyal penting dalam satu pandangan."}</UiText></h2>
+            <p><UiText>{"Angka agregat untuk memantau kesehatan ruang belajar dan layanan pendukung."}</UiText></p>
+          </div>
+          <button type="button" className="button secondary" onClick={() => void refresh()} disabled={loading}>
+            <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
+            <UiText>{"Perbarui Data"}</UiText>
+          </button>
+        </div>
+      )}
       {error && <p className="alert error-message" role="alert">{error}</p>}
 
       <div className="admin-insight-grid">
         <article className="panel admin-insight-card">
-          <span className="admin-insight-icon blue"><Users size={19} aria-hidden="true" /></span>
-          <span><UiText>{"Pengguna aktif"}</UiText></span>
-          <strong>{overview.users.active}</strong>
-          <small>{overview.users.total}<UiText>{" akun · "}</UiText>{overview.users.students}<UiText>{" siswa · "}</UiText>{overview.users.teachers}<UiText>{" guru"}</UiText></small>
+          <span className="admin-insight-icon blue"><Users size={22} aria-hidden="true" /></span>
+          <div className="admin-insight-card-content">
+            <span><UiText>{"Pengguna aktif"}</UiText></span>
+            <strong>{overview.users.active}</strong>
+            <small>{overview.users.total}<UiText>{" akun · "}</UiText>{overview.users.students}<UiText>{" siswa · "}</UiText>{overview.users.teachers}<UiText>{" guru"}</UiText></small>
+          </div>
         </article>
         <article className="panel admin-insight-card">
-          <span className="admin-insight-icon purple"><GraduationCap size={19} aria-hidden="true" /></span>
-          <span><UiText>{"Ruang belajar"}</UiText></span>
-          <strong>{overview.learning.classrooms}</strong>
-          <small>{overview.learning.sessions}<UiText>{" sesi · "}</UiText>{overview.learning.open_sessions}<UiText>{" masih terbuka"}</UiText></small>
+          <span className="admin-insight-icon purple"><GraduationCap size={22} aria-hidden="true" /></span>
+          <div className="admin-insight-card-content">
+            <span><UiText>{"Ruang belajar"}</UiText></span>
+            <strong>{overview.learning.classrooms}</strong>
+            <small>{overview.learning.sessions}<UiText>{" sesi · "}</UiText>{overview.learning.open_sessions}<UiText>{" masih terbuka"}</UiText></small>
+          </div>
         </article>
         <article className="panel admin-insight-card">
-          <span className="admin-insight-icon green"><ShieldCheck size={19} aria-hidden="true" /></span>
-          <span><UiText>{"Kesiapan suara"}</UiText></span>
+          <span className="admin-insight-icon green"><ShieldCheck size={22} aria-hidden="true" /></span>
+          <div className="admin-insight-card-content">
+            <span><UiText>{"Kesiapan suara"}</UiText></span>
             <strong>{!provider.enabled ? <UiText>{"Fallback aktif"}</UiText> : provider.configured ? <UiText>{"Siap"}</UiText> : <UiText>{"Perlu setup"}</UiText>}</strong>
-          <small>{provider.tts_backend} · {provider.stt_backend}</small>
+            <small>{provider.tts_backend} · {provider.stt_backend}</small>
+          </div>
         </article>
       </div>
 
       <div className="admin-insight-columns">
         <article className="panel admin-activity-card">
           <div className="panel-heading">
-            <div><h2><UiText>{"Aktivitas terbaru"}</UiText></h2><p><UiText>{"Metadata operasional dan audit log sistem tanpa membocorkan kredensial."}</UiText></p></div>
+            <div>
+              <h2><UiText>{"Aktivitas terbaru"}</UiText></h2>
+              <p><UiText>{"Metadata operasional dan audit log sistem tanpa membocorkan kredensial."}</UiText></p>
+            </div>
             <Activity size={20} aria-hidden="true" />
           </div>
 
           <div
             className="ai-filter-group"
-            style={{ margin: "8px 0 16px", flexWrap: "wrap" }}
-            role="group"
+            style={{ margin: "10px 0 16px", flexWrap: "wrap" }}
+            role="tablist"
             aria-label={t("Filter kategori aktivitas")}
           >
             {categoryFilters.map((filter) => (
               <button
                 key={filter.id}
                 type="button"
+                role="tab"
+                aria-selected={selectedCategory === filter.id}
                 className={`ai-filter-tab ${selectedCategory === filter.id ? "active" : ""}`}
                 onClick={() => void handleFilterChange(filter.id)}
                 disabled={loading}
@@ -182,23 +214,26 @@ export function AdminInsights({
                       {item.category && (
                         <span
                           style={{
-                            fontSize: "10px",
-                            padding: "1px 6px",
-                            borderRadius: "4px",
-                            background: "#edf3fc",
-                            color: "#305d9e",
-                            fontWeight: 600,
+                            fontSize: "11px",
+                            padding: "2px 7px",
+                            borderRadius: "6px",
+                            background: "#edf4fe",
+                            color: "#1e40af",
+                            fontWeight: 650,
                           }}
                         >
                           {item.category.toUpperCase()}
                         </span>
                       )}
                     </div>
-                    <p style={{ marginTop: "2px" }}>
+                    <p style={{ margin: "4px 0", fontSize: "0.85rem", color: "#334155" }}>
                       {item.actor_name}
                       {item.actor_role ? ` (${item.actor_role})` : ""} · {item.target_name}
                     </p>
-                    <small><UiDate value={item.occurred_at} time empty="Belum tersedia" /></small>
+                    <small style={{ color: "#64748b", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.8rem" }}>
+                      <Clock3 size={12} aria-hidden="true" />
+                      <UiDate value={item.occurred_at} time empty="Belum tersedia" />
+                    </small>
                   </div>
                 </div>
               ))}
@@ -237,20 +272,56 @@ export function AdminInsights({
         </article>
         <article className="panel admin-activity-card">
           <div className="panel-heading">
-            <div><h2><UiText>{"Status layanan"}</UiText></h2><p><UiText>{"Konfigurasi provider dibaca dari backend dan tidak menampilkan API key."}</UiText></p></div>
+            <div>
+              <h2><UiText>{"Status layanan"}</UiText></h2>
+              <p><UiText>{"Konfigurasi provider dibaca dari backend tanpa membocorkan kredensial."}</UiText></p>
+            </div>
             <Sparkles size={20} aria-hidden="true" />
           </div>
-          <div className="admin-provider-status">
-            <div className={provider.enabled ? (provider.configured ? "ready" : "attention") : "idle"}>
-              {provider.enabled && provider.configured ? <CheckCircle2 size={21} aria-hidden="true" /> : <CircleAlert size={21} aria-hidden="true" />}
-              <div><strong><UiText>{"ElevenLabs"}</UiText></strong><span>{!provider.enabled ? <UiText>{"Belum dipilih; fallback lokal tetap aktif"}</UiText> : provider.configured ? <UiText>{"TTS dan STT siap digunakan"}</UiText> : <UiText>{"API key atau voice ID belum lengkap"}</UiText>}</span></div>
+          <div className="admin-provider-card-box">
+            {provider.enabled && provider.configured ? (
+              <CheckCircle2 size={24} style={{ color: "#059669", flexShrink: 0, marginTop: "2px" }} aria-hidden="true" />
+            ) : (
+              <CircleAlert size={24} style={{ color: "#d97706", flexShrink: 0, marginTop: "2px" }} aria-hidden="true" />
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" }}>
+                <strong style={{ fontSize: "0.95rem", color: "#0f2442" }}><UiText>{"ElevenLabs Speech Service"}</UiText></strong>
+                <span className={`ai-status-tag ${provider.enabled && provider.configured ? "ready" : "fallback"}`}>
+                  {provider.enabled && provider.configured ? <UiText>{"Siap"}</UiText> : <UiText>{"Perlu setup"}</UiText>}
+                </span>
+              </div>
+              <p style={{ margin: "4px 0 0", fontSize: "0.82rem", color: "#475569" }}>
+                {!provider.enabled
+                  ? <UiText>{"Belum dipilih; fallback lokal tetap aktif"}</UiText>
+                  : provider.configured
+                    ? <UiText>{"TTS dan STT siap digunakan"}</UiText>
+                    : <UiText>{"API key atau voice ID belum lengkap"}</UiText>}
+              </p>
             </div>
-            <dl>
-              <div><dt><UiText>{"Text to speech"}</UiText></dt><dd>{provider.tts_backend}</dd></div>
-              <div><dt><UiText>{"Speech to text"}</UiText></dt><dd>{provider.stt_backend}</dd></div>
-              <div><dt><UiText>{"Kuis tersimpan"}</UiText></dt><dd>{overview.learning.quiz_sessions}</dd></div>
-              <div><dt><UiText>{"Guru terdaftar"}</UiText></dt><dd>{overview.users.teachers}</dd></div>
-            </dl>
+          </div>
+
+          <div className="admin-provider-spec-list">
+            <div className="admin-provider-spec-row">
+              <span><UiText>{"Text to speech"}</UiText></span>
+              <code>{provider.tts_backend}</code>
+            </div>
+            <div className="admin-provider-spec-row">
+              <span><UiText>{"Speech to text"}</UiText></span>
+              <code>{provider.stt_backend}</code>
+            </div>
+            <div className="admin-provider-spec-row">
+              <span><UiText>{"Kuis tersimpan"}</UiText></span>
+              <strong>{overview.learning.quiz_sessions}</strong>
+            </div>
+            <div className="admin-provider-spec-row">
+              <span><UiText>{"Guru terdaftar"}</UiText></span>
+              <strong>{overview.users.teachers}</strong>
+            </div>
+            <div className="admin-provider-spec-row">
+              <span><UiText>{"Total sesi belajar"}</UiText></span>
+              <strong>{overview.learning.sessions}</strong>
+            </div>
           </div>
         </article>
       </div>

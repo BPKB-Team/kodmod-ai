@@ -65,10 +65,15 @@ export function AdminUserDetail({
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+function getInitials(name: string) {
+  const cleaned = name.replace(/^\[[^\]]+\]\s*/, "").trim();
+  return (cleaned.slice(0, 1) || name.slice(0, 1) || "?").toUpperCase();
+}
+
   return (
     <div className="admin-user-detail-container">
       <div className="admin-detail-topbar">
-        <Link href="/admin/pengguna" className="button secondary">
+        <Link href="/admin/pengguna" className="learning-back">
           <ArrowLeft size={16} aria-hidden="true" />
           <UiText>{"Kembali ke daftar pengguna"}</UiText>
         </Link>
@@ -80,7 +85,7 @@ export function AdminUserDetail({
           <div className="panel admin-user-profile-card">
             <div className="admin-profile-avatar-wrap">
               <span className="admin-profile-avatar" aria-hidden="true">
-                {user.full_name.slice(0, 1).toUpperCase()}
+                {getInitials(user.full_name)}
               </span>
             </div>
             <h2 className="admin-profile-name">{user.full_name}</h2>

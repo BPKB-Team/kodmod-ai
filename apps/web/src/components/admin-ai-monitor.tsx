@@ -1,6 +1,5 @@
 "use client";
 import { LoadingStatus } from "./loading-feedback";
-import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 
@@ -70,13 +69,13 @@ export function AdminAiMonitor({
     <div className="admin-ai-monitor-layout">
       <LoadingStatus active={loading} label="Memuat penggunaan layanan AI…" />
       {/* Top Header Controls */}
-      <div className="admin-ai-topbar">
+      <div className="admin-activity-page-header">
         <div>
           <span className="analytics-kicker">
             <Cpu size={14} aria-hidden="true" />
             <UiText>{" PEMANTAUAN MESIN AI"}</UiText>
           </span>
-          <h2><UiText>{"Status Kuota & Penggunaan API Eksternal"}</UiText></h2>
+          <h1><UiText>{"Status Kuota & Penggunaan API Eksternal"}</UiText></h1>
           <p><UiText>{"Periksa konfigurasi layanan dan kuota suara yang berhasil dimuat dari penyedia."}</UiText></p>
         </div>
         <button
@@ -91,12 +90,42 @@ export function AdminAiMonitor({
       </div>
 
       <div className="ai-usage-summary" aria-label={t("Penggunaan 7 hari terakhir")}>
-        <div><span>{t("Panggilan layanan")}</span><strong>{metric(data.summary?.provider_calls)}</strong></div>
-        <div><span>{t("Audio dari cache")}</span><strong>{metric(data.summary?.cache_hits)}</strong></div>
-        <div><span>{t("Permintaan gagal")}</span><strong>{metric(data.summary?.errors)}</strong></div>
-        <div><span>{t("Estimasi biaya (USD)")}</span><strong>{cost(data.summary?.estimated_cost_usd)}</strong></div>
+        <div className="ai-stat-card">
+          <div className="ai-stat-header">
+            <span>{t("Panggilan layanan")}</span>
+            <span className="ai-stat-icon-wrap blue"><Zap size={16} aria-hidden="true" /></span>
+          </div>
+          <strong>{metric(data.summary?.provider_calls)}</strong>
+          <small>{t("Total request 7 hari")}</small>
+        </div>
+        <div className="ai-stat-card">
+          <div className="ai-stat-header">
+            <span>{t("Audio dari cache")}</span>
+            <span className="ai-stat-icon-wrap indigo"><Volume2 size={16} aria-hidden="true" /></span>
+          </div>
+          <strong>{metric(data.summary?.cache_hits)}</strong>
+          <small>{t("Efisiensi kuota audio")}</small>
+        </div>
+        <div className="ai-stat-card">
+          <div className="ai-stat-header">
+            <span>{t("Permintaan gagal")}</span>
+            <span className="ai-stat-icon-wrap red"><CircleAlert size={16} aria-hidden="true" /></span>
+          </div>
+          <strong>{metric(data.summary?.errors)}</strong>
+          <small>{t("Error atau fallback")}</small>
+        </div>
+        <div className="ai-stat-card">
+          <div className="ai-stat-header">
+            <span>{t("Estimasi biaya (USD)")}</span>
+            <span className="ai-stat-icon-wrap amber"><Sparkles size={16} aria-hidden="true" /></span>
+          </div>
+          <strong>{cost(data.summary?.estimated_cost_usd)}</strong>
+          <small>{t("Berdasarkan token & audio")}</small>
+        </div>
       </div>
-      <p className="muted">{t("Ringkasan 7 hari terakhir. Estimasi biaya memerlukan tarif dan angka penggunaan yang tersedia.")}</p>
+      <p className="muted" style={{ margin: "-8px 0 8px 4px", fontSize: "0.82rem", color: "#64748b" }}>
+        {t("Ringkasan 7 hari terakhir. Estimasi biaya memerlukan tarif dan angka penggunaan yang tersedia.")}
+      </p>
 
       {/* Grid: 2 Provider Quota Cards */}
       <div className="ai-quota-grid">
@@ -247,19 +276,23 @@ export function AdminAiMonitor({
 
         {/* Filter bar untuk log */}
         <div className="ai-log-filter-bar">
-          <div className="ai-filter-group">
+          <div className="ai-filter-group" role="tablist" aria-label={t("Filter provider")}>
             <button
               type="button"
+              role="tab"
               className={`ai-filter-tab ${filterProvider === "all" ? "active" : ""}`}
-              disabled={loading} aria-pressed={filterProvider === "all"}
+              disabled={loading}
+              aria-selected={filterProvider === "all"}
               onClick={() => void handleRefresh(1, "all")}
             >
               <UiText>{"Semua Provider"}</UiText>
             </button>
             <button
               type="button"
+              role="tab"
               className={`ai-filter-tab ${filterProvider === "openai" ? "active" : ""}`}
-              disabled={loading} aria-pressed={filterProvider === "openai"}
+              disabled={loading}
+              aria-selected={filterProvider === "openai"}
               onClick={() => void handleRefresh(1, "openai")}
             >
               <Sparkles size={14} aria-hidden="true" />
@@ -267,8 +300,10 @@ export function AdminAiMonitor({
             </button>
             <button
               type="button"
+              role="tab"
               className={`ai-filter-tab ${filterProvider === "elevenlabs" ? "active" : ""}`}
-              disabled={loading} aria-pressed={filterProvider === "elevenlabs"}
+              disabled={loading}
+              aria-selected={filterProvider === "elevenlabs"}
               onClick={() => void handleRefresh(1, "elevenlabs")}
             >
               <Volume2 size={14} aria-hidden="true" />
@@ -276,21 +311,40 @@ export function AdminAiMonitor({
             </button>
           </div>
 
-          <form className="ai-search-box" onSubmit={event => { event.preventDefault(); void handleRefresh(); }}>
-            <Search size={16} aria-hidden="true" />
-            <Input
-              type="text"
-              placeholder={t("Cari nama atau layanan…")}
-              aria-label={t("Cari nama atau layanan")}
-              maxLength={120}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button className="button secondary" type="submit" disabled={loading}>{t("Cari")}</button>
-          </form>
-          <label className="field">{t("Status permintaan")}<NativeSelect disabled={loading} value={filterStatus} onChange={event => void handleRefresh(1, filterProvider, event.target.value)}>
-            <option value="all">{t("Semua")}</option><option value="success">{t("Sukses")}</option><option value="error">{t("Gagal")}</option><option value="cache_hit">{t("Audio dari cache")}</option><option value="cancelled">{t("Dibatalkan")}</option>
-          </NativeSelect></label>
+          <div className="ai-log-controls">
+            <form className="ai-search-form" onSubmit={event => { event.preventDefault(); void handleRefresh(); }}>
+              <div className="ai-search-input-wrap">
+                <Search size={15} className="ai-search-icon" aria-hidden="true" />
+                <input
+                  type="text"
+                  className="ai-search-input"
+                  placeholder={t("Cari nama atau layanan…")}
+                  aria-label={t("Cari nama atau layanan")}
+                  maxLength={120}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button className="button secondary ai-search-btn" type="submit" disabled={loading}>
+                {t("Cari")}
+              </button>
+            </form>
+
+            <div className="ai-status-select-wrap">
+              <NativeSelect
+                disabled={loading}
+                value={filterStatus}
+                aria-label={t("Status permintaan")}
+                onChange={event => void handleRefresh(1, filterProvider, event.target.value)}
+              >
+                <option value="all">{t("Semua Status")}</option>
+                <option value="success">{t("Sukses")}</option>
+                <option value="error">{t("Gagal")}</option>
+                <option value="cache_hit">{t("Audio dari cache")}</option>
+                <option value="cancelled">{t("Dibatalkan")}</option>
+              </NativeSelect>
+            </div>
+          </div>
         </div>
 
         {/* Tabel Request Log */}

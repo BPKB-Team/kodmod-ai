@@ -90,20 +90,21 @@ export default async function UsersPage({
       )}
       <form className="filters" action="/admin/pengguna">
         <div className="field search-field">
-          <label htmlFor="q"><UiText>{"Cari pengguna"}</UiText></label>
-          <div>
-            <Search size={18} aria-hidden="true" />
+          <label htmlFor="q" className="sr-only"><UiText>{"Cari pengguna"}</UiText></label>
+          <div className="search-input-wrapper">
+            <Search size={18} className="search-input-icon" aria-hidden="true" />
             <Input
               name="q"
               id="q"
               defaultValue={q}
-              placeholder="Nama atau username"
+              placeholder="Cari berdasarkan nama atau username…"
               maxLength={100}
+              className="search-input-field"
             />
           </div>
         </div>
-        <div className="field">
-          <label htmlFor="role"><UiText>{"Peran"}</UiText></label>
+        <div className="field filter-select-field">
+          <label htmlFor="role" className="filter-label"><UiText>{"Peran:"}</UiText></label>
           <NativeSelect id="role" name="role" defaultValue={role}>
             <option value=""><UiText>{"Semua peran"}</UiText></option>
             {Object.entries(roleLabel).map(([value, label]) => (
@@ -113,20 +114,21 @@ export default async function UsersPage({
             ))}
           </NativeSelect>
         </div>
-        <div className="field">
-          <label htmlFor="status"><UiText>{"Status akun"}</UiText></label>
+        <div className="field filter-select-field">
+          <label htmlFor="status" className="filter-label"><UiText>{"Status:"}</UiText></label>
           <NativeSelect id="status" name="status" defaultValue={status}>
             <option value=""><UiText>{"Semua status"}</UiText></option>
             <option value="active"><UiText>{"Aktif"}</UiText></option>
             <option value="inactive"><UiText>{"Nonaktif"}</UiText></option>
           </NativeSelect>
         </div>
-        <button className="button primary" type="submit">
-          <UiText>{"Terapkan"}</UiText>
+        <button className="button primary search-submit-btn" type="submit">
+          <Search size={15} aria-hidden="true" />
+          <UiText>{"Cari"}</UiText>
         </button>
         {hasActiveFilters && (
-          <Link href="/admin/pengguna" className="text-link">
-            <RotateCcw size={15} aria-hidden="true" />
+          <Link href="/admin/pengguna" className="filter-reset-btn">
+            <RotateCcw size={14} aria-hidden="true" />
             <UiText>{"Reset filter"}</UiText>
           </Link>
         )}

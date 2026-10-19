@@ -51,33 +51,35 @@ export default async function Page({
       />
       <form className="filters" action="/admin/materi">
         <div className="field search-field">
-          <label htmlFor="search"><UiText>{"Cari judul materi"}</UiText></label>
-          <div>
-            <Search size={18} aria-hidden="true" />
+          <label htmlFor="search" className="sr-only"><UiText>{"Cari judul materi"}</UiText></label>
+          <div className="search-input-wrapper">
+            <Search size={18} className="search-input-icon" aria-hidden="true" />
             <Input
               name="search"
               id="search"
               defaultValue={search}
               maxLength={120}
-              placeholder="Judul materi..."
+              placeholder="Cari berdasarkan judul materi..."
               type="search"
+              className="search-input-field"
             />
           </div>
         </div>
-        <div className="field">
-          <label htmlFor="status"><UiText>{"Status publikasi"}</UiText></label>
+        <div className="field filter-select-field">
+          <label htmlFor="status" className="filter-label"><UiText>{"Status:"}</UiText></label>
           <NativeSelect id="status" name="status" defaultValue={status}>
             <option value=""><UiText>{"Semua status"}</UiText></option>
             <option value="published"><UiText>{"Terbit"}</UiText></option>
             <option value="draft"><UiText>{"Draft"}</UiText></option>
           </NativeSelect>
         </div>
-        <button className="button primary" type="submit">
-          <UiText>{"Terapkan"}</UiText>
+        <button className="button primary search-submit-btn" type="submit">
+          <Search size={15} aria-hidden="true" />
+          <UiText>{"Cari"}</UiText>
         </button>
         {hasActiveFilters && (
-          <Link href="/admin/materi" className="text-link">
-            <RotateCcw size={15} aria-hidden="true" />
+          <Link href="/admin/materi" className="filter-reset-btn">
+            <RotateCcw size={14} aria-hidden="true" />
             <UiText>{"Reset filter"}</UiText>
           </Link>
         )}
