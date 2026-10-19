@@ -480,6 +480,8 @@ export const english = {
   "Daftar materi": "Material catalog",
   "Cari judul materi": "Search material title",
   "Judul materi...": "Material title...",
+  "Materi yang diunggah guru akan muncul di sini.": "Materials uploaded by teachers will appear here.",
+  "aktivitas": "activities",
   "Filter kategori aktivitas": "Filter activity categories",
   "Coba ubah kata kunci atau reset filter jika materi belum ditemukan.": "Try changing keywords or reset filters if materials are not found.",
   "Total pengguna": "Total users",
