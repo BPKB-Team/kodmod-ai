@@ -27,10 +27,6 @@ export function LandingFooter() {
           <p className="lp-footer-mission" data-voice-menu="footer-brand" tabIndex={0}>
             {t("Asisten belajar interaktif berbasis Agentic AI untuk siswa disabilitas netra dan guru inklusif. Menghadirkan pembelajaran multi-sensori yang adil, mandiri, dan mendalam.")}
           </p>
-          <div className="lp-footer-status-pill" data-voice-menu="footer-status" tabIndex={0} role="status" aria-label={`${t("Mesin Suara AI Aktif")}. ${t("Audio-First")}`}>
-            <span className="lp-status-indicator-dot" aria-hidden="true" />
-            <span>{t("Mesin Suara AI Aktif")} • {t("Audio-First")}</span>
-          </div>
         </div>
 
         {/* Kolom 2: Navigasi */}

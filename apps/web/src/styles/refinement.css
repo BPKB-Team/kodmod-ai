@@ -1451,13 +1451,39 @@
     gap: 36px;
     padding-block: 28px 44px;
   }
+  .landing-refined .lp-flow-layout,
+  .landing-refined .lp-teacher {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
   .landing-refined .lp-hero-copy {
     max-width: 100%;
   }
   .landing-refined .lp-hero-visual {
     width: 100%;
-    max-width: 440px;
+    max-width: 340px;
     margin-inline: auto;
+  }
+  .landing-refined .lp-hero-art {
+    max-height: 250px;
+    object-fit: contain;
+  }
+  .landing-refined .lp-student-art {
+    max-height: 220px;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+  .landing-refined .lp-student-art > img {
+    max-height: 220px;
+    object-fit: cover;
+  }
+  .landing-refined .lp-teacher-art {
+    max-width: 380px;
+    margin: 20px auto 0;
+  }
+  .landing-refined .lp-teacher-art img {
+    max-height: 240px;
+    object-fit: contain;
   }
   .landing-refined .lp-floating {
     display: none;

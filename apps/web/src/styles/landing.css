@@ -491,16 +491,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: rgba(37, 99, 235, 0.25);
-  border: 1.5px solid #38bdf8;
-  color: #38bdf8;
-  font-size: 0.95rem;
-  font-weight: 800;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 1.5px solid #60a5fa;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 850;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   padding: 0;
   flex-shrink: 0;
+  margin-top: 2px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.lp-steps li > div {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .lp-steps h3 {
   font-size: 1.08rem;
@@ -911,10 +919,12 @@ html[data-reduced-motion="true"] .spin-pulse {
     min-height: 620px;
   }
   .lp-flow-layout {
-    gap: 45px;
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
   .lp-teacher {
-    gap: 40px;
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
   .lp-intro {
     gap: 50px;
@@ -993,12 +1003,14 @@ html[data-reduced-motion="true"] .spin-pulse {
     font-size: 1.06rem;
   }
   .lp-hero-visual {
-    max-width: 460px;
+    max-width: 340px;
     width: 100%;
-    margin: auto;
+    margin: 16px auto 0;
   }
   .lp-hero-art {
     width: 100%;
+    max-height: 260px;
+    object-fit: contain;
     margin: 0;
   }
   .lp-floating-top {
@@ -1038,20 +1050,32 @@ html[data-reduced-motion="true"] .spin-pulse {
     margin-top: 20px;
   }
   .lp-student-art {
-    max-height: 390px;
+    max-height: 220px;
+    max-width: 480px;
+    margin-inline: auto;
+    border-radius: 18px;
   }
   .lp-student-art > img {
-    aspect-ratio: 1.2;
+    aspect-ratio: 16 / 9;
+    max-height: 220px;
+    object-fit: cover;
     object-position: center 35%;
   }
   .lp-steps li {
-    padding: 23px 0;
+    padding: 16px 18px;
+    gap: 16px;
+    margin-bottom: 12px;
   }
   .lp-steps li:first-child {
-    padding-top: 8px;
+    padding-top: 16px;
   }
   .lp-teacher-art {
-    margin-top: 10px;
+    max-width: 380px;
+    margin: 20px auto 0;
+  }
+  .lp-teacher-art img {
+    max-height: 240px;
+    object-fit: contain;
   }
   .lp-access-items {
     grid-template-columns: 1fr;

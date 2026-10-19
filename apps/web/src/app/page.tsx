@@ -204,7 +204,7 @@ export default async function HomePage() {
             ["Pilih materi belajar", "Baca atau dengarkan materi yang sudah dibagikan guru.", "step-2"],
             ["Tanyakan dan latih pemahamanmu", "Bertanya kepada Tutor, kemudian kerjakan latihan atau tugas.", "step-3"],
             ["Lanjutkan dari progresmu", "Lihat hasil, baca pembahasan yang tersedia, dan lanjutkan belajar.", "step-4"],
-          ].map(([title, copy, stepKey], index) => <li key={title} data-voice-menu={stepKey} tabIndex={0}><span className="lp-step-number" aria-hidden="true">{index + 1}</span><div><h3>{t(title)}</h3><p>{t(copy)}</p></div></li>)}</ol>
+          ].map(([title, copy, stepKey], index) => <li key={title} data-voice-menu={stepKey} tabIndex={0}><span className="lp-step-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><div><h3>{t(title)}</h3><p>{t(copy)}</p></div></li>)}</ol>
         </div>
       </div></section>
       <section id="untuk-guru" className="lp-teacher-section"><div className="lp-container lp-section lp-teacher"><div>
