@@ -11,6 +11,9 @@ export const localeFor = (language) => language === "en" ? "en-US" : "id-ID";
 export const english = {
   ...englishUi,
   ...englishScope,
+  "Versi": "Version",
+  "Filter provider": "Filter provider",
+  "Materi ini digunakan sebagai sumber penjelasan Tutor dan soal latihan siswa. Perubahan konten akan memicu sinkronisasi ulang pemahaman RAG.": "This lesson is used as a source for Tutor explanations and student quiz questions. Content changes will trigger RAG synchronization.",
   "Kelola kelas, materi, dan tugas siswa.": "Manage your classes, lessons, and student assignments.",
   "Buka materi, tanyakan pada Tutor, dan lanjutkan belajarmu.": "Open a lesson, ask your Tutor, and keep learning.",
   "Ringkasan bacaan": "Reading overview",

@@ -13,8 +13,9 @@ html[data-spacious=true] :where(p,li,label,.material-reader,.guided-explanation,
 html[data-text-size]:not([data-text-size=default]) :where(.workspace-header,.account,.toolbar,.guided-actions,.material-status-actions) { flex-wrap: wrap; }
 html[data-text-size]:not([data-text-size=default]) :where(.nav-link,.profile-dropdown-text,.admin-nav-link) { white-space: normal; overflow-wrap: anywhere; }
 html[data-high-contrast=true] { --ink: #06172c; --muted: #263f5d; --line: #5e7896; --canvas: #fff; --blue: #10469b; --white: #fff; }
-html[data-high-contrast=true] :where(.panel,.card,.voice-preferences-content,.voice-preferences-actions,.profile-dropdown-menu,.material-import-history,.import-records li,.guided-explanation,.material-reader,.admin-material-form) { background: #fff !important; color: #06172c !important; border-color: #5e7896 !important; }
-html[data-high-contrast=true] :where(.panel,.card,.voice-preferences-content,.profile-dropdown-menu,.material-reader) :where(p,small,label,h2,h3,h4) { color: #06172c !important; }
+html[data-high-contrast=true] :where(.panel,.card,.voice-preferences-content,.voice-preferences-actions,.profile-dropdown-menu,.material-import-history,.import-records li,.guided-explanation,.material-reader,.admin-material-form,.quiz-option,.quiz-feedback) { background: #fff !important; color: #06172c !important; border-color: #5e7896 !important; }
+html[data-high-contrast=true] :where(.panel,.card,.voice-preferences-content,.profile-dropdown-menu,.material-reader,.quiz-question-card,.quiz-feedback) :where(p,small,label,h2,h3,h4,strong,span) { color: #06172c !important; }
+html[data-high-contrast=true] .quiz-option.selected { outline: 3px solid #10469b !important; }
 html[data-high-contrast=true] :where(.muted,.field small,.voice-setting-row small) { color: #263f5d !important; opacity: 1; }
 html[data-high-contrast=true] .button.primary { background: #10469b !important; color: #fff !important; }
 html[data-high-contrast=true] .button.secondary { background: #fff !important; color: #10469b !important; border-color: #10469b !important; }
@@ -37,10 +38,15 @@ html[data-reduced-motion=true] *,html[data-reduced-motion=true] *::before,html[d
   position: relative;
   display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .kodmod-select-trigger {
   width: 100%;
+  max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   border: 1px solid var(--line, #d7e4f6);
   border-radius: 12px;
   padding: .7rem .9rem;
@@ -69,6 +75,7 @@ html[data-reduced-motion=true] *,html[data-reduced-motion=true] *::before,html[d
 }
 .kodmod-select-trigger .kodmod-select-value {
   flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
