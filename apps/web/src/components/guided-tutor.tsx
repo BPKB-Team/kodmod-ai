@@ -199,7 +199,6 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
                       <button
                         type="button"
                         className="material-card-select"
-                        data-voice-menu="material-card"
                         aria-pressed={isSelected}
                         disabled={busy || locked || uncertain}
                         onClick={() => setMaterialId(item.id)}

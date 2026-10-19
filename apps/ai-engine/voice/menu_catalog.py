@@ -20,6 +20,12 @@ MENU_AUDIO = {
     "password": ("Kata sandi", "Password"),
     "full-name": ("Nama lengkap", "Full name"),
     "role": ("Pilih peran siswa atau guru", "Choose student or teacher"),
+    "role-student": ("Daftar sebagai Siswa", "Register as Student"),
+    "role-teacher": ("Daftar sebagai Guru", "Register as Teacher"),
+    "password-show": ("Tampilkan kata sandi", "Show password"),
+    "password-hide": ("Sembunyikan kata sandi", "Hide password"),
+    "auth-submit-login": ("Masuk ke akun KODMOD", "Sign in to KODMOD account"),
+    "auth-submit-register": ("Buat akun KODMOD", "Create KODMOD account"),
     "dashboard": ("Dashboard", "Dashboard"),
     "classes": ("Kelas saya", "My classes"),
     "materials": ("Pustaka materi", "Learning library"),
@@ -32,6 +38,7 @@ MENU_AUDIO = {
     "analytics": ("Analitik siswa", "Student analytics"),
     "users": ("Pengguna", "Users"),
     "activity": ("Aktivitas dan layanan", "Activity and services"),
+    "ai-monitor": ("Pemantauan AI", "AI monitoring"),
     "sound": ("Pengaturan suara dan bahasa", "Voice and language settings"),
     "sound-on": ("Suara menu aktif", "Menu voice is on"),
     "sound-off": ("Suara menu mati", "Menu voice is off"),
@@ -45,8 +52,22 @@ MENU_AUDIO = {
         "Language changed to English.",
     ),
     "logout": ("Keluar dari akun", "Sign out"),
+    "back": (
+        "Kembali ke menu pengaturan suara.",
+        "Back to voice settings menu.",
+    ),
+    "voice-back": (
+        "Kembali ke menu pengaturan suara.",
+        "Back to voice settings menu.",
+    ),
+    "back-home": (
+        "Kembali ke beranda.",
+        "Back to home.",
+    ),
     "lang-id": ("Bahasa Indonesia", "Indonesian"),
     "lang-en": ("Bahasa Inggris", "English"),
+    "language-id": ("Bahasa Indonesia", "Indonesian"),
+    "language-en": ("Bahasa Inggris", "English"),
     "dropdown-opened": (
         "Daftar pilihan dibuka.",
         "Selection list opened.",
@@ -82,6 +103,86 @@ MENU_AUDIO = {
     "floating-ask": (
         "Tanyakan yang belum paham. Satu pertanyaan setiap langkah.",
         "Ask what you don't understand yet. One question at each step.",
+    ),
+    "slogan": (
+        "Slogan KODMOD: Beyond Access, Beyond Sight.",
+        "KODMOD Slogan: Beyond Access, Beyond Sight.",
+    ),
+    "agentic-sub": (
+        "Asisten belajar berbasis AI Agentic untuk siswa disabilitas netra.",
+        "Agentic AI learning assistant for visually impaired students.",
+    ),
+    "cta-start": (
+        "Mulai belajar. Masuk atau coba ruang belajar.",
+        "Start learning. Sign in or try the learning space.",
+    ),
+    "cta-how": (
+        "Lihat cara kerjanya. Gulir ke bagian penjelasan.",
+        "See how it works. Scroll to the explanation section.",
+    ),
+    "demo-input": (
+        "Ketik pertanyaan materi pelajaran.",
+        "Type lesson question.",
+    ),
+    "demo-ask": (
+        "Kirim pertanyaan ke Tutor AI.",
+        "Send question to AI Tutor.",
+    ),
+    "demo-replay": (
+        "Ulangi penjelasan audio.",
+        "Replay audio explanation.",
+    ),
+    "demo-answer-plants": (
+        "Bayangkan daun seperti tangan terbuka yang hangat. Saat matahari menyinari daun, daun menyerap rasa hangat itu, lalu mencampurnya dengan air dari akar untuk memasak makanan manis bagi seluruh tanaman!",
+        "Imagine leaves as warm, open hands. When the sun shines on them, they absorb that soothing warmth and blend it with water from the roots to cook sweet food for the entire plant!",
+    ),
+    "demo-answer-kitchen": (
+        "Tepat sekali! Daun adalah restorannya, klorofil adalah kompornya, air dan udara adalah bahannya, serta matahari adalah energi nyala apinya. Semuanya diolah menjadi glukosa lezat untuk energi tumbuh!",
+        "Exactly! The leaf is the kitchen, chlorophyll is the stove, water and air are the fresh ingredients, and sunlight is the flame. Together they whip up sweet glucose energy!",
+    ),
+    "demo-answer-quiz": (
+        "Tentu! Pertanyaan: Apa peran utama pigmen klorofil pada daun hijau? A) Menyerap cahaya matahari, atau B) Menghirup air dari tanah? Coba sebutkan pilihanmu!",
+        "Here you go! Question: What is the primary role of chlorophyll in green leaves? A) Absorbing sunlight, or B) Drawing water from soil? Which one do you pick?",
+    ),
+    "demo-answer-watercycle": (
+        "Bayangkan secangkir teh hangat yang mengeluarkan uap ke atas. Matahari menghangatkan air laut hingga naik menjadi awan sejuk di langit. Ketika awan itu terbawa angin ke gunung dan mendingin, butir-butir airnya turun kembali sebagai tetesan hujan yang segar!",
+        "Imagine a warm cup of tea with steam gently rising up. The sun warms the sea until it drifts upward into cool clouds. When wind guides the clouds to high mountains and they cool down, droplets fall back down as fresh raindrops!",
+    ),
+    "demo-topic-plants": (
+        "Topik Fotosintesis IPA.",
+        "Photosynthesis Science topic.",
+    ),
+    "demo-topic-kitchen": (
+        "Topik Analogi Dapur.",
+        "Kitchen Analogy topic.",
+    ),
+    "demo-topic-quiz": (
+        "Topik Kuis Singkat Klorofil.",
+        "Quick Quiz Chlorophyll topic.",
+    ),
+    "demo-topic-watercycle": (
+        "Topik Siklus Air IPA.",
+        "Water Cycle Science topic.",
+    ),
+    "pillar-audio": (
+        "Audio-First Learning: Narasi audio jernih dan ramah pembaca layar.",
+        "Audio-First Learning: Clear audio narration and screen-reader accessibility.",
+    ),
+    "pillar-practice": (
+        "Practice & Assess: Latihan interaktif dan kuis terstruktur.",
+        "Practice & Assess: Interactive practice and structured quizzes.",
+    ),
+    "pillar-feedback": (
+        "Cognitive Feedback: Analogi konkret dan panduan berpikir selangkah demi selangkah.",
+        "Cognitive Feedback: Concrete analogies and step-by-step guidance.",
+    ),
+    "pillar-adaptive": (
+        "Adaptive Learning: Ritme belajar adaptif mengikuti respon siswa.",
+        "Adaptive Learning: Adaptive learning rhythm following student responses.",
+    ),
+    "pillar-analytics": (
+        "Analytics & Reporting: Laporan progres dan penguasaan konsep bagi guru.",
+        "Analytics & Reporting: Progress and concept mastery reports for teachers.",
     ),
     "principles": (
         "Materi dari guru, Tutor yang menemani, Latihan dan penugasan.",
@@ -131,6 +232,18 @@ MENU_AUDIO = {
         "Ruang kerja guru yang inklusif. Siapkan pembelajaran, dampingi setiap siswa, dan kelola kelas dengan mudah.",
         "Inclusive teacher workspace. Prepare learning, accompany each student, and manage classes with ease.",
     ),
+    "teacher-check-material": (
+        "Unggah materi dan atur publikasinya.",
+        "Upload learning materials and manage their publication.",
+    ),
+    "teacher-check-quiz": (
+        "Tinjau kuis, lalu tugaskan ke kelas.",
+        "Review quizzes, then assign them to a class.",
+    ),
+    "teacher-check-progress": (
+        "Pantau hasil dan progres siswa.",
+        "Monitor student results and progress.",
+    ),
     "access-1": (
         "Keyboard dan pembaca layar. Fokus terlihat, label jelas, dan navigasi berurutan.",
         "Keyboard and screen reader. Visible focus, clear labels, and sequential navigation.",
@@ -167,9 +280,117 @@ MENU_AUDIO = {
         "Siap mulai belajar? Buat akunmu dan pilih cara belajar yang paling nyaman.",
         "Ready to start learning? Create your account and choose the most comfortable way to learn.",
     ),
+    "cta-badge": (
+        "Mulai sekarang. Pendidikan inklusif berkualitas untuk semua.",
+        "Get started now. Quality inclusive education for everyone.",
+    ),
+    "cta-title": (
+        "Siap mulai belajar bersama KODMOD?",
+        "Ready to start learning with KODMOD?",
+    ),
+    "cta-desc": (
+        "Buat akunmu sekarang dan pilih cara belajar yang paling nyaman bersama Tutor AI.",
+        "Create your account now and choose the most comfortable way to learn with AI Tutor.",
+    ),
+    "cta-register": (
+        "Buat akun baru gratis. Mulai eksplorasi materi pelajaran.",
+        "Create a free new account. Start exploring lessons.",
+    ),
+    "cta-login": (
+        "Sudah punya akun? Masuk ke ruang belajarmu.",
+        "Already have an account? Sign in to your learning space.",
+    ),
+    "slogan-section": (
+        "Slogan KODMOD: Beyond Access, Beyond Sight. Melampaui akses, melampaui batas penglihatan.",
+        "KODMOD Slogan: Beyond Access, Beyond Sight.",
+    ),
+    "pillars-tag": (
+        "Pilar Solusi KODMOD untuk kualitas pendidikan inklusif.",
+        "KODMOD Solution Pillars for quality inclusive education.",
+    ),
+    "sdg-badge": (
+        "Mendukung Tujuan Pembangunan Berkelanjutan PBB nomor empat: Pendidikan Berkualitas untuk Semua.",
+        "Supporting UN Sustainable Development Goal four: Quality Education for All.",
+    ),
+    "val-students": (
+        "Untuk Siswa: Belajar lebih dalam dengan eksplorasi mandiri dan pendampingan AI interaktif.",
+        "For Students: Learn deeper with independent exploration and interactive AI tutoring.",
+    ),
+    "val-teachers": (
+        "Untuk Pendidik: Mengajar lebih cerdas dengan distribusi materi cepat dan pemantauan menyeluruh.",
+        "For Educators: Teach smarter with fast lesson delivery and comprehensive progress monitoring.",
+    ),
+    "demo-badge": (
+        "Simulasi interaktif Tutor AI KODMOD.",
+        "KODMOD AI Tutor interactive simulation.",
+    ),
+    "demo-heading": (
+        "Coba langsung simulasi cara berpikir Tutor AI KODMOD.",
+        "Try the KODMOD AI Tutor thinking simulation.",
+    ),
     "footer-tagline": (
         "Ruang belajar untuk semua.",
         "A learning space for everyone.",
+    ),
+    "footer-brand": (
+        "KODMOD. Beyond Access, Beyond Sight. Ruang belajar inklusif untuk semua.",
+        "KODMOD. Beyond Access, Beyond Sight. Inclusive learning space for everyone.",
+    ),
+    "footer-status": (
+        "Status sistem: Mesin Suara AI Aktif dan Siap Digunakan.",
+        "System status: AI Voice Engine Online and Ready.",
+    ),
+    "footer-nav-home": (
+        "Navigasi ke Beranda KODMOD.",
+        "Navigate to KODMOD Home.",
+    ),
+    "footer-nav-about": (
+        "Navigasi ke bagian Tentang KODMOD.",
+        "Navigate to About KODMOD section.",
+    ),
+    "footer-nav-how": (
+        "Navigasi ke bagian Cara Belajar.",
+        "Navigate to How to Learn section.",
+    ),
+    "footer-nav-pillars": (
+        "Navigasi ke bagian Pilar Solusi KODMOD.",
+        "Navigate to Solution Pillars section.",
+    ),
+    "footer-nav-demo": (
+        "Navigasi ke bagian Simulasi Tutor AI.",
+        "Navigate to AI Tutor Simulation section.",
+    ),
+    "footer-nav-faq": (
+        "Navigasi ke bagian Pertanyaan Umum.",
+        "Navigate to Frequently Asked Questions.",
+    ),
+    "footer-room-student": (
+        "Buka Ruang Belajar Siswa.",
+        "Open Student Learning Space.",
+    ),
+    "footer-room-teacher": (
+        "Buka Ruang Guru dan Manajemen Kelas.",
+        "Open Teacher Space and Classroom Management.",
+    ),
+    "footer-room-admin": (
+        "Buka Ruang Administrasi Sistem.",
+        "Open System Administration Space.",
+    ),
+    "footer-voice-settings": (
+        "Buka jendela pengaturan suara dan preferensi tampilan.",
+        "Open voice and display preferences dialog.",
+    ),
+    "footer-keyboard": (
+        "Panduan navigasi keyboard penuh tanpa mouse.",
+        "Full keyboard navigation guide without mouse.",
+    ),
+    "footer-privacy": (
+        "Kebijakan privasi dan perlindungan data KODMOD.",
+        "KODMOD privacy policy and data protection.",
+    ),
+    "footer-accessibility": (
+        "Komitmen standar aksesibilitas WCAG 2.1 AA KODMOD.",
+        "KODMOD WCAG 2.1 AA accessibility standards commitment.",
     ),
 }
 
@@ -187,6 +408,14 @@ MENU_AUDIO.update(
         "voice-preview": ("Dengarkan contoh suara.", "Preview this voice."),
         "voice-close": ("Tutup pengaturan suara.", "Close voice settings."),
         "voice-save": ("Simpan dan gunakan pengaturan ini.", "Save and use these settings."),
+        "back": (
+            "Kembali ke menu pengaturan suara.",
+            "Back to voice settings menu.",
+        ),
+        "voice-back": (
+            "Kembali ke menu pengaturan suara.",
+            "Back to voice settings menu.",
+        ),
         "voice-app": (
             "Suara KODMOD. Suara yang jernih untuk menemani belajar.",
             "KODMOD voice. A clear voice to guide your learning.",
@@ -206,20 +435,29 @@ MENU_AUDIO.update(
             "Display and navigation. Adjust text size, contrast, spacing, motion, and swipe navigation.",
         ),
         "text-size": (
-            "Ukuran teks. Pilih standar, besar, atau sangat besar.",
-            "Text size. Choose standard, large, or extra large.",
+            "Pilihan ukuran font. Atur ukuran teks menjadi standar, besar, atau sangat besar.",
+            "Font size settings. Adjust text size to standard, large, or extra large.",
         ),
-        "text-size-default": ("Standar.", "Standard."),
-        "text-size-large": ("Besar.", "Large."),
-        "text-size-extra-large": ("Sangat besar.", "Extra large."),
+        "text-size-default": (
+            "Pilihan ukuran font. Ukuran saat ini standar. Tekan untuk mengubah ke ukuran besar.",
+            "Font size setting. Currently standard. Press to change to large.",
+        ),
+        "text-size-large": (
+            "Pilihan ukuran font. Ukuran saat ini besar. Tekan untuk mengubah ke ukuran sangat besar.",
+            "Font size setting. Currently large. Press to change to extra large.",
+        ),
+        "text-size-extra-large": (
+            "Pilihan ukuran font. Ukuran saat ini sangat besar. Tekan untuk kembali ke ukuran standar.",
+            "Font size setting. Currently extra large. Press to return to standard.",
+        ),
         "text-size-default-selected": (
-            "Ukuran teks standar dipilih.",
-            "Standard text size selected.",
+            "Ukuran font standar dipilih.",
+            "Standard font size selected.",
         ),
-        "text-size-large-selected": ("Ukuran teks besar dipilih.", "Large text size selected."),
+        "text-size-large-selected": ("Ukuran font besar dipilih.", "Large font size selected."),
         "text-size-extra-large-selected": (
-            "Ukuran teks sangat besar dipilih.",
-            "Extra large text size selected.",
+            "Ukuran font sangat besar dipilih.",
+            "Extra large font size selected.",
         ),
         "contrast-on": ("Kontras tinggi aktif.", "High contrast is on."),
         "contrast-off": ("Kontras tinggi mati.", "High contrast is off."),
