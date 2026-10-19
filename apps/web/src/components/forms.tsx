@@ -30,7 +30,15 @@ function Submit({
 }) {
   const { t } = useI18n();
   return (
-    <Button type="submit" loading={pending} loadingText={t("Memproses…")}>{children}</Button>
+    <Button
+      type="submit"
+      className="auth-submit-btn"
+      loading={pending}
+      loadingText={t("Memproses…")}
+      data-voice-menu="auth-submit-login"
+    >
+      {children}
+    </Button>
   );
 }
 export function Password({
@@ -59,9 +67,11 @@ export function Password({
           minLength={minLength}
           maxLength={72}
           autoComplete={autoComplete}
+          placeholder={t("Kata sandi")}
         />
         <button
           type="button"
+          className="password-toggle-btn"
           data-voice-menu={visible ? "password-hide" : "password-show"}
           aria-label={
             t(visible ? "Sembunyikan kata sandi" : "Tampilkan kata sandi")
@@ -69,7 +79,7 @@ export function Password({
           aria-pressed={visible}
           onClick={() => setVisible(!visible)}
         >
-          {visible ? <EyeOff size={19} /> : <Eye size={19} />}
+          {visible ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       </div>
     </div>
