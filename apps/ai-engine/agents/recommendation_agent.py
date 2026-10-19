@@ -126,6 +126,65 @@ async def recommendation_node(state: KODMODState) -> dict[str, Any]:
     }
 
 
+def recommendations_from_plan(plan, snapshot, language="id"):
+    from urllib.parse import urlencode
+
+    from models.progress_guidance import RecommendationView
+
+    candidates = {c.candidate_id: c for c in snapshot.candidates}
+    facts = {f.fact_id: f for f in snapshot.facts}
+    english = language == "en"
+    views = []
+    for candidate_id in plan.step_candidate_ids:
+        candidate = candidates[candidate_id]
+        review = candidate.kind == "review_unit"
+        title = (
+            ("Review one section" if review else "Check your understanding")
+            if english
+            else ("Pelajari satu bagian" if review else "Cek pemahamanmu")
+        )
+        body = f"{candidate.material_title} — {'section' if english else 'bagian'} {candidate.unit_index + 1}."
+        supporting = [
+            facts[f]
+            for f in candidate.allowed_reason_fact_ids
+            if f in plan.reason_fact_ids and f in facts
+        ]
+        resume = any(
+            f.kind == "material_progress" and f.data.get("status") == "in_progress"
+            for f in supporting
+        )
+        weak = any(f.kind == "practice_concept" for f in supporting)
+        reason = (
+            (
+                "Continue material you already started."
+                if resume
+                else "Independent answers support a short concept review."
+                if weak
+                else "This available material can provide initial learning evidence."
+            )
+            if english
+            else (
+                "Lanjutkan materi yang sudah kamu mulai."
+                if resume
+                else "Jawaban mandiri mendukung latihan ulang konsep ini."
+                if weak
+                else "Materi yang tersedia ini membantu mengumpulkan bukti belajar awal."
+            )
+        )
+        views.append(
+            RecommendationView(
+                candidate_id=candidate_id,
+                title=title,
+                body=body,
+                reason_text=reason,
+                estimated_minutes=candidate.estimated_minutes,
+                href=f"/siswa/{'tutor' if review else 'latihan'}?"
+                + urlencode({"class_id": candidate.class_id, "material_id": candidate.material_id}),
+            )
+        )
+    return views
+
+
 def _normalize_recs(raw: Any) -> list[dict[str, Any]]:
     """Coerce ``recommendations`` into ``{type, text, concept_id}`` dicts.
 

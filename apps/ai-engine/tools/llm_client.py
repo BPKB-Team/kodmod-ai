@@ -82,6 +82,9 @@ def _chat(model: str, **kwargs: Any):
         opts["reasoning_effort"] = "none"
     if settings.OPENAI_API_KEY:
         opts["api_key"] = settings.OPENAI_API_KEY
+    for option in ("max_retries", "timeout"):
+        if option in kwargs:
+            opts[option] = kwargs[option]
     if settings.OPENAI_BASE_URL:
         opts["base_url"] = settings.OPENAI_BASE_URL
     return ChatOpenAI(**opts)  # type: ignore[arg-type]  # valid runtime kwargs; stub is stricter
@@ -140,6 +143,8 @@ def get_recommendation_llm():
         max_tokens=768,
         streaming=False,
         usage_role="recommendation",
+        max_retries=0,
+        timeout=10,
     )
 
 
