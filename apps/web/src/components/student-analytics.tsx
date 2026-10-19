@@ -140,6 +140,17 @@ export function StudentAnalytics({
 
       {error && <p className="alert error-message analytics-error" role="alert">{t(error)}</p>}
 
+      <article className="panel analytics-card analytics-voice-card">
+        <div className="analytics-card-heading">
+          <div>
+            <span className="analytics-kicker"><Headphones size={14} aria-hidden="true" /><UiText>{" RINGKASAN SUARA"}</UiText></span>
+            <h3><UiText>{"Dengarkan progresmu"}</UiText></h3>
+          </div>
+        </div>
+        <p className="analytics-spoken">{spoken}</p>
+        <VoiceControls text={spoken} />
+      </article>
+
       <div className="analytics-hero panel">
         <div className="analytics-hero-copy">
           <h3>{data.student_name}</h3>
@@ -246,35 +257,23 @@ export function StudentAnalytics({
         </article>
       </div>
 
-      <div className="analytics-lower-grid">
-        <article className="panel analytics-card">
-          <div className="analytics-card-heading">
-            <div>
-              <span className="analytics-kicker"><UiText>{"REKOMENDASI PERSONAL"}</UiText></span>
-              <h3><UiText>{"Langkah yang bisa kamu ambil"}</UiText></h3>
+      <article className="panel analytics-card analytics-recommendations-card">
+        <div className="analytics-card-heading">
+          <div>
+            <span className="analytics-kicker"><UiText>{"REKOMENDASI PERSONAL"}</UiText></span>
+            <h3><UiText>{"Langkah yang bisa kamu ambil"}</UiText></h3>
+          </div>
+          <Sparkles size={20} aria-hidden="true" />
+        </div>
+        <div className="analytics-recommendations">
+          {data.active_recommendations.length ? data.active_recommendations.map((item) => (
+            <div className="analytics-recommendation" key={item.id}>
+              <span>{item.priority}</span>
+              <div><strong>{item.title}</strong><p>{item.body}</p></div>
             </div>
-            <Sparkles size={20} aria-hidden="true" />
-          </div>
-          <div className="analytics-recommendations">
-            {data.active_recommendations.length ? data.active_recommendations.map((item) => (
-              <div className="analytics-recommendation" key={item.id}>
-                <span>{item.priority}</span>
-                <div><strong>{item.title}</strong><p>{item.body}</p></div>
-              </div>
-            )) : <p className="analytics-empty"><UiText>{"Belum ada rekomendasi baru. Teruskan ritmemu."}</UiText></p>}
-          </div>
-        </article>
-        <article className="panel analytics-card analytics-voice-card">
-          <div className="analytics-card-heading">
-            <div>
-              <span className="analytics-kicker"><Headphones size={14} aria-hidden="true" /><UiText>{" RINGKASAN SUARA"}</UiText></span>
-              <h3><UiText>{"Dengarkan progresmu"}</UiText></h3>
-            </div>
-          </div>
-          <p className="analytics-spoken">{spoken}</p>
-          <VoiceControls text={spoken} />
-        </article>
-      </div>
+          )) : <p className="analytics-empty"><UiText>{"Belum ada rekomendasi baru. Teruskan ritmemu."}</UiText></p>}
+        </div>
+      </article>
     </section>
   );
 }
