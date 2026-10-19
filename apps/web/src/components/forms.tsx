@@ -34,7 +34,7 @@ function Submit({
       type="submit"
       className="auth-submit-btn"
       loading={pending}
-      loadingText={t("Memproses…")}
+      loadingText={t("Masuk ke akun…")}
       data-voice-menu="auth-submit-login"
     >
       {children}
@@ -114,7 +114,7 @@ export function LoginForm() {
         />
       </div>
       <Password label="Kata sandi" autoComplete="current-password" />
-      <Feedback state={state} pending={pending} pendingLabel="Masuk ke akun…" />
+      <Feedback state={state} />
       <Submit pending={pending}>
         {t("Masuk")} <ArrowRight size={18} aria-hidden="true" />
       </Submit>

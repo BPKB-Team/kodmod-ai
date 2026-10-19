@@ -491,16 +491,24 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: rgba(37, 99, 235, 0.25);
-  border: 1.5px solid #38bdf8;
-  color: #38bdf8;
-  font-size: 0.95rem;
-  font-weight: 800;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border: 1.5px solid #60a5fa;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 850;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   padding: 0;
   flex-shrink: 0;
+  margin-top: 2px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.lp-steps li > div {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .lp-steps h3 {
   font-size: 1.08rem;
@@ -911,10 +919,12 @@ html[data-reduced-motion="true"] .spin-pulse {
     min-height: 620px;
   }
   .lp-flow-layout {
-    gap: 45px;
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
   .lp-teacher {
-    gap: 40px;
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
   .lp-intro {
     gap: 50px;
@@ -993,12 +1003,14 @@ html[data-reduced-motion="true"] .spin-pulse {
     font-size: 1.06rem;
   }
   .lp-hero-visual {
-    max-width: 460px;
+    max-width: 340px;
     width: 100%;
-    margin: auto;
+    margin: 16px auto 0;
   }
   .lp-hero-art {
     width: 100%;
+    max-height: 260px;
+    object-fit: contain;
     margin: 0;
   }
   .lp-floating-top {
@@ -1038,20 +1050,32 @@ html[data-reduced-motion="true"] .spin-pulse {
     margin-top: 20px;
   }
   .lp-student-art {
-    max-height: 390px;
+    max-height: 220px;
+    max-width: 480px;
+    margin-inline: auto;
+    border-radius: 18px;
   }
   .lp-student-art > img {
-    aspect-ratio: 1.2;
+    aspect-ratio: 16 / 9;
+    max-height: 220px;
+    object-fit: cover;
     object-position: center 35%;
   }
   .lp-steps li {
-    padding: 23px 0;
+    padding: 16px 18px;
+    gap: 16px;
+    margin-bottom: 12px;
   }
   .lp-steps li:first-child {
-    padding-top: 8px;
+    padding-top: 16px;
   }
   .lp-teacher-art {
-    margin-top: 10px;
+    max-width: 380px;
+    margin: 20px auto 0;
+  }
+  .lp-teacher-art img {
+    max-height: 240px;
+    object-fit: contain;
   }
   .lp-access-items {
     grid-template-columns: 1fr;
@@ -1539,7 +1563,19 @@ html[data-reduced-motion="true"] .spin-pulse {
 }
 
 .tutor-chip-icon {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  transition: transform 0.12s ease;
+}
+
+.tutor-prompt-chip.is-selected .tutor-chip-icon {
+  color: #ffffff;
+}
+
+.tutor-prompt-chip:hover .tutor-chip-icon {
+  transform: scale(1.1);
 }
 
 .tutor-chip-text {
@@ -1950,5 +1986,42 @@ html[data-reduced-motion="true"] .spin-pulse {
   }
   .lp-pillars-title-wrap {
     text-align: left;
+  }
+  .tutor-agent-card {
+    padding: 16px 14px;
+    border-radius: 18px;
+  }
+  .tutor-card-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .tutor-input-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .tutor-text-input {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 4px 0;
+  }
+  .tutor-submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .tutor-prompt-chip {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+  .tutor-prompt-badge {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+  .lp-agentic-title {
+    font-size: clamp(1.6rem, 6vw, 2.2rem) !important;
+  }
+  .lp-agentic-desc {
+    font-size: 0.88rem !important;
   }
 }
