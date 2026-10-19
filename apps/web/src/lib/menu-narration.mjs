@@ -1,7 +1,7 @@
 const targets = "[data-voice-menu],a,button,summary,input,select,textarea,[role=option],[role=button],[role=menuitem],[role=menuitemcheckbox],[role=menuitemradio],[role=radio],[role=checkbox],[role=switch],[role=tab],[role=combobox],.lp-capability,.lp-access-chips > span,.lp-floating,.kodmod-dialog-title,.kodmod-dialog-body,.swal2-title,.swal2-html-container";
 const fieldKeys = { username: "username", password: "password", full_name: "full-name", role: "role" };
 const publicLinks = { "/": "home", "/masuk": "login", "/daftar": "register" };
-const publicLabels = { Masuk: "login", "Sign in": "login", "Buat akun": "register", "Create account": "register", "Create an account": "register" };
+const publicLabels = { Masuk: "login", "Sign in": "login", "Buat akun": "register", "Create account": "register", "Create an account": "register", "Kembali ke beranda": "back-home", "Back to home": "back-home" };
 const modalSelector = "dialog[open],[role=dialog][aria-modal=true],[role=alertdialog]";
 const liveSelector = '[role=alert],[role=status],[aria-live=polite],[aria-live=assertive]';
 const clean = value => String(value ?? "").replace(/\s+/g, " ").trim();

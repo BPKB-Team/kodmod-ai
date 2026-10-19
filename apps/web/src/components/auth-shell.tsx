@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { ExperienceToolbar } from "./experience-toolbar";
 import { getServerI18n } from "@/lib/server-language";
@@ -41,10 +40,6 @@ export async function AuthShell({
       </div>
 
       <header className="auth-topbar">
-        <Link className="back-link" href="/" data-voice-menu="home">
-          <ArrowLeft size={16} aria-hidden="true" />
-          <span>{t("Kembali ke beranda")}</span>
-        </Link>
         <ExperienceToolbar />
       </header>
 

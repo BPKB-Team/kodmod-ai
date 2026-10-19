@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 
 import { useState } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { register } from "@/app/actions";
 import { Password } from "./forms";
 import { ActionFeedback, useConfirmedAction } from "./action-feedback";
@@ -107,10 +108,20 @@ export function RegisterForm() {
       </Button>
       <p className="form-help">
         {t("Sudah punya akun?")}{" "}
-        <Link className="text-link" href="/masuk">
+        <Link className="text-link" href="/masuk" data-voice-menu="login">
           {t("Masuk")}
         </Link>
       </p>
+      <div className="auth-back-wrap">
+        <Link
+          href="/"
+          className="auth-back-btn"
+          data-voice-menu="back-home"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          <span>{t("Kembali ke beranda")}</span>
+        </Link>
+      </div>
     </form>
   );
 }

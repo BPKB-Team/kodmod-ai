@@ -7,7 +7,7 @@ import { UiText } from "@/components/language-provider";
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   login,
@@ -120,11 +120,21 @@ export function LoginForm() {
       </Submit>
       <p className="form-help">
         {t("Belum punya akun?")}{" "}
-        <Link className="text-link" href="/daftar">
+        <Link className="text-link" href="/daftar" data-voice-menu="register">
           {t("Buat akun")}
         </Link>
       </p>
-      <p className="form-help">
+      <div className="auth-back-wrap">
+        <Link
+          href="/"
+          className="auth-back-btn"
+          data-voice-menu="back-home"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          <span>{t("Kembali ke beranda")}</span>
+        </Link>
+      </div>
+      <p className="form-help form-help-muted">
         {t("Lupa kata sandi? Hubungi administrator sekolah.")}
       </p>
     </form>

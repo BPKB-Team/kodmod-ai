@@ -59,6 +59,10 @@ MENU_AUDIO = {
         "Kembali ke menu pengaturan suara.",
         "Back to voice settings menu.",
     ),
+    "back-home": (
+        "Kembali ke beranda.",
+        "Back to home.",
+    ),
     "lang-id": ("Bahasa Indonesia", "Indonesian"),
     "lang-en": ("Bahasa Inggris", "English"),
     "language-id": ("Bahasa Indonesia", "Indonesian"),
