@@ -92,9 +92,17 @@ function ClassCards({ rows, role }: { rows: Classroom[]; role: LearningRole }) {
             : <UiText>{"Belum ada kelas yang terdaftar."}</UiText>
         }
       >
-        {role === "teacher"
-          ? <UiText>{"Buat kelas, tambahkan siswa, lalu bagikan materi pertama."}</UiText>
-          : <UiText>{"Minta gurumu menambahkan akunmu ke dalam kelas untuk mulai belajar."}</UiText>}
+        {role === "teacher" ? (
+          <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
+            <UiText>{"Buat kelas, tambahkan siswa, lalu bagikan materi pertama."}</UiText>
+            <Link className="button primary" href="/guru/kelas/baru">
+              <Plus size={16} aria-hidden="true" />
+              <UiText>{"Buat kelas baru"}</UiText>
+            </Link>
+          </div>
+        ) : (
+          <UiText>{"Minta gurumu menambahkan akunmu ke dalam kelas untuk mulai belajar."}</UiText>
+        )}
       </Empty>
     </div>
   );

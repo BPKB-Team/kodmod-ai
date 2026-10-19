@@ -44,7 +44,18 @@ export default async function Page() {
               </header>
               <h2>{material.title}</h2>
               <p>{material.subject} · {material.class_name}</p>
-              <div className="admin-material-status">
+              <div
+                className="admin-material-status"
+                data-status={
+                  material.rag_status === "ready" && material.content_version === material.indexed_version
+                    ? "ready"
+                    : material.rag_status === "failed"
+                      ? "failed"
+                      : material.published
+                        ? "pending"
+                        : "draft"
+                }
+              >
                 <UiText>
                   {material.rag_status === "ready" && material.content_version === material.indexed_version
                     ? "Siap untuk Tutor"
@@ -65,7 +76,15 @@ export default async function Page() {
       ) : (
         <section className="panel">
           <Empty title={<UiText>{"Materi pertama Anda"}</UiText>}>
-            <UiText>{"Klik tombol Upload materi di atas untuk mengunggah PDF, dokumen, atau menulis materi sendiri."}</UiText>
+            <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
+              <UiText>{"Klik tombol Upload materi di atas untuk mengunggah PDF, dokumen, atau menulis materi sendiri."}</UiText>
+              {activeClasses.length > 0 && (
+                <Link className="button primary" href="/guru/materi/baru">
+                  <Plus size={16} aria-hidden="true" />
+                  <UiText>{"Upload materi"}</UiText>
+                </Link>
+              )}
+            </div>
           </Empty>
         </section>
       )}

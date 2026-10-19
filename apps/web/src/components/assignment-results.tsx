@@ -87,13 +87,13 @@ export function AssignmentResults({ initial }: { initial: TeacherResults }) {
             label: "Rata-rata nilai",
             value:
               data.average_score === null
-                ? "Belum tersedia"
+                ? <UiText>{"Belum tersedia"}</UiText>
                 : `${data.average_score}/100`,
           },
         ].map((s) => (
           <div className="panel learning-stat" key={s.label}>
             <span>
-              {s.label}
+              <UiText>{s.label}</UiText>
               <strong>{s.value}</strong>
             </span>
           </div>
