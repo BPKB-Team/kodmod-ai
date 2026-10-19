@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { ArrowLeft, Gamepad2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Brand } from "./ui";
 import { ExperienceToolbar } from "./experience-toolbar";
 import { UserProfileDropdown } from "./user-profile-dropdown";
@@ -68,12 +68,7 @@ export function StudentTopNav({ user }: StudentTopNavProps) {
       <div className="student-header-inner">
         <div className="student-header-left">
           <Brand href="/siswa" />
-          {isHub ? (
-            <span className="student-role-pill" aria-label="Mode Ruang Belajar Siswa">
-              <Gamepad2 size={16} aria-hidden="true" />
-              <span>{t("Pusat Belajar Siswa")}</span>
-            </span>
-          ) : (
+          {!isHub && (
             <div className="student-nav-context">
               <Link
                 href="/siswa"

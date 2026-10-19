@@ -12,7 +12,6 @@ import {
   LineChart,
   ArrowRight,
   ArrowUpRight,
-  Gamepad2,
   Volume2,
 } from "lucide-react";
 import { UiText, useI18n } from "./language-provider";
@@ -56,7 +55,6 @@ export function StudentGameHub({
       title: "Kelas Saya",
       desc: "Ruang kelas dan guru pendamping",
       stat: `${activeClasses.length} ${t("Kelas Aktif")}`,
-      theme: "pad-green",
       icon: Library,
     },
     {
@@ -66,7 +64,6 @@ export function StudentGameHub({
       title: "Pustaka Materi",
       desc: "Semua modul dan bahan bacaan",
       stat: `${materials.length} ${t("Materi")}`,
-      theme: "pad-blue",
       icon: BookOpen,
     },
     {
@@ -76,7 +73,6 @@ export function StudentGameHub({
       title: "Tutor AI",
       desc: "Tanya jawab langsung dengan suara",
       stat: t("AI Interaktif"),
-      theme: "pad-purple",
       icon: Sparkles,
     },
     {
@@ -86,7 +82,6 @@ export function StudentGameHub({
       title: "Latihan & Kuis",
       desc: "Asesmen mandiri langkah demi langkah",
       stat: t("Kuis Mandiri"),
-      theme: "pad-amber",
       icon: ListChecks,
     },
     {
@@ -96,7 +91,6 @@ export function StudentGameHub({
       title: "Tugas Siswa",
       desc: "Daftar penugasan dari bapak ibu guru",
       stat: t("Penugasan"),
-      theme: "pad-rose",
       icon: ClipboardList,
     },
     {
@@ -106,7 +100,6 @@ export function StudentGameHub({
       title: "Progres Belajar",
       desc: "Laporan capaian dan evaluasi suara",
       stat: `${completedCount} ${t("Selesai")}`,
-      theme: "pad-teal",
       icon: LineChart,
     },
   ];
@@ -161,10 +154,6 @@ export function StudentGameHub({
       {/* Hero Welcome & Audio Navigation Instructions */}
       <section className="student-hub-hero" aria-labelledby="hub-heading">
         <div className="student-hub-hero-content">
-          <div className="student-hub-badge">
-            <Gamepad2 size={18} aria-hidden="true" />
-            <span>{t("Pusat Misi Belajar Siswa")}</span>
-          </div>
           <h1 id="hub-heading" className="student-hub-title">
             <UiText>{"Halo, "}</UiText>
             {user.full_name || user.username}
@@ -245,7 +234,7 @@ export function StudentGameHub({
                 ref={(el) => {
                   padRefs.current[idx] = el;
                 }}
-                className={`game-pad-card ${pad.theme}`}
+                className="game-pad-card"
                 data-voice-menu={pad.voiceKey}
                 aria-label={`Menu ${pad.num}: ${t(pad.title)}. ${t(
                   pad.desc

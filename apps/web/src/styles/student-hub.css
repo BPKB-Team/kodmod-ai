@@ -56,19 +56,6 @@
   flex-wrap: wrap;
 }
 
-.student-role-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1d4ed8;
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 6px 14px;
-  border-radius: 999px;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
-}
 
 .student-nav-context {
   display: flex;
@@ -182,20 +169,6 @@
   pointer-events: none;
 }
 
-.student-hub-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #facc15;
-}
 
 .student-hub-title {
   font-size: clamp(2rem, 4.2vw, 3rem);
@@ -316,8 +289,8 @@
   padding: 1.65rem;
   border-radius: 24px;
   background: #ffffff;
-  border: 2.5px solid var(--pad-border);
-  box-shadow: 0 7px 0 var(--pad-shadow), 0 12px 28px var(--pad-glow);
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 0 #94a3b8, 0 10px 24px rgba(15, 39, 74, 0.06);
   text-decoration: none;
   color: inherit;
   cursor: pointer;
@@ -329,21 +302,21 @@
 
 .game-pad-card:hover {
   transform: translateY(-6px);
-  border-color: var(--pad-accent);
-  box-shadow: 0 13px 0 var(--pad-shadow), 0 20px 36px var(--pad-glow);
+  border-color: #2563eb;
+  box-shadow: 0 12px 0 #1d4ed8, 0 18px 34px rgba(37, 99, 235, 0.18);
 }
 
 .game-pad-card:focus-visible {
   transform: translateY(-4px);
-  border-color: var(--pad-accent);
-  box-shadow: 0 11px 0 var(--pad-shadow), 0 0 0 4px var(--pad-focus-ring);
-  outline: 3px solid var(--pad-accent);
+  border-color: #2563eb;
+  box-shadow: 0 10px 0 #1d4ed8, 0 0 0 4px rgba(37, 99, 235, 0.25);
+  outline: 3px solid #2563eb;
   outline-offset: 3px;
 }
 
 .game-pad-card:active {
-  transform: translateY(4px);
-  box-shadow: 0 3px 0 var(--pad-shadow), 0 4px 10px var(--pad-glow);
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #1d4ed8, 0 4px 10px rgba(37, 99, 235, 0.1);
 }
 
 .game-pad-top {
@@ -362,9 +335,9 @@
   justify-content: center;
   font-size: 1.25rem;
   font-weight: 900;
-  background: var(--pad-accent);
+  background: #1e3a8a;
   color: #ffffff;
-  box-shadow: 0 3px 0 var(--pad-shadow);
+  box-shadow: 0 3px 0 #0f172a;
   letter-spacing: -0.02em;
 }
 
@@ -373,26 +346,31 @@
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 999px;
-  background: var(--pad-bg-subtle);
-  color: var(--pad-text-accent);
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
 }
 
 .game-pad-icon-wrap {
   width: 66px;
   height: 66px;
   border-radius: 20px;
-  background: var(--pad-bg-icon);
-  color: var(--pad-accent);
+  background: #eff6ff;
+  border: 1.5px solid #dbeafe;
+  color: #1d4ed8;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 1rem 0 0.75rem;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .game-pad-card:hover .game-pad-icon-wrap {
   transform: scale(1.08);
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
 }
 
 .game-pad-title {
@@ -416,7 +394,7 @@
   justify-content: flex-end;
   margin-top: 1rem;
   padding-top: 0.75rem;
-  border-top: 1px dashed var(--pad-border);
+  border-top: 1px dashed #e2e8f0;
 }
 
 .game-pad-enter-text {
@@ -425,87 +403,12 @@
   gap: 6px;
   font-size: 0.92rem;
   font-weight: 800;
-  color: var(--pad-accent);
+  color: #2563eb;
   transition: gap 0.15s ease;
 }
 
 .game-pad-card:hover .game-pad-enter-text {
   gap: 10px;
-}
-
-/* ==========================================================================
-   Color Themes per Game Pad
-   ========================================================================== */
-/* 1. Kelas Saya - Emerald Green */
-.pad-green {
-  --pad-accent: #059669;
-  --pad-border: #a7f3d0;
-  --pad-shadow: #047857;
-  --pad-glow: rgba(5, 150, 105, 0.18);
-  --pad-bg-icon: #ecfdf5;
-  --pad-bg-subtle: #d1fae5;
-  --pad-text-accent: #065f46;
-  --pad-focus-ring: rgba(5, 150, 105, 0.25);
-}
-
-/* 2. Pustaka Materi - Cobalt Blue */
-.pad-blue {
-  --pad-accent: #2563eb;
-  --pad-border: #bfdbfe;
-  --pad-shadow: #1d4ed8;
-  --pad-glow: rgba(37, 99, 235, 0.18);
-  --pad-bg-icon: #eff6ff;
-  --pad-bg-subtle: #dbeafe;
-  --pad-text-accent: #1e40af;
-  --pad-focus-ring: rgba(37, 99, 235, 0.25);
-}
-
-/* 3. Tutor AI - Electric Purple */
-.pad-purple {
-  --pad-accent: #7c3aed;
-  --pad-border: #ddd6fe;
-  --pad-shadow: #6d28d9;
-  --pad-glow: rgba(124, 58, 237, 0.2);
-  --pad-bg-icon: #f5f3ff;
-  --pad-bg-subtle: #ede9fe;
-  --pad-text-accent: #5b21b6;
-  --pad-focus-ring: rgba(124, 58, 237, 0.25);
-}
-
-/* 4. Latihan & Kuis - Warm Amber */
-.pad-amber {
-  --pad-accent: #d97706;
-  --pad-border: #fde68a;
-  --pad-shadow: #b45309;
-  --pad-glow: rgba(217, 119, 6, 0.18);
-  --pad-bg-icon: #fffbeb;
-  --pad-bg-subtle: #fef3c7;
-  --pad-text-accent: #92400e;
-  --pad-focus-ring: rgba(217, 119, 6, 0.25);
-}
-
-/* 5. Tugas Siswa - Vivid Rose */
-.pad-rose {
-  --pad-accent: #e11d48;
-  --pad-border: #fecdd3;
-  --pad-shadow: #be123c;
-  --pad-glow: rgba(225, 29, 72, 0.18);
-  --pad-bg-icon: #fff1f2;
-  --pad-bg-subtle: #ffe4e6;
-  --pad-text-accent: #9f1239;
-  --pad-focus-ring: rgba(225, 29, 72, 0.25);
-}
-
-/* 6. Progres Belajar - Deep Teal */
-.pad-teal {
-  --pad-accent: #0d9488;
-  --pad-border: #99f6e4;
-  --pad-shadow: #0f766e;
-  --pad-glow: rgba(13, 148, 136, 0.18);
-  --pad-bg-icon: #f0fdfa;
-  --pad-bg-subtle: #ccfbf1;
-  --pad-text-accent: #115e59;
-  --pad-focus-ring: rgba(13, 148, 136, 0.25);
 }
 
 /* ==========================================================================
@@ -637,22 +540,34 @@
   font-weight: 800;
 }
 
+/* ==========================================================================
+   Mobile Responsive Alignment (Matching Landing Page & Auth Specifications)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .student-header-inner {
+    padding: 10px 16px;
+  }
+  .student-main-content {
+    padding: 20px 16px 36px;
+  }
+  .student-game-hub {
+    gap: 1.75rem;
+  }
+}
+
 @media (max-width: 640px) {
-  .student-header .brand img {
-    width: 110px;
-  }
-  .student-role-pill {
-    display: none;
-  }
   .student-header-inner {
     flex-wrap: wrap;
     row-gap: 8px;
-    padding: 0.6rem 0.85rem;
+    padding: 8px 16px 10px;
     min-height: auto;
   }
   .student-header-left {
     order: 1;
     gap: 0.5rem;
+  }
+  .student-header .brand img {
+    width: 110px;
   }
   .student-header-right {
     order: 2;
@@ -666,11 +581,34 @@
     display: flex;
     justify-content: center;
     padding-top: 6px;
-    border-top: 1px dashed #dbeafe;
+    border-top: 1px dashed #e2e8f0;
+  }
+  .student-header-toolbar-wrap .experience-toolbar {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 5px 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+  }
+  .student-header-toolbar-wrap .experience-button {
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 10px;
+  }
+  .student-header-toolbar-wrap .toolbar-language {
+    min-height: 36px;
+    width: 42px;
+    min-width: 42px;
   }
   .student-back-to-hub-btn {
-    padding: 6px 10px;
+    padding: 6px 12px;
     font-size: 0.84rem;
+    border-radius: 10px;
   }
   .student-kbd-hint {
     display: none;
@@ -678,5 +616,129 @@
   .student-current-page-pill {
     padding: 4px 10px;
     font-size: 0.78rem;
+  }
+
+  /* Hero Section: Matched to Landing Page */
+  .student-hub-hero {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+  .student-hub-title {
+    font-size: clamp(1.45rem, 6vw, 1.85rem);
+    line-height: 1.25;
+    margin: 0.25rem 0 0.5rem;
+  }
+  .student-hub-description {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin-bottom: 0.85rem;
+  }
+  .student-audio-nav-guide {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    border-radius: 10px;
+  }
+
+  /* Mission Banner */
+  .student-next-mission-card {
+    padding: 18px 16px;
+    border-radius: 20px;
+  }
+  .mission-card-title {
+    font-size: 1.18rem;
+  }
+  .mission-card-desc {
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .mission-action-btn {
+    width: 100%;
+    justify-content: center;
+    height: 44px;
+    font-size: 0.92rem;
+    border-radius: 12px;
+  }
+
+  /* 6 Game Pads: Matched to .lp-capability card specifications */
+  .student-game-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .game-pad-card {
+    padding: 20px 18px;
+    min-height: auto;
+    border-radius: 20px;
+    border: 2px solid #e2e8f0;
+    border-bottom: 4px solid #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  }
+  .game-pad-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+  }
+  .game-pad-key {
+    width: 36px;
+    height: 36px;
+    font-size: 1.08rem;
+    border-radius: 10px;
+  }
+  .game-pad-stat {
+    font-size: 0.76rem;
+    padding: 3px 10px;
+  }
+  .game-pad-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    margin: 0.75rem 0 0.5rem;
+  }
+  .game-pad-icon-wrap svg {
+    width: 24px;
+    height: 24px;
+  }
+  .game-pad-title {
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+  }
+  .game-pad-desc {
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .game-pad-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.65rem;
+  }
+  .game-pad-enter-text {
+    font-size: 0.88rem;
+  }
+
+  /* Classes Row */
+  .student-classes-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .student-class-mini-card {
+    padding: 16px 14px;
+    border-radius: 18px;
+  }
+
+  /* Subpages text scale */
+  .student-main-content .page-heading h1 {
+    font-size: 1.45rem !important;
+  }
+  .student-main-content .page-heading p {
+    font-size: 0.88rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-main-content {
+    padding: 16px 14px 28px;
+  }
+  .student-hub-hero {
+    padding: 18px 14px;
+  }
+  .game-pad-card {
+    padding: 18px 16px;
   }
 }
