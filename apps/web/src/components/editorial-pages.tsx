@@ -288,26 +288,25 @@ export async function StudentAssignmentIndex({ page: raw }: { page?: string }) {
   return (
     <>
       <Heading
-        title={<UiText>{"Tugas dari guru"}</UiText>}
-        description={<UiText>{"Kerjakan satu langkah pada satu waktu. Jawaban tersimpan saat kamu menyimpannya."}</UiText>}
+        title={<UiText>{"Tugas Siswa"}</UiText>}
+        description={<UiText>{"Kerjakan tugas dari gurumu langkah demi langkah. Jawaban tersimpan otomatis."}</UiText>}
       />
       <section className="editorial-hero">
         <div>
-          <span className="editorial-kicker">
-            <BookOpenCheck size={16} aria-hidden="true" /><UiText>{"BELAJAR DENGAN TERARAH"}</UiText></span>
           <h2><UiText>{"Satu soal, satu langkah maju."}</UiText></h2>
           <p><UiText>{"Buka penugasan kelas, dengarkan soal jika diperlukan, dan lanjutkan dari jawaban yang sudah tersimpan."}</UiText></p>
         </div>
       </section>
       {rows.length ? (
-        <div className="editorial-card-grid">
+        <div className="editorial-card-grid student-class-grid">
           {rows.map((a) => {
             const availability = assignmentAvailability(a);
             return (
               <Link
                 key={a.id}
                 href={`/siswa/tugas/${a.id}`}
-                className="panel editorial-card"
+                className="panel editorial-card student-tactile-card"
+                aria-label={`${a.title}. Kelas ${a.class_name}. ${a.total_questions} soal. Status: ${availabilityLabel[availability]}. ${a.due_at ? `Tenggat ${scheduleLabel(a.due_at)}` : "Tanpa batas pengumpulan"}.`}
               >
                 <div className="editorial-card-top">
                   <span className="class-symbol">
@@ -382,8 +381,15 @@ export async function StudentAssignmentPage({ id }: { id: string }) {
   ]);
   return (
     <>
-      <Link className="learning-back" href="/siswa/tugas">
-        <ArrowLeft size={16} aria-hidden="true" /><UiText>{"Semua tugas"}</UiText></Link>
+      <Link
+        className="learning-back student-back-link"
+        href="/siswa/tugas"
+        data-voice-menu="assignments"
+        aria-label="Kembali ke semua tugas dari guru"
+      >
+        <ArrowLeft size={16} aria-hidden="true" />
+        <UiText>{"Semua tugas"}</UiText>
+      </Link>
       <Heading
         title={assignment.title}
         description={`${assignment.class_name} · ${assignment.total_questions} soal · Revisi ${assignment.version}`}

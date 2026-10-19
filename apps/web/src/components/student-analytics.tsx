@@ -128,6 +128,7 @@ export function StudentAnalytics({
             type="button"
             role="tab"
             aria-selected={window === item.value}
+            aria-label={`${t("Rentang waktu")} ${t(item.label)}`}
             className={window === item.value ? "active" : ""}
             onClick={() => void changeWindow(item.value)}
             disabled={loading}
@@ -138,6 +139,17 @@ export function StudentAnalytics({
       </div>
 
       {error && <p className="alert error-message analytics-error" role="alert">{t(error)}</p>}
+
+      <article className="panel analytics-card analytics-voice-card">
+        <div className="analytics-card-heading">
+          <div>
+            <span className="analytics-kicker"><Headphones size={14} aria-hidden="true" /><UiText>{" RINGKASAN SUARA"}</UiText></span>
+            <h3><UiText>{"Dengarkan progresmu"}</UiText></h3>
+          </div>
+        </div>
+        <p className="analytics-spoken">{spoken}</p>
+        <VoiceControls text={spoken} />
+      </article>
 
       <div className="analytics-hero panel">
         <div className="analytics-hero-copy">
@@ -156,25 +168,25 @@ export function StudentAnalytics({
       </div>
 
       <div className="analytics-stat-grid">
-        <article className="panel analytics-stat-card">
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Akurasi latihan dan tugas")}: ${percent(data.quiz_accuracy)}. ${data.n_quiz_attempts} ${t("jawaban tercatat")}.`}>
           <span className="analytics-stat-icon blue"><BookOpenCheck size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Akurasi latihan dan tugas"}</UiText></span>
           <strong>{percent(data.quiz_accuracy)}</strong>
           <small>{data.n_quiz_attempts}<UiText>{" jawaban tercatat"}</UiText></small>
         </article>
-        <article className="panel analytics-stat-card">
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Waktu belajar")}: ${studyTimeLabel(data.total_minutes, language)}. ${data.interaction_count} ${t("interaksi dengan tutor")}.`}>
           <span className="analytics-stat-icon purple"><Clock3 size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Waktu belajar"}</UiText></span>
           <strong>{studyTimeLabel(data.total_minutes, language)}</strong>
           <small>{data.interaction_count}<UiText>{" interaksi dengan tutor"}</UiText></small>
         </article>
-        <article className="panel analytics-stat-card">
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Konsistensi")}: ${percent(data.engagement_index)}. ${t("ritme belajar pada periode ini")}.`}>
           <span className="analytics-stat-icon green"><TrendingUp size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Konsistensi"}</UiText></span>
           <strong>{percent(data.engagement_index)}</strong>
           <small><UiText>{"ritme belajar pada periode ini"}</UiText></small>
         </article>
-        <article className="panel analytics-stat-card">
+        <article className="panel analytics-stat-card" tabIndex={0} aria-label={`${t("Tugas selesai")}: ${data.n_assignment_submissions ?? 0}. ${t("tugas dikumpulkan pada periode ini")}.`}>
           <span className="analytics-stat-icon blue"><BookOpenCheck size={19} aria-hidden="true" /></span>
           <span className="analytics-stat-label"><UiText>{"Tugas selesai"}</UiText></span>
           <strong>{data.n_assignment_submissions ?? 0}</strong>
@@ -245,35 +257,23 @@ export function StudentAnalytics({
         </article>
       </div>
 
-      <div className="analytics-lower-grid">
-        <article className="panel analytics-card">
-          <div className="analytics-card-heading">
-            <div>
-              <span className="analytics-kicker"><UiText>{"REKOMENDASI PERSONAL"}</UiText></span>
-              <h3><UiText>{"Langkah yang bisa kamu ambil"}</UiText></h3>
+      <article className="panel analytics-card analytics-recommendations-card">
+        <div className="analytics-card-heading">
+          <div>
+            <span className="analytics-kicker"><UiText>{"REKOMENDASI PERSONAL"}</UiText></span>
+            <h3><UiText>{"Langkah yang bisa kamu ambil"}</UiText></h3>
+          </div>
+          <Sparkles size={20} aria-hidden="true" />
+        </div>
+        <div className="analytics-recommendations">
+          {data.active_recommendations.length ? data.active_recommendations.map((item) => (
+            <div className="analytics-recommendation" key={item.id}>
+              <span>{item.priority}</span>
+              <div><strong>{item.title}</strong><p>{item.body}</p></div>
             </div>
-            <Sparkles size={20} aria-hidden="true" />
-          </div>
-          <div className="analytics-recommendations">
-            {data.active_recommendations.length ? data.active_recommendations.map((item) => (
-              <div className="analytics-recommendation" key={item.id}>
-                <span>{item.priority}</span>
-                <div><strong>{item.title}</strong><p>{item.body}</p></div>
-              </div>
-            )) : <p className="analytics-empty"><UiText>{"Belum ada rekomendasi baru. Teruskan ritmemu."}</UiText></p>}
-          </div>
-        </article>
-        <article className="panel analytics-card analytics-voice-card">
-          <div className="analytics-card-heading">
-            <div>
-              <span className="analytics-kicker"><Headphones size={14} aria-hidden="true" /><UiText>{" RINGKASAN SUARA"}</UiText></span>
-              <h3><UiText>{"Dengarkan progresmu"}</UiText></h3>
-            </div>
-          </div>
-          <p className="analytics-spoken">{spoken}</p>
-          <VoiceControls text={spoken} />
-        </article>
-      </div>
+          )) : <p className="analytics-empty"><UiText>{"Belum ada rekomendasi baru. Teruskan ritmemu."}</UiText></p>}
+        </div>
+      </article>
     </section>
   );
 }

@@ -33,19 +33,33 @@ import { ClassSubjectForm, MaterialConceptsForm } from "./material-concepts-form
 const baseFor = (role: LearningRole) =>
   role === "teacher" ? "/guru" : "/siswa";
 export function BackToClasses({ role }: { role: LearningRole }) {
+  const isStudent = role === "student";
   return (
-    <Link className="learning-back" href={`${baseFor(role)}/kelas`}>
-      <ArrowLeft size={16} aria-hidden="true" /><UiText>{"Semua kelas"}</UiText></Link>
+    <Link
+      className={`learning-back ${isStudent ? "student-back-link" : ""}`}
+      href={`${baseFor(role)}/kelas`}
+      data-voice-menu={isStudent ? "classes" : undefined}
+      aria-label={isStudent ? "Kembali ke semua kelas saya" : undefined}
+    >
+      <ArrowLeft size={16} aria-hidden="true" />
+      <UiText>{"Semua kelas"}</UiText>
+    </Link>
   );
 }
 function ClassCards({ rows, role }: { rows: Classroom[]; role: LearningRole }) {
+  const isStudent = role === "student";
   return rows.length ? (
-    <div className="class-grid">
+    <div className={`class-grid ${isStudent ? "student-class-grid" : ""}`}>
       {rows.map((row) => (
         <Link
           href={`${baseFor(role)}/kelas/${row.id}`}
-          className="class-card panel"
+          className={`class-card panel ${isStudent ? "student-tactile-card" : ""}`}
           key={row.id}
+          aria-label={
+            isStudent
+              ? `${row.name}. Mata pelajaran ${row.subject}. ${row.material_count} materi, ${row.member_count} siswa.`
+              : undefined
+          }
         >
           <div className="class-card-top">
             <span className="class-symbol">
@@ -62,7 +76,8 @@ function ClassCards({ rows, role }: { rows: Classroom[]; role: LearningRole }) {
           </p>
           <div className="class-card-bottom">
             <span>
-              {row.material_count}<UiText>{" materi · "}</UiText>{row.member_count}<UiText>{" siswa"}</UiText></span>
+              {row.material_count}<UiText>{" materi · "}</UiText>{row.member_count}<UiText>{" siswa"}</UiText>
+            </span>
             <ArrowUpRight size={20} aria-hidden="true" />
           </div>
         </Link>
@@ -74,12 +89,12 @@ function ClassCards({ rows, role }: { rows: Classroom[]; role: LearningRole }) {
         title={
           role === "teacher"
             ? <UiText>{"Ruang untuk ide pertama Anda."}</UiText>
-            : <UiText>{"Kelas Anda akan hadir di sini."}</UiText>
+            : <UiText>{"Belum ada kelas yang terdaftar."}</UiText>
         }
       >
         {role === "teacher"
           ? <UiText>{"Buat kelas, tambahkan siswa, lalu bagikan materi pertama."}</UiText>
-          : <UiText>{"Minta guru menambahkan username Anda sebagai anggota kelas untuk mulai belajar."}</UiText>}
+          : <UiText>{"Minta gurumu menambahkan akunmu ke dalam kelas untuk mulai belajar."}</UiText>}
       </Empty>
     </div>
   );
@@ -106,13 +121,23 @@ export async function ClassIndex({
   return (
     <>
       <Heading
-        title={dashboard ? <><UiText>{"Halo, "}</UiText> {user.full_name}.</> : <UiText>{"Kelas"}</UiText>}
+        title={
+          dashboard ? (
+            <><UiText>{"Halo, "}</UiText> {user.full_name}.</>
+          ) : teacher ? (
+            <UiText>{"Kelas"}</UiText>
+          ) : (
+            <UiText>{"Kelas Saya"}</UiText>
+          )
+        }
         description={
           dashboard
             ? teacher
               ? <UiText>{"Kelola kelas, materi, dan tugas siswa."}</UiText>
               : <UiText>{"Buka materi, tanyakan pada Tutor, dan lanjutkan belajarmu."}</UiText>
-            : <UiText>{"Materi, anggota, dan ruang belajar Anda dalam satu tempat."}</UiText>
+            : teacher
+              ? <UiText>{"Materi, anggota, dan ruang belajar Anda dalam satu tempat."}</UiText>
+              : <UiText>{"Daftar semua kelas yang kamu ikuti. Buka kelas untuk melihat materi dan belajar."}</UiText>
         }
       >
         {teacher && (
@@ -250,6 +275,11 @@ export async function ClassRoom({
                   key={material.id}
                   className="material-row"
                   href={teacher ? `/guru/kelas/${id}/materi/${material.id}` : `/siswa/tutor?class_id=${id}&material_id=${material.id}`}
+                  aria-label={
+                    teacher
+                      ? undefined
+                      : `${material.title}. Materi ${index + 1}. Klik untuk mulai belajar bersama Tutor AI.`
+                  }
                 >
                   <span className="material-number">
                     {String(index + 1).padStart(2, "0")}
@@ -260,7 +290,7 @@ export async function ClassRoom({
                       {<UiDate value={material.created_at} />}
                       {teacher
                         ? ` · ${material.published ? "Terbit" : "Draft"}`
-                        : <UiText>{" · Siap dibaca"}</UiText>}
+                        : <UiText>{" · Buka di Tutor AI"}</UiText>}
                     </small>
                   </span>
                   <ArrowUpRight size={20} aria-hidden="true" />
@@ -271,7 +301,7 @@ export async function ClassRoom({
             <Empty title={<UiText>{"Belum ada materi"}</UiText>}>
               {teacher
                 ? <UiText>{"Mulai dengan satu penjelasan sederhana. Simpan draft atau langsung terbitkan untuk siswa."}</UiText>
-                : <UiText>{"Guru belum menerbitkan materi. Silakan kembali setelah materi dibagikan."}</UiText>}
+                : <UiText>{"Guru belum menerbitkan materi untuk kelas ini. Silakan tanyakan kepada gurumu."}</UiText>}
             </Empty>
           )}
         </section>

@@ -4,10 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-export function Brand() {
+export function Brand({ href = "/" }: { href?: string } = {}) {
   const { t } = useI18n();
   return (
-    <Link className="brand" href="/" aria-label={t("KODMOD, halaman utama")}>
+    <Link className="brand" href={href} aria-label={t("KODMOD, halaman utama")}>
       <Image
         src="/brand/logo.png"
         alt="KODMOD"

@@ -49,6 +49,7 @@ export function StudentLibrary({
           <Input
             type="search"
             placeholder={t("Judul, kelas, atau mata pelajaran")}
+            aria-label={t("Cari materi berdasarkan judul, kelas, atau mata pelajaran")}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -58,6 +59,7 @@ export function StudentLibrary({
         </label>
         <label className="field"><UiText>{"Kelas"}</UiText><NativeSelect
             value={classId}
+            aria-label={t("Filter berdasarkan kelas")}
             onChange={(e) => {
               setClassId(e.target.value);
               setLimit(12);
@@ -73,6 +75,7 @@ export function StudentLibrary({
         </label>
         <label className="field"><UiText>{"Status bacaan"}</UiText><NativeSelect
             value={status}
+            aria-label={t("Filter berdasarkan status bacaan")}
             onChange={(e) => {
               setStatus(e.target.value);
               setLimit(12);
@@ -85,11 +88,11 @@ export function StudentLibrary({
           </NativeSelect>
         </label>
       </section>
-      <p className="library-result" role="status">
+      <p className="library-result" data-voice-ignore="true">
         {filtered.length}<UiText>{" materi ditemukan"}</UiText></p>
       {!materials.length ? (
         <div className="panel">
-          <Empty title={<UiText>{"Bacaan pertama Anda akan hadir di sini."}</UiText>}><UiText>{"Materi yang diterbitkan guru di kelas Anda akan otomatis muncul. Hubungi guru jika kelas belum tersedia."}</UiText></Empty>
+          <Empty title={<UiText>{"Belum ada materi dari kelasmu."}</UiText>}><UiText>{"Materi yang diterbitkan guru di kelasmu akan otomatis muncul di sini. Hubungi gurumu jika belum ada materi."}</UiText></Empty>
         </div>
       ) : !filtered.length ? (
         <div className="panel">
@@ -108,9 +111,10 @@ export function StudentLibrary({
         <div className="student-material-grid">
           {filtered.slice(0, limit).map((m) => (
             <Link
-              className="panel student-material-card"
+              className="panel student-material-card student-tactile-card"
               href={`/siswa/tutor?class_id=${m.class_id}&material_id=${m.id}`}
               key={m.id}
+              aria-label={`${m.title}. Kelas ${m.class_name}. Mata pelajaran ${m.subject}. ${m.progress.completed ? "Sudah dipelajari." : "Belum selesai."} Buka ruang belajar bersama Tutor AI.`}
             >
               <div className="student-material-top">
                 <span className="class-symbol">

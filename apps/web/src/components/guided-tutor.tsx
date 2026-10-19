@@ -137,7 +137,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
         </CardContent>
       </Card>
       {!!sessions.length && <Card className="guided-sessions"><CardTitle><UiText>{"Lanjutkan sesi"}</UiText></CardTitle>
-        <ul>{sessions.filter((row) => row.phase !== "completed").map((row) => <li key={row.session_id}><button type="button" onClick={() => void recover(row.session_id)} disabled={busy || uncertain || (locked && row.session_id !== lesson?.session_id)} aria-current={lesson?.session_id === row.session_id ? "true" : undefined}>
+        <ul>{sessions.filter((row) => row.phase !== "completed").map((row) => <li key={row.session_id}><button type="button" onClick={() => void recover(row.session_id)} disabled={busy || uncertain || (locked && row.session_id !== lesson?.session_id)} aria-current={lesson?.session_id === row.session_id ? "true" : undefined} aria-label={`${t("Lanjutkan")} ${row.material_title}. ${row.phase === "quiz" ? t("Mini kuis berjalan") : `${t("Bagian")} ${row.unit_index + 1} / ${row.total_units}`}`}>
           <span>{row.material_title}</span><small>{row.phase === "quiz" ? t("Mini kuis berjalan") : `${t("Bagian")} ${row.unit_index + 1} / ${row.total_units}`}</small></button></li>)}</ul>
       </Card>}
       <div className="guided-other-paths"><Link href="/siswa/latihan"><UiText>{"Asesmen mandiri"}</UiText><ArrowRight size={16} aria-hidden="true" /></Link><Link href="/siswa/tugas"><UiText>{"Tugas"}</UiText><ArrowRight size={16} aria-hidden="true" /></Link></div>
@@ -200,6 +200,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
                         type="button"
                         className="material-card-select"
                         aria-pressed={isSelected}
+                        aria-label={`${item.title}. ${item.subject}. Kelas ${item.class_name}. ${isReady ? "Siap dipelajari." : "Menyiapkan materi."}`}
                         disabled={busy || locked || uncertain}
                         onClick={() => setMaterialId(item.id)}
                       >
@@ -224,6 +225,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
                           type="button"
                           variant={isSelected ? "default" : "outline"}
                           className="material-start-button"
+                          aria-label={`${t("Mulai belajar")} ${item.title} ${t("bersama Tutor AI")}`}
                           disabled={busy || !isReady || locked || uncertain}
                           onClick={() => {
                             setMaterialId(item.id);
@@ -246,7 +248,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
           </div>
         </div>
       ) : <>
-        <button type="button" className="change-material-btn" disabled={busy || locked || uncertain} onClick={() => setLesson(null)}>
+        <button type="button" className="change-material-btn" aria-label={t("Pilih materi lain untuk belajar")} disabled={busy || locked || uncertain} onClick={() => setLesson(null)}>
           <ArrowLeft size={16} aria-hidden="true" />
           <UiText>{"Pilih materi lain"}</UiText>
         </button>
@@ -267,8 +269,8 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
           <p className="guided-source"><BookOpen size={16} aria-hidden="true" /><UiText>{"Sumber"}</UiText>{`: ${lesson.source_filename || lesson.material_title}`}</p>
           {lesson.quiz?.status === "completed" && <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><div><strong><UiText>{"Mini kuis selesai"}</UiText> · {Math.round((lesson.quiz.last_result?.cumulative_score ?? 0) * 100)}%</strong><p>{lesson.quiz.last_result?.feedback}</p></div></div>}
           {lesson.phase === "learning" ? <>
-            <form onSubmit={(event) => { event.preventDefault(); void act("question"); }} className="guided-question-form"><label className="field"><UiText>{"Ada yang belum jelas?"}</UiText><Textarea value={draft} maxLength={4000} rows={3} onChange={(event) => setDraft(event.target.value)} disabled={busy || uncertain} placeholder={t("Tuliskan pertanyaan atau gunakan tombol suara.")} /></label><Button type="submit" loading={busy && busyAction === "question"} loadingText={t("Menyiapkan jawaban…")} disabled={busy || uncertain || !draft.trim()}><Send size={17} aria-hidden="true" /><UiText>{"Tanyakan pada Tutor"}</UiText></Button></form>
-            <footer className="guided-actions" aria-label={t("Langkah belajar berikutnya")}>{Object.entries(actions).filter(([action]) => lesson.available_actions.includes(action)).map(([action, { label, Icon }]) => <Button key={action} type="button" variant={action === "continue" || action === "finish" ? "default" : "outline"} loading={busy && busyAction === action} loadingText={t("Memproses…")} disabled={busy || uncertain} onClick={() => void act(action)}><Icon size={17} aria-hidden="true" />{t(label)}</Button>)}</footer>
+            <form onSubmit={(event) => { event.preventDefault(); void act("question"); }} className="guided-question-form"><label className="field"><UiText>{"Ada yang belum jelas?"}</UiText><Textarea value={draft} maxLength={4000} rows={3} aria-label={t("Tuliskan pertanyaan materi atau gunakan tombol suara.")} onChange={(event) => setDraft(event.target.value)} disabled={busy || uncertain} placeholder={t("Tuliskan pertanyaan atau gunakan tombol suara.")} /></label><Button type="submit" loading={busy && busyAction === "question"} loadingText={t("Menyiapkan jawaban…")} disabled={busy || uncertain || !draft.trim()}><Send size={17} aria-hidden="true" /><UiText>{"Tanyakan pada Tutor"}</UiText></Button></form>
+            <footer className="guided-actions" aria-label={t("Langkah belajar berikutnya")}>{Object.entries(actions).filter(([action]) => lesson.available_actions.includes(action)).map(([action, { label, Icon }]) => <Button key={action} type="button" variant={action === "continue" || action === "finish" ? "default" : "outline"} className="guided-action-button" aria-label={t(label)} loading={busy && busyAction === action} loadingText={t("Memproses…")} disabled={busy || uncertain} onClick={() => void act(action)}><Icon size={17} aria-hidden="true" />{t(label)}</Button>)}</footer>
           </> : <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><UiText>{"Sesi belajar selesai. Pilih materi lain untuk melanjutkan."}</UiText></div>}
         </Card>}
       </>}
