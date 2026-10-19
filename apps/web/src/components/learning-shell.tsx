@@ -6,9 +6,12 @@ import { LearningNav } from "./learning-nav";
 import { requireSession } from "@/lib/session";
 import type { LearningRole } from "@/lib/class-types";
 import "@/styles/learning.css";
+import "@/styles/student-hub.css";
 import { ExperienceToolbar } from "./experience-toolbar";
 import { getServerI18n } from "@/lib/server-language";
 import { UserProfileDropdown } from "./user-profile-dropdown";
+import { StudentTopNav, StudentBackBar } from "./student-top-nav";
+
 export async function LearningShell({
   role,
   children,
@@ -19,14 +22,34 @@ export async function LearningShell({
   const { user } = await requireSession(role);
   const { t } = await getServerI18n();
   const teacher = role === "teacher";
+
+  // Dedicated accessible layout for Students: No sidebar, clean full-width workspace
+  if (!teacher) {
+    return (
+      <div className="student-app-shell">
+        <StudentTopNav user={user} />
+        <main id="konten-utama" tabIndex={-1} className="workspace-main student-main-content">
+          <StudentBackBar />
+          {children}
+        </main>
+        <footer className="student-footer">
+          <div className="student-footer-inner">
+            <strong>KODMOD</strong>
+            <span>{t("Ruang belajar untuk semua.")}</span>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-shell learning-shell">
       <aside className="sidebar">
         <Brand />
         <div className="sidebar-label">
-          {t(teacher ? "Ruang mengajar" : "Ruang belajar")}
+          {t("Ruang mengajar")}
         </div>
-        <LearningNav base={teacher ? "/guru" : "/siswa"} />
+        <LearningNav base="/guru" />
         <div className="sidebar-bottom">
           <BookOpen size={24} aria-hidden="true" />
           <strong>KODMOD</strong>
@@ -36,13 +59,13 @@ export async function LearningShell({
       <div className="admin-workspace">
         <header className="workspace-header">
           <span className="workspace-title">
-            {t(teacher ? "Ruang guru" : "Ruang siswa")}
+            {t("Ruang guru")}
           </span>
           <div className="account">
             <ExperienceToolbar />
             <UserProfileDropdown
               user={user}
-              roleLabel={teacher ? "Guru" : "Siswa"}
+              roleLabel="Guru"
               role={role}
             />
           </div>

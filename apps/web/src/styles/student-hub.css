@@ -1,0 +1,1325 @@
+/* ==========================================================================
+   KODMOD Student Hub (Game-Like Accessible Learning Workspace)
+   Tailored specifically for blind and visually impaired students:
+   - No cramped sidebar stealing horizontal reading space
+   - Centered tactile 3D game pads with hotkeys [1-6] and arrow navigation
+   - High contrast focus outlines & rich voice audio feedback
+   ========================================================================== */
+
+.student-app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  background: radial-gradient(ellipse at 50% -10%, #dbeafe 0%, #f1f6fd 45%, #eef4fc 100%);
+  color: #0f172a;
+}
+
+/* Sticky Accessible Top Navigation Header */
+.student-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1.5px solid #d0dfef;
+  box-shadow: 0 4px 18px rgba(15, 39, 74, 0.05);
+}
+
+.student-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0.65rem clamp(0.75rem, 2.5vw, 2.5rem);
+  min-height: 64px;
+}
+
+.student-header .brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.student-header .brand img {
+  width: 140px;
+  height: auto;
+  display: block;
+}
+
+.student-header-left {
+  display: flex;
+  align-items: center;
+}
+
+/* Student Back to Menu Utama Bar */
+.student-back-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Tactile Game Back Button */
+.student-back-to-hub-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #3b82f6;
+  box-shadow: 0 4px 0 #172554, 0 6px 14px rgba(30, 58, 138, 0.25);
+  text-decoration: none;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-back-to-hub-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #172554, 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.student-back-to-hub-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #172554;
+}
+
+.student-back-to-hub-btn:focus-visible {
+  outline: 3px solid #facc15;
+  outline-offset: 3px;
+}
+
+.student-kbd-hint {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.student-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Full Width Main Workspace with Section Re-ordering */
+.student-main-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-main-content > .page-heading {
+  order: 1;
+  margin-bottom: 1.25rem;
+}
+
+.student-main-content > .learning-back {
+  order: 2;
+  margin-bottom: 1rem;
+}
+
+.student-main-content > .student-back-bar {
+  order: 2;
+  margin-bottom: 1.5rem;
+}
+
+.student-main-content > *:not(.page-heading):not(.student-back-bar):not(.learning-back) {
+  order: 3;
+}
+
+/* Student Game Hub Dashboard */
+.student-game-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+/* Hero Section */
+.student-hub-hero {
+  background: linear-gradient(135deg, #091e3a 0%, #103464 55%, #184886 100%);
+  border-radius: 28px;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 36px rgba(10, 31, 60, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.student-hub-hero::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.28) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+
+.student-hub-title {
+  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  margin: 1rem 0 0.65rem;
+  color: #ffffff;
+}
+
+.student-hub-description {
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  color: #d1d5db;
+  line-height: 1.6;
+  max-width: 68ch;
+  margin: 0 0 1.25rem;
+}
+
+.student-audio-nav-guide {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(30, 58, 138, 0.55);
+  border: 1px solid rgba(147, 197, 253, 0.4);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #e0f2fe;
+}
+
+/* Next Mission Card */
+.student-next-mission-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 24px;
+  padding: 1.65rem 2rem;
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mission-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #92400e;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mission-card-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.mission-card-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #78350f;
+  margin: 0 0 0.35rem;
+}
+
+.mission-card-desc {
+  font-size: 0.95rem;
+  color: #92400e;
+  margin: 0;
+}
+
+.mission-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Game Navigation Grid (The 6 Central Tactile Game Pads)
+   ========================================================================== */
+.student-game-grid-section {
+  width: 100%;
+}
+
+.student-game-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2.2vw, 1.75rem);
+}
+
+@media (max-width: 1024px) {
+  .student-game-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .student-game-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.game-pad-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 235px;
+  padding: 1.65rem;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 0 #94a3b8, 0 10px 24px rgba(15, 39, 74, 0.06);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.16s ease;
+}
+
+.game-pad-card:hover {
+  transform: translateY(-6px);
+  border-color: #2563eb;
+  box-shadow: 0 12px 0 #1d4ed8, 0 18px 34px rgba(37, 99, 235, 0.18);
+}
+
+.game-pad-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: #2563eb;
+  box-shadow: 0 10px 0 #1d4ed8, 0 0 0 4px rgba(37, 99, 235, 0.25);
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.game-pad-card:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #1d4ed8, 0 4px 10px rgba(37, 99, 235, 0.1);
+}
+
+.game-pad-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.game-pad-key {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 900;
+  background: #1e3a8a;
+  color: #ffffff;
+  box-shadow: 0 3px 0 #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.game-pad-stat {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.game-pad-icon-wrap {
+  width: 66px;
+  height: 66px;
+  border-radius: 20px;
+  background: #eff6ff;
+  border: 1.5px solid #dbeafe;
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem 0 0.75rem;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.game-pad-card:hover .game-pad-icon-wrap {
+  transform: scale(1.08);
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.game-pad-title {
+  font-size: 1.38rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+  margin: 0 0 0.35rem;
+}
+
+.game-pad-desc {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #475569;
+  margin: 0;
+}
+
+.game-pad-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.game-pad-enter-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #2563eb;
+  transition: gap 0.15s ease;
+}
+
+.game-pad-card:hover .game-pad-enter-text {
+  gap: 10px;
+}
+
+/* ==========================================================================
+   Classes Section
+   ========================================================================== */
+.student-classes-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.student-classes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.student-classes-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+.student-see-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.student-see-all-link:hover {
+  text-decoration: underline;
+}
+
+.student-classes-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.student-class-mini-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 18px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  transition: all 0.15s ease;
+}
+
+.student-class-mini-card:hover {
+  transform: translateY(-3px);
+  border-color: #3b82f6;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+}
+
+.student-class-mini-card:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.mini-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mini-card-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.mini-card-count {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.mini-card-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.mini-card-teacher {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Footer */
+.student-footer {
+  border-top: 1px solid #cbd5e1;
+  background: #ffffff;
+  padding: 1.5rem clamp(1rem, 3vw, 2.5rem);
+  margin-top: auto;
+}
+
+.student-footer-inner {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.student-footer-inner strong {
+  color: #1e3a8a;
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   Mobile Responsive Alignment (Matching Landing Page & Auth Specifications)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .student-header-inner {
+    padding: 10px 16px;
+  }
+  .student-main-content {
+    padding: 20px 16px 36px;
+  }
+  .student-game-hub {
+    gap: 1.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .student-header-inner {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 8px 16px 10px;
+    min-height: auto;
+  }
+  .student-header-left {
+    order: 1;
+    gap: 0.5rem;
+  }
+  .student-header .brand img {
+    width: 110px;
+  }
+  .student-header-right {
+    order: 2;
+    margin-inline-start: auto;
+    display: flex;
+    align-items: center;
+  }
+  .student-header-toolbar-wrap {
+    order: 3;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-top: 6px;
+    border-top: 1px dashed #e2e8f0;
+  }
+  .student-header-toolbar-wrap .experience-toolbar {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 5px 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+  }
+  .student-header-toolbar-wrap .experience-button {
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 10px;
+  }
+  .student-header-toolbar-wrap .toolbar-language {
+    min-height: 36px;
+    width: 42px;
+    min-width: 42px;
+  }
+  .student-back-to-hub-btn {
+    padding: 6px 12px;
+    font-size: 0.84rem;
+    border-radius: 10px;
+  }
+  .student-kbd-hint {
+    display: none;
+  }
+  .student-current-page-pill {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+
+  /* Hero Section: Matched to Landing Page */
+  .student-hub-hero {
+    padding: 22px 18px;
+    border-radius: 20px;
+  }
+  .student-hub-title {
+    font-size: clamp(1.45rem, 6vw, 1.85rem);
+    line-height: 1.25;
+    margin: 0.25rem 0 0.5rem;
+  }
+  .student-hub-description {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin-bottom: 0.85rem;
+  }
+  .student-audio-nav-guide {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    border-radius: 10px;
+  }
+
+  /* Mission Banner */
+  .student-next-mission-card {
+    padding: 18px 16px;
+    border-radius: 20px;
+  }
+  .mission-card-title {
+    font-size: 1.18rem;
+  }
+  .mission-card-desc {
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .mission-action-btn {
+    width: 100%;
+    justify-content: center;
+    height: 44px;
+    font-size: 0.92rem;
+    border-radius: 12px;
+  }
+
+  /* 6 Game Pads: Matched to .lp-capability card specifications */
+  .student-game-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .game-pad-card {
+    padding: 20px 18px;
+    min-height: auto;
+    border-radius: 20px;
+    border: 2px solid #e2e8f0;
+    border-bottom: 4px solid #cbd5e1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  }
+  .game-pad-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+  }
+  .game-pad-key {
+    width: 36px;
+    height: 36px;
+    font-size: 1.08rem;
+    border-radius: 10px;
+  }
+  .game-pad-stat {
+    font-size: 0.76rem;
+    padding: 3px 10px;
+  }
+  .game-pad-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    margin: 0.75rem 0 0.5rem;
+  }
+  .game-pad-icon-wrap svg {
+    width: 24px;
+    height: 24px;
+  }
+  .game-pad-title {
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+  }
+  .game-pad-desc {
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .game-pad-footer {
+    margin-top: 0.75rem;
+    padding-top: 0.65rem;
+  }
+  .game-pad-enter-text {
+    font-size: 0.88rem;
+  }
+
+  /* Classes Row */
+  .student-classes-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .student-class-mini-card {
+    padding: 16px 14px;
+    border-radius: 18px;
+  }
+
+  /* Subpages text scale */
+  .student-main-content .page-heading h1 {
+    font-size: 1.45rem !important;
+  }
+  .student-main-content .page-heading p {
+    font-size: 0.88rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-main-content {
+    padding: 16px 14px 28px;
+  }
+  .student-hub-hero {
+    padding: 18px 14px;
+  }
+  .game-pad-card {
+    padding: 18px 16px;
+  }
+}
+
+/* ==========================================================================
+   Student Subpages: Tactile Class & Material Components
+   ========================================================================== */
+.student-back-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #1e3a8a;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 3px 0 #94a3b8, 0 4px 10px rgba(15, 23, 42, 0.04);
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-back-link:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #2563eb, 0 8px 16px rgba(37, 99, 235, 0.15);
+}
+
+.student-back-link:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.student-back-link:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #2563eb;
+}
+
+/* Tactile Class & Material Grids */
+.student-class-grid,
+.student-material-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+@media (max-width: 640px) {
+  .student-class-grid,
+  .student-material-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+.student-tactile-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.65rem;
+  border-radius: 22px;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 5px 0 #94a3b8, 0 8px 20px rgba(15, 39, 74, 0.05);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.16s ease;
+}
+
+.student-tactile-card:hover {
+  transform: translateY(-4px);
+  border-color: #2563eb;
+  box-shadow: 0 9px 0 #1d4ed8, 0 14px 28px rgba(37, 99, 235, 0.16);
+}
+
+.student-tactile-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  box-shadow: 0 7px 0 #1d4ed8, 0 0 0 4px rgba(37, 99, 235, 0.25);
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.student-tactile-card:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #1d4ed8;
+}
+
+.student-tactile-card h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 1rem 0 0.45rem;
+  letter-spacing: -0.02em;
+}
+
+.student-tactile-card p {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: #475569;
+  margin: 0 0 1.25rem;
+}
+
+.student-tactile-card .class-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.85rem;
+  border-top: 1px dashed #e2e8f0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+/* Student Class Detail View */
+.student-main-content .class-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.student-main-content .material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.student-main-content .material-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 3px 0 #94a3b8, 0 4px 10px rgba(15, 23, 42, 0.03);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-main-content .material-row:hover {
+  transform: translateY(-2px);
+  border-color: #2563eb;
+  background: #f8faff;
+  box-shadow: 0 6px 0 #1d4ed8, 0 8px 18px rgba(37, 99, 235, 0.12);
+}
+
+.student-main-content .material-row:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+  border-color: #2563eb;
+}
+
+.student-main-content .material-row:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1d4ed8;
+}
+
+.student-main-content .material-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #1e3a8a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.student-main-content .material-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.student-main-content .material-info strong {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.student-main-content .material-info small {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+/* ==========================================================================
+   Student Assessment & Quiz (Tactile Game Options A-D)
+   ========================================================================== */
+.student-main-content .quiz-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.student-main-content .quiz-start-card,
+.student-main-content .quiz-question-card {
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+  border-radius: 24px;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 0 #94a3b8, 0 10px 24px rgba(15, 39, 74, 0.05);
+  background: #ffffff;
+}
+
+.student-main-content .quiz-options {
+  display: grid;
+  gap: 12px;
+  margin: 1.5rem 0;
+  border: none;
+  padding: 0;
+}
+
+.student-main-content .quiz-options legend {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 0.75rem;
+}
+
+.student-main-content .quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 2px solid #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 4px 0 #94a3b8, 0 4px 10px rgba(15, 23, 42, 0.03);
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-main-content .quiz-option:hover {
+  border-color: #2563eb;
+  background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #1d4ed8, 0 8px 18px rgba(37, 99, 235, 0.14);
+}
+
+.student-main-content .quiz-option.selected {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 #1e3a8a, 0 0 0 2px rgba(29, 78, 216, 0.25);
+}
+
+.student-main-content .quiz-option:focus-within {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.student-main-content .quiz-option-key {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 0 #0f172a;
+}
+
+.student-main-content .quiz-option.selected .quiz-option-key {
+  background: #2563eb;
+  box-shadow: 0 2px 0 #1d4ed8;
+}
+
+.student-main-content .quiz-progress {
+  padding: 1.25rem 1.65rem;
+  border-radius: 18px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 4px 0 #94a3b8;
+}
+
+/* ==========================================================================
+   Student Progress & Analytics (Tactile Metric Cards & Audio Player)
+   ========================================================================== */
+.student-main-content .analytics-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.student-main-content .analytics-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.student-main-content .analytics-toolbar h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin: 0 0 4px;
+}
+
+.student-main-content .analytics-window-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.student-main-content .analytics-window-tabs button {
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #94a3b8;
+  transition: all 0.15s ease;
+}
+
+.student-main-content .analytics-window-tabs button:hover {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #2563eb;
+}
+
+.student-main-content .analytics-window-tabs button.active {
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #1e3a8a;
+  box-shadow: 0 3px 0 #0f172a;
+}
+
+.student-main-content .analytics-hero {
+  border-radius: 24px;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 6px 0 #94a3b8, 0 10px 24px rgba(15, 39, 74, 0.05);
+  padding: clamp(1.5rem, 3.5vw, 2.25rem);
+  background: #ffffff;
+}
+
+.student-main-content .analytics-stat-card {
+  padding: 1.25rem 1.45rem;
+  border-radius: 20px;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 5px 0 #94a3b8, 0 6px 16px rgba(15, 39, 74, 0.04);
+  background: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.student-main-content .analytics-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: #2563eb;
+  box-shadow: 0 8px 0 #1d4ed8, 0 12px 24px rgba(37, 99, 235, 0.12);
+}
+
+.student-main-content .analytics-stat-card:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.student-main-content .analytics-card {
+  padding: 1.5rem 1.75rem;
+  border-radius: 22px;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 5px 0 #94a3b8, 0 8px 20px rgba(15, 39, 74, 0.04);
+  background: #ffffff;
+}
+
+.student-main-content .analytics-voice-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid #93c5fd;
+  box-shadow: 0 6px 0 #60a5fa, 0 10px 24px rgba(37, 99, 235, 0.08);
+  border-radius: 22px;
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  margin-bottom: 0.5rem;
+}
+
+.student-main-content .analytics-voice-card .analytics-card-heading h3 {
+  color: #1e3a8a;
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.student-main-content .analytics-voice-card .analytics-spoken {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #1e40af;
+  margin-bottom: 0.5rem;
+}
+
+.student-main-content .analytics-voice-card .voice-panel {
+  background: #ffffff;
+  border: 1.5px solid #bfdbfe;
+  box-shadow: 0 4px 0 #93c5fd;
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  margin-top: 0.75rem;
+}
+
+.student-main-content .analytics-voice-card .voice-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.75rem;
+  color: #1e3a8a;
+  font-size: 0.95rem;
+}
+
+.student-main-content .analytics-voice-card .voice-panel-heading strong {
+  font-weight: 700;
+}
+
+.student-main-content .analytics-voice-card .voice-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.student-main-content .analytics-voice-card .voice-actions .button {
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.student-main-content .analytics-voice-card .voice-actions .button.primary {
+  background: #1e3a8a;
+  border: 1.5px solid #3b82f6;
+  box-shadow: 0 4px 0 #172554;
+  color: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.student-main-content .analytics-voice-card .voice-actions .button.primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #172554;
+}
+
+.student-main-content .analytics-voice-card .voice-actions .button.secondary {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  box-shadow: 0 3px 0 #94a3b8;
+  color: #334155;
+  transition: all 0.15s ease;
+}
+
+.student-main-content .analytics-voice-card .voice-actions .button.secondary:hover {
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 #2563eb;
+}
+
+.student-main-content .analytics-voice-card .voice-status {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.student-main-content .analytics-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.student-main-content .analytics-answer-breakdown {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2rem;
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 18px;
+  box-shadow: 0 5px 0 #94a3b8, 0 6px 16px rgba(15, 39, 74, 0.04);
+  font-size: 0.95rem;
+  color: #475569;
+  flex-wrap: wrap;
+}
+
+.student-main-content .analytics-answer-breakdown > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+}
+
+.student-main-content .analytics-answer-breakdown strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 8px;
+  color: #1e40af;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.student-main-content .analytics-recommendations-card {
+  width: 100%;
+}
+
+
+[data-contrast="high"] .student-back-to-hub-btn {
+  background: #000000;
+  color: #ffff00;
+  border: 2px solid #ffff00;
+  box-shadow: 0 4px 0 #ffff00;
+}
+
+
+[data-contrast="high"] .student-main-content .analytics-voice-card {
+  background: #000000;
+  border: 2px solid #ffff00;
+  box-shadow: 0 4px 0 #ffff00;
+}
+
+[data-contrast="high"] .student-main-content .analytics-voice-card .analytics-card-heading h3,
+[data-contrast="high"] .student-main-content .analytics-voice-card .analytics-spoken {
+  color: #ffffff;
+}
+
+[data-contrast="high"] .student-main-content .analytics-voice-card .voice-panel {
+  background: #000000;
+  border: 2px solid #ffff00;
+  box-shadow: 0 4px 0 #ffff00;
+  color: #ffffff;
+}
+
+[data-contrast="high"] .student-main-content .analytics-answer-breakdown {
+  background: #000000;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 0 #ffffff;
+  color: #ffffff;
+}
+
+[data-contrast="high"] .student-main-content .analytics-answer-breakdown strong {
+  background: #000000;
+  color: #ffff00;
+  border-color: #ffff00;
+}
