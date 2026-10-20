@@ -54,6 +54,48 @@ async def test_document_projection_revision_and_conflict_are_shared(learning_htt
         assert row.content_version == 2
 
 
+async def test_admin_original_is_attachment_by_default_and_inline_pdf_only_for_preview(
+    learning_http, monkeypatch, tmp_path
+):
+    from io import BytesIO
+
+    from fastapi import UploadFile
+
+    from api.material_artifacts import create_import
+    from config.settings import settings
+    from database.models import Classroom
+    from tests.unit.test_pdf_layout import make_pdf
+
+    client, factory, controls, material, _, admin = learning_http
+    monkeypatch.setattr(settings, "UPLOAD_DIR", tmp_path)
+    async with factory() as session:
+        classroom = await session.get(Classroom, material.class_id)
+        imported = await create_import(
+            session,
+            classroom,
+            admin,
+            UploadFile(
+                filename="source.pdf",
+                file=BytesIO(make_pdf(lambda page: page.drawString(40, 700, "Materi sumber"))),
+            ),
+        )
+        row = await session.get(ClassMaterial, material.id)
+        row.source_import_id = uuid.UUID(imported["import_id"])
+        await session.commit()
+
+    url = f"/admin/materials/{material.id}/original"
+    assert (await client.get(url)).status_code == 403
+    controls["actor"] = admin
+    download = await client.get(url)
+    assert download.status_code == 200
+    assert download.headers["content-type"] == "application/octet-stream"
+    assert download.headers["content-disposition"].startswith("attachment")
+    inline = await client.get(url + "?preview=true")
+    assert inline.status_code == 200
+    assert inline.headers["content-type"] == "application/pdf"
+    assert inline.headers["content-disposition"].startswith("inline")
+
+
 async def test_assets_pending_draft_cross_class_and_student_access(
     learning_http, monkeypatch, tmp_path
 ):
@@ -158,16 +200,21 @@ async def test_mixed_import_worker_retry_reuses_private_asset_and_paid_region(
 
 
 async def test_metadata_remains_readable_but_cannot_start_learning_or_quiz(learning_http):
-    client,factory,_,material,_,_=learning_http
+    client, factory, _, material, _, _ = learning_http
     async with factory() as session:
-        row=await session.get(ClassMaterial,material.id)
-        row.content="<!-- demo note -->\n\n# Dasar-Dasar Tata Surya"
+        row = await session.get(ClassMaterial, material.id)
+        row.content = "<!-- demo note -->\n\n# Dasar-Dasar Tata Surya"
         await session.commit()
-    read=await client.get(f"/classes/{material.class_id}/materials/{material.id}")
-    assert read.status_code==200 and read.json()["learning_progress"]["total_units"]==0
-    assert read.json()["ai_readiness"]=="insufficient_learning_content"
-    source={"class_id":str(material.class_id),"material_id":str(material.id)}
-    lesson=await client.post("/learning/start",json=source)
-    assert lesson.status_code==409 and lesson.json()["detail"]["code"]=="insufficient_learning_content"
-    quiz=await client.post("/quiz/start",json={**source,"n_questions":1})
-    assert quiz.status_code==409 and quiz.json()["detail"]["code"]=="insufficient_learning_content"
+    read = await client.get(f"/classes/{material.class_id}/materials/{material.id}")
+    assert read.status_code == 200 and read.json()["learning_progress"]["total_units"] == 0
+    assert read.json()["ai_readiness"] == "insufficient_learning_content"
+    source = {"class_id": str(material.class_id), "material_id": str(material.id)}
+    lesson = await client.post("/learning/start", json=source)
+    assert (
+        lesson.status_code == 409
+        and lesson.json()["detail"]["code"] == "insufficient_learning_content"
+    )
+    quiz = await client.post("/quiz/start", json={**source, "n_questions": 1})
+    assert (
+        quiz.status_code == 409 and quiz.json()["detail"]["code"] == "insufficient_learning_content"
+    )

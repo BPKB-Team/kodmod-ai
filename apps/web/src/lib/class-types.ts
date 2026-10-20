@@ -1,3 +1,4 @@
+import type {MaterialDocument} from "./material-document-types";
 export type LearningRole = "teacher" | "student";
 export type Classroom = {
   id: string;
@@ -19,6 +20,11 @@ export type Material = {
   published: boolean;
   created_at: string;
   content?: string;
+  document?:MaterialDocument;
+  speech_text?:string;
+  ai_readiness?:string;
+  extraction_review?:string;
+  concept_mapping?:string;
   source_filename?: string | null;
   source_import_id?: string | null;
   rag_status?: "pending" | "processing" | "ready" | "failed";

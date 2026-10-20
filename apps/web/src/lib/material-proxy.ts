@@ -18,7 +18,7 @@ export async function forwardMaterial(current: Exclude<Awaited<ReturnType<typeof
       signal: AbortSignal.timeout(60_000),
     });
     if (options.download && response.ok) return new Response(response.body, { headers: {
-      "Content-Type": "application/octet-stream", "Content-Disposition": response.headers.get("Content-Disposition") ?? "attachment",
+      "Content-Type": response.headers.get("Content-Type") === "application/pdf" ? "application/pdf" : "application/octet-stream", "Content-Disposition": response.headers.get("Content-Disposition") ?? "attachment",
       "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff",
     } });
     const data = await response.json().catch(() => null);

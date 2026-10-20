@@ -15,7 +15,8 @@ async function handler(request: Request, { params }: Context) {
     try { const data = await request.json(); body = JSON.stringify({ first_page: data.first_page, last_page: data.last_page }); }
     catch { return NextResponse.json({ message: "Pilihan halaman tidak valid." }, { status: 400 }); }
   }
-  return forwardMaterial(current, `/classes/${classId}/imports/${path.join("/")}`, body, { method: request.method as "GET" | "POST", download: path[1] === "original" });
+  const preview = request.method === "GET" && path[1] === "original" && new URL(request.url).searchParams.get("preview") === "true";
+  return forwardMaterial(current, `/classes/${classId}/imports/${path.join("/")}${preview ? "?preview=true" : ""}`, body, { method: request.method as "GET" | "POST", download: path[1] === "original" });
 }
 export const GET = handler;
 export const POST = handler;

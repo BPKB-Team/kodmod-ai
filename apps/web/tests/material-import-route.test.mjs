@@ -76,6 +76,20 @@ test("durable import access rejects students and unknown paths and streams origi
   assert.equal(await response.text(), "private-original");
 });
 
+test("authorized PDF source preview is forwarded as inline PDF only on explicit preview request", async () => {
+  const context = path => ({ params: Promise.resolve({ classId: "10000000-0000-4000-8000-000000000001", path }) });
+  const id = "20000000-0000-4000-8000-000000000001";
+  boundary.current = { token: "test-token", user: { role: "teacher" } };
+  globalThis.fetch = async url => {
+    assert.match(url, new RegExp(`/imports/${id}/original\\?preview=true$`));
+    return new Response("%PDF-test", { headers: { "Content-Type": "application/pdf", "Content-Disposition": "inline; filename=book.pdf" } });
+  };
+  const response = await importDetail.GET(new Request("http://localhost?preview=true"), context([id, "original"]));
+  assert.equal(response.headers.get("content-type"), "application/pdf");
+  assert.match(response.headers.get("content-disposition"), /^inline/);
+  assert.equal(await response.text(), "%PDF-test");
+});
+
 test("invalid ranges are rejected before any upstream import", async () => {
   boundary.calls = [];
   for (const [first, last] of [["12", undefined], ["23", "12"], ["1", "151"], ["501", "502"]])

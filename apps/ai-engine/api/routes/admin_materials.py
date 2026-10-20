@@ -181,7 +181,10 @@ async def inspect_source(
 
 @router.get("/materials/{material_id}/original")
 async def download_source(
-    material_id: uuid.UUID, actor=Depends(require_admin), session=Depends(db_session)
+    material_id: uuid.UUID,
+    preview: bool = False,
+    actor=Depends(require_admin),
+    session=Depends(db_session),
 ):
     """Download an original source through administrator authorization."""
     from fastapi.responses import FileResponse
@@ -194,9 +197,11 @@ async def download_source(
     )
     if artifact is None:
         raise HTTPException(404, "Materi ini belum memiliki berkas sumber.")
+    is_pdf_preview = preview and artifact.filename.casefold().endswith(".pdf")
     return FileResponse(
         original_path(artifact),
         filename=artifact.filename,
-        media_type="application/octet-stream",
+        media_type="application/pdf" if is_pdf_preview else "application/octet-stream",
+        content_disposition_type="inline" if is_pdf_preview else "attachment",
         headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
     )

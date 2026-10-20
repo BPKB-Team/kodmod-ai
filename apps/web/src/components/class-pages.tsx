@@ -22,6 +22,8 @@ import type {
 } from "@/lib/class-types";
 import { Badge, Empty, Heading } from "./ui";
 import { ClassAction, MaterialForm, MemberPicker } from "./class-forms";
+import {MaterialRenderer} from "./material-renderer";
+import {legacyMaterialDocument} from "@/lib/material-document-adapter.mjs";
 import { StudentReader } from "./student-reader";
 import { StudentOverview } from "./student-overview";
 import { readingSettings } from "@/lib/reading-settings";
@@ -402,7 +404,7 @@ export async function MaterialPage({
         />
       ) : (
         <article className="panel material-reader" aria-label="Isi materi">
-          {material.content}
+          <MaterialRenderer document={material.document??legacyMaterialDocument(material.content??"")} classId={id}/>
         </article>
       )}
     </>

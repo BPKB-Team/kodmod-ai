@@ -24,15 +24,15 @@ export async function forwardAdmin<T>(path: string, init: RequestInit = {}) {
   }
 }
 
-export async function forwardAdminDownload(path: string) {
+export async function forwardAdminDownload(path: string, preview = false) {
   const current = await session();
   if (!current) return NextResponse.json({ message: "Silakan masuk kembali." }, { status: 401 });
   if (current.user.role !== "admin") return NextResponse.json({ message: "Akses hanya untuk admin." }, { status: 403 });
   try {
     const origin = (process.env.API_ORIGIN || "http://127.0.0.1:8109").replace(/\/$/, "");
-    const response = await fetch(`${origin}${path}`, { headers: { Authorization: `Bearer ${current.token}` }, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(60_000) });
+    const response = await fetch(`${origin}${path}${preview ? "?preview=true" : ""}`, { headers: { Authorization: `Bearer ${current.token}` }, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(60_000) });
     if (!response.ok) return NextResponse.json({ message: "Berkas asli belum dapat dibuka." }, { status: response.status });
-    return new Response(response.body, { headers: { "Content-Type": "application/octet-stream",
+    return new Response(response.body, { headers: { "Content-Type": response.headers.get("Content-Type") === "application/pdf" ? "application/pdf" : "application/octet-stream",
       "Content-Disposition": response.headers.get("Content-Disposition") ?? "attachment", "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
   } catch { return NextResponse.json({ message: "Berkas asli belum dapat dibuka." }, { status: 503 }); }
 }

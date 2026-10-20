@@ -14,7 +14,7 @@ async function handler(request: Request, context: Context) {
     try { body = JSON.stringify(await request.json()); }
     catch { return NextResponse.json({ message: "Isian materi belum dapat dibaca." }, { status: 400 }); }
   }
-  if (request.method === "GET" && path[1] === "original") return forwardAdminDownload(`/admin/materials/${tail}`);
+  if (request.method === "GET" && path[1] === "original") return forwardAdminDownload(`/admin/materials/${tail}`, new URL(request.url).searchParams.get("preview") === "true");
   return forwardAdmin(`/admin/materials/${tail}`, { method: request.method, body });
 }
 export const GET = handler;

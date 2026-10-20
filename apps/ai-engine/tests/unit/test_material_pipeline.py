@@ -72,6 +72,16 @@ class MaterialImportTest(classroom_test.ClassroomRoutesTest):
         )
         preview = await self.completed_preview(cid, response)
         self.assertIn("Pecahan senilai", preview["preview"]["content"])
+        downloaded = await self.client.get(
+            f"/classes/{cid}/imports/{preview['import_id']}/original"
+        )
+        self.assertEqual(downloaded.headers["content-type"], "application/octet-stream")
+        self.assertTrue(downloaded.headers["content-disposition"].startswith("attachment"))
+        inline = await self.client.get(
+            f"/classes/{cid}/imports/{preview['import_id']}/original?preview=true"
+        )
+        self.assertEqual(inline.headers["content-type"], "application/pdf")
+        self.assertTrue(inline.headers["content-disposition"].startswith("inline"))
         scan = PdfWriter()
         scan.add_blank_page(width=300, height=300)
         data = io.BytesIO()
@@ -236,7 +246,11 @@ class MaterialImportTest(classroom_test.ClassroomRoutesTest):
             self.fail("Material indexing is not implemented")
         cid = await self.create_class()
         response = await self.client.post(
-            f"/classes/{cid}/materials", json={"title": "Pecahan", "content": "Pecahan senilai mempunyai nilai yang sama meskipun pembilang dan penyebutnya berbeda."}
+            f"/classes/{cid}/materials",
+            json={
+                "title": "Pecahan",
+                "content": "Pecahan senilai mempunyai nilai yang sama meskipun pembilang dan penyebutnya berbeda.",
+            },
         )
         mid = uuid.UUID(response.json()["id"])
         async with self.engine.begin() as conn:

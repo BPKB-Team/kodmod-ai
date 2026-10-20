@@ -612,6 +612,7 @@ async def read_import(
 async def download_original(
     class_id: uuid.UUID,
     import_id: uuid.UUID,
+    preview: bool = False,
     user=Depends(require_teacher),
     session=Depends(db_session),
 ):
@@ -619,10 +620,12 @@ async def download_original(
     from fastapi.responses import FileResponse
 
     artifact = await owned_import(session, class_id, import_id, user)
+    is_pdf_preview = preview and artifact.filename.casefold().endswith(".pdf")
     return FileResponse(
         original_path(artifact),
         filename=artifact.filename,
-        media_type="application/octet-stream",
+        media_type="application/pdf" if is_pdf_preview else "application/octet-stream",
+        content_disposition_type="inline" if is_pdf_preview else "attachment",
         headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
     )
 

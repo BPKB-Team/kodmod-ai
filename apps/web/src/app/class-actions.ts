@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { backend, BackendError } from "@/lib/server-api";
 import { requireSession } from "@/lib/session";
 import type { ActionState } from "@/lib/types";
+import {validateMaterialDocument} from "@/lib/material-document-adapter.mjs";
 import type { Classroom, Material } from "@/lib/class-types";
 
 const value = (data: FormData, key: string) =>
@@ -126,6 +127,8 @@ export async function saveMaterial(
     return { error: "Kelas atau materi tidak valid." };
   let row: Material;
   try {
+    const raw=value(data,"document");
+    const source=raw?{document:validateMaterialDocument(JSON.parse(raw))}:{content:value(data,"content")};
     row = await backend<Material>(
       `/classes/${effectiveClassId}/materials${materialId ? `/${materialId}` : ""}`,
       token,
@@ -133,7 +136,8 @@ export async function saveMaterial(
         method: materialId ? "PUT" : "POST",
         body: JSON.stringify({
           title: value(data, "title"),
-          content: value(data, "content"),
+          ...source,
+          ...(materialId?{expected_version:Number(value(data,"expected_version"))}:{}),
           published: value(data, "published") === "yes",
           source_filename: value(data, "source_filename") || null,
           source_import_id: value(data, "source_import_id") || null,
@@ -141,6 +145,7 @@ export async function saveMaterial(
       },
     );
   } catch (error) {
+    if(error instanceof BackendError&&error.status===409)return {error:"Materi sudah berubah. Draft Anda tetap ada. Buka revisi terbaru sebelum menyimpan kembali."};
     return failure(error);
   }
   refresh();

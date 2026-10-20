@@ -21,6 +21,12 @@ import { Spinner } from "./ui/spinner";
 import { Button } from "./ui/button";
 import { RefreshButton } from "./refresh-button";
 
+import {MaterialRichEditor} from "./material-rich-editor";
+import {MaterialRenderer} from "./material-renderer";
+import {MaterialSourceReview} from "./material-source-review";
+import {legacyMaterialDocument,materialPlainText,validateMaterialDocument} from "@/lib/material-document-adapter.mjs";
+import type {MaterialDocument} from "@/lib/material-document-types";
+
 export function ClassForm({ subjects = [] }: { subjects?: CurriculumSubject[] }) {
   const { t } = useI18n();
   const [values, setValues] = useState({
@@ -265,7 +271,9 @@ export function MaterialForm({
   );
   const effectiveClassId = classId || selectedClassId;
   const [title, setTitle] = useState(material?.title || "");
-  const [content, setContent] = useState(material?.content || "");
+  const [materialDocument,setMaterialDocument]=useState<MaterialDocument>(()=>material?.document??legacyMaterialDocument(material?.content??""));
+  const content=materialPlainText(materialDocument);
+  const [editorValid,setEditorValid]=useState(true);
   const [published, setPublished] = useState(material?.published || false);
   const [viewMode, setViewMode] = useState<"preview" | "edit">("preview");
   const [importing, setImporting] = useState(false);
@@ -293,7 +301,7 @@ export function MaterialForm({
       confirmText: published ? "Ya, terbitkan" : "Ya, simpan draft",
     },
   );
-  const canChangeTarget = canChangeMaterialTarget({ importing, hasBook: Boolean(book), sourceImportId, pending });
+  const canChangeTarget = canChangeMaterialTarget({ importing, hasBook: Boolean(book)||materialDocument.blocks.some(block=>block.type==="image"), sourceImportId, pending });
 
   async function detachImportSource() {
     if (!book && !sourceImportId) return;
@@ -370,9 +378,10 @@ export function MaterialForm({
         setImportNotice(t("Pilih bab atau halaman yang ingin dijadikan materi. Isi editor belum berubah."));
         return;
       }
-      if (typeof result.content !== "string" || !result.content.trim() || result.content.length > 100000) throw new Error("Teks dokumen harus berisi 1 sampai 100.000 karakter.");
+      if (typeof result.content !== "string" || (!result.content.trim()&&!result.document?.blocks?.length) || result.content.length > 100000) throw new Error("Teks dokumen harus berisi 1 sampai 100.000 karakter.");
       if (content.trim() && !(await confirmAction({ title: "Ganti isi teks dengan dokumen?", text: "Isi teks saat ini akan diganti dengan hasil pembacaan dokumen. Perubahan baru tersimpan setelah Anda menekan Simpan materi.", confirmText: "Ya, gunakan dokumen" }))) return;
-      setContent(result.content);
+      setMaterialDocument(result.document?validateMaterialDocument(result.document):legacyMaterialDocument(result.content));
+      setEditorValid(true);
       setViewMode("preview");
       setSourceImportId(record.import_id);
       if (!title.trim()) {
@@ -564,38 +573,10 @@ export function MaterialForm({
           </div>
         </div>
 
-        {viewMode === "preview" ? (
-          <div className="material-preview-card">
-            {content.trim() ? (
-              <div className="material-formatted-preview">
-                {content.split(/\n\n+/).map((para, i) => (
-                  <p key={i}>{para}</p>
-                ))}
-              </div>
-            ) : (
-              <div className="material-preview-empty">
-                <FileText size={32} aria-hidden="true" />
-                <p><UiText>{"Belum ada isi materi. Unggah dokumen di atas atau ganti ke mode 'Edit Teks' untuk menulis sendiri."}</UiText></p>
-              </div>
-            )}
-            <textarea name="content" value={content} onChange={(e) => setContent(e.target.value)} style={{ display: "none" }} />
-          </div>
-        ) : (
-          <label className="field">
-            <UiText>{"Isi materi"}</UiText>
-            <Textarea
-              className="material-editor"
-              required
-              maxLength={100000}
-              name="content"
-              rows={16}
-              value={content}
-              disabled={importing || pending}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={t("Tulis penjelasan, contoh, dan petunjuk belajar di sini…")}
-            />
-          </label>
-        )}
+        <input type="hidden" name="document" value={JSON.stringify(materialDocument)}/>
+        <input type="hidden" name="expected_version" value={material?.content_version??1}/>
+        {viewMode==="preview"?<div className="material-preview-card"><MaterialRenderer document={materialDocument} classId={effectiveClassId} showReview/></div>:<MaterialRichEditor value={materialDocument} onChange={setMaterialDocument} classId={effectiveClassId} disabled={importing||pending} onValidityChange={setEditorValid}/>}
+        <MaterialSourceReview document={materialDocument} onChange={next=>{try{setMaterialDocument(validateMaterialDocument(next));setEditorValid(true);}catch{setImportError("Periksa format rumus dan teks sebelum menyimpan.");}}} classId={effectiveClassId} disabled={importing||pending} originalUrl={sourceImportId&&/\.pdf/i.test(sourceFilename)?`/api/classes/${effectiveClassId}/imports/${sourceImportId}/original`:undefined}/>
         <div className="char-count-meta" style={{ display: "flex", justifyContent: "space-between", marginTop: ".5rem", color: "var(--muted)", fontSize: ".85rem" }}>
           <span>{content.length.toLocaleString("id-ID")}<UiText>{" / 100.000 karakter"}</UiText></span>
           <span><UiText>{"Materi terbit otomatis disiapkan untuk dipelajari bersama Tutor AI."}</UiText></span>
@@ -646,12 +627,12 @@ export function MaterialForm({
                 <strong><UiText>{"Terbitkan"}</UiText></strong>
                 {published && <CheckCircle2 size={16} aria-hidden="true" />}
               </div>
-              <p><UiText>{"Semua siswa anggota kelas dapat langsung belajar dengan Tutor AI."}</UiText></p>
+              <p><UiText>{"Siswa dapat membaca materi yang terbit. Tutor menggunakan isi yang sudah ditinjau dan siap indeks."}</UiText></p>
             </button>
           </div>
         </div>
 
-        <button className="button primary save-material-btn" disabled={pending || importing || !effectiveClassId || !content.trim()}>
+        <button className="button primary save-material-btn" disabled={pending || importing || !effectiveClassId || !materialDocument.blocks.length || !editorValid}>
           {pending && <Spinner />}
           {pending ? <UiText>{"Menyimpan…"}</UiText> : <UiText>{"Simpan materi"}</UiText>}
         </button>

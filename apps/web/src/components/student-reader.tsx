@@ -18,6 +18,8 @@ import {
 } from "@/lib/reading-preferences";
 import type { Material } from "@/lib/class-types";
 import { VoiceControls } from "./voice-controls";
+import {MaterialRenderer} from "./material-renderer";
+import {legacyMaterialDocument,materialPlainText} from "@/lib/material-document-adapter.mjs";
 
 function ProgressButton({
   classId,
@@ -157,13 +159,13 @@ export function StudentReader({
           : <UiText>{"Belum ditandai selesai"}</UiText>}
         {material.progress?.bookmarked ? <UiText>{" · Tersimpan di bookmark"}</UiText> : ""}
       </div>
-      <VoiceControls text={material.content ?? ""} />
+      <VoiceControls text={material.speech_text??materialPlainText(material.document??legacyMaterialDocument(material.content??""))} />
       <article
         className={`panel material-reader ${contrast ? "reader-high-contrast" : ""}`}
         aria-label={t("Isi materi")}
         style={{ fontSize: `${size}px`, lineHeight: spacing }}
       >
-        {material.content}
+        <MaterialRenderer document={material.document??legacyMaterialDocument(material.content??"")} classId={classId}/>
       </article>
       <section className="panel reader-tutor" aria-label={t("Belajar bersama Tutor")}>
         <div>

@@ -133,6 +133,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
           <option value=""><UiText>{"Pilih materi"}</UiText></option>
           {materials.map((row) => <option key={row.id} value={row.id}>{row.subject} · {row.title}</option>)}
         </NativeSelect></label>
+        {selected&&<Link className="button secondary" href={`/siswa/kelas/${selected.class_id}/materi/${selected.id}?source=1`}><UiText>{"Baca materi sumber"}</UiText></Link>}
         {selected && !ready && <p className="info-note" role="status"><UiText>{"Materi sedang disiapkan. Coba lagi setelah guru selesai memprosesnya."}</UiText></p>}
         {!materials.length && <p className="info-note"><UiText>{"Minta guru membagikan materi di kelasmu untuk mulai belajar."}</UiText></p>}
         <Button type="button" onClick={() => void begin()} disabled={busy || locked || uncertain || !ready} loading={busy && busyAction === "start"} loadingText={t("Menyiapkan Tutor…")}><Headphones size={17} aria-hidden="true" /><UiText>{"Mulai belajar"}</UiText></Button>
