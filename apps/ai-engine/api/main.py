@@ -53,6 +53,7 @@ from api.routes import (
     exercise,
     health,
     learning,
+    material_assets,
     progress_guidance,
     quiz,
     student,
@@ -162,6 +163,7 @@ app.include_router(health.router)
 app.include_router(auth.router, prefix="/auth")
 app.include_router(chat.router, prefix="/chat")
 app.include_router(classrooms.router, prefix="/classes")
+app.include_router(material_assets.router, prefix="/classes")
 app.include_router(quiz.router, prefix="/quiz", tags=["quiz"])
 app.include_router(learning.router, prefix="/learning")
 app.include_router(student.router, prefix="/student")

@@ -33,3 +33,14 @@ def test_fresh_migrations_add_material_context_only_after_class_tables_exist():
     )
     assert "plan_id" not in recommendations and "expires_at" not in recommendations
     assert sql.count("ALTER TABLE recommendations ADD COLUMN plan_id") == 1
+
+
+def test_structured_documents_are_additive_and_assets_private_metadata_only():
+    config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
+    output = io.StringIO()
+    config.output_buffer = output
+    command.upgrade(config, "head", sql=True)
+    sql = output.getvalue()
+    assert sql.count("ALTER TABLE class_materials ADD COLUMN document") == 1
+    assert "CREATE TABLE material_assets" in sql and "CREATE TABLE material_revisions" in sql
+    assert sql.index("CREATE TABLE class_materials") < sql.index("CREATE TABLE material_revisions")

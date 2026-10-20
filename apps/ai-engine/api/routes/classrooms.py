@@ -7,7 +7,7 @@ import uuid
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, UploadFile
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,6 +22,7 @@ from api.material_concepts import (
     mapping_out,
     select_subject,
 )
+from api.material_document import material_document, material_values, project_material
 from api.material_imports import safe_filename
 from database.models import (
     BackgroundJob,
@@ -34,6 +35,7 @@ from database.models import (
     Subject,
     User,
 )
+from models.material_document import MaterialDocument
 
 router = APIRouter(tags=["classes"])
 
@@ -67,10 +69,18 @@ class MemberBatchWrite(BaseModel):
 class MaterialWrite(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
     title: str = Field(min_length=1, max_length=200)
-    content: str = Field(min_length=1, max_length=100000)
+    content: str | None = Field(default=None, min_length=1, max_length=100000)
+    document: MaterialDocument | None = None
+    expected_version: int | None = Field(default=None, ge=1, strict=True)
     published: bool = False
     source_filename: str | None = Field(default=None, max_length=300)
     source_import_id: uuid.UUID | None = None
+
+    @model_validator(mode="after")
+    def one_source(self):
+        if (self.content is None) == (self.document is None):
+            raise ValueError("Send exactly one of content or document")
+        return self
 
     @field_validator("source_filename")
     @classmethod
@@ -524,7 +534,7 @@ async def create_material(
     """Save reviewed text and queue an AI index when the material is published."""
     row = await accessible(session, class_id, user, write=True)
     await source_for(session, class_id, body.source_import_id)
-    material = ClassMaterial(class_id=class_id, **body.model_dump())
+    material = ClassMaterial(class_id=class_id, **await material_values(session, class_id, body))
     session.add(material)
     await session.flush()
     record(session, row, user, "material.created", material.id)
@@ -691,6 +701,8 @@ async def read_material(
     return {
         **material_info(row),
         "content": row.content,
+        "document": material_document(row).model_dump(mode="json"),
+        "speech_text": project_material(material_document(row)).speech_text,
         "progress": progress_info(progress),
         "learning_progress": await active_learning_progress(session, user.id, row)
         if user.role == "student"
@@ -759,17 +771,7 @@ async def edit_material(
     )
     if row is None or row.class_id != class_id:
         raise HTTPException(404, "Materi tidak ditemukan.")
-    changed = (
-        row.content != body.content
-        or row.source_filename != body.source_filename
-        or row.source_import_id != body.source_import_id
-    )
-    if changed:
-        row.content_version += 1
-        row.n_chunks = 0
-        row.rag_status = "pending"
-        row.rag_error = None
-    for key, value in body.model_dump().items():
+    for key, value in (await material_values(session, class_id, body, row)).items():
         setattr(row, key, value)
     if not row.published:
         row.rag_status = "pending"

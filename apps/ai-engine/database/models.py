@@ -214,6 +214,7 @@ class ClassMaterial(Base):
     )
     title: Mapped[str] = mapped_column(String(200))
     content: Mapped[str] = mapped_column(Text)
+    document: Mapped[dict | None] = mapped_column(JSON)
     published: Mapped[bool] = mapped_column(Boolean, default=False)
     source_filename: Mapped[str | None] = mapped_column(String(300))
     source_import_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -226,6 +227,43 @@ class ClassMaterial(Base):
     mapping_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     indexed_mapping_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     n_chunks: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class MaterialAsset(Base):
+    __tablename__ = "material_assets"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    class_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("classrooms.id", ondelete="CASCADE"), index=True
+    )
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT")
+    )
+    mime_type: Mapped[str] = mapped_column(String(30))
+    sha256: Mapped[str] = mapped_column(String(64))
+    size_bytes: Mapped[int] = mapped_column(Integer)
+    width: Mapped[int] = mapped_column(Integer)
+    height: Mapped[int] = mapped_column(Integer)
+    storage_key: Mapped[str] = mapped_column(String(100), unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class MaterialRevision(Base):
+    __tablename__ = "material_revisions"
+    __table_args__ = (
+        UniqueConstraint("material_id", "content_version", name="uq_material_revision_version"),
+    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    material_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("class_materials.id", ondelete="CASCADE"), index=True
+    )
+    content_version: Mapped[int] = mapped_column(Integer)
+    content: Mapped[str] = mapped_column(Text)
+    document: Mapped[dict | None] = mapped_column(JSON)
+    source_import_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("material_imports.id", ondelete="RESTRICT")
+    )
+    source_filename: Mapped[str | None] = mapped_column(String(300))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 

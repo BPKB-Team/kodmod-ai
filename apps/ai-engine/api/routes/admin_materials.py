@@ -8,6 +8,7 @@ from sqlalchemy import func, select
 from api.dependencies import db_session, require_admin
 from api.durable_jobs import enqueue_material
 from api.material_artifacts import import_out, original_path, source_for
+from api.material_document import material_document, material_values, project_material
 from api.routes.classrooms import MaterialWrite, material_info, record
 from database.models import ClassMaterial, Classroom, MaterialImport, User
 
@@ -34,6 +35,8 @@ def catalog_item(material, classroom, teacher, *, content=False):
     }
     if content:
         result["content"] = material.content
+        result["document"] = material_document(material).model_dump(mode="json")
+        result["speech_text"] = project_material(material_document(material)).speech_text
     return result
 
 
@@ -115,15 +118,7 @@ async def update_material(
     await source_for(session, classroom.id, body.source_import_id)
     if classroom.is_archived:
         raise HTTPException(409, "Buka arsip kelas sebelum mengubah materi.")
-    if (
-        material.content != body.content
-        or material.source_filename != body.source_filename
-        or material.source_import_id != body.source_import_id
-    ):
-        material.content_version += 1
-        material.n_chunks = 0
-        material.rag_status, material.rag_error = "pending", None
-    for key, value in body.model_dump().items():
+    for key, value in (await material_values(session, classroom.id, body, material)).items():
         setattr(material, key, value)
     if not material.published:
         material.rag_status = "pending"

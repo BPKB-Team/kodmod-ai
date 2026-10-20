@@ -126,6 +126,8 @@ class ClassroomRoutesTest(unittest.IsolatedAsyncioTestCase):
                         Enrollment.__table__,
                         BackgroundJob.__table__,
                         MaterialImport.__table__,
+                        Base.metadata.tables["material_assets"],
+                        Base.metadata.tables["material_revisions"],
                         ClassMaterial.__table__,
                         ClassActivity.__table__,
                         MaterialProgress.__table__,
