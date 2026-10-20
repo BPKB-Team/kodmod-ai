@@ -19,10 +19,10 @@
 .guided-symbol { display: inline-flex; padding: .85rem; color: #245be4; background: #ecf3ff; border-radius: 1rem; flex: 0 0 auto; }
 .guided-explanation { max-width: 70ch; font-size: 1.125rem; line-height: 1.9; }
 .guided-explanation p { white-space: pre-line; overflow-wrap: anywhere; margin: 0 0 1.5rem; }
-.guided-source { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; padding-block: 1rem; color: #244b87; font-size: .9rem; overflow-wrap: anywhere; }
 .guided-question-form { display: grid; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid #dce7f6; margin-top: 1rem; }
-.guided-question-form .button { justify-self: end; }
-.guided-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid #dce7f6; }
+.guided-question-form .button { justify-self: end; min-height: 44px; padding: 0.7rem 1.4rem; font-weight: 750; border-radius: 13px; }
+.guided-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid #dce7f6; }
+.guided-action-button { min-height: 44px; padding: 0.65rem 1.35rem; font-weight: 750; font-size: 0.95rem; border-radius: 13px; display: inline-flex; align-items: center; gap: 8px; }
 .guided-your-question, .guided-check-result { padding: 1rem; background: #f0f6ff; border-radius: .75rem; margin-bottom: 1.2rem; }
 .guided-check-result { display: flex; gap: .75rem; align-items: start; margin-top: 1.1rem; }
 .guided-check-result p { margin: .4rem 0 0; }
@@ -301,14 +301,15 @@ html[data-high-contrast="true"] .guided-symbol, html[data-high-contrast="true"] 
 }
 .material-start-button {
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 750;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 12px;
+  border-radius: 13px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);
 }
 
 /* Change material button inside active lesson */
@@ -317,18 +318,25 @@ html[data-high-contrast="true"] .guided-symbol, html[data-high-contrast="true"] 
   align-items: center;
   gap: 6px;
   font-size: 0.9rem;
-  color: #2458a6;
-  font-weight: 600;
+  color: #1e40af;
+  font-weight: 750;
   margin-bottom: 0.5rem;
-  padding: 7px 14px;
-  border-radius: 10px;
-  background: #eef4ff;
-  border: 1px solid #d0e1f9;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
   cursor: pointer;
   align-self: flex-start;
-  transition: all 0.15s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.06);
 }
 .change-material-btn:hover {
-  background: #e2edff;
-  border-color: #9ebff3;
+  background: #dbeafe;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.14);
+}
+.change-material-btn:active {
+  transform: translateY(0);
 }
