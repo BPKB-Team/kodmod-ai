@@ -61,16 +61,19 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 26px;
+  padding: 24px;
   color: var(--editorial-ink);
   text-decoration: none;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+  border: 1px solid #dce7f4;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(16, 42, 85, 0.03);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .editorial-card:hover {
-  border-color: #8aafea;
-  box-shadow: 0 10px 28px #193b7610;
+  transform: translateY(-2px);
+  border-color: #93c5fd;
+  box-shadow: 0 10px 28px rgba(30, 58, 138, 0.08);
 }
 .editorial-card-top,
 .editorial-card-bottom {

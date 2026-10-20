@@ -439,12 +439,14 @@ input[readonly] {
 }
 .white {
   background: white;
-  color: var(--navy);
+  color: #1e3a8a;
 }
 .small {
-  font-size: 0.875rem;
-  padding: 0.4rem 0.7rem;
-  min-height: 44px;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.95rem;
+  min-height: 38px;
+  border-radius: 11px;
+  font-weight: 750;
 }
 .brand {
   display: inline-flex;
@@ -486,18 +488,21 @@ input[readonly] {
 }
 .badge {
   display: inline-flex;
-  padding: 0.25rem 0.65rem;
-  border-radius: 0.375rem;
-  background: #edf2f8;
-  color: #52677f;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.5;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.4;
   max-width: 100%;
 }
 .badge-active {
-  background: #e8f6ee;
-  color: #216044;
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
 }
 .count {
   font:
