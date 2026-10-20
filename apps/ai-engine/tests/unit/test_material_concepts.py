@@ -175,6 +175,7 @@ async def test_changing_subject_invalidates_mapping_without_rewriting_history(ma
 @pytest.mark.parametrize("forged", [False, True])
 async def test_generator_attributes_only_question_specific_reviewed_concepts(monkeypatch, forged):
     cid, wrong = str(uuid.uuid4()), str(uuid.uuid4())
+    class_id, material_id, student_id = str(uuid.uuid4()), str(uuid.uuid4()), str(uuid.uuid4())
     prompts = []
 
     class LLM:
@@ -198,13 +199,22 @@ async def test_generator_attributes_only_question_specific_reviewed_concepts(mon
 
     monkeypatch.setattr(problem_generator, "get_quiz_llm", lambda: LLM())
     state = {
-        "class_id": str(uuid.uuid4()),
-        "material_id": str(uuid.uuid4()),
+        "class_id": class_id,
+        "material_id": material_id,
+        "student_id": student_id,
         "current_topic": "Pecahan",
         "quiz_n_questions": 1,
         "assessment_managed": True,
         "approved_material_concepts": [{"id": cid, "name": "Pecahan"}],
-        "quiz_source_docs": [{"text": "Pecahan menyatakan bagian yang sama besar."}],
+        "quiz_source_docs": [
+            {
+                "chunk_id": "pecahan-source",
+                "class_id": class_id,
+                "material_id": material_id,
+                "text": "Pecahan menyatakan bagian yang sama besar dalam satu keseluruhan.",
+                "approved_concept_ids": [cid],
+            }
+        ],
     }
     if forged:
         with pytest.raises(ValueError):
@@ -239,7 +249,10 @@ async def test_mapped_assessment_preserves_review_snapshot_and_updates_mastery_o
         material = db.ClassMaterial(
             class_id=room.id,
             title="Pecahan",
-            content="Pecahan senilai",
+            content=(
+                "Pecahan senilai memiliki nilai yang sama. Pembilang dan penyebut dikalikan "
+                "dengan bilangan yang sama sehingga nilai pecahan tetap."
+            ),
             published=True,
             rag_status="ready",
             indexed_version=1,
@@ -336,6 +349,11 @@ async def test_teacher_proposal_uses_reviewed_question_specific_attribution(
 
     async def generate(state):
         assert state["approved_material_concepts"][0]["id"] == str(f.concept.id)
+        bundle = state["quiz_source_bundle"]
+        assert bundle.sources[0].block_ids
+        assert bundle.sources[0].content_version == 1
+        assert bundle.sources[0].mapping_version == 1
+        assert bundle.sources[0].document_hash
         return {
             "quiz_questions": [
                 {
@@ -364,3 +382,27 @@ async def test_teacher_proposal_uses_reviewed_question_specific_attribution(
     assert result["review_required"] is True
     assert result["mapping_version"] == 1
     assert result["questions"][0]["concept_id"] == str(f.concept.id)
+
+
+async def test_teacher_proposal_quality_error_is_safe_and_actionable(mapping_http, monkeypatch):
+    from agents.question_quality import QuestionQualityError
+
+    f = mapping_http
+    cid, mid = await material_for(f)
+    assert (
+        await f.client.put(f"/classes/{cid}/materials/{mid}/concepts", json=approval(f))
+    ).status_code == 200
+
+    async def fail(_state):
+        raise QuestionQualityError("source_quality_failed", "private answer key: secret")
+
+    monkeypatch.setattr(problem_generator, "problem_generator_node", fail)
+    response = await f.client.post(
+        "/teacher/quizzes/propose",
+        json={"class_id": cid, "material_id": mid, "n_questions": 1},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["detail"]["code"] == "source_quality_failed"
+    assert "Periksa isi materi" in response.json()["detail"]["message"]
+    assert "secret" not in response.text

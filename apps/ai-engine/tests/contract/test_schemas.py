@@ -125,7 +125,7 @@ def test_km_contract_005_quiz_start_request_bounds() -> None:
 
 
 def test_km_contract_006_quiz_start_response_shape() -> None:
-    from models.quiz import QuizQuestionOut, QuizStartResponse
+    from models.quiz import QuizInteractionView, QuizQuestionOut, QuizStartResponse
 
     q = QuizQuestionOut(
         question_id="q1",
@@ -135,7 +135,7 @@ def test_km_contract_006_quiz_start_response_shape() -> None:
         options=["A", "B", "C", "D"],
     )
     resp = QuizStartResponse(quiz_session_id=uuid.uuid4(), first_question=q, total_questions=3)
-    assert set(QuizStartResponse.model_fields) == {
+    assert set(QuizStartResponse.model_fields) == set(QuizInteractionView.model_fields) | {
         "quiz_session_id",
         "first_question",
         "total_questions",

@@ -100,7 +100,16 @@ async def test_quiz_questions_use_selected_class_material_instead_of_shared_know
             and filters.get("material_id") == mid
             and filters.get("student_id") == sid
         )
-        return [{"text": "Bahan kelas yang dipilih" if authorized else "Kurikulum umum"}]
+        return [
+            {
+                "chunk_id": "selected-class-chunk",
+                "text": (
+                    "Bahan kelas yang dipilih memuat penjelasan konsep dan contoh penerapan pembelajaran."
+                    if authorized
+                    else "Kurikulum umum memuat penjelasan konsep dan contoh penerapan pembelajaran."
+                ),
+            }
+        ]
 
     class ContextLLM:
         async def ainvoke(self, messages):
@@ -128,9 +137,8 @@ async def test_quiz_questions_use_selected_class_material_instead_of_shared_know
 @pytest.mark.parametrize("existing_concept", ["", "stale"])
 @pytest.mark.parametrize("requested_topic", ["", "Pecahan senilai"])
 @pytest.mark.parametrize("generated_count", [0, 1, 2])
-@pytest.mark.parametrize("scope", ["class", "material", "selected_material"])
 async def test_unmapped_classroom_quiz_never_attributes_an_unrelated_concept(
-    monkeypatch, existing_concept, requested_topic, generated_count, scope
+    monkeypatch, existing_concept, requested_topic, generated_count
 ):
     cid, mid, sid, unrelated_concept = (str(uuid.uuid4()) for _ in range(4))
     concept_lookups = []
@@ -146,11 +154,12 @@ async def test_unmapped_classroom_quiz_never_attributes_an_unrelated_concept(
     async def retrieve(self, query, k, filters):
         assert "concept_id" not in filters
         assert filters["student_id"] == sid
-        assert filters["class_id"] == (None if scope == "material" else cid)
-        assert filters["material_id"] == (None if scope == "class" else mid)
+        assert filters["class_id"] == cid
+        assert filters["material_id"] == mid
         return [
             {
-                "text": "Satu per dua sama dengan dua per empat.",
+                "chunk_id": "class-pecahan-chunk",
+                "text": "Satu per dua sama dengan dua per empat. Nilai pecahan tersebut tetap sama.",
                 "source": "pecahan.pdf",
                 "class_id": cid,
                 "material_id": mid,
@@ -163,7 +172,7 @@ async def test_unmapped_classroom_quiz_never_attributes_an_unrelated_concept(
     class ContextLLM:
         async def ainvoke(self, messages):
             prompt = messages[-1]["content"]
-            grounded = "<topic>Pecahan senilai</topic>" in prompt
+            grounded = json.loads(prompt)["request"]["topic"] == "Pecahan senilai"
             return SimpleNamespace(
                 content=json.dumps(
                     {
@@ -189,8 +198,8 @@ async def test_unmapped_classroom_quiz_never_attributes_an_unrelated_concept(
     monkeypatch.setattr(problem_generator, "get_quiz_llm", lambda: ContextLLM())
     state = {
         "student_id": sid,
-        "class_id": None if scope == "material" else cid,
-        "material_id": None if scope == "class" else mid,
+        "class_id": cid,
+        "material_id": mid,
         "current_topic": requested_topic,
         "current_concept_id": unrelated_concept if existing_concept else "",
         "mastery_scores": {unrelated_concept: 0.1},
@@ -221,7 +230,16 @@ async def test_standalone_subject_quiz_keeps_its_resolved_concept(monkeypatch):
 
     async def retrieve(self, query, k, filters):
         scoped = filters == {"subject_id": subject_id, "concept_id": concept_id}
-        return [{"text": "Pecahan dari mapel pilihan" if scoped else "Mapel keliru"}]
+        return [
+            {
+                "chunk_id": "subject-pecahan-chunk",
+                "text": (
+                    "Pecahan dari mapel pilihan menjelaskan pembilang dan penyebut secara lengkap."
+                    if scoped
+                    else "Mapel keliru menjelaskan konsep lain secara lengkap."
+                ),
+            }
+        ]
 
     class SubjectLLM:
         async def ainvoke(self, messages):
@@ -234,6 +252,7 @@ async def test_standalone_subject_quiz_keeps_its_resolved_concept(monkeypatch):
                                 "text": "Latihan mapel pilihan" if grounded else "Latihan keliru",
                                 "type": "spoken",
                                 "expected_answer": "Satu per dua",
+                                "source_indices": [1],
                             }
                         ]
                     }
@@ -266,12 +285,27 @@ async def test_managed_quiz_generation_leaves_session_persistence_to_assessment(
         stored_sessions.append((session_id, payload))
 
     async def retrieve(self, query, k, filters):
-        return [{"text": "Pecahan senilai"}]
+        return [
+            {
+                "chunk_id": "managed-pecahan-chunk",
+                "text": "Pecahan senilai memiliki nilai yang sama meskipun pembilang dan penyebut berbeda.",
+            }
+        ]
 
     class QuizLLM:
         async def ainvoke(self, messages):
             return SimpleNamespace(
-                content='{"questions":[{"text":"Jelaskan pecahan senilai","expected_answer":"A"}]}'
+                content=json.dumps(
+                    {
+                        "questions": [
+                            {
+                                "text": "Jelaskan pecahan senilai.",
+                                "expected_answer": "Pecahan yang nilainya tetap sama.",
+                                "source_indices": [1],
+                            }
+                        ]
+                    }
+                )
             )
 
     monkeypatch.setattr("memory.short_term.store_quiz_session", store_quiz_session)

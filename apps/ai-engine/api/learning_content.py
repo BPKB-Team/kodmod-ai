@@ -5,7 +5,7 @@ import re
 
 from fastapi import HTTPException
 
-from api.material_document import block_text, material_document, project_material, math_speech
+from api.material_document import block_text, material_document, math_speech, project_material
 from models.material_document import MaterialDocument
 
 PARTITIONER_VERSION = "blocks-v1"
@@ -57,7 +57,16 @@ def accepted_learning_blocks(document: MaterialDocument):
     bodies = [b for b in allowed if b.role != "exercise" and meaningful(b)]
     if not bodies:
         return []
-    return [b for b in allowed if b.type == "heading" or (block_text(b).strip() and not METADATA.match(block_text(b)) and not re.search(r"\.{3,}\s*\d+\s*$",block_text(b)))]
+    return [
+        b
+        for b in allowed
+        if b.type == "heading"
+        or (
+            block_text(b).strip()
+            and not METADATA.match(block_text(b))
+            and not re.search(r"\.{3,}\s*\d+\s*$", block_text(b))
+        )
+    ]
 
 
 def _pieces(block, limit):
@@ -165,3 +174,31 @@ def material_learning_units(material, *, require_content=False):
             },
         )
     return units
+
+
+def learning_unit_source(
+    unit: dict,
+    material,
+    class_id,
+    *,
+    approved_concept_ids: list[str] | None = None,
+) -> dict:
+    """Preserve canonical block/page/version identity when a unit enters a quiz."""
+    base_id = str(unit.get("base_id") or "")
+    return {
+        "id": base_id,
+        "evidence_id": base_id,
+        "chunk_id": base_id,
+        "text": unit.get("retrieval_text") or unit.get("text") or "",
+        "source": material.source_filename or material.title,
+        "material_title": material.title,
+        "section_title": unit.get("title"),
+        "class_id": str(class_id),
+        "material_id": str(material.id),
+        "content_version": material.content_version,
+        "mapping_version": material.mapping_version,
+        "document_hash": unit.get("document_hash"),
+        "block_ids": list(unit.get("block_ids") or []),
+        "spans": list(unit.get("spans") or []),
+        "approved_concept_ids": list(approved_concept_ids or []),
+    }

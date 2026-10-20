@@ -164,6 +164,9 @@ async def start_assessment(
 ) -> QuizStartResponse:
     context = await resolve_tutoring_context(session, body.class_id, body.material_id, student)
     material = await session.get(ClassMaterial, body.material_id) if body.material_id else None
+    validated_source_docs = _validated_quiz_source_docs(
+        source_docs or [], material=material, class_id=body.class_id, context=context
+    )
     concept = await session.get(Concept, body.concept_id) if body.concept_id else None
     if body.concept_id and concept is None:
         raise HTTPException(404, "Konsep tidak ditemukan.")
@@ -186,7 +189,7 @@ async def start_assessment(
             approved_material_concepts=context.get("approved_material_concepts", [])
             if context
             else [],
-            quiz_source_docs=copy.deepcopy(source_docs or []),
+            quiz_source_docs=validated_source_docs,
             intent="quiz",
             quiz_n_questions=body.n_questions,
             current_concept_id=str(concept.id) if concept else "",
@@ -612,3 +615,36 @@ async def submit_assessment(
 
         await queue_plan_refresh(session, student.id)
     return response
+
+
+def _validated_quiz_source_docs(source_docs, *, material, class_id, context):
+    """Fail closed when a direct unit source lost its canonical provenance."""
+    if not source_docs:
+        return []
+    if material is None or context is None:
+        raise HTTPException(409, "Kuis berbasis materi memerlukan sumber kelas yang aktif.")
+    approved_ids = [item["id"] for item in context.get("approved_material_concepts", [])]
+    rows = []
+    for source in source_docs:
+        if not isinstance(source, dict):
+            raise HTTPException(409, "Sumber kuis materi tidak lagi tersedia.")
+        if (
+            str(source.get("class_id")) != str(class_id)
+            or str(source.get("material_id")) != str(material.id)
+            or source.get("content_version") != material.content_version
+            or source.get("mapping_version") != material.mapping_version
+            or not source.get("document_hash")
+            or not source.get("block_ids")
+            or not source.get("spans")
+            or not (source.get("evidence_id") or source.get("chunk_id") or source.get("id"))
+        ):
+            raise HTTPException(
+                409,
+                "Sumber materi berubah atau kehilangan jejak halaman. Buka ulang materi sebelum membuat kuis.",
+            )
+        row = copy.deepcopy(source)
+        # Never trust model/client concept metadata when the server already has
+        # the current teacher-approved mapping snapshot.
+        row["approved_concept_ids"] = approved_ids
+        rows.append(row)
+    return rows

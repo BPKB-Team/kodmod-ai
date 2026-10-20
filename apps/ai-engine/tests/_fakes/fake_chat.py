@@ -91,7 +91,19 @@ class _StructuredWrapper:
     def __init__(self, model: Any) -> None:
         self._model = model
 
-    async def ainvoke(self, *_a: Any, **_k: Any) -> Any:
+    async def ainvoke(self, messages: Any = None, **_k: Any) -> Any:
+        if getattr(self._model, "__name__", "") == "QuestionSemanticReviewBatch":
+            count = 1
+            try:
+                user = messages[-1]["content"]
+                count = len(json.loads(user)["questions"])
+            except (TypeError, IndexError, KeyError, ValueError):
+                pass
+            return {
+                "decisions": [
+                    {"accepted": True, "reasons": [], "feedback": ""} for _ in range(count)
+                ]
+            }
         return _example_instance(self._model)
 
     def invoke(self, *_a: Any, **_k: Any) -> Any:
@@ -153,10 +165,17 @@ class _QuizStub:
     """A fixture set with the requested length, never production filler."""
 
     async def ainvoke(self, messages, **kwargs):
-        import re
-
-        match = re.search(r"<n_questions>(\d+)</n_questions>", str(messages))
-        count = int(match.group(1)) if match else 1
+        count = 1
+        evidence_id = "test-evidence"
+        for message in messages:
+            if message.get("role") != "user":
+                continue
+            try:
+                payload = json.loads(message["content"])
+                count = payload.get("request", {}).get("count", count)
+                evidence_id = payload.get("sources", [{}])[0].get("evidence_id", evidence_id)
+            except (TypeError, KeyError, IndexError, ValueError):
+                pass
         return AIMessage(
             content=json.dumps(
                 {
@@ -166,7 +185,11 @@ class _QuizStub:
                             "type": "mcq",
                             "options": ["A. satu", "B. dua", "C. nol", "D. tiga"],
                             "expected_answer": "A",
-                            "source_indices": [1],
+                            "evidence_refs": [evidence_id],
+                            "objective": "Menerapkan konsep penjumlahan pecahan.",
+                            "cognitive_level": "application"
+                            if i == count - 1 and count >= 3
+                            else "recall",
                             "difficulty": "easy",
                         }
                         for i in range(count)

@@ -1,6 +1,5 @@
 import uuid
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy import func, select
@@ -226,7 +225,7 @@ async def test_two_tabs_create_one_job_and_one_active_cycle(plan_http):
     results = await asyncio.gather(
         *[client.post("/analytics/me/guidance/refresh", json=refresh_body()) for _ in range(2)]
     )
-    assert [r.status_code for r in results] == [202, 202]
+    assert [r.status_code for r in results] == [202, 202], [r.text for r in results]
     assert results[0].json()["job_id"] == results[1].json()["job_id"]
     async with factory() as db:
         assert await db.scalar(select(func.count()).select_from(models.LearningPlan)) == 1
@@ -281,7 +280,7 @@ async def test_regeneration_preserves_started_step_and_pending_identity(plan_htt
 
     client, _, _, material, *_ = plan_http
     plan = (await publish(plan_http))["plan"]
-    started = await start_step(client, plan, plan["steps"][0])
+    await start_step(client, plan, plan["steps"][0])
     unrelated = await client.post(
         "/quiz/start",
         json={

@@ -17,7 +17,8 @@ PRIMARY = "11111111-1111-4111-8111-111111111111"
 SECONDARY = "22222222-2222-4222-8222-222222222222"
 UNAPPROVED = "33333333-3333-4333-8333-333333333333"
 SOURCE = {
-    "text": "Setengah adalah satu dari dua bagian sama besar. Seperempat adalah satu dari empat."
+    "chunk_id": "adaptive-pecahan-source",
+    "text": "Setengah adalah satu dari dua bagian sama besar. Seperempat adalah satu dari empat bagian sama besar.",
 }
 
 
@@ -42,7 +43,7 @@ def generation(monkeypatch, concept_ids=(PRIMARY,)):
 
     class LLM:
         async def ainvoke(self, messages):
-            prompts.append(messages[1]["content"])
+            prompts.append(json.loads(messages[1]["content"]))
             return SimpleNamespace(
                 content=json.dumps(
                     {
@@ -76,11 +77,8 @@ async def test_material_difficulty_uses_current_primary_mastery(
         material_state(mastery_scores={PRIMARY: score})
     )
     assert result["quiz_questions"][0]["difficulty"] == difficulty
-    assert (
-        f"<predicted_success_probability>{probability}</predicted_success_probability>"
-        in prompts[0]
-    )
-    assert f"<concept_id>{PRIMARY}</concept_id>" in prompts[0]
+    assert prompts[0]["request"]["predicted_success_probability"] == float(probability)
+    assert prompts[0]["request"]["concept_id"] == PRIMARY
 
 
 @pytest.mark.parametrize("explicit", [True, False])
@@ -100,7 +98,7 @@ async def test_requested_approved_target_precedes_primary_without_multiplying_co
         )
     )
     assert result["quiz_questions"][0]["difficulty"] == ("easy" if explicit else "hard")
-    assert f"<concept_id>{target}</concept_id>" in prompts[0]
+    assert prompts[0]["request"]["concept_id"] == target
 
 
 async def test_no_primary_targets_weakest_approved_concept(monkeypatch):
@@ -112,7 +110,7 @@ async def test_no_primary_targets_weakest_approved_concept(monkeypatch):
         )
     )
     assert result["quiz_questions"][0]["difficulty"] == "easy"
-    assert f"<concept_id>{SECONDARY}</concept_id>" in prompts[0]
+    assert prompts[0]["request"]["concept_id"] == SECONDARY
 
 
 async def test_stale_unapproved_target_never_drives_material_difficulty(monkeypatch):
@@ -123,7 +121,7 @@ async def test_stale_unapproved_target_never_drives_material_difficulty(monkeypa
         )
     )
     assert result["quiz_questions"][0]["difficulty"] == "hard"
-    assert f"<concept_id>{PRIMARY}</concept_id>" in prompts[0]
+    assert prompts[0]["request"]["concept_id"] == PRIMARY
 
 
 async def test_unmapped_material_has_neutral_difficulty_and_no_fabricated_attribution(monkeypatch):
@@ -137,7 +135,7 @@ async def test_unmapped_material_has_neutral_difficulty_and_no_fabricated_attrib
     )
     assert result["quiz_questions"][0]["difficulty"] == "medium"
     assert result["quiz_questions"][0]["concept_id"] == ""
-    assert "<concept_id></concept_id>" in prompts[0]
+    assert prompts[0]["request"]["concept_id"] == ""
 
 
 async def test_adaptation_keeps_each_question_actual_approved_concept(monkeypatch):

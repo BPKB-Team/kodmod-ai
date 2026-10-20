@@ -14,7 +14,7 @@ import logging
 import uuid
 from typing import Literal
 
-from langchain_core.tools import StructuredTool
+from langchain_core.tools import StructuredTool, ToolException
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -44,14 +44,22 @@ async def generate_quiz(
     """
     # Lazy import to avoid circular ref with agents -> tools -> agents.
     from agents.problem_generator import generate_questions_for_student
+    from agents.question_quality import QuestionQualityError
 
-    questions = await generate_questions_for_student(
-        student_id=uuid.UUID(student_id),
-        concept_id=uuid.UUID(concept_id) if concept_id else None,
-        n=n_questions,
-        difficulty_hint=difficulty,
-        topic_hint=topic_hint,
-    )
+    try:
+        questions = await generate_questions_for_student(
+            student_id=uuid.UUID(student_id),
+            concept_id=uuid.UUID(concept_id) if concept_id else None,
+            n=n_questions,
+            difficulty_hint=difficulty,
+            topic_hint=topic_hint,
+        )
+    except QuestionQualityError as error:
+        logger.info("Adaptive quiz abstained: %s", error.code)
+        raise ToolException(
+            "No reliable quiz could be made from approved learning content. "
+            "Ask the learner to choose available material or continue tutoring."
+        ) from None
     return {
         "questions": questions,
         "difficulty": difficulty or "adaptive",

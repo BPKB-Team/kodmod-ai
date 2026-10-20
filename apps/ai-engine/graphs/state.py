@@ -88,6 +88,7 @@ class QuizQuestion(TypedDict, total=False):
     explanation: str
     concept_id: str
     difficulty: DifficultyLevel
+    evidence_refs: list[str]
 
 
 class QuizAttempt(TypedDict, total=False):
@@ -189,7 +190,15 @@ class KODMODState(TypedDict, total=False):
     material_mapping_version: int | None
     approved_material_concepts: list[dict]
     quiz_source_docs: list[dict]  # server-selected lesson unit for a Tutor mini quiz
+    quiz_source_bundle: Any  # constructed only after server-side authorization
     quiz_mcq_only: bool
+    quiz_prompt_version: str
+    quiz_prompt_hash: str
+    quiz_generation_calls: int
+    quiz_verification_calls: int
+    material_content_version: int | None
+    material_mapping_version: int | None
+    authorized_teacher_id: str | None
     quiz_session_id: str
     quiz_n_questions: int  # explicit length request (0 = let the agent decide)
     quiz_questions: list[QuizQuestion]

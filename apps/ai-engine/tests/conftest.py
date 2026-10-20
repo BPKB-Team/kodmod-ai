@@ -94,6 +94,7 @@ _LLM_GETTERS = (
     "get_tutor_llm",
     "get_quiz_llm",
     "get_scoring_llm",
+    "get_question_review_llm",
     "get_recommendation_llm",
     "get_reflection_llm",
 )

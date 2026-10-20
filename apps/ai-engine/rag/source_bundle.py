@@ -11,6 +11,7 @@ from typing import Any
 @dataclass(frozen=True)
 class MaterialScope:
     student_id: uuid.UUID | None = None
+    authorized_teacher_id: uuid.UUID | None = None
     class_id: uuid.UUID | None = None
     material_id: uuid.UUID | None = None
     concept_id: uuid.UUID | None = None
@@ -20,8 +21,16 @@ class MaterialScope:
     language: str | None = None
 
     def validate(self) -> None:
-        if (self.class_id or self.material_id) and (not self.student_id or not self.class_id):
-            raise ValueError("Classroom material scope requires student, class, and material IDs.")
+        if self.material_id and not self.class_id:
+            raise ValueError("Classroom material scope requires a class ID.")
+        if (
+            self.class_id
+            and not self.student_id
+            and not (self.authorized_teacher_id and self.material_id)
+        ):
+            raise ValueError("Classroom material scope requires an authorized student or teacher.")
+        if self.student_id and self.authorized_teacher_id:
+            raise ValueError("A material scope cannot represent both student and teacher access.")
         if self.class_id and not self.material_id and not self.concept_id:
             raise ValueError(
                 "Class retrieval requires a selected material or approved concept scope."
@@ -111,9 +120,13 @@ def bundle_from_docs(
 def bundle_from_unit(unit: dict, scope: MaterialScope) -> QuestionSourceBundle:
     """Make unit-backed evidence only from a substantive canonical learning unit."""
     scope.validate()
-    if not scope.material_id or not scope.student_id or not scope.class_id:
+    if (
+        not scope.material_id
+        or not scope.class_id
+        or not (scope.student_id or scope.authorized_teacher_id)
+    ):
         raise ValueError(
-            "Direct material units require an authorized student/class/material scope."
+            "Direct material units require an authorized student or teacher class/material scope."
         )
     text = str(unit.get("retrieval_text") or unit.get("text") or "").strip()
     block_ids = [str(value) for value in unit.get("block_ids") or [] if value]

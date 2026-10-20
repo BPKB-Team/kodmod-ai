@@ -140,14 +140,9 @@ async def lesson_out(session, row, student, material=None):
 
 def unit_source(row, material, state):
     unit = state["units"][state["unit_index"]]
-    return {
-        "text": unit["text"],
-        "source": material.source_filename or material.title,
-        "material_title": material.title,
-        "section_title": unit["title"],
-        "class_id": str(row.class_id),
-        "material_id": str(row.material_id),
-    }
+    from api.learning_content import learning_unit_source
+
+    return learning_unit_source(unit, material, row.class_id)
 
 
 async def teach(session, row, material, student, state, action, question=""):

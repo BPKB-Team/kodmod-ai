@@ -89,6 +89,13 @@ def test_base_url_is_forwarded_when_set(  # KM-UNIT-133
     assert recording_openai.last_kwargs["base_url"] == "http://stub:8099/v1"
 
 
+def test_generation_getter_disables_hidden_provider_retries(recording_openai) -> None:
+    llm_client.get_quiz_llm()
+
+    assert recording_openai.last_kwargs["max_retries"] == 0
+    assert recording_openai.last_kwargs["timeout"] == 15
+
+
 def test_gpt6_chat_completions_disable_reasoning_for_tool_calls(
     recording_openai, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -107,6 +114,17 @@ def test_non_gpt6_models_keep_default_reasoning_mode(
     llm_client.get_tutor_llm()
 
     assert "reasoning_effort" not in recording_openai.last_kwargs
+
+
+def test_scoring_gateway_attaches_usage_meter_for_semantic_review(recording_openai) -> None:
+    llm_client.get_question_review_llm()
+
+    callbacks = recording_openai.last_kwargs["callbacks"]
+    assert len(callbacks) == 1
+    assert callbacks[0].service == "scoring"
+    assert callbacks[0].model == recording_openai.last_kwargs["model"]
+    assert recording_openai.last_kwargs["max_retries"] == 0
+    assert recording_openai.last_kwargs["timeout"] == 8
 
 
 def test_unset_model_raises_a_readable_error(monkeypatch: pytest.MonkeyPatch) -> None:

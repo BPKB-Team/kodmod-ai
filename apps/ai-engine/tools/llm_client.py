@@ -121,6 +121,8 @@ def get_quiz_llm():
         max_tokens=2048,
         streaming=False,
         usage_role="quiz",
+        max_retries=0,
+        timeout=15,
     )
 
 
@@ -132,6 +134,20 @@ def get_scoring_llm():
         max_tokens=512,
         streaming=False,
         usage_role="scoring",
+    )
+
+
+@lru_cache(maxsize=1)
+def get_question_review_llm():
+    """Bounded, deterministic source verifier using the metered scoring model."""
+    return _chat(
+        _resolve("LLM_SCORING_MODEL"),
+        temperature=0.0,
+        max_tokens=1024,
+        streaming=False,
+        usage_role="scoring",
+        max_retries=0,
+        timeout=8,
     )
 
 
@@ -178,6 +194,7 @@ _GETTERS = (
     get_tutor_llm,
     get_quiz_llm,
     get_scoring_llm,
+    get_question_review_llm,
     get_recommendation_llm,
     get_reflection_llm,
 )

@@ -52,8 +52,6 @@ async def latest_plan(session, student_id):
 
 
 async def require_target(session, student, target, *, versions=True):
-    from api.learning_service import learning_units
-
     candidate = PlanCandidate.model_validate(target)
     context = await resolve_tutoring_context(
         session,
@@ -424,7 +422,7 @@ async def step_action(session, graph, student, plan_id, step_id, body, *, action
         if step.session_id is None:
             if candidate.kind == "practice":
                 from api.assessment_service import start_assessment
-                from api.learning_service import learning_units
+                from api.learning_content import learning_unit_source
                 from models.quiz import QuizStartRequest
 
                 unit = material_learning_units(material)[candidate.unit_index]
@@ -438,14 +436,7 @@ async def step_action(session, graph, student, plan_id, step_id, body, *, action
                         n_questions=1,
                         language=student.preferred_language,
                     ),
-                    source_docs=[
-                        {
-                            "text": unit["text"],
-                            "source": material.source_filename or material.title,
-                            "material_id": str(material.id),
-                            "class_id": candidate.class_id,
-                        }
-                    ],
+                    source_docs=[learning_unit_source(unit, material, candidate.class_id)],
                 )
                 step.session_id = quiz.quiz_session_id
             else:

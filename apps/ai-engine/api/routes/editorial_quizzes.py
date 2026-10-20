@@ -52,9 +52,9 @@ async def propose_quiz(
 ):
     """Propose source grounded questions for teacher review before saving."""
     from agents.problem_generator import problem_generator_node
-    from api.learning_service import learning_units
     from api.routes.classrooms import accessible
     from database.models import ClassMaterial
+    from rag.source_bundle import MaterialScope, bundle_from_docs
 
     classroom = await accessible(session, body.class_id, actor, write=True)
     material = await session.get(ClassMaterial, body.material_id)
@@ -63,18 +63,40 @@ async def propose_quiz(
     from api.material_concepts import current_concepts
 
     approved = await current_concepts(session, material, classroom)
-    units = material_learning_units(material)
+    units = material_learning_units(material, require_content=True)
     count = min(6, len(units))
     indices = sorted({round(i * (len(units) - 1) / max(1, count - 1)) for i in range(count)})
+    approved_ids = [str(item["id"]) for item in approved]
     docs = [
         {
+            "id": units[i]["base_id"],
+            "chunk_id": units[i]["base_id"],
+            "evidence_id": units[i]["base_id"],
             "text": units[i]["text"],
             "material_title": material.title,
             "material_id": str(material.id),
             "class_id": str(material.class_id),
+            "content_version": material.content_version,
+            "mapping_version": material.mapping_version,
+            "document_hash": units[i]["document_hash"],
+            "block_ids": units[i]["block_ids"],
+            "spans": units[i]["spans"],
+            "approved_concept_ids": approved_ids,
+            "section_title": units[i].get("title"),
+            "source": material.source_filename or material.title,
         }
         for i in indices
     ]
+    source_scope = MaterialScope(
+        authorized_teacher_id=actor.id,
+        class_id=material.class_id,
+        material_id=material.id,
+        content_version=material.content_version,
+        mapping_version=material.mapping_version,
+        subject_id=classroom.subject_id,
+        language=body.language,
+    )
+    source_bundle = bundle_from_docs(material.title, source_scope, docs)
     try:
         result = await problem_generator_node(
             {
@@ -86,9 +108,12 @@ async def propose_quiz(
                 "quiz_n_questions": body.n_questions,
                 "current_difficulty": body.difficulty,
                 "quiz_source_docs": docs,
+                "quiz_source_bundle": source_bundle,
+                "authorized_teacher_id": str(actor.id),
                 "learning_profile": {"language": body.language},
                 "assessment_managed": True,
                 "approved_material_concepts": approved,
+                "material_content_version": material.content_version,
                 "material_mapping_version": material.mapping_version,
             }
         )
@@ -125,7 +150,17 @@ async def propose_quiz(
                     else None,
                 )
             )
-    except Exception:
+    except Exception as error:
+        from agents.question_quality import QuestionQualityError
+
+        if isinstance(error, QuestionQualityError):
+            raise HTTPException(
+                409,
+                {
+                    "code": error.code,
+                    "message": "Usulan soal belum lolos pemeriksaan sumber. Periksa isi materi yang disetujui atau buat soal secara manual.",
+                },
+            ) from None
         logging.getLogger(__name__).exception("Could not generate reviewed-material proposal")
         raise HTTPException(
             503, "Usulan soal belum dapat dibuat. Coba lagi atau tulis soal sendiri."
