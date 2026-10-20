@@ -240,13 +240,25 @@
   opacity: 0.8;
 }
 .voice-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
   margin-top: 1rem;
+  width: 100%;
 }
 .voice-actions .button {
-  min-height: 44px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0.65rem 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 12px;
+  box-sizing: border-box;
 }
 .voice-actions .button.danger {
   color: #9e353d;
