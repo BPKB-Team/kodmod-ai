@@ -83,6 +83,13 @@ async def source_for(session, class_id, import_id):
     job = await session.get(BackgroundJob, artifact.job_id) if artifact else None
     if artifact is None or artifact.class_id != class_id:
         raise HTTPException(422, "Berkas sumber tidak berasal dari kelas ini.")
-    if job is None or job.state != "complete" or not (job.result or {}).get("content"):
+    if (
+        job is None
+        or job.state != "complete"
+        or not (
+            (job.result or {}).get("content")
+            or (job.result or {}).get("document", {}).get("blocks")
+        )
+    ):
         raise HTTPException(409, "Tinjau hasil pembacaan dokumen sebelum menyimpan materi.")
     return artifact

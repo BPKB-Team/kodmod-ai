@@ -46,7 +46,7 @@ async def process(job):
         data = await run_in_threadpool(path.read_bytes)
         if hashlib.sha256(data).hexdigest() != digest:
             raise ValueError("Source integrity changed")
-        return await run_in_threadpool(
+        preview = await run_in_threadpool(
             extract_document,
             data,
             filename,
@@ -54,6 +54,9 @@ async def process(job):
             last_page=job.payload.get("last_page"),
             allow_ocr=True,
         )
+        if preview.get("document"):
+            await enrich_import_preview(preview, data, artifact, job)
+        return preview
     if job.kind == "material_index":
         from api.material_service import index_class_material
 
@@ -188,6 +191,82 @@ async def main():
                 await asyncio.sleep(2)
     finally:
         await close_db()
+
+
+async def enrich_import_preview(preview, data, artifact, job):
+    import uuid
+
+    from api.material_assets import asset_root, normalize_asset
+    from api.material_document import block_text
+    from api.pdf_regions import region_cache_key, render_region
+    from database.models import MaterialAsset
+    from models.material_document import MaterialBlock, MaterialDocument
+    from tools.material_vision_tool import VisionBudget, analyze_material_region
+
+    document = MaterialDocument.model_validate(preview["document"])
+    budget = VisionBudget()
+    additions = []
+    for block in document.blocks:
+        block.provenance.import_id = artifact.id
+        if block.type != "image" or block.provenance.page is None or block.provenance.bbox is None:
+            continue
+        image = await run_in_threadpool(
+            render_region, data, page_index=block.provenance.page - 1, bbox=block.provenance.bbox
+        )
+        encoded, mime, width, height = await run_in_threadpool(normalize_asset, image)
+        ident = uuid.uuid5(artifact.id, block.id)
+        block.asset_id = ident
+        key = f"{ident}.png"
+        async with async_session() as session:
+            await jobs.assert_lease(session, job.id, job.lease_token)
+            if await session.get(MaterialAsset, ident) is None:
+                path = asset_root() / key
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(encoded)
+                session.add(
+                    MaterialAsset(
+                        id=ident,
+                        class_id=artifact.class_id,
+                        owner_id=artifact.uploaded_by,
+                        mime_type=mime,
+                        sha256=hashlib.sha256(encoded).hexdigest(),
+                        size_bytes=len(encoded),
+                        width=width,
+                        height=height,
+                        storage_key=key,
+                    )
+                )
+                await session.commit()
+        # Vision is explicitly server-configured, never a fallback fact generator.
+        if settings.MATERIAL_VISION_ENABLED and not any(
+            b.provenance.bbox == block.provenance.bbox
+            and b.provenance.method == "ocr"
+            and block_text(b).strip()
+            for b in document.blocks
+        ):
+            result = await analyze_material_region(
+                image,
+                source_key=region_cache_key(data, block.provenance.page - 1, block.provenance.bbox),
+                budget=budget,
+            )
+            block.warnings.extend(result.warnings)
+            if result.text:
+                provenance = block.provenance.model_copy(update={"method": "vision"})
+                additions.append(
+                    MaterialBlock(
+                        id=block.id + "-vision",
+                        type="paragraph",
+                        inlines=[{"text": result.text}],
+                        review_state="needs_review",
+                        review_origin="extracted",
+                        provenance=provenance,
+                        warnings=result.warnings,
+                    )
+                )
+    document.blocks.extend(additions)
+    document = MaterialDocument.model_validate(document.model_dump(mode="json"))
+    preview["document"] = document.model_dump(mode="json")
+    preview["content"] = "\n\n".join(block_text(b) for b in document.blocks)
 
 
 if __name__ == "__main__":

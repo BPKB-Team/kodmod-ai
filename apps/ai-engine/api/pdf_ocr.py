@@ -26,27 +26,33 @@ def recognize_page(data: bytes, index: int):
                 raise ValueError("Ukuran halaman PDF tidak valid.")
             scale = min(3, math.sqrt(settings.OCR_MAX_PIXELS / (width * height)))
             with closing(page.render(scale=scale)) as bitmap, bitmap.to_pil() as image:
-                with tempfile.TemporaryDirectory(prefix="kodmod-ocr-") as folder:
-                    path = Path(folder) / "page.png"
-                    image.save(path)
-                    # Arguments are fixed config and a generated private path, never a user command.
-                    process = subprocess.run(  # noqa: S603 - absolute executable and fixed argv
-                        [
-                            executable,
-                            str(path),
-                            "stdout",
-                            "-l",
-                            settings.OCR_LANGUAGES,
-                            "--oem",
-                            "1",
-                            "--psm",
-                            "3",
-                            "tsv",
-                        ],
-                        capture_output=True,
-                        timeout=settings.OCR_PAGE_TIMEOUT,
-                        check=True,
-                    )
+                return recognize_image(image)
+
+
+def recognize_image(image):
+    executable = shutil.which("tesseract")
+    if executable is None:
+        raise RuntimeError("OCR runtime unavailable")
+    with tempfile.TemporaryDirectory(prefix="kodmod-ocr-") as folder:
+        path = Path(folder) / "region.png"
+        image.save(path)
+        process = subprocess.run(
+            [
+                executable,
+                str(path),
+                "stdout",
+                "-l",
+                settings.OCR_LANGUAGES,
+                "--oem",
+                "1",
+                "--psm",
+                "3",
+                "tsv",
+            ],
+            capture_output=True,
+            timeout=settings.OCR_PAGE_TIMEOUT,
+            check=True,
+        )  # noqa: S603
     words = list(csv.DictReader(io.StringIO(process.stdout.decode("utf-8")), delimiter="\t"))
     lines: dict[tuple[str | None, ...], list[str]] = {}
     confidence: list[float] = []

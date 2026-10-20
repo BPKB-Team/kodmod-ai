@@ -93,6 +93,8 @@ class Settings(BaseSettings):
     LLM_SCORING_MODEL: str = MODEL_UNSET
     LLM_RECOMMENDATION_MODEL: str = MODEL_UNSET
     LLM_REFLECTION_MODEL: str = MODEL_UNSET
+    LLM_MATERIAL_VISION_MODEL: str = MODEL_UNSET
+    MATERIAL_VISION_ENABLED: bool = False
 
     # ------------------------------------------------------------- database
     DB_USER: str = "kodmod"

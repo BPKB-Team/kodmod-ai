@@ -96,3 +96,62 @@ async def test_assets_pending_draft_cross_class_and_student_access(
         await session.commit()
         with pytest.raises(HTTPException):
             await authorized_asset(session, controls["actor"], material.class_id, aid)
+
+
+async def test_mixed_import_worker_retry_reuses_private_asset_and_paid_region(
+    learning_http, monkeypatch, tmp_path
+):
+    import json
+    from types import SimpleNamespace
+
+    from reportlab.lib.utils import ImageReader
+    from sqlalchemy import func
+
+    from api import durable_jobs, material_worker, pdf_regions
+    from api.material_artifacts import create_import
+    from config.settings import settings
+    from database.models import Classroom, MaterialAsset
+    from tests.unit.test_pdf_layout import make_pdf
+    from tools import material_vision_tool
+
+    _, factory, _, material, _, admin = learning_http
+    monkeypatch.setattr(settings, "UPLOAD_DIR", tmp_path)
+    monkeypatch.setattr(settings, "MATERIAL_VISION_ENABLED", True)
+    monkeypatch.setattr(settings, "LLM_MATERIAL_VISION_MODEL", "fixture-vision")
+    monkeypatch.setattr(durable_jobs, "async_session", factory)
+    monkeypatch.setattr(material_worker, "async_session", factory)
+    monkeypatch.setattr(
+        pdf_regions, "recognize_region", lambda *a, **k: pdf_regions.RegionExtraction()
+    )
+    calls = []
+
+    class Model:
+        async def ainvoke(self, *a):
+            calls.append(1)
+            return SimpleNamespace(content=json.dumps({"text": "Tabel planet dan periode orbit"}))
+
+    monkeypatch.setattr(material_vision_tool, "get_material_vision_llm", lambda: Model())
+    im = Image.new("RGB", (100, 100), "white")
+
+    def draw(c):
+        c.drawString(50, 700, "Teks native di samping gambar")
+        c.drawImage(ImageReader(im), 50, 400, width=200, height=150)
+
+    async with factory() as session:
+        classroom = await session.get(Classroom, material.class_id)
+        imported = await create_import(
+            session,
+            classroom,
+            admin,
+            UploadFile(filename="mixed.pdf", file=BytesIO(make_pdf(draw))),
+        )
+    job = await durable_jobs.claim()
+    first = await material_worker.process(job)
+    second = await material_worker.process(job)
+    assert first == second and len(calls) == 1
+    assert any(
+        b["provenance"]["method"] == "vision" and b["review_state"] == "needs_review"
+        for b in first["document"]["blocks"]
+    )
+    async with factory() as session:
+        assert await session.scalar(select(func.count()).select_from(MaterialAsset)) == 1

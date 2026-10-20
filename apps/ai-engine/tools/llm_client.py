@@ -159,7 +159,21 @@ def get_reflection_llm():
     )
 
 
+@lru_cache(maxsize=1)
+def get_material_vision_llm():
+    return _chat(
+        _resolve("LLM_MATERIAL_VISION_MODEL"),
+        temperature=0.0,
+        max_tokens=4000,
+        streaming=False,
+        usage_role="material_vision",
+        max_retries=0,
+        timeout=45,
+    )
+
+
 _GETTERS = (
+    get_material_vision_llm,
     get_router_llm,
     get_tutor_llm,
     get_quiz_llm,

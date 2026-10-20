@@ -121,12 +121,6 @@ def extract_document(
                 for index in range(first - 1, last):
                     text = page_text(index)
                     provenance = {"page": index + 1, "method": "native", "confidence": None}
-                    if allow_ocr and len(text.strip()) < 5:
-                        from api.pdf_ocr import recognize_page
-
-                        recognized = recognize_page(data, index)
-                        text = recognized["text"]
-                        provenance.update(method="ocr", confidence=recognized["confidence"])
                     text = tidy_pdf_text(text)
                     characters += len(text) + (2 if pages else 0)
                     if characters > MAX_CONTENT:
@@ -187,8 +181,44 @@ def extract_document(
             422, "Berkas tidak dapat dibaca. Gunakan PDF, DOCX, atau teks yang valid."
         ) from exc
 
+    if suffix == ".pdf":
+        from api.material_document import block_text
+        from api.pdf_layout import extract_pdf_layout
+
+        try:
+            document = extract_pdf_layout(
+                data, first_page=first, last_page=last, allow_ocr=allow_ocr
+            )
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
+        metadata["document"] = document.model_dump(mode="json")
+        content = "\n\n".join(block_text(block) for block in document.blocks)
+        for page in metadata["pages"]:
+            page_blocks = [b for b in document.blocks if b.provenance.page == page["page"]]
+            methods = {b.provenance.method for b in page_blocks}
+            page["text"] = "\n".join(block_text(b) for b in page_blocks)
+            page["method"] = (
+                "mixed"
+                if "ocr" in methods and "native" in methods
+                else "ocr"
+                if "ocr" in methods
+                else "native"
+            )
+            confidences = [b.confidence * 100 for b in page_blocks if b.confidence is not None]
+            page["confidence"] = (
+                round(sum(confidences) / len(confidences), 1) if confidences else None
+            )
+        if any(b.review_state == "needs_review" for b in document.blocks):
+            warnings.append(
+                "Sebagian teks atau gambar perlu ditinjau. Periksa rumus dan hubungan tabel sebelum menyetujui blok."
+            )
+    else:
+        from api.material_document import legacy_document
+
+        metadata["document"] = legacy_document(content).model_dump(mode="json")
+
     content = content.strip()
-    if not content or "\0" in content:
+    if (not content and not metadata.get("document", {}).get("blocks")) or "\0" in content:
         raise HTTPException(
             422,
             "Tidak ditemukan teks yang dapat dibaca. Untuk PDF scan, gunakan OCR atau salin teks terlebih dahulu.",
