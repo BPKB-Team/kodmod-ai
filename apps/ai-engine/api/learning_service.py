@@ -14,6 +14,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from api.assessment_service import recover_assessment, start_assessment
+from api.learning_content import material_learning_units
 from api.learning_progress import (
     active_learning_progress,
     build_unit_manifest,
@@ -253,7 +254,7 @@ async def start_lesson(session, student, body: LearningStart):
         "language": body.language,
         "material_version": material.content_version,
         "unit_index": 0,
-        "units": learning_units(material.content),
+        "units": material_learning_units(material, require_content=True),
         "text": "",
         "subject": context["subject_name"],
     }
@@ -387,7 +388,7 @@ async def start_planned_lesson(session, student, material, candidate):
                     409, "Selesaikan mini kuis yang sedang berjalan terlebih dahulu."
                 )
     context = await resolve_tutoring_context(session, material.class_id, material.id, student)
-    units = learning_units(material.content)
+    units = material_learning_units(material, require_content=True)
     state = {
         "revision": 0,
         "phase": "learning",

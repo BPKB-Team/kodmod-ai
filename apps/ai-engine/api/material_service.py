@@ -63,6 +63,10 @@ async def resolve_tutoring_context(
                 ClassMaterial.n_chunks > 0,
             )
         )
+    if require_ready and material is not None:
+        from api.learning_content import material_learning_units
+
+        material_learning_units(material, require_content=True)
     if require_ready and not ready:
         raise HTTPException(
             409,
@@ -114,6 +118,9 @@ async def index_class_material(
             row.rag_status = "processing"
             row.rag_error = None
             content, source = row.content, row.source_filename or row.title
+            from api.material_document import material_document
+
+            document = material_document(row)
             provenance = {}
             if row.source_import_id:
                 from database.models import BackgroundJob, MaterialImport
@@ -134,7 +141,13 @@ async def index_class_material(
             concepts = await current_concepts(session, row, classroom)
             await session.commit()
 
-        records = await build_material_records(content, source=source)
+        records = await build_material_records(
+            content,
+            source=source,
+            document=document,
+            content_version=version,
+            mapping_version=mapping_version,
+        )
         if not records:
             raise ValueError("No material chunks")
         for record in records:

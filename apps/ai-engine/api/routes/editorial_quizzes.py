@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api import editorial_quiz_service as service
 from api.dependencies import db_session, require_staff, require_student, require_teacher
+from api.learning_content import material_learning_units
 from database.models import (
     AssignmentAttempt,
     Classroom,
@@ -62,7 +63,7 @@ async def propose_quiz(
     from api.material_concepts import current_concepts
 
     approved = await current_concepts(session, material, classroom)
-    units = learning_units(material.content)
+    units = material_learning_units(material)
     count = min(6, len(units))
     indices = sorted({round(i * (len(units) - 1) / max(1, count - 1)) for i in range(count)})
     docs = [

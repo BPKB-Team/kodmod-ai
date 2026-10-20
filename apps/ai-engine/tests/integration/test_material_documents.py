@@ -155,3 +155,19 @@ async def test_mixed_import_worker_retry_reuses_private_asset_and_paid_region(
     )
     async with factory() as session:
         assert await session.scalar(select(func.count()).select_from(MaterialAsset)) == 1
+
+
+async def test_metadata_remains_readable_but_cannot_start_learning_or_quiz(learning_http):
+    client,factory,_,material,_,_=learning_http
+    async with factory() as session:
+        row=await session.get(ClassMaterial,material.id)
+        row.content="<!-- demo note -->\n\n# Dasar-Dasar Tata Surya"
+        await session.commit()
+    read=await client.get(f"/classes/{material.class_id}/materials/{material.id}")
+    assert read.status_code==200 and read.json()["learning_progress"]["total_units"]==0
+    assert read.json()["ai_readiness"]=="insufficient_learning_content"
+    source={"class_id":str(material.class_id),"material_id":str(material.id)}
+    lesson=await client.post("/learning/start",json=source)
+    assert lesson.status_code==409 and lesson.json()["detail"]["code"]=="insufficient_learning_content"
+    quiz=await client.post("/quiz/start",json={**source,"n_questions":1})
+    assert quiz.status_code==409 and quiz.json()["detail"]["code"]=="insufficient_learning_content"

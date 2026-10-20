@@ -236,7 +236,7 @@ class MaterialImportTest(classroom_test.ClassroomRoutesTest):
             self.fail("Material indexing is not implemented")
         cid = await self.create_class()
         response = await self.client.post(
-            f"/classes/{cid}/materials", json={"title": "Pecahan", "content": "Pecahan senilai."}
+            f"/classes/{cid}/materials", json={"title": "Pecahan", "content": "Pecahan senilai mempunyai nilai yang sama meskipun pembilang dan penyebutnya berbeda."}
         )
         mid = uuid.UUID(response.json()["id"])
         async with self.engine.begin() as conn:
@@ -279,7 +279,7 @@ class MaterialImportTest(classroom_test.ClassroomRoutesTest):
                 self.assertGreater(row.n_chunks, 0)
                 self.assertEqual(
                     (await session.scalars(select(CurriculumChunk))).one().content,
-                    "Pecahan senilai.",
+                    "Pecahan senilai mempunyai nilai yang sama meskipun pembilang dan penyebutnya berbeda.",
                 )
                 row.content = "Materi diperbarui."
                 row.content_version = 2

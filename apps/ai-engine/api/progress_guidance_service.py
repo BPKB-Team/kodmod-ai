@@ -16,6 +16,7 @@ from analytics.progress_guidance import (
     substantive,
 )
 from api.durable_jobs import enqueue
+from api.learning_content import material_learning_units
 from api.learning_progress import canonical_manifest
 from api.material_service import resolve_tutoring_context
 from database.models import (
@@ -64,7 +65,7 @@ async def require_target(session, student, target, *, versions=True):
     material = await session.get(ClassMaterial, uuid.UUID(candidate.material_id))
     if versions:
         manifest = canonical_manifest(material)
-        units = learning_units(material.content)
+        units = material_learning_units(material)
         if (
             material.content_version != candidate.content_version
             or material.mapping_version != candidate.mapping_version
@@ -426,7 +427,7 @@ async def step_action(session, graph, student, plan_id, step_id, body, *, action
                 from api.learning_service import learning_units
                 from models.quiz import QuizStartRequest
 
-                unit = learning_units(material.content)[candidate.unit_index]
+                unit = material_learning_units(material)[candidate.unit_index]
                 quiz = await start_assessment(
                     session,
                     graph,

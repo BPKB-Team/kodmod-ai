@@ -8,6 +8,7 @@ from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from analytics.progress_projection import aware, public_progress
+from api.learning_content import material_learning_units
 from api.learning_progress import canonical_manifest
 from api.learning_service import learning_units
 from database.models import ClassMaterial
@@ -15,10 +16,9 @@ from models.progress_guidance import GuidanceSnapshot, PlanCandidate, ProgressFa
 
 
 def substantive(text):
-    cleaned = re.sub(r"<!--.*?-->", "", text, flags=re.S)
-    cleaned = re.sub(r"^\s*#+.*$", "", cleaned, flags=re.M)
-    words = re.findall(r"\w+", cleaned.casefold())
-    return len(words) >= 35 and len(set(words)) >= 15
+    from api.learning_content import is_learning_text
+
+    return is_learning_text(text) or bool(re.search(r"[a-zA-Z][_^].*=", text))
 
 
 async def build_guidance_snapshot(session, *, student, timezone: str) -> GuidanceSnapshot:
@@ -98,7 +98,7 @@ async def build_guidance_snapshot(session, *, student, timezone: str) -> Guidanc
             and material.mapping_version == material.indexed_mapping_version
             and material.n_chunks > 0
         )
-        units = learning_units(material.content)
+        units = material_learning_units(material)
         good = [i for i, u in enumerate(units) if substantive(u["text"])]
         ready = ready and bool(good)
         fact_id = f"material:{material.id}"

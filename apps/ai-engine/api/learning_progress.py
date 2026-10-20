@@ -4,12 +4,13 @@ import hashlib
 import json
 from datetime import UTC, datetime
 
-from database.models import MaterialLearningProgress, User
 from fastapi import HTTPException
-from models.learning import LearningUnitManifest, UnitIdentity
 from sqlalchemy import select
 
-PARTITIONER_VERSION = "plain-v1"
+from database.models import MaterialLearningProgress, User
+from models.learning import LearningUnitManifest, UnitIdentity
+
+PARTITIONER_VERSION = "blocks-v1"
 
 
 def build_unit_manifest(
@@ -41,9 +42,9 @@ def build_unit_manifest(
 
 
 def canonical_manifest(material):
-    from api.learning_service import learning_units
+    from api.learning_content import material_learning_units
 
-    return build_unit_manifest(material, learning_units(material.content))
+    return build_unit_manifest(material, material_learning_units(material))
 
 
 def learning_progress_out(

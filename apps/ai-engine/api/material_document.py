@@ -99,13 +99,28 @@ def legacy_document(content: str) -> MaterialDocument:
     # Old imports sometimes contained markup. Strip tags; never execute them.
     content = re.sub(r"<[^>]+>", "", content)
     blocks = []
+    role = "instruction"
     for index, part in enumerate(re.split(r"\n\s*\n", content)):
         if not part.strip():
             continue
         heading = re.match(r"^(#{1,6})\s+([^\n]+)$", part.strip())
+        label = heading[2] if heading else part.strip().split("\n", 1)[0]
+        if re.match(
+            r"^(?:daftar isi|prakata|kata pengantar|identitas modul|tujuan pembelajaran)\b",
+            label,
+            re.I,
+        ):
+            role = "frontmatter"
+        elif re.match(r"^(?:kunci jawaban|jawab(?:an)?|answer key)\b", label, re.I):
+            role = "answer_key"
+        elif re.match(r"^(?:daftar pustaka|referensi|bibliography)\b", label, re.I):
+            role = "reference"
+        elif heading:
+            role = "instruction"
         blocks.append(
             MaterialBlock(
                 id=f"legacy-{index}",
+                role=role,
                 type="heading" if heading else "paragraph",
                 level=len(heading[1]) if heading else None,
                 inlines=[{"text": heading[2] if heading else part.strip()}],

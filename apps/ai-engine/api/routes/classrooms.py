@@ -149,7 +149,18 @@ async def summary(session, row, user):
 
 
 def material_info(row):
+    from api.learning_content import material_learning_units
+
+    ready_content = bool(material_learning_units(row))
+    document = material_document(row)
     return {
+        "extraction_review": "needs_review"
+        if any(b.review_state == "needs_review" for b in document.blocks)
+        else "reviewed"
+        if getattr(row, "document", None)
+        else "legacy_unverified",
+        "ai_readiness": "insufficient_learning_content" if not ready_content else row.rag_status,
+        "concept_mapping": "approved" if row.mapping_version > 0 else "pending",
         "id": str(row.id),
         "title": row.title,
         "published": row.published,

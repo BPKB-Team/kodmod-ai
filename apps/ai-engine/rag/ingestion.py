@@ -52,16 +52,37 @@ async def _embed_batch(texts: list[str]) -> list[list[float]]:
     return await embed_text(texts)
 
 
-async def build_material_records(content: str, *, source: str, language: str = "id") -> list[dict]:
+async def build_material_records(
+    content: str,
+    *,
+    source: str,
+    language: str = "id",
+    document=None,
+    content_version: int = 1,
+    mapping_version: int = 0,
+) -> list[dict]:
     """Embed reviewed material text without storing a partial new revision."""
-    payloads = chunks_to_payloads(chunk_document(content, source=source))
+    from api.material_document import legacy_document
+    from rag.chunking import chunk_material
+
+    payloads = chunks_to_payloads(
+        chunk_material(
+            document if document is not None else legacy_document(content),
+            source=source,
+            content_version=content_version,
+            mapping_version=mapping_version,
+        )
+    )
     vectors = await _embed_batch([payload["text"] for payload in payloads])
     return [
         {
             **payload,
             "embedding": vector,
             "language": language,
-            "accessibility_metadata": {"referenced_figures": payload.get("referenced_figures", [])},
+            "accessibility_metadata": {
+                "referenced_figures": payload.get("referenced_figures", []),
+                **payload.get("metadata", {}),
+            },
         }
         for payload, vector in zip(payloads, vectors, strict=True)
     ]

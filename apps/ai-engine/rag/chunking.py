@@ -150,3 +150,27 @@ def chunks_to_payloads(chunks: Iterable[Chunk]) -> list[dict]:
         }
         for c in chunks
     ]
+
+
+def chunk_material(document, *, source, content_version, mapping_version):
+    """Same reviewed block partitions used by lessons, with immutable provenance."""
+    from api.learning_content import build_learning_units
+
+    return [
+        Chunk(
+            text=unit["retrieval_text"],
+            source=source,
+            section_title=unit["title"],
+            chunk_index=index,
+            metadata={
+                key: unit[key]
+                for key in ("block_ids", "spans", "document_hash", "partitioner_version", "base_id")
+            }
+            | {
+                "content_version": content_version,
+                "mapping_version": mapping_version,
+                "speech_text": unit["speech_text"],
+            },
+        )
+        for index, unit in enumerate(build_learning_units(document))
+    ]
