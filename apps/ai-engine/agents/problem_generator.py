@@ -23,7 +23,7 @@ from __future__ import annotations
 import json
 import logging
 from typing import Any, Literal, cast
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, StrictInt
 
@@ -146,6 +146,11 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
             material_id=state.get("material_id"),
             student_id=state.get("student_id"),
         )
+        if not state.get("material_id") and concept_id:
+            try:
+                filters["concept_id"] = UUID(str(concept_id))
+            except (ValueError, TypeError, AttributeError):
+                pass
     docs: list[dict] = state.get("quiz_source_docs") or [
         dict(doc)
         for doc in await RAGTool().retrieve(

@@ -23,10 +23,15 @@ async def test_lost_class_scope_never_falls_back_to_general_tutoring(monkeypatch
     async def empty(*args, **kwargs):
         return []
 
-    monkeypatch.setattr(retriever, "embed_text", embed)
-    monkeypatch.setattr(retriever.pgvector_store, "query", empty)
+    monkeypatch.setattr("rag.retrieval_service.embed_text", embed)
+    monkeypatch.setattr("rag.retrieval_service.pgvector_store.query", empty)
     with pytest.raises(HTTPException) as unavailable:
-        await retriever.retrieve("Jelaskan", class_id=uuid.uuid4(), student_id=uuid.uuid4())
+        await retriever.retrieve(
+            "Jelaskan",
+            class_id=uuid.uuid4(),
+            student_id=uuid.uuid4(),
+            concept_id=uuid.uuid4(),
+        )
     assert unavailable.value.status_code == 409
 
 
@@ -46,33 +51,44 @@ async def test_malformed_class_scope_is_denied_before_shared_retrieval(monkeypat
 
 
 async def test_rag_tool_keeps_material_identity_for_source_disclosure(monkeypatch):
-    async def embed(texts):
-        return [[0.1]]
+    from types import SimpleNamespace
 
-    async def search(**kwargs):
-        return [
-            {
-                "id": "chunk-1",
-                "text": "Pecahan senilai",
-                "source": "buku.pdf",
-                "score": 0.9,
-                "class_id": "class-1",
-                "material_id": "material-1",
-                "material_title": "Pecahan",
-                "concept_id": "concept-1",
-                "concept_ids": ["concept-1"],
-            }
-        ]
+    async def search(request):
+        return SimpleNamespace(
+            documents=[
+                {
+                    "id": "chunk-1",
+                    "text": "Pecahan senilai",
+                    "source": "buku.pdf",
+                    "score": 0.9,
+                    "class_id": "class-1",
+                    "material_id": "material-1",
+                    "material_title": "Pecahan",
+                    "concept_id": "concept-1",
+                    "concept_ids": ["concept-1"],
+                    "block_ids": ["paragraph-7"],
+                    "spans": [{"block_id": "paragraph-7", "page": 11}],
+                    "content_version": 3,
+                    "mapping_version": 2,
+                    "document_hash": "a" * 64,
+                    "approved_concept_ids": ["concept-1"],
+                }
+            ]
+        )
 
-    monkeypatch.setattr(rag_tool, "embed_text", embed)
-    monkeypatch.setattr(rag_tool.settings, "RAG_RERANK_ENABLED", False)
+    monkeypatch.setattr(rag_tool, "retrieve_sources", search)
     tool = rag_tool.RAGTool()
-    monkeypatch.setattr(tool._store, "similarity_search", search)
     docs = await tool.retrieve("Pecahan")
     assert docs[0].get("material_id") == "material-1"
     assert docs[0].get("class_id") == "class-1"
     assert docs[0].get("material_title") == "Pecahan"
     assert docs[0].get("concept_id") == "concept-1"
+    assert docs[0].get("block_ids") == ["paragraph-7"]
+    assert docs[0].get("spans") == [{"block_id": "paragraph-7", "page": 11}]
+    assert docs[0].get("content_version") == 3
+    assert docs[0].get("mapping_version") == 2
+    assert docs[0].get("document_hash") == "a" * 64
+    assert docs[0].get("approved_concept_ids") == ["concept-1"]
 
 
 async def test_quiz_questions_use_selected_class_material_instead_of_shared_knowledge(monkeypatch):

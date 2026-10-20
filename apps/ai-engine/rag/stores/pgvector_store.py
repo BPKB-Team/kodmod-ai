@@ -17,7 +17,7 @@ from sqlalchemy import Text, delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.settings import settings
-from database.models import ClassMaterial, Classroom, CurriculumChunk, Enrollment
+from database.models import ClassMaterial, Classroom, CurriculumChunk, Enrollment, MaterialConcept
 from database.session import async_session
 
 logger = logging.getLogger(__name__)
@@ -206,6 +206,8 @@ async def query(
     student_id: uuid.UUID | None = None,
     class_id: uuid.UUID | None = None,
     material_id: uuid.UUID | None = None,
+    content_version: int | None = None,
+    mapping_version: int | None = None,
     candidate_ids: list[uuid.UUID] | None = None,
     include_vector_hash: bool = False,
 ) -> list[dict]:
@@ -228,6 +230,8 @@ async def query(
         CurriculumChunk.accessibility_metadata,
         CurriculumChunk.concept_id,
         CurriculumChunk.material_id,
+        CurriculumChunk.material_version.label("content_version"),
+        CurriculumChunk.material_mapping_version.label("mapping_version"),
         (1 - distance).label("score"),
     )
     if include_vector_hash:
@@ -256,12 +260,28 @@ async def query(
         )
         if material_id:
             stmt = stmt.where(ClassMaterial.id == material_id)
+        if subject_id:
+            stmt = stmt.where(Classroom.subject_id == subject_id)
+        if concept_id:
+            approved_mapping = select(MaterialConcept.material_id).where(
+                MaterialConcept.material_id == ClassMaterial.id,
+                MaterialConcept.concept_id == concept_id,
+                MaterialConcept.mapping_version == ClassMaterial.mapping_version,
+                MaterialConcept.content_version == ClassMaterial.content_version,
+            )
+            stmt = stmt.where(ClassMaterial.id.in_(approved_mapping))
+        if content_version is not None:
+            stmt = stmt.where(ClassMaterial.content_version == content_version)
+        if mapping_version is not None:
+            stmt = stmt.where(ClassMaterial.mapping_version == mapping_version)
     else:
         stmt = stmt.where(CurriculumChunk.material_id.is_(None))
         if concept_id:
             stmt = stmt.where(CurriculumChunk.concept_id == concept_id)
         if subject_id:
             stmt = stmt.where(CurriculumChunk.subject_id == subject_id)
+        if content_version is not None or mapping_version is not None:
+            return []
     if language:
         stmt = stmt.where(CurriculumChunk.language == language)
     if candidate_ids is not None:
@@ -283,6 +303,11 @@ async def query(
             if doc.get("concept_id")
             else []
         )
+        metadata = doc.get("accessibility_metadata") or {}
+        doc["block_ids"] = metadata.get("block_ids", [])
+        doc["spans"] = metadata.get("spans", [])
+        doc["document_hash"] = metadata.get("document_hash")
+        doc["approved_concept_ids"] = metadata.get("approved_concept_ids", [])
         docs.append(doc)
     return docs
 

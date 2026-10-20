@@ -1,27 +1,17 @@
-"""
-KODMOD AI - RAG Retriever (orchestration layer)
-===============================================
-
-Single entry point used by `tools/rag_tool.py` and the LangGraph
-`rag_retrieval_node`. Embeds the query, performs the pgvector search, and runs
-the cross-encoder reranker.
-
-This module is intentionally thin - it composes:
-    embeddings.embed_text + vector-store query + reranker.rerank
-"""
+"""Legacy list-shaped facade over the shared authorized retrieval service."""
 
 from __future__ import annotations
 
 import logging
 import uuid
+from dataclasses import asdict
 from typing import TypedDict
 
 from fastapi import HTTPException
 
 from config.settings import settings
-from rag.embeddings import embed_text
-from rag.reranker import rerank
-from rag.stores import pgvector_store
+from rag.retrieval_service import RetrievalRequest, retrieve_sources
+from rag.source_bundle import MaterialScope
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +24,11 @@ class QueryFilters(TypedDict, total=False):
     student_id: uuid.UUID | None
     class_id: uuid.UUID | None
     material_id: uuid.UUID | None
+    content_version: int | None
+    mapping_version: int | None
 
 
-async def retrieve(
+async def retrieve_result(
     query: str,
     *,
     concept_id: uuid.UUID | None = None,
@@ -44,80 +36,74 @@ async def retrieve(
     student_id: uuid.UUID | None = None,
     class_id: uuid.UUID | None = None,
     material_id: uuid.UUID | None = None,
+    content_version: int | None = None,
+    mapping_version: int | None = None,
     language: str | None = None,
     top_k: int | None = None,
     rerank_top_k: int | None = None,
     use_reranker: bool | None = None,
-) -> list[dict]:
-    """
-    Returns ranked chunks: list of dicts with keys
-    `id, text, source, section_title, score, rerank_score (opt), accessibility_metadata`.
-    """
-    if not query.strip():
-        return []
-    top_k = top_k or settings.RAG_TOP_K
-    rerank_top_k = rerank_top_k or settings.RAG_RERANK_TOP_K
-    if use_reranker is None:
-        use_reranker = settings.RAG_RERANK_ENABLED
-
-    embedding = (await embed_text([query]))[0]
-    filters: QueryFilters = {
-        "top_k": top_k,
-        "concept_id": concept_id,
-        "subject_id": subject_id,
-        "language": language or settings.DEFAULT_LANGUAGE,
-    }
-    if class_id or material_id:
-        # Response language is a learner preference; the source can be in
-        # another language. Keep the permission scope, regardless of language.
-        filters.update(
-            QueryFilters(
-                student_id=student_id, class_id=class_id, material_id=material_id, language=None
-            )
-        )
-    if settings.VECTOR_BACKEND == "qdrant":
-        from rag.stores.qdrant_store import query as qdrant_query
-
-        candidates = await qdrant_query(embedding, **filters)
-    else:
-        candidates = await pgvector_store.query(embedding, **filters)
-    if not candidates:
+):
+    candidate_k = top_k or settings.RAG_TOP_K
+    final_k = min(candidate_k, rerank_top_k or settings.RAG_RERANK_TOP_K)
+    request = RetrievalRequest(
+        query=query,
+        scope=MaterialScope(
+            student_id=student_id,
+            class_id=class_id,
+            material_id=material_id,
+            concept_id=concept_id,
+            subject_id=subject_id,
+            content_version=content_version,
+            mapping_version=mapping_version,
+            language=language,
+        ),
+        candidate_k=candidate_k,
+        final_k=final_k,
+        use_reranker=use_reranker,
+    )
+    try:
+        result = await retrieve_sources(request)
+    except ValueError as error:
         if class_id or material_id:
             raise HTTPException(
                 409,
-                "Materi kelas berubah atau belum siap. Buka kembali materi atau minta guru memproses indeks AI.",
-            )
+                "Pilih materi atau konsep yang disetujui guru sebelum mencari sumber kelas.",
+            ) from error
+        raise
+    if not result.documents and (class_id or material_id):
+        raise HTTPException(
+            409,
+            "Materi kelas berubah atau belum siap. Buka kembali materi atau minta guru memproses indeks AI.",
+        )
+    return result
+
+
+async def retrieve(query: str, **filters) -> list[dict]:
+    """Return ranked PostgreSQL-hydrated chunks for existing list consumers."""
+    if not query.strip():
         return []
-
-    if use_reranker and len(candidates) > rerank_top_k:
-        return await rerank(query, candidates, top_k=rerank_top_k)
-    return candidates[:rerank_top_k]
+    return (await retrieve_result(query, **filters)).documents
 
 
-# ---------------------------------------------------------------------------
-# LangGraph node - used directly from `graphs/main_graph.py`
-# ---------------------------------------------------------------------------
 async def rag_retrieval_node(state) -> dict:
-    """
-    LangGraph node wrapping `retrieve()`. Reads the latest student
-    utterance from `state["user_input"]` (or, if missing, the last
-    HumanMessage), retrieves grounding chunks scoped to the selected subject,
-    and writes them into `state["retrieved_docs"]`.
-    """
+    """Retrieve current sources for the graph and keep a compact diagnostic trace."""
     query = state.get("user_input") or ""
     if not query and state.get("messages"):
-        # Fall back to the most recent HumanMessage content.
-        for m in reversed(state["messages"]):
+        for message in reversed(state["messages"]):
             try:
-                role = getattr(m, "type", None) or getattr(m, "role", None)
+                role = getattr(message, "type", None) or getattr(message, "role", None)
                 if role in {"human", "user"}:
-                    query = getattr(m, "content", "") or ""
+                    query = getattr(message, "content", "") or ""
                     break
-            except Exception:  # noqa: S112  # skip malformed message entries, keep scanning history
+            except Exception:  # noqa: S112
                 continue
-
     if not query.strip():
-        return {"retrieved_docs": [], "next_action": "tutor", "last_node": "rag_retrieval"}
+        return {
+            "retrieved_docs": [],
+            "retrieval_trace": None,
+            "next_action": "tutor",
+            "last_node": "rag_retrieval",
+        }
 
     filters = {
         "concept_id": _as_uuid(state.get("current_concept_id")),
@@ -133,9 +119,15 @@ async def rag_retrieval_node(state) -> dict:
                 409, "Konteks materi tidak valid. Mulai sesi dari materi yang dapat Anda akses."
             )
         filters.update(student_id=student_id, class_id=class_id, material_id=material_id)
-    docs = await retrieve(query, **filters)
+    result = await retrieve_result(query, **filters)
+    docs = result.documents
     logger.info("RAG retrieved %d chunks for query=%r", len(docs), query[:64])
-    updates = {"retrieved_docs": docs, "next_action": "tutor", "last_node": "rag_retrieval"}
+    updates = {
+        "retrieved_docs": docs,
+        "retrieval_trace": asdict(result.trace),
+        "next_action": "tutor",
+        "last_node": "rag_retrieval",
+    }
     if not state.get("current_concept_id"):
         concept = next((doc.get("concept_id") for doc in docs if doc.get("concept_id")), None)
         if concept:
@@ -144,7 +136,6 @@ async def rag_retrieval_node(state) -> dict:
 
 
 def _as_uuid(value) -> uuid.UUID | None:
-    """Coerce a state value to a UUID, or None when it is absent or malformed."""
     if not value:
         return None
     try:

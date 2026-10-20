@@ -1,8 +1,8 @@
 """Real PostgreSQL checks for document revisions and private asset publication."""
 
+import os
 import uuid
 from io import BytesIO
-from pathlib import Path
 
 import pytest
 from fastapi import BackgroundTasks, HTTPException, UploadFile
@@ -13,6 +13,29 @@ from api.material_assets import authorized_asset, store_material_asset
 from api.routes import admin_materials, classrooms
 from database.models import ClassMaterial, MaterialRevision
 from tests.unit.test_guided_learning import learning_http as learning_http
+
+
+@pytest.fixture
+async def retrieval_qdrant(backend, monkeypatch):
+    from rag.stores import qdrant_store
+
+    if backend != "qdrant":
+        yield None
+        return
+    if not os.getenv("KODMOD_QDRANT_TEST_URL"):
+        pytest.skip("requires a disposable Qdrant test service")
+    collection = f"retrieval_test_{uuid.uuid4().hex}"
+    monkeypatch.setattr(qdrant_store.settings, "QDRANT_URL", os.environ["KODMOD_QDRANT_TEST_URL"])
+    monkeypatch.setattr(qdrant_store.settings, "QDRANT_COLLECTION", collection)
+    monkeypatch.setattr(qdrant_store, "_client_instance", None)
+    monkeypatch.setattr(qdrant_store, "_client_retry_at", 0.0)
+    yield qdrant_store
+    client = qdrant_store._client_instance
+    if client is not None:
+        try:
+            await client.delete_collection(collection_name=collection)
+        finally:
+            await qdrant_store.close_client()
 
 
 async def test_document_projection_revision_and_conflict_are_shared(learning_http):
@@ -181,7 +204,7 @@ async def test_mixed_import_worker_retry_reuses_private_asset_and_paid_region(
 
     async with factory() as session:
         classroom = await session.get(Classroom, material.class_id)
-        imported = await create_import(
+        await create_import(
             session,
             classroom,
             admin,
@@ -218,3 +241,198 @@ async def test_metadata_remains_readable_but_cannot_start_learning_or_quiz(learn
     assert (
         quiz.status_code == 409 and quiz.json()["detail"]["code"] == "insufficient_learning_content"
     )
+
+
+@pytest.mark.skipif(
+    os.getenv("KODMOD_GUIDED_POSTGRES") != "1" or os.getenv("KODMOD_RETRIEVAL_POSTGRES") != "1",
+    reason="requires the isolated PostgreSQL + pgvector retrieval fixture",
+)
+@pytest.mark.parametrize(
+    "backend",
+    [
+        pytest.param("pgvector", id="pgvector"),
+        pytest.param(
+            "qdrant",
+            id="qdrant",
+            marks=pytest.mark.skipif(
+                not os.getenv("KODMOD_QDRANT_TEST_URL"),
+                reason="requires a disposable Qdrant test service",
+            ),
+        ),
+    ],
+)
+async def test_class_concept_retrieval_enforces_current_authorization_and_preserves_provenance(
+    learning_http, monkeypatch, backend, retrieval_qdrant
+):
+    from config.settings import settings
+    from database.models import (
+        ClassMaterial,
+        Classroom,
+        Concept,
+        CurriculumChunk,
+        Enrollment,
+        MaterialConcept,
+        Subject,
+    )
+    from rag import retrieval_service
+    from rag.source_bundle import MaterialScope
+    from rag.stores import pgvector_store, qdrant_store
+
+    _, factory, controls, material, _, admin = learning_http
+    student = controls["actor"]
+    concept_id = uuid.uuid4()
+    subject_id = uuid.uuid4()
+    other_material_id = uuid.uuid4()
+    approved_chunk_id = uuid.uuid4()
+    unmapped_chunk_id = uuid.uuid4()
+    async with factory() as session:
+        classroom = await session.get(Classroom, material.class_id)
+        session.add(Subject(id=subject_id, name=f"Retrieval {uuid.uuid4()}", created_by=admin.id))
+        await session.flush()
+        session.add(
+            Concept(
+                id=concept_id,
+                subject_id=subject_id,
+                name="Pecahan senilai",
+                slug=f"pecahan-senilai-{uuid.uuid4().hex}",
+            )
+        )
+        await session.flush()
+        classroom.subject_id = subject_id
+        row = await session.get(ClassMaterial, material.id)
+        row.mapping_version = 1
+        row.indexed_mapping_version = 1
+        session.add(
+            MaterialConcept(
+                material_id=material.id,
+                mapping_version=1,
+                content_version=1,
+                concept_id=concept_id,
+                is_primary=True,
+                approved_by=admin.id,
+            )
+        )
+        unmapped = ClassMaterial(
+            id=other_material_id,
+            class_id=material.class_id,
+            title="Materi lain tanpa pemetaan",
+            content="Pecahan dalam materi yang tidak disetujui untuk konsep ini.",
+            published=True,
+            rag_status="ready",
+            content_version=1,
+            indexed_version=1,
+            mapping_version=0,
+            indexed_mapping_version=0,
+            n_chunks=1,
+        )
+        session.add(unmapped)
+        session.add_all(
+            [
+                CurriculumChunk(
+                    id=approved_chunk_id,
+                    material_id=material.id,
+                    material_version=1,
+                    material_mapping_version=1,
+                    content=(
+                        "Pecahan senilai memiliki nilai sama jika pembilang dan "
+                        "penyebut dikalikan dengan bilangan yang sama."
+                    ),
+                    embedding=[0.1] * settings.EMBEDDING_DIM,
+                    source="pecahan.pdf",
+                    language="id",
+                    chunk_index=0,
+                    accessibility_metadata={
+                        "block_ids": ["paragraph-7"],
+                        "spans": [{"block_id": "paragraph-7", "page": 11}],
+                        "document_hash": "a" * 64,
+                        "approved_concept_ids": [str(concept_id)],
+                    },
+                ),
+                CurriculumChunk(
+                    id=unmapped_chunk_id,
+                    material_id=other_material_id,
+                    material_version=1,
+                    material_mapping_version=0,
+                    content="Pecahan konteks lain yang belum disetujui.",
+                    embedding=[0.1] * settings.EMBEDDING_DIM,
+                    source="lain.pdf",
+                    language="id",
+                    chunk_index=0,
+                    accessibility_metadata={"block_ids": ["unmapped-block"]},
+                ),
+            ]
+        )
+        await session.commit()
+
+    async def embed(_texts):
+        return [[0.1] * settings.EMBEDDING_DIM]
+
+    monkeypatch.setattr(retrieval_service, "embed_text", embed)
+    monkeypatch.setattr(retrieval_service.settings, "VECTOR_BACKEND", backend)
+    monkeypatch.setattr(pgvector_store, "async_session", factory)
+    if backend == "qdrant":
+        assert retrieval_qdrant is qdrant_store
+        canonical = await pgvector_store.query(
+            [0.1] * settings.EMBEDDING_DIM,
+            top_k=1,
+            concept_id=concept_id,
+            subject_id=subject_id,
+            student_id=student.id,
+            class_id=material.class_id,
+            include_vector_hash=True,
+        )
+        assert len(canonical) == 1 and canonical[0]["id"] == str(approved_chunk_id)
+        await qdrant_store.upsert_points(
+            [
+                {
+                    "id": str(approved_chunk_id),
+                    "embedding": [0.1] * settings.EMBEDDING_DIM,
+                    "scope": "class",
+                    "class_id": str(material.class_id),
+                    "material_id": str(material.id),
+                    "material_version": 1,
+                    "material_mapping_version": 1,
+                    "vector_hash": canonical[0]["_vector_hash"],
+                }
+            ]
+        )
+    request = retrieval_service.RetrievalRequest(
+        query="Jelaskan pecahan senilai",
+        scope=MaterialScope(
+            student_id=student.id,
+            class_id=material.class_id,
+            concept_id=concept_id,
+            subject_id=subject_id,
+        ),
+        candidate_k=20,
+        final_k=6,
+        use_reranker=False,
+    )
+
+    result = await retrieval_service.retrieve_sources(request)
+    assert [doc["material_id"] for doc in result.documents] == [str(material.id)]
+    source = result.bundle.sources[0]
+    assert source.block_ids == ("paragraph-7",)
+    assert source.spans[0]["page"] == 11
+    assert source.document_hash == "a" * 64
+    assert source.content_version == 1 and source.mapping_version == 1
+
+    async with factory() as session:
+        await session.delete(await session.get(Enrollment, (material.class_id, student.id)))
+        await session.commit()
+    assert not (await retrieval_service.retrieve_sources(request)).bundle.sources
+
+    async with factory() as session:
+        session.add(Enrollment(class_id=material.class_id, student_id=student.id))
+        row = await session.get(ClassMaterial, material.id)
+        row.published = False
+        await session.commit()
+    assert not (await retrieval_service.retrieve_sources(request)).bundle.sources
+
+    async with factory() as session:
+        row = await session.get(ClassMaterial, material.id)
+        row.published = True
+        row.content_version = 2
+        row.indexed_version = 2
+        await session.commit()
+    assert not (await retrieval_service.retrieve_sources(request)).bundle.sources

@@ -1,32 +1,7 @@
-"""
-KODMOD AI - RAG Tool
-====================
-
-Single retrieval interface used by:
-* Tutoring Agent (curriculum grounding)
-* Problem Generator (question-grounding)
-* Content Retrieval Agent (cluster 3)
-
-Pipeline
---------
-    query → embed → vector search (pgvector) → rerank (cross-encoder)
-          → metadata filter → return top-K chunks
-
-Configuration
--------------
-* Vector store: pgvector.
-* Embedding model: OpenAI `text-embedding-3-small` (see `settings.EMBEDDING_MODEL`).
-* Reranker: BGE-reranker-v2-m3 (cross-encoder, runs locally).
-
-Two retrieval modes
--------------------
-* `retrieve()`     - returns dicts (used as a normal Python tool)
-* `as_langchain_tool()` - returns a LangChain `Tool` for agents that bind tools
-"""
+"""Shared RAG facade for tutors, quiz generation and curriculum tools."""
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from fastapi import HTTPException
@@ -34,100 +9,83 @@ from langchain_core.tools import Tool
 
 from config.settings import settings
 from graphs.state import RetrievedDoc
-from rag.embeddings import embed_text
-from rag.reranker import rerank
-
-log = logging.getLogger(__name__)
+from rag.retrieval_service import RetrievalRequest, retrieve_sources, scope_from_filters
 
 
 class RAGTool:
-    """Curriculum & content retriever."""
+    """List-shaped compatibility adapter over the canonical retrieval service."""
 
-    def __init__(self, top_k_vector: int = 20, top_k_final: int = 5):
-        self.top_k_vector = top_k_vector
-        self.top_k_final = top_k_final
-        self._store = self._build_store()
+    def __init__(self, top_k_vector: int | None = None, top_k_final: int | None = None):
+        self.top_k_vector = top_k_vector or settings.RAG_TOP_K
+        self.top_k_final = top_k_final or settings.RAG_RERANK_TOP_K
 
-    # -----------------------------------------------------------------
-    def _build_store(self):
-        if settings.VECTOR_BACKEND == "qdrant":
-            from rag.stores.qdrant_store import QdrantVectorStore
-
-            return QdrantVectorStore()
-        from rag.stores.pgvector_store import PgVectorStore
-
-        return PgVectorStore()
-
-    # -----------------------------------------------------------------
     async def retrieve(
         self,
         query: str,
         k: int | None = None,
         filters: dict[str, Any] | None = None,
     ) -> list[RetrievedDoc]:
-        """Retrieve top-K curriculum chunks for `query`."""
         if not query.strip():
             return []
-        k = k or self.top_k_final
-
-        # 1. Embed
-        [vec] = await embed_text([query])
-
-        # 2. Vector search
-        candidates = await self._store.similarity_search(
-            embedding=vec,
-            top_k=self.top_k_vector,
-            filters=filters or {},
-        )
-
-        if not candidates:
+        final_k = k or self.top_k_final
+        candidate_k = max(self.top_k_vector, final_k)
+        if candidate_k > 100 or final_k > candidate_k:
+            raise ValueError("Retrieval budgets exceed the supported range.")
+        try:
+            scope = scope_from_filters(filters)
+            request = RetrievalRequest(
+                query=query,
+                scope=scope,
+                candidate_k=candidate_k,
+                final_k=final_k,
+            )
+            result = await retrieve_sources(request)
+        except ValueError as error:
             if filters and (filters.get("class_id") or filters.get("material_id")):
                 raise HTTPException(
                     409,
-                    "Materi kelas berubah atau belum siap. Buka kembali materi atau minta guru memproses indeks AI.",
-                )
-            return []
+                    "Pilih materi atau konsep yang disetujui guru sebelum mencari sumber kelas.",
+                ) from error
+            raise
+        if not result.documents and (scope.class_id or scope.material_id):
+            raise HTTPException(
+                409,
+                "Materi kelas berubah atau belum siap. Buka kembali materi atau minta guru memproses indeks AI.",
+            )
+        return [self._retrieved_doc(row) for row in result.documents]
 
-        # 3. Cross-encoder rerank for precision (optional - the bi-encoder
-        # order from the vector search is already decent, so this can be
-        # switched off when the extra local model isn't worth the weight).
-        if settings.RAG_RERANK_ENABLED:
-            reranked = await rerank(query, candidates, top_k=k)
-        else:
-            reranked = candidates[:k]
-
-        log.info(
-            "RAG: query='%s' retrieved=%d returned=%d", query[:50], len(candidates), len(reranked)
+    @staticmethod
+    def _retrieved_doc(row: dict) -> RetrievedDoc:
+        return RetrievedDoc(
+            doc_id=str(row.get("doc_id") or row.get("material_id") or row.get("id") or ""),
+            chunk_id=str(row.get("chunk_id") or row.get("id") or ""),
+            text=row.get("text", ""),
+            score=float(row.get("rerank_score", row.get("score", 0.0))),
+            source=row.get("source", "curriculum"),
+            concept_ids=row.get("approved_concept_ids") or row.get("concept_ids", []),
+            concept_id=row.get("concept_id"),
+            class_id=row.get("class_id"),
+            material_id=row.get("material_id"),
+            material_title=row.get("material_title"),
+            section_title=row.get("section_title"),
+            block_ids=row.get("block_ids", []),
+            spans=row.get("spans", []),
+            content_version=row.get("content_version"),
+            mapping_version=row.get("mapping_version"),
+            document_hash=row.get("document_hash"),
+            approved_concept_ids=row.get("approved_concept_ids", []),
         )
 
-        return [
-            RetrievedDoc(
-                doc_id=c.get("doc_id", c.get("material_id") or c.get("id", "")),
-                chunk_id=c.get("chunk_id", c.get("id", "")),
-                text=c.get("text", ""),
-                score=float(c.get("rerank_score", c.get("score", 0.0))),
-                source=c.get("source", "curriculum"),
-                concept_ids=c.get("concept_ids", []),
-                concept_id=c.get("concept_id"),
-                class_id=c.get("class_id"),
-                material_id=c.get("material_id"),
-                material_title=c.get("material_title"),
-                section_title=c.get("section_title"),
-            )
-            for c in reranked
-        ]
-
-    # -----------------------------------------------------------------
     def as_langchain_tool(self) -> Tool:
         async def _arun(query: str) -> str:
             docs = await self.retrieve(query)
-            return "\n---\n".join(f"[{d['source']}] {d['text']}" for d in docs)
+            return "\n---\n".join(f"[{doc['source']}] {doc['text']}" for doc in docs)
 
-        return Tool(  # type: ignore[call-arg]  # async-only Tool: coroutine set, func omitted
+        return Tool(
             name="curriculum_search",
             description=(
-                "Search the KODMOD curriculum knowledge base. "
-                "Input: a natural-language query. Output: top relevant text chunks."
+                "Search authorized, versioned KODMOD learning sources. "
+                "Input: a natural-language question. Output: relevant source text."
             ),
             coroutine=_arun,
         )

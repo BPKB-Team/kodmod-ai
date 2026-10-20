@@ -112,6 +112,12 @@ class RetrievedDoc(TypedDict, total=False):
     material_id: str | None
     material_title: str | None
     section_title: str | None
+    block_ids: list[str]
+    spans: list[dict]
+    content_version: int | None
+    mapping_version: int | None
+    document_hash: str | None
+    approved_concept_ids: list[str]
 
 
 class LearningProfile(TypedDict, total=False):
@@ -168,6 +174,7 @@ class KODMODState(TypedDict, total=False):
     current_difficulty: DifficultyLevel
     tutoring_context: list[TutoringTurn]
     retrieved_docs: list[RetrievedDoc]
+    retrieval_trace: dict | None
     generated_response: str  # raw LLM output before accessibility pass
     accessible_response: str  # post-accessibility-agent text; this is what ships
 

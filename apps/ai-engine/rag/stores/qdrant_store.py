@@ -171,22 +171,34 @@ async def _postgres_query(
     student_id: uuid.UUID | None,
     class_id: uuid.UUID | None,
     material_id: uuid.UUID | None,
+    content_version: int | None = None,
+    mapping_version: int | None = None,
+    candidate_ids: list[uuid.UUID] | None = None,
+    include_vector_hash: bool = False,
 ) -> list[dict]:
     from rag.stores import pgvector_store
 
-    return await pgvector_store.query(
-        embedding,
-        top_k=top_k,
-        concept_id=concept_id,
-        subject_id=subject_id,
-        language=language,
-        student_id=student_id,
-        class_id=class_id,
-        material_id=material_id,
-    )
+    filters = {
+        "top_k": top_k,
+        "concept_id": concept_id,
+        "subject_id": subject_id,
+        "language": language,
+        "student_id": student_id,
+        "class_id": class_id,
+        "material_id": material_id,
+    }
+    if content_version is not None:
+        filters["content_version"] = content_version
+    if mapping_version is not None:
+        filters["mapping_version"] = mapping_version
+    if candidate_ids is not None:
+        filters["candidate_ids"] = candidate_ids
+    if include_vector_hash:
+        filters["include_vector_hash"] = True
+    return await pgvector_store.query(embedding, **filters)
 
 
-async def query(
+async def query_with_trace(
     embedding: list[float],
     *,
     top_k: int = 8,
@@ -196,10 +208,16 @@ async def query(
     student_id: uuid.UUID | None = None,
     class_id: uuid.UUID | None = None,
     material_id: uuid.UUID | None = None,
-) -> list[dict]:
-    """Search Qdrant IDs, then authorize/read every result from PostgreSQL."""
+    content_version: int | None = None,
+    mapping_version: int | None = None,
+) -> tuple[list[dict], dict]:
+    """Return SQL-authorized documents and diagnose candidate fallback decisions."""
     if (class_id and not student_id) or (material_id and not class_id):
-        return []
+        return [], {
+            "candidate_count": 0,
+            "hydrated_count": 0,
+            "fallback_reason": "invalid_scope",
+        }
 
     async def postgres_fallback() -> list[dict]:
         return await _postgres_query(
@@ -211,6 +229,8 @@ async def query(
             student_id=student_id,
             class_id=class_id,
             material_id=material_id,
+            content_version=content_version,
+            mapping_version=mapping_version,
         )
 
     try:
@@ -253,7 +273,12 @@ async def query(
             ids.append(uuid.UUID(point_id))
             qdrant_hashes[point_id] = (point.payload or {}).get("vector_hash")
         if not ids:
-            return await postgres_fallback()
+            fallback = await postgres_fallback()
+            return fallback, {
+                "candidate_count": len(points),
+                "hydrated_count": len(fallback),
+                "fallback_reason": "qdrant_empty",
+            }
 
         from rag.stores import pgvector_store
 
@@ -266,6 +291,8 @@ async def query(
             student_id=student_id,
             class_id=class_id,
             material_id=material_id,
+            content_version=content_version,
+            mapping_version=mapping_version,
             candidate_ids=ids,
             include_vector_hash=True,
         )
@@ -274,14 +301,73 @@ async def query(
             or doc.get("_vector_hash") != qdrant_hashes.get(str(doc["id"]))
             for doc in docs
         )
-        if stale or len(docs) < min(top_k, len(points)) or len(points) < top_k:
-            return await postgres_fallback()
+        hydrated_count = len(docs)
+        if stale:
+            fallback = await postgres_fallback()
+            return fallback, {
+                "candidate_count": len(points),
+                "hydrated_count": len(fallback),
+                "fallback_reason": "stale_vector",
+            }
+
+        reason = None
+        effective_budget = min(top_k, len(points))
+        if len(points) < top_k or len(docs) < effective_budget:
+            # Check the authorized SQL inventory before labelling a short vector
+            # page as missing data. Small classes often contain fewer than top_k.
+            available = await postgres_fallback()
+            hydrated_ids = {str(doc["id"]) for doc in docs}
+            available_ids = {str(doc["id"]) for doc in available}
+            if available_ids - hydrated_ids:
+                docs = available
+                hydrated_count = len(available)
+                reason = "insufficient_authorized_candidates"
+            elif len(docs) < len(points):
+                reason = "insufficient_authorized"
         for doc in docs:
             doc.pop("_vector_hash", None)
-        return docs
+        return docs, {
+            "candidate_count": len(points),
+            "hydrated_count": hydrated_count,
+            "fallback_reason": reason,
+        }
     except Exception:
         logger.warning("Qdrant retrieval failed; falling back to PostgreSQL", exc_info=True)
-        return await postgres_fallback()
+        fallback = await postgres_fallback()
+        return fallback, {
+            "candidate_count": 0,
+            "hydrated_count": len(fallback),
+            "fallback_reason": "qdrant_unavailable",
+        }
+
+
+async def query(
+    embedding: list[float],
+    *,
+    top_k: int = 8,
+    concept_id: uuid.UUID | None = None,
+    subject_id: uuid.UUID | None = None,
+    language: str | None = None,
+    student_id: uuid.UUID | None = None,
+    class_id: uuid.UUID | None = None,
+    material_id: uuid.UUID | None = None,
+    content_version: int | None = None,
+    mapping_version: int | None = None,
+) -> list[dict]:
+    """Compatibility list facade; new orchestration also consumes its trace."""
+    docs, _ = await query_with_trace(
+        embedding,
+        top_k=top_k,
+        concept_id=concept_id,
+        subject_id=subject_id,
+        language=language,
+        student_id=student_id,
+        class_id=class_id,
+        material_id=material_id,
+        content_version=content_version,
+        mapping_version=mapping_version,
+    )
+    return docs
 
 
 class QdrantVectorStore:

@@ -34,11 +34,17 @@ async def learning_http(monkeypatch):
         schema = "guided_" + uuid.uuid4().hex
         admin_engine = create_async_engine(url, poolclass=NullPool)
         async with admin_engine.begin() as connection:
+            if os.getenv("KODMOD_RETRIEVAL_POSTGRES") == "1":
+                await connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
             await connection.execute(text(f'CREATE SCHEMA "{schema}"'))
+        search_path = (
+            f"{schema},public" if os.getenv("KODMOD_RETRIEVAL_POSTGRES") == "1" else schema
+        )
         engine = create_async_engine(
             url,
             poolclass=NullPool,
-            connect_args={"server_settings": {"search_path": schema}},
+            connect_args={"server_settings": {"search_path": search_path}},
+            execution_options={"schema_translate_map": {None: schema}},
         )
     else:
         engine = create_async_engine("sqlite+aiosqlite:///:memory:")
@@ -73,6 +79,8 @@ async def learning_http(monkeypatch):
         "quiz_action_receipts",
         "mastery_events",
     ]
+    if os.getenv("KODMOD_RETRIEVAL_POSTGRES") == "1":
+        names.extend(["documents", "curriculum_chunks", "material_concepts"])
     async with engine.begin() as conn:
         await conn.run_sync(
             lambda c: models.Base.metadata.create_all(
