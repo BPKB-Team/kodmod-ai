@@ -4,6 +4,7 @@ KODMOD_MATERIAL_TEST_DIR selects user-supplied PDFs. Embeddings are simulated;
 PostgreSQL, pgvector, PDF extraction and the application routes are real.
 """
 
+import io
 import json
 import os
 import uuid
@@ -12,6 +13,7 @@ from pathlib import Path
 import httpx
 import pytest
 from fastapi import FastAPI
+from pypdf import PdfReader
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.schema import CreateSchema, DropSchema
@@ -23,6 +25,7 @@ from config.settings import settings
 from database.models import BackgroundJob, Base, CurriculumChunk, User
 from rag import ingestion
 from rag.stores import pgvector_store
+from scripts.local_database import is_local_database_url
 
 pytestmark = [pytest.mark.integration, pytest.mark.db, pytest.mark.asyncio(loop_scope="function")]
 
@@ -34,8 +37,14 @@ async def test_supplied_pdfs_preview_publish_read_and_scoped_retrieval(monkeypat
     folder = Path(directory).resolve(strict=True)
     paths = sorted(folder.glob("*.pdf"))
     assert len(paths) == 4, "this acceptance batch expects the four supplied materials"
-    # Fixed test-only destination. No connection to the application database.
-    url = "postgresql+asyncpg://kodmod:kodmod@127.0.0.1:5434/kodmod_editorial_migration_test"
+    # Dedicated test database, never the application/demo database. The URL can
+    # be overridden for isolated CI stacks; this test creates and drops only a
+    # random schema inside the selected database.
+    url = os.getenv(
+        "KODMOD_MATERIAL_TEST_DATABASE_URL",
+        "postgresql+asyncpg://kodmod:kodmod@127.0.0.1:5434/kodmod_test",
+    )
+    assert is_local_database_url(url), "supplied-PDF integration must use a local test database"
     schema = "material_validation_" + uuid.uuid4().hex
     admin_engine = create_async_engine(url)
     engine = create_async_engine(
@@ -139,24 +148,31 @@ async def test_supplied_pdfs_preview_publish_read_and_scoped_retrieval(monkeypat
                 ).status_code == 201
                 endpoint = f"/classes/{cid}/materials/import"
                 raw = path.read_bytes()
+                page_count = len(PdfReader(io.BytesIO(raw)).pages)
+                first_page, last_page = {
+                    "nasa-space-math-solar-system-i.pdf": (2, 3),
+                    "nist-periodic-table-2024.pdf": (1, 2),
+                    "poster_ss_back_a.pdf": (1, 1),
+                    "usgs-natural-water-chemistry-section2.pdf": (5, 7),
+                }[path.name]
+                assert last_page <= page_count
                 response = await client.post(
-                    endpoint, files={"file": (path.name, raw, "application/pdf")}
+                    endpoint,
+                    data={"first_page": str(first_page), "last_page": str(last_page)},
+                    files={"file": (path.name, raw, "application/pdf")},
                 )
                 imported = await completed_preview(client, cid, response)
                 preview = imported["preview"]
                 chapters = preview["sections"]
                 selection = preview["page_range"]
-                if preview["preview_type"] == "book":
-                    assert chapters and all(section["kind"] == "chapter" for section in chapters)
-                    first = chapters[0]["first"]
-                    selection = {"first": first, "last": min(chapters[0]["last"], first + 19)}
-                    response = await client.post(
-                        f"/classes/{cid}/imports/{imported['import_id']}/pages",
-                        json={"first_page": selection["first"], "last_page": selection["last"]},
-                    )
-                    imported = await completed_preview(client, cid, response)
-                    preview = imported["preview"]
+                assert selection == {"first": first_page, "last": last_page}
                 assert 1 <= len(preview["content"]) <= 100000
+                blocks = preview["document"]["blocks"]
+                expected_pages = set(range(first_page, last_page + 1))
+                assert blocks
+                assert all(block["provenance"]["page"] in expected_pages for block in blocks)
+                if path.name == "nasa-space-math-solar-system-i.pdf":
+                    assert "Answer Key" not in preview["content"]
                 assert not (await client.get(f"/classes/{cid}")).json()["materials"], (
                     "preview must not save or publish"
                 )
@@ -191,7 +207,9 @@ async def test_supplied_pdfs_preview_publish_read_and_scoped_retrieval(monkeypat
                 assert response.status_code == 200, response.text
                 material = response.json()
                 assert material["rag_status"] == "ready" and material["n_chunks"] > 0
-                assert material["content"] == payload["content"]
+                # MaterialWrite deliberately strips only outer whitespace; the
+                # extracted body must otherwise survive draft/publish/index/read.
+                assert material["content"] == payload["content"].strip()
                 async with factory() as session:
                     context = await material_service.resolve_tutoring_context(
                         session, uuid.UUID(cid), uuid.UUID(mid), users["student"]
@@ -229,6 +247,13 @@ async def test_supplied_pdfs_preview_publish_read_and_scoped_retrieval(monkeypat
                         "suggested_chapters": len(chapters),
                         "selected_pages": selection,
                         "characters": len(payload["content"]),
+                        "blocks": len(blocks),
+                        "review_required_blocks": sum(
+                            block["review_state"] == "needs_review" for block in blocks
+                        ),
+                        "extraction_methods": sorted(
+                            {block["provenance"]["method"] for block in blocks}
+                        ),
                         "chunks": material["n_chunks"],
                         "rag_status": material["rag_status"],
                         "flow": "queued-import-worker-preview-draft-publish-worker-index-read-retrieve",

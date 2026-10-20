@@ -59,7 +59,7 @@ async def test_km_api_072_quiz_submit(client, student_factory, auth_headers) -> 
     assert r.status_code == 404
 
 
-async def test_km_api_073_quiz_submit_completes(
+async def test_km_api_073_quiz_submit_reviews_then_advance_completes(
     client, student_factory, material_source_factory, auth_headers
 ) -> None:  # type: ignore[no-untyped-def]
     st, tok = await student_factory()
@@ -82,8 +82,25 @@ async def test_km_api_073_quiz_submit_completes(
         },
     )
     assert sub.status_code == 200, sub.text
-    assert sub.json()["quiz_complete"] is True
-    assert sub.json()["final_summary"]
+    reviewed = sub.json()
+    question_id = start.json()["first_question"]["question_id"]
+    assert reviewed["question_state"] == "review"
+    assert reviewed["review_question"]["question_id"] == question_id
+    assert "Jawaban benar" in reviewed["last_review"]
+    assert reviewed["available_actions"] == ["advance"]
+
+    advanced = await client.post(
+        f"/quiz/{sess}/actions",
+        headers=auth_headers(tok),
+        json={
+            "action_id": str(uuid.uuid4()),
+            "question_id": question_id,
+            "action": "advance",
+        },
+    )
+    assert advanced.status_code == 200, advanced.text
+    assert advanced.json()["question_state"] == "complete"
+    assert advanced.json()["final_summary"]
 
 
 async def test_km_api_074_quiz_start_rejects_forged_body_student_id(

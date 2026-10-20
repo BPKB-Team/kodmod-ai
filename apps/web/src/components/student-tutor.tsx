@@ -28,7 +28,9 @@ import type {
   TutorContext,
 } from "@/lib/chat-types";
 import type { StudentMaterial } from "@/lib/class-types";
+import type { QuizRecoveryResponse } from "@/lib/quiz-types";
 import { VoiceControls } from "./voice-controls";
+import { StudentQuiz } from "./student-quiz";
 
 const prompts = [
   "Jelaskan materi ini dengan contoh sederhana.",
@@ -72,6 +74,7 @@ export function StudentTutor({
   const [sessions, setSessions] = useState(initialSessions);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [embeddedQuiz, setEmbeddedQuiz] = useState<QuizRecoveryResponse | null>(null);
   const [draft, setDraft] = useState("");
   const [pendingText, setPendingText] = useState("");
   const [loadingSession, setLoadingSession] = useState(false);
@@ -105,6 +108,7 @@ export function StudentTutor({
     selectionRef.current += 1;
     setSelectedId(null);
     setTurns([]);
+    setEmbeddedQuiz(null);
     setDraft("");
     setError("");
     setNotice("Percakapan baru siap dimulai.");
@@ -121,6 +125,7 @@ export function StudentTutor({
 
   async function loadSession(id: string) {
     setAutoPlayKey(null);
+    setEmbeddedQuiz(null);
     if (busy) return;
     const requestId = selectionRef.current + 1;
     selectionRef.current = requestId;
@@ -136,8 +141,21 @@ export function StudentTutor({
         response,
         "Riwayat percakapan belum dapat dibuka.",
       );
+      let recoveredQuiz: QuizRecoveryResponse | null = null;
+      const quizId = [...detail.turns].reverse().find((turn) => turn.quiz_session_id)?.quiz_session_id;
+      if (quizId) {
+        try {
+          recoveredQuiz = await readJson<QuizRecoveryResponse>(
+            await fetch(`/api/quiz/sessions/${encodeURIComponent(quizId)}`, { cache: "no-store" }),
+            "Kuis percakapan belum dapat dipulihkan.",
+          );
+        } catch {
+          recoveredQuiz = null;
+        }
+      }
       if (selectionRef.current === requestId) {
         setTurns(detail.turns);
+        setEmbeddedQuiz(recoveredQuiz);
         setContext(detail.context ?? null);
         setDraft("");
       }
@@ -181,17 +199,30 @@ export function StudentTutor({
         response,
         "Pertanyaan belum dapat dikirim.",
       );
+      let recoveredQuiz: QuizRecoveryResponse | null = null;
+      if (result.quiz_session_id) {
+        try {
+          recoveredQuiz = await readJson<QuizRecoveryResponse>(
+            await fetch(`/api/quiz/sessions/${encodeURIComponent(result.quiz_session_id)}`, { cache: "no-store" }),
+            "Kuis belum dapat dibuka.",
+          );
+        } catch {
+          setError("Kuis tersimpan, tetapi belum dapat dibuka. Muat ulang sesi untuk melanjutkan.");
+        }
+      }
       setTurns((current) => [
         ...current,
         { role: "student", text, timestamp: new Date().toISOString() },
         {
           role: "assistant",
-          text: result.text,
+          text: result.quiz_session_id ? t("Cek pemahaman siap dijawab di bawah.") : result.text,
           intent: result.intent,
           timestamp: new Date().toISOString(),
           sources: result.sources,
+          quiz_session_id: result.quiz_session_id,
         },
       ]);
+      setEmbeddedQuiz(recoveredQuiz);
       setSelectedId(result.session_id);
       setAutoPlayKey(`${result.session_id}:${++replySequence.current}`);
       if (result.context !== undefined) setContext(result.context);
@@ -430,6 +461,15 @@ export function StudentTutor({
           )}
         </div>
 
+        {embeddedQuiz && <div className="tutor-inline-quiz" aria-label={t("Mini kuis percakapan")}>
+          <StudentQuiz
+            key={embeddedQuiz.quiz_session_id}
+            embedded
+            initialSession={embeddedQuiz}
+            onReturn={() => { setEmbeddedQuiz(null); requestAnimationFrame(() => inputRef.current?.focus()); }}
+          />
+        </div>}
+
         <VoiceControls text={latestTutorText} onTranscript={setDraft} autoPlayKey={autoPlayKey} />
 
         <form className="tutor-composer" onSubmit={(event) => void submit(event)}>
@@ -448,7 +488,7 @@ export function StudentTutor({
                 event.currentTarget.form?.requestSubmit();
               }
             }}
-            disabled={busy || sessionEnded || materialUnavailable || materialNotReady}
+            disabled={busy || sessionEnded || embeddedQuiz?.status === "in_progress" || materialUnavailable || materialNotReady}
           />
           <div className="tutor-composer-footer">
             <span>
@@ -456,7 +496,7 @@ export function StudentTutor({
                 ? <UiText>{"Sesi selesai · mulai pertanyaan baru untuk melanjutkan"}</UiText>
                 : `${draft.length}${t("/4.000 karakter · Shift + Enter untuk baris baru")}`}
             </span>
-            <button className="button primary" type="submit" disabled={busy || sessionEnded || materialUnavailable || materialNotReady || !draft.trim()}>
+            <button className="button primary" type="submit" disabled={busy || sessionEnded || embeddedQuiz?.status === "in_progress" || materialUnavailable || materialNotReady || !draft.trim()}>
               {pending ? <LoaderCircle className="spin" size={17} aria-hidden="true" /> : <Send size={17} aria-hidden="true" />}
               {pending ? <UiText>{"Mengirim…"}</UiText> : <UiText>{"Kirim pertanyaan"}</UiText>}
             </button>

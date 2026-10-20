@@ -30,13 +30,15 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, cast
 from zoneinfo import ZoneInfo
 
+from sqlalchemy import func, or_, select
+
+from analytics.progress_projection import aware, official_practice_totals, public_progress
 from api.teacher_access import teacher_roster_query
 from database.models import (
     AssignmentAttempt,
     Concept,
     InteractionLog,
     LearningSession,
-    MasteryScore,
     Misconception,
     QuizAttempt,
     QuizQuestionOutcome,
@@ -45,10 +47,6 @@ from database.models import (
 )
 from database.session import async_session
 from memory.long_term import fetch_active_recommendations
-from sqlalchemy import func, or_, select
-
-from analytics.progress_projection import aware, official_practice_totals, public_progress
-from analytics.student_model import mastery_at
 
 logger = logging.getLogger(__name__)
 
@@ -217,18 +215,9 @@ class StudentAggregator:
             )
             if start:
                 assignments_q = assignments_q.where(AssignmentAttempt.submitted_at >= start)
-            assignment_count, assignment_answers, assignment_correct, assignment_last = (
+            assignment_count, assignment_answers, assignment_correct, _assignment_last = (
                 await session.execute(assignments_q)
             ).one()
-
-            # ---- Mastery snapshot (full, not windowed - mastery is cumulative)
-            mastery_rows = (
-                await session.execute(
-                    select(MasteryScore, Concept)
-                    .join(Concept, MasteryScore.concept_id == Concept.id)
-                    .where(MasteryScore.student_id == student_id)
-                )
-            ).all()
 
             # ---- Open misconceptions
             miscons = (
@@ -309,20 +298,6 @@ class StudentAggregator:
         avg_score = (official["score_sum"] + formal_correct) / denominator if denominator else 0.0
         accuracy = (n_correct / denominator) if denominator else 0.0
 
-        mastery_now = datetime.now(UTC)
-        mastery: list[dict[str, Any]] = [
-            {
-                "concept_id": str(m.concept_id),
-                "concept_name": c.name,
-                "mastery": mastery_at(float(m.mastery), m.last_seen, now=mastery_now),
-                "n_attempts": int(m.n_attempts),
-            }
-            for m, c in mastery_rows
-        ]
-        weak = sorted(mastery, key=lambda x: x["mastery"])[:5]
-        strong = sorted(mastery, key=lambda x: x["mastery"], reverse=True)[:5]
-        overall_mastery = sum(m["mastery"] for m in mastery) / len(mastery) if mastery else 0.0
-
         # Engagement index (heuristic): sessions/day * avg-session-minutes / 30
         days_in_window = max(1, (datetime.now(UTC) - start).days) if start else 30
         sessions_per_day = n_sessions / days_in_window
@@ -341,9 +316,6 @@ class StudentAggregator:
             "n_assignment_submissions": int(assignment_count),
             "quiz_accuracy": round(accuracy, 3),
             "avg_quiz_score": round(avg_score, 3),
-            "overall_mastery": round(overall_mastery, 3),
-            "weak_concepts": weak,
-            "strong_concepts": strong,
             "open_misconceptions": [
                 {
                     "concept_name": c.name,

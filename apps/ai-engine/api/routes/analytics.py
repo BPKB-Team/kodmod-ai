@@ -15,14 +15,14 @@ import uuid
 from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from analytics.aggregator import CohortAggregator, StudentAggregator
-from analytics.insights import generate_cohort_alerts, generate_student_spoken_summary
-from database.models import User
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from analytics.aggregator import CohortAggregator, StudentAggregator
+from analytics.insights import generate_cohort_alerts, generate_student_spoken_summary
 from api.dependencies import current_user, db_session, require_student, require_teacher
 from api.teacher_access import require_teacher_student
+from database.models import User
 
 router = APIRouter(tags=["analytics"])
 

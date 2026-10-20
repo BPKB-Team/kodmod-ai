@@ -15,7 +15,8 @@ import pytest
 
 pytestmark = [pytest.mark.integration]
 
-# Volatile tables, ordered so FK children are cleared before parents.
+# Volatile roots; FK-dependent test rows are discovered below so newly added
+# class/session tables cannot strand users between integration tests.
 _VOLATILE = [
     "quiz_attempts",
     "quiz_questions",
@@ -32,6 +33,24 @@ _VOLATILE = [
     "invitation_codes",
     "users",
 ]
+_SEEDED_REFERENCE_TABLES = {"subjects", "concepts"}
+
+
+def _volatile_tables() -> list[str]:
+    from database.models import Base
+
+    names = set(_VOLATILE)
+    while True:
+        dependent = {
+            table.name
+            for table in Base.metadata.tables.values()
+            if table.name not in _SEEDED_REFERENCE_TABLES
+            and any(fk.column.table.name in names for fk in table.foreign_keys)
+        } - names
+        if not dependent:
+            break
+        names.update(dependent)
+    return [table.name for table in reversed(Base.metadata.sorted_tables) if table.name in names]
 
 
 async def _wipe() -> None:
@@ -40,7 +59,7 @@ async def _wipe() -> None:
     from database.session import async_session
 
     async with async_session() as s:
-        for tbl in _VOLATILE:
+        for tbl in _volatile_tables():
             await s.execute(text(f"DELETE FROM {tbl}"))
 
 
@@ -70,7 +89,7 @@ async def clean_db(db_engine):  # type: ignore[no-untyped-def]
 
 
 @pytest.fixture
-async def concept_ids(db_engine):  # type: ignore[no-untyped-def]
+async def concept_ids(db_engine, seeded_curriculum):  # type: ignore[no-untyped-def]
     """slug -> concept UUID, from the seeded curriculum (session-stable)."""
     from sqlalchemy import text
 

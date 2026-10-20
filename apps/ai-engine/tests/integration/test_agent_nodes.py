@@ -113,6 +113,7 @@ async def test_km_int_104_problem_generator_node(clean_db) -> None:  # type: ign
             "emotional_state": "neutral",
             "quiz_source_docs": [
                 {
+                    "chunk_id": "approved-fixture-pecahan",
                     "text": "Pecahan adalah bagian dari keseluruhan. Satu per dua ditambah satu per dua adalah satu.",
                     "source": "approved-fixture",
                 }
@@ -149,12 +150,19 @@ async def test_km_int_106_mini_quiz_node() -> None:
         {
             "generated_response": "Pecahan adalah bagian dari keseluruhan.",
             "current_concept_id": "pecahan",
+            "quiz_source_docs": [
+                {
+                    "chunk_id": "approved-fixture-pecahan",
+                    "text": "Pecahan adalah bagian dari keseluruhan. Satu per dua ditambah satu per dua adalah satu.",
+                    "source": "approved-fixture",
+                }
+            ],
         }
     )
     assert out["last_node"] == "mini_quiz"
     assert out["next_action"] == "speak"
-    # fake payload is a valid JSON object -> a single question is emitted
     assert len(out.get("quiz_questions", [])) == 1
+    assert out["quiz_question"]["evidence_refs"]
     assert out["quiz_session_id"].startswith("mini-")
 
 

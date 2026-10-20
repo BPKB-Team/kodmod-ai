@@ -7,6 +7,7 @@ from sqlalchemy import select
 
 from analytics.aggregator import StudentAggregator
 from analytics.student_model import StudentModel
+from api.routes.student import my_profile
 from database.models import MasteryScore
 from database.session import async_session
 from memory.long_term import fetch_weak_concepts, load_profile
@@ -14,8 +15,8 @@ from memory.long_term import fetch_weak_concepts, load_profile
 pytestmark = [pytest.mark.integration, pytest.mark.db, pytest.mark.asyncio(loop_scope="session")]
 
 
-async def test_tutor_profile_and_dashboard_share_effective_mastery(
-    make_student, concept_ids, seed_mastery
+async def test_legacy_tutor_mastery_is_not_promoted_to_public_dashboard(
+    db_session, make_student, concept_ids, seed_mastery
 ):
     student = await make_student()
     concept = concept_ids["pecahan"]
@@ -26,10 +27,19 @@ async def test_tutor_profile_and_dashboard_share_effective_mastery(
     summary = await StudentAggregator().summarise(
         student_id=student.id, window="all", include_recommendations=False
     )
+    self_profile = await my_profile(student, db_session)
     assert model.overall_mastery() == pytest.approx(0.65)
     assert profile["mastery"][str(concept)] == pytest.approx(0.65)
-    assert summary["overall_mastery"] == pytest.approx(0.65)
-    assert summary["weak_concepts"][0]["mastery"] == pytest.approx(0.65)
+    # MasteryScore is a mixed legacy snapshot: formal assignment evidence can
+    # live there before its teacher-controlled release. Public progress must
+    # wait for visible MasteryEvent evidence instead of exposing this row.
+    assert summary["mastery_available"] is False
+    assert summary["overall_mastery"] == 0
+    assert summary["weak_concepts"] == []
+    assert summary["concept_evidence"] == []
+    assert self_profile["overall_mastery"] == 0
+    assert self_profile["mastery"] == {}
+    assert self_profile["weak_concepts"] == []
     async with async_session() as session:
         row = await session.scalar(
             select(MasteryScore).where(MasteryScore.student_id == student.id)

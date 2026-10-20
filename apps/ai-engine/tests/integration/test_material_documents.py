@@ -15,6 +15,175 @@ from database.models import ClassMaterial, MaterialRevision
 from tests.unit.test_guided_learning import learning_http as learning_http
 
 
+async def test_subject_document_worker_embeds_only_accepted_blocks_with_provenance(
+    learning_http, monkeypatch, tmp_path
+):
+    from api import durable_jobs, material_worker
+    from api.material_document import block_text
+    from config.settings import settings
+    from database.models import CurriculumChunk, Document, Subject
+    from models.material_document import MaterialDocument
+    from rag import ingestion
+
+    _, factory, *_ = learning_http
+    monkeypatch.setattr(settings, "UPLOAD_DIR", tmp_path)
+    monkeypatch.setattr(durable_jobs, "async_session", factory)
+    monkeypatch.setattr(material_worker, "async_session", factory)
+    async with factory.kw["bind"].begin() as connection:
+        await connection.run_sync(
+            lambda c: Document.metadata.create_all(
+                c, tables=[Document.__table__, CurriculumChunk.__table__]
+            )
+        )
+    document = MaterialDocument.model_validate(
+        {
+            "blocks": [
+                {
+                    "id": "accepted",
+                    "type": "paragraph",
+                    "inlines": [
+                        {
+                            "text": "Bumi mengelilingi Matahari dalam satu tahun pada lintasan orbitnya."
+                        }
+                    ],
+                    "provenance": {"source_sha256": "a" * 64, "page": 2, "method": "native"},
+                },
+                {
+                    "id": "uncertain",
+                    "type": "table",
+                    "headers": ["Planet", "Periode"],
+                    "rows": [["Mars", "angka OCR belum ditinjau"]],
+                    "review_state": "needs_review",
+                    "provenance": {"source_sha256": "a" * 64, "page": 2, "method": "ocr"},
+                },
+                {
+                    "id": "excluded",
+                    "type": "paragraph",
+                    "inlines": [
+                        {"text": "Blok dikecualikan ini tidak boleh menjadi evidence pembelajaran."}
+                    ],
+                    "review_state": "excluded",
+                },
+                {
+                    "id": "answer-key",
+                    "type": "paragraph",
+                    "role": "answer_key",
+                    "inlines": [
+                        {"text": "Kunci jawaban hanya dipakai guru untuk memeriksa asesmen."}
+                    ],
+                },
+            ]
+        }
+    )
+    preview = {
+        "content": "\n\n".join(block_text(block) for block in document.blocks),
+        "document": document.model_dump(mode="json"),
+    }
+    monkeypatch.setattr(material_worker, "extract_document", lambda *a, **k: preview)
+    embedded = []
+
+    async def embed(texts):
+        embedded.extend(texts)
+        return [[0.0] * settings.EMBEDDING_DIM for _ in texts]
+
+    monkeypatch.setattr(ingestion, "_embed_batch", embed)
+    original = tmp_path / "subject.pdf"
+    original.write_bytes(b"isolated extraction fixture")
+    async with factory() as session:
+        subject = Subject(name="Tata Surya")
+        session.add(subject)
+        await session.flush()
+        row = Document(subject_id=subject.id, filename=original.name, stored_path=str(original))
+        session.add(row)
+        await session.flush()
+        created = await durable_jobs.enqueue(
+            session, "document_index", row.id, {}, "subject:review"
+        )
+        await session.commit()
+    job = await durable_jobs.claim(kinds=["document_index"])
+    assert job.id == created.id
+    await material_worker.process(job)
+    assert embedded == [block_text(document.blocks[0])]
+    async with factory() as session:
+        chunks = (await session.scalars(select(CurriculumChunk))).all()
+        assert len(chunks) == 1
+        assert chunks[0].accessibility_metadata["block_ids"] == ["accepted"]
+        assert chunks[0].accessibility_metadata["spans"][0]["page"] == 2
+        assert chunks[0].accessibility_metadata["spans"][0]["source_sha256"] == "a" * 64
+        assert (await session.get(Document, row.id)).status == "ready"
+
+
+@pytest.mark.parametrize("linked_import", [True, False])
+async def test_replacing_import_preserves_new_source_and_same_source_edits_keep_attribution(
+    learning_http, monkeypatch, tmp_path, linked_import
+):
+    from api.material_artifacts import create_import
+    from api.material_imports import extract_document
+    from config.settings import settings
+    from database.models import BackgroundJob, Classroom
+    from tests.unit.test_pdf_layout import make_pdf
+
+    client, factory, controls, material, _, admin = learning_http
+    controls["actor"] = admin
+    monkeypatch.setattr(settings, "UPLOAD_DIR", tmp_path)
+    saved = []
+    for value in ["365 hari", "366 hari"]:
+
+        def draw(page, value=value):
+            for x in [40, 180, 320]:
+                page.line(x, 620, x, 700)
+            for y in [620, 660, 700]:
+                page.line(40, y, 320, y)
+            page.drawString(50, 680, "Planet")
+            page.drawString(190, 680, "Periode")
+            page.drawString(50, 640, "Bumi")
+            page.drawString(190, 640, value)
+
+        data = make_pdf(draw)
+        preview = extract_document(data, "source.pdf")
+        async with factory() as session:
+            classroom = await session.get(Classroom, material.class_id)
+            artifact = await create_import(
+                session, classroom, admin, UploadFile(filename="source.pdf", file=BytesIO(data))
+            )
+            for block in preview["document"]["blocks"]:
+                block["review_state"] = "accepted"
+                block["provenance"]["import_id"] = artifact["import_id"]
+            job = await session.get(BackgroundJob, uuid.UUID(artifact["job_id"]))
+            job.state, job.result = "complete", preview
+            row = await session.get(ClassMaterial, material.id)
+            body = {
+                "title": material.title,
+                "document": preview["document"],
+                "source_import_id": artifact["import_id"] if linked_import else None,
+                "source_filename": "source.pdf",
+                "expected_version": row.content_version,
+            }
+            await session.commit()
+        response = await client.put(f"/admin/materials/{material.id}", json=body)
+        assert response.status_code == 200, response.text
+        async with factory() as session:
+            row = await session.get(ClassMaterial, material.id)
+            table = next(block for block in row.document["blocks"] if block["type"] == "table")
+            assert table["provenance"]["source_sha256"] == artifact["sha256"]
+            assert table["provenance"]["import_id"] == artifact["import_id"]
+            saved.append((table, row.content_version, body))
+
+    assert saved[0][0]["id"] == saved[1][0]["id"]  # Same extraction geometry, different PDFs.
+    assert saved[0][0]["provenance"]["source_sha256"] != saved[1][0]["provenance"]["source_sha256"]
+    table, version, body = saved[-1]
+    edited = next(block for block in body["document"]["blocks"] if block["type"] == "table")
+    edited["rows"][0][1] = "365,25 hari"
+    edited["provenance"]["page"] = 9
+    body["expected_version"] = version
+    response = await client.put(f"/admin/materials/{material.id}", json=body)
+    assert response.status_code == 200, response.text
+    async with factory() as session:
+        row = await session.get(ClassMaterial, material.id)
+        changed = next(block for block in row.document["blocks"] if block["type"] == "table")
+        assert changed["provenance"] == {**table["provenance"], "edited": True}
+
+
 @pytest.fixture
 async def retrieval_qdrant(backend, monkeypatch):
     from rag.stores import qdrant_store

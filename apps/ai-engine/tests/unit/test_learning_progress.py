@@ -1,10 +1,8 @@
-import uuid
-
 import pytest
-from database import models
 from fastapi import HTTPException
 from sqlalchemy import func, select
 
+from database import models
 from tests.unit.test_guided_learning import action_body, open_lesson
 from tests.unit.test_guided_learning import learning_http as learning_http
 

@@ -3,11 +3,12 @@
 import uuid
 
 import pytest
-from database import models
 from sqlalchemy import func, select
 
-from tests.assessment_test import assessment_http, start, submission
-from tests.unit.test_guided_learning import learning_http as learning_http
+from database import models
+from tests.assessment_test import start, submission
+
+pytest_plugins = ("tests.assessment_test", "tests.unit.test_guided_learning")
 
 
 async def setup(assessment_http, kind="assessment", count=2):
@@ -80,6 +81,33 @@ async def test_tutor_empty_skip_has_no_attempt_or_mastery(assessment_http):
         outcome = await db.scalar(select(models.QuizQuestionOutcome))
         assert outcome.status == "skipped"
         assert outcome.first_score == 0
+
+
+async def test_quiz_session_scoring_hint_and_advance_emit_stage_traces(
+    assessment_http, monkeypatch
+):
+    from tools import learning_trace
+
+    events = []
+
+    async def record(event):
+        events.append(event)
+        return True
+
+    async def hint(*args, **kwargs):
+        return "Cari kesamaan nilai sebelum memilih jawabannya."
+
+    monkeypatch.setattr(learning_trace, "record_learning_trace", record)
+    monkeypatch.setattr("agents.tutoring_agent.generate_quiz_hint", hint)
+    client, _, _, _, _, _ = assessment_http
+    opened = await setup(assessment_http, "tutor", count=1)
+    wrong = await client.post("/quiz/submit", json=submission(opened, "B"))
+    assert wrong.status_code == 200, wrong.text
+    assert (await act(client, opened, "hint")).status_code == 200
+    assert (await act(client, opened, "advance")).status_code == 200
+
+    assert [event.stage for event in events] == ["session", "scoring", "hint", "advance"]
+    assert all(event.quiz_session_id == uuid.UUID(opened["quiz_session_id"]) for event in events)
 
 
 async def test_tutor_retry_uses_first_score_once(assessment_http):

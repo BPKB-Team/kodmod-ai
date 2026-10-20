@@ -416,6 +416,7 @@ async def test_admin_materials_catalog_moderates_and_invalidates_index(learning_
     controls["actor"] = admin
     catalog = (await client.get("/admin/materials")).json()
     assert catalog["total"] == 1 and "content" not in catalog["items"][0]
+
     path = f"/admin/materials/{material.id}"
     assert (await client.get(path)).json()["content"] == material.content
     updated = await client.put(
@@ -431,6 +432,115 @@ async def test_admin_materials_catalog_moderates_and_invalidates_index(learning_
     async with factory() as session:
         event = await session.scalar(select(models.ClassActivity))
         assert event.actor_id == admin.id and event.action == "material.admin-updated"
+
+
+async def test_admin_learning_trace_lookup_joins_usage_and_redacts_unexpected_details(
+    learning_http,
+):
+    from decimal import Decimal
+
+    client, factory, controls, _, _, admin = learning_http
+    request_id, session_id = uuid.uuid4(), uuid.uuid4()
+    async with factory() as session:
+        session.add(
+            models.AuditEvent(
+                actor_id=controls["actor"].id,
+                actor_role="student",
+                category="learning",
+                action="learning.verification",
+                target_type="quiz_session",
+                target_id=str(session_id),
+                details={
+                    "request_id": str(request_id),
+                    "correlation_id": str(session_id),
+                    "node": "problem_generator",
+                    "prompt_version": "grounded-question-v1",
+                    "source_ids": ["chunk-1"],
+                    "quality_reasons": ["semantic_reject"],
+                    "student_answer": "must never appear",
+                    "prompt": "must never appear",
+                },
+            )
+        )
+        session.add(
+            models.ProviderUsage(
+                id=uuid.uuid4(),
+                request_id=request_id,
+                actor_id=controls["actor"].id,
+                target_id=session_id,
+                target_type="quiz_session",
+                language="id",
+                provider="openai",
+                service="quiz",
+                model="gpt-test",
+                status="success",
+                latency_ms=125,
+                estimated_cost_usd=Decimal("0.00001234"),
+            )
+        )
+        await session.commit()
+
+    assert (
+        await client.get(f"/admin/insights/learning-traces?request_id={request_id}")
+    ).status_code == 403
+    controls["actor"] = admin
+    response = await client.get(
+        f"/admin/insights/learning-traces?request_id={request_id}&page=1&limit=10"
+    )
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["total"] == 1 and payload["has_next"] is False
+    trace = payload["items"][0]
+    assert trace["request_id"] == str(request_id)
+    assert trace["stage"] == "verification"
+    assert trace["source_ids"] == ["chunk-1"]
+    assert trace["provider_usage"]["calls"] == 1
+    assert trace["provider_usage"]["estimated_cost_usd"] == pytest.approx(0.00001234)
+    assert "must never appear" not in response.text
+
+
+async def test_learning_trace_commits_with_independent_short_lived_session(
+    learning_http, monkeypatch
+):
+    from contextlib import asynccontextmanager
+
+    from tools import learning_trace, provider_usage
+
+    _, factory, controls, _, _, _ = learning_http
+
+    @asynccontextmanager
+    async def independent_session():
+        async with factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    monkeypatch.setattr(learning_trace, "async_session", independent_session)
+    request_id = uuid.uuid4()
+    with provider_usage.usage_context(request_id=request_id, actor_id=controls["actor"].id):
+        recorded = await learning_trace.record_learning_trace(
+            learning_trace.LearningTraceEvent(
+                stage="session",
+                node="quiz.start",
+                student_id=controls["actor"].id,
+                policy_version=2,
+                source_ids=["chunk-1"],
+            )
+        )
+
+    assert recorded is True
+    async with factory() as session:
+        trace = await session.scalar(
+            select(models.AuditEvent).where(
+                models.AuditEvent.category == "learning",
+                models.AuditEvent.action == "learning.session",
+            )
+        )
+        assert trace.details["request_id"] == str(request_id)
+        assert trace.details["source_ids"] == ["chunk-1"]
 
 
 def test_unit_partition_preserves_all_reviewed_source_text():

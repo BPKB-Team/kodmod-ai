@@ -29,9 +29,10 @@ import logging
 import re
 from typing import Any
 
+from pydantic import BaseModel, Field
+
 from config.settings import settings
 from graphs.state import KODMODState, QuizAttempt, QuizQuestion
-from pydantic import BaseModel, Field
 from tools.llm_client import get_scoring_llm, language_instruction
 
 log = logging.getLogger(__name__)

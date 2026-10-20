@@ -12,7 +12,7 @@ from PIL import Image
 
 from config.settings import settings
 
-EXTRACTOR_VERSION = "layout-v1"
+EXTRACTOR_VERSION = "layout-v2"
 
 
 @dataclass(frozen=True)
@@ -53,8 +53,6 @@ def render_region(
 def recognize_region(
     data: bytes, *, page_index: int, bbox: tuple[float, float, float, float]
 ) -> RegionExtraction:
-    from pathlib import Path
-
     from api.pdf_ocr import recognize_image
 
     identity = region_cache_key(data, page_index, bbox)

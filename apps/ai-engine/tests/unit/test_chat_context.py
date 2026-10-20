@@ -23,6 +23,8 @@ from database.models import (
     InteractionLog,
     LearningSession,
     MaterialImport,
+    QuizQuestion,
+    QuizSession,
     Subject,
     User,
 )
@@ -49,6 +51,8 @@ async def scoped_chat(monkeypatch):
                     Subject.__table__,
                     LearningSession.__table__,
                     InteractionLog.__table__,
+                    QuizQuestion.__table__,
+                    QuizSession.__table__,
                 ],
             )
         )
@@ -73,7 +77,8 @@ async def scoped_chat(monkeypatch):
         id=uuid.uuid4(),
         class_id=classroom.id,
         title="Pecahan",
-        content="Pecahan senilai.",
+        content="Pecahan senilai mempunyai nilai yang sama. Satu per dua setara dua per empat. "
+        * 30,
         published=True,
         rag_status="ready",
         content_version=1,

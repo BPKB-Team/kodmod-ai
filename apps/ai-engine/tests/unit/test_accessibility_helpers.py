@@ -46,11 +46,17 @@ def test_replace_visual_refs_en() -> None:  # KM-UNIT-082
     assert "perhatikan baik-baik" in out
 
 
-def test_split_long_sentence_breaks_at_comma() -> None:  # KM-UNIT-083
-    long = "x" * 50 + ", " + "y" * 100  # comma sits at index 50 (> 40)
+def test_long_sentence_preserves_natural_comma_pause_without_conjunction() -> None:
+    long = "x" * 80 + ", " + "y" * 100
+    assert _split_long_sentences(long + ". Akhir.") == long + ". Akhir."
+
+
+def test_long_sentence_splits_at_dependent_conjunction() -> None:  # KM-UNIT-083
+    long = "x" * 80 + ", karena " + "y" * 100
     out = _split_long_sentences(long + ". Akhir.")
-    assert "," not in out
-    assert "x" * 50 + "." in out
+    assert out.startswith("x" * 80 + ". karena " + "y" * 100)
+    assert out.endswith("Akhir.")
+    assert ", karena" not in out
 
 
 def test_split_long_sentence_without_comma_is_untouched() -> None:  # KM-UNIT-084

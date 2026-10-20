@@ -8,6 +8,7 @@ conversation text.
 
 from __future__ import annotations
 
+import uuid
 from datetime import UTC, datetime
 from typing import Literal
 
@@ -23,6 +24,7 @@ from database.models import (
     Classroom,
     InvitationCode,
     LearningSession,
+    ProviderUsage,
     QuizSession,
     User,
 )
@@ -199,6 +201,98 @@ async def activity(
         "items": events[:limit],
         "limit": limit,
         "category": category,
+        "generated_at": datetime.now(UTC).isoformat(),
+    }
+
+
+@router.get("/insights/learning-traces")
+async def learning_traces(
+    request_id: uuid.UUID | None = Query(default=None),
+    page: int = Query(default=1, ge=1, le=10000),
+    limit: int = Query(default=20, ge=1, le=100),
+    session: AsyncSession = Depends(db_session),
+) -> dict:
+    """Read bounded learning-stage diagnostics joined to provider usage by request ID."""
+    conditions = [AuditEvent.category == "learning"]
+    if request_id is not None:
+        conditions.append(AuditEvent.details["request_id"].as_string() == str(request_id))
+    total = int(
+        await session.scalar(select(func.count()).select_from(AuditEvent).where(*conditions)) or 0
+    )
+    rows = (
+        await session.scalars(
+            select(AuditEvent)
+            .where(*conditions)
+            .order_by(AuditEvent.created_at.desc(), AuditEvent.id.desc())
+            .offset((page - 1) * limit)
+            .limit(limit)
+        )
+    ).all()
+    request_ids = {
+        uuid.UUID(details["request_id"])
+        for row in rows
+        if (details := row.details or {}).get("request_id")
+    }
+    usage_rows = (
+        (
+            await session.scalars(
+                select(ProviderUsage)
+                .where(ProviderUsage.request_id.in_(request_ids))
+                .order_by(ProviderUsage.created_at.desc())
+            )
+        ).all()
+        if request_ids
+        else []
+    )
+    usage_by_request: dict[uuid.UUID, list[ProviderUsage]] = {}
+    for usage in usage_rows:
+        usage_by_request.setdefault(usage.request_id, []).append(usage)
+
+    items = []
+    for row in rows:
+        details = row.details or {}
+        try:
+            trace_id = uuid.UUID(details["request_id"])
+        except (KeyError, ValueError, TypeError):
+            trace_id = None
+        calls = usage_by_request.get(trace_id, []) if trace_id else []
+        items.append(
+            {
+                "id": str(row.id),
+                "request_id": str(trace_id) if trace_id else None,
+                "correlation_id": details.get("correlation_id"),
+                "stage": row.action.removeprefix("learning."),
+                "node": details.get("node"),
+                "policy_version": details.get("policy_version"),
+                "prompt_version": details.get("prompt_version"),
+                "extractor_version": details.get("extractor_version"),
+                "source_ids": details.get("source_ids", []),
+                "candidate_count": details.get("candidate_count"),
+                "accepted_count": details.get("accepted_count"),
+                "returned_count": details.get("returned_count"),
+                "quality_reasons": details.get("quality_reasons", []),
+                "fallback_reason": details.get("fallback_reason"),
+                "model_call_count": details.get("model_call_count"),
+                "latency_ms": details.get("latency_ms"),
+                "trace_cost_usd": details.get("estimated_cost_usd"),
+                "provider_usage": {
+                    "calls": len(calls),
+                    "failures": sum(usage.status in {"error", "cancelled"} for usage in calls),
+                    "estimated_cost_usd": float(
+                        sum((usage.estimated_cost_usd or 0) for usage in calls)
+                    ),
+                    "services": sorted({usage.service for usage in calls}),
+                },
+                "occurred_at": row.created_at.isoformat() if row.created_at else None,
+            }
+        )
+    return {
+        "items": items,
+        "request_id": str(request_id) if request_id else None,
+        "page": page,
+        "limit": limit,
+        "total": total,
+        "has_next": page * limit < total,
         "generated_at": datetime.now(UTC).isoformat(),
     }
 

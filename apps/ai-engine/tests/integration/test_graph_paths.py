@@ -137,6 +137,7 @@ async def test_km_int_143_quiz_start_path(
     state["current_concept_id"] = str(concept_ids["pecahan"])
     state["quiz_source_docs"] = [
         {
+            "chunk_id": "approved-fixture-pecahan",
             "text": "Pecahan adalah bagian dari keseluruhan. Satu per dua ditambah satu per dua adalah satu.",
             "source": "approved-fixture",
         }
@@ -227,6 +228,7 @@ async def quiz_started(graph, force_intent, clean_db, make_student, concept_ids)
     state["current_concept_id"] = str(concept_ids["pecahan"])
     state["quiz_source_docs"] = [
         {
+            "chunk_id": "approved-fixture-pecahan",
             "text": "Pecahan adalah bagian dari keseluruhan. Satu per dua ditambah satu per dua adalah satu.",
             "source": "approved-fixture",
         }

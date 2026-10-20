@@ -4,6 +4,9 @@ import hashlib
 import json
 from datetime import UTC, datetime
 
+from sqlalchemy import or_, select
+
+from analytics.student_model import LEARNING_RATE, mastery_at
 from api.learning_progress import canonical_manifest, learning_progress_out
 from database.models import (
     AssessmentSubmission,
@@ -22,9 +25,6 @@ from database.models import (
     QuizQuestionOutcome,
     QuizSession,
 )
-from sqlalchemy import or_, select
-
-from analytics.student_model import LEARNING_RATE, mastery_at
 
 
 def aware(value):

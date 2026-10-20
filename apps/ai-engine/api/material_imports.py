@@ -158,10 +158,10 @@ def extract_document(
                     or sum(entry.file_size for entry in entries) > MAX_DOCX_EXPANDED
                 ):
                     raise ValueError("Paket DOCX terlalu besar setelah dibuka.")
-                document = archive.getinfo("word/document.xml")
-                if document.file_size > MAX_DOCX_XML:
+                document_entry = archive.getinfo("word/document.xml")
+                if document_entry.file_size > MAX_DOCX_XML:
                     raise ValueError("Isi DOCX terlalu besar. Pisahkan menjadi beberapa materi.")
-                root = ElementTree.fromstring(archive.read(document))
+                root = ElementTree.fromstring(archive.read(document_entry))
                 content = "\n".join(
                     "".join(node.itertext())
                     for paragraph in root.iter(f"{WORD_NS}p")

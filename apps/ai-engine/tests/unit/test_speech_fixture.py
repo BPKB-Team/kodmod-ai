@@ -10,17 +10,23 @@ pytestmark = pytest.mark.unit
 
 
 @pytest.mark.parametrize("env, database", [("dev", "kodmod_test"), ("test", "kodmod")])
-def test_speech_fixture_refuses_application_environment(monkeypatch, env, database):
+def test_speech_fixture_refuses_application_environment(monkeypatch, tmp_path, env, database):
     original = elevenlabs.synthesise
+    monkeypatch.setenv("UPLOAD_DIR", str(tmp_path / "uploads"))
+    monkeypatch.setenv("AUDIO_DIR", str(tmp_path / "audio"))
     monkeypatch.setattr(settings, "ENV", env)
     monkeypatch.setattr(settings, "DB_NAME", database)
     with pytest.raises(RuntimeError, match="refuses non-test"):
         speech_fixture_app()
+    assert (tmp_path / "uploads").is_dir()
+    assert (tmp_path / "audio").is_dir()
     assert elevenlabs.synthesise is original
 
 
-def test_speech_fixture_refuses_real_provider_run(monkeypatch):
+def test_speech_fixture_refuses_real_provider_run(monkeypatch, tmp_path):
     original = elevenlabs.synthesise
+    monkeypatch.setenv("UPLOAD_DIR", str(tmp_path / "uploads"))
+    monkeypatch.setenv("AUDIO_DIR", str(tmp_path / "audio"))
     monkeypatch.setattr(settings, "ENV", "test")
     monkeypatch.setattr(settings, "DB_NAME", "kodmod_test")
     monkeypatch.setenv("KODMOD_RUN_REAL_LLM", "1")
@@ -30,6 +36,8 @@ def test_speech_fixture_refuses_real_provider_run(monkeypatch):
 
 
 async def test_speech_fixture_keeps_real_audio_cache_without_provider_key(monkeypatch, tmp_path):
+    monkeypatch.setenv("UPLOAD_DIR", str(tmp_path / "uploads"))
+    monkeypatch.setenv("AUDIO_DIR", str(tmp_path / "audio"))
     monkeypatch.setattr(settings, "ENV", "test")
     monkeypatch.setattr(settings, "DB_NAME", "kodmod_test")
     monkeypatch.setattr(settings, "TTS_BACKEND", "elevenlabs")

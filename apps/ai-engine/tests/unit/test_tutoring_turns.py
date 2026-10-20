@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import itertools
-import json
 import uuid
 from types import SimpleNamespace
 
 import pytest
-from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
-from langchain_core.messages import AIMessage
 from langgraph.checkpoint.memory import InMemorySaver
 
 from analytics.student_model import StudentModel, update_student_model_node
@@ -23,7 +19,6 @@ pytestmark = pytest.mark.unit
 def offline_learning(monkeypatch):
     """Replace provider/storage boundaries; retain real nodes, graph and mastery math."""
     import agents.analytics_agent as analytics
-    import agents.quiz_agent as quiz
     import memory.short_term as short_term
     import rag.retriever as retriever
 
@@ -45,8 +40,23 @@ def offline_learning(monkeypatch):
     async def clear_quiz(session_id):
         sessions.pop(session_id, None)
 
-    async def retrieve(query, **kwargs):
-        return [{"text": "Pecahan adalah bagian dari keseluruhan.", "source": "pecahan.pdf"}]
+    async def retrieve_result(query, **kwargs):
+        from rag.retrieval_service import RetrievalResult, RetrievalTrace, scope_from_filters
+        from rag.source_bundle import bundle_from_docs
+
+        docs = [
+            {
+                "chunk_id": "tutor-turn-pecahan",
+                "text": "Pecahan adalah bagian dari keseluruhan. Satu per dua ditambah satu per dua adalah satu.",
+                "source": "pecahan.pdf",
+            }
+        ]
+        scope = scope_from_filters(kwargs)
+        return RetrievalResult(
+            documents=docs,
+            bundle=bundle_from_docs(query, scope, docs),
+            trace=RetrievalTrace(1, 1, 1, None, "pgvector", 0),
+        )
 
     async def summarise(self, **kwargs):
         return {"overall_mastery": 0.6, "n_sessions": 1, "weak_concepts": []}
@@ -54,28 +64,14 @@ def offline_learning(monkeypatch):
     async def save_report(**kwargs):
         return None
 
-    mini_payload = json.dumps(
-        {
-            "text": "Berapa hasil satu per dua ditambah satu per dua?",
-            "type": "mcq",
-            "options": ["A. satu", "B. dua"],
-            "expected_answer": "A",
-            "rubric": {},
-        }
-    )
     monkeypatch.setattr(StudentModel, "load", staticmethod(load_model))
     monkeypatch.setattr(StudentModel, "persist", persist_model)
     monkeypatch.setattr(short_term, "fetch_quiz_session", fetch_quiz)
     monkeypatch.setattr(short_term, "store_quiz_session", store_quiz)
     monkeypatch.setattr(short_term, "clear_quiz_session", clear_quiz)
-    monkeypatch.setattr(retriever, "retrieve", retrieve)
+    monkeypatch.setattr(retriever, "retrieve_result", retrieve_result)
     monkeypatch.setattr(analytics.StudentAggregator, "summarise", summarise)
     monkeypatch.setattr(analytics, "save_analytics_report", save_report)
-    monkeypatch.setattr(
-        quiz,
-        "get_quiz_llm",
-        lambda: GenericFakeChatModel(messages=itertools.repeat(AIMessage(content=mini_payload))),
-    )
     return models, sessions
 
 
@@ -90,6 +86,7 @@ async def test_tutor_delivers_explanation_and_question_without_grading(offline_l
     assert final["current_question_attempts"] == 0
     assert "Pecahan adalah" in final["accessible_response"]
     assert "Cek pemahaman" in final["accessible_response"]
+    assert "hasil satu per dua" in final["accessible_response"]
     assert final["quiz_question"]["expected_answer"] == "A"
 
 
@@ -154,10 +151,10 @@ async def test_rest_turn_state_preserves_pending_question_and_tutor_history(offl
     assert final["current_concept_id"] == state["current_concept_id"]
 
 
-async def test_pending_mini_quiz_resumes_from_short_term_memory(offline_learning):
+async def test_pending_mini_quiz_resumes_from_graph_checkpoint(offline_learning):
     from api.chat_service import build_turn_state
 
-    graph = await build_kodmod_graph(checkpointer=None)
+    graph = await build_kodmod_graph(checkpointer=InMemorySaver())
     session_id, student_id = uuid.uuid4(), uuid.uuid4()
     state = initial_state(str(session_id), str(student_id), "Jelaskan pecahan")
     state["current_concept_id"] = str(uuid.uuid4())

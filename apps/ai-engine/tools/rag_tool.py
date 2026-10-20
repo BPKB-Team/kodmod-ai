@@ -83,6 +83,7 @@ class RAGTool:
 
         return Tool(
             name="curriculum_search",
+            func=None,
             description=(
                 "Search authorized, versioned KODMOD learning sources. "
                 "Input: a natural-language question. Output: relevant source text."

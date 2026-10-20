@@ -228,6 +228,7 @@ async def start_lesson(session, student, body: LearningStart):
         if (
             existing.material_id == body.material_id
             and state["material_version"] == material.content_version
+            and state.get("scope", "full_material") == "full_material"
         ):
             return await lesson_out(session, existing, student, material)
         if state.get("phase") == "quiz" and state.get("quiz_id"):

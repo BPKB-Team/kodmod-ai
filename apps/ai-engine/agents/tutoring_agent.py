@@ -9,9 +9,8 @@ Behaviours implemented
 ----------------------
 1. **Adaptive level** - reads `mastery_scores[concept_id]` to decide whether to
    explain at "scaffolded", "standard", or "advanced" depth.
-2. **Socratic questioning** - at the end of each explanation, asks one
-   follow-up question to probe understanding (this is what triggers the loop
-   back to the student in the diagram).
+2. **Socratic questioning** - leaves comprehension checks to the separate
+   source-grounded quiz flow.
 3. **Misconception logging** - if the student's input contradicts curriculum
    facts retrieved by RAG, the agent appends to `misconceptions_detected`
    so the analytics cluster can act on it later.
@@ -29,8 +28,9 @@ import logging
 import re
 from typing import Any
 
-from graphs.state import KODMODState, RetrievedDoc
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+
+from graphs.state import KODMODState, RetrievedDoc
 from tools.llm_client import get_tutor_llm, language_instruction
 
 log = logging.getLogger(__name__)
@@ -51,7 +51,8 @@ CONTENT RULES
 PEDAGOGY
 - Diagnose first: if the student seems lost, ask one short clarifying question
   before explaining.
-- Explain in 2–4 short paragraphs. Then ask ONE Socratic follow-up question.
+- Explain in 2–4 short paragraphs. Do not append a comprehension question;
+  the application presents a separate source-grounded check when appropriate.
 - Prefer examples to definitions. Show, don't list.
 - If the retrieved curriculum context contradicts the student's belief, gently
   surface the misconception and explain why.
@@ -80,7 +81,7 @@ async def tutoring_node(state: KODMODState) -> dict[str, Any]:
         and state.get("assessment_kind") == "tutor"
     ):
         answer = await generate_quiz_hint(
-            state.get("quiz_question") or {},
+            dict(state.get("quiz_question") or {}),
             student_answer=state.get("student_answer", ""),
             language=state.get("learning_profile", {}).get("language", "id"),
             source_docs=state.get("quiz_source_docs", []),

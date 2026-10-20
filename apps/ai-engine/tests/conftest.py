@@ -161,6 +161,7 @@ def stub_embeddings(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPa
     for mod_name in (
         "rag.embeddings",
         "rag.retriever",
+        "rag.retrieval_service",
         "tools.rag_tool",
         "agents.scoring_agent",
         "rag.ingestion",
@@ -220,12 +221,18 @@ async def db_session(db_engine):  # type: ignore[no-untyped-def]
 @pytest.fixture(scope="session")
 async def seeded_curriculum(db_engine):  # type: ignore[no-untyped-def]
     """Run scripts.seed_curriculum once for the session."""
+    from database.session import init_db
+
     try:
         from scripts.seed_curriculum import main as seed_main  # type: ignore[attr-defined]
 
         await seed_main()
     except Exception:  # pragma: no cover - seeding is best-effort for scaffold
         pass
+    finally:
+        # The standalone seed script closes the process-wide engine on return.
+        # Re-open it for tests that continue using async_session() afterward.
+        await init_db()
     yield
 
 
@@ -413,6 +420,7 @@ async def checkpointed_graph(db_engine):  # type: ignore[no-untyped-def]
 async def material_source_factory(teacher_factory, db_cleanup, concept_ids):
     from sqlalchemy import select
 
+    from api.material_document import material_document
     from database.models import (
         ClassMaterial,
         Classroom,
@@ -422,6 +430,7 @@ async def material_source_factory(teacher_factory, db_cleanup, concept_ids):
         MaterialConcept,
     )
     from database.session import async_session
+    from rag.chunking import chunk_material
 
     async def make(student, *, teacher=None):
         if teacher is None:
@@ -454,6 +463,13 @@ async def material_source_factory(teacher_factory, db_cleanup, concept_ids):
                 indexed_mapping_version=1,
                 n_chunks=1,
             )
+            chunks = chunk_material(
+                material_document(material),
+                source="http-fixture.txt",
+                content_version=material.content_version,
+                mapping_version=material.mapping_version,
+            )
+            material.n_chunks = len(chunks)
             session.add_all([material, Enrollment(class_id=classroom.id, student_id=student_id)])
             await session.flush()
             session.add(
@@ -466,17 +482,23 @@ async def material_source_factory(teacher_factory, db_cleanup, concept_ids):
                     approved_by=teacher_id,
                 )
             )
-            session.add(
+            session.add_all(
                 CurriculumChunk(
                     material_id=material.id,
                     material_version=1,
                     material_mapping_version=1,
-                    content=material.content,
+                    content=chunk.text,
                     embedding=[0.01] * 1536,
                     source="http-fixture.txt",
                     language="id",
-                    chunk_index=0,
+                    chunk_index=chunk.chunk_index,
+                    section_title=chunk.section_title,
+                    accessibility_metadata={
+                        **chunk.metadata,
+                        "approved_concept_ids": [str(concept_id)],
+                    },
                 )
+                for chunk in chunks
             )
         db_cleanup.append(("classrooms", str(classroom.id)))
         return {

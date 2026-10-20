@@ -81,6 +81,7 @@ async def test_km_e2e_002_full_quiz_cycle(
     assert total == 3
 
     last = None
+    last_advance = None
     for _ in range(total):
         import uuid
 
@@ -98,9 +99,20 @@ async def test_km_e2e_002_full_quiz_cycle(
             },
         )
         assert last.status_code == 200
-    assert last is not None
-    assert last.json()["quiz_complete"] is True
-    assert last.json()["final_summary"]
+        assert last.json()["question_state"] == "review"
+        last_advance = await client.post(
+            f"/quiz/{session_id}/actions",
+            headers=hdr,
+            json={
+                "action_id": str(uuid.uuid4()),
+                "question_id": question["question_id"],
+                "action": "advance",
+            },
+        )
+        assert last_advance.status_code == 200, last_advance.text
+    assert last is not None and last_advance is not None
+    assert last_advance.json()["question_state"] == "complete"
+    assert last_advance.json()["final_summary"]
 
     an = await client.get(f"/analytics/student/{sid}", headers=hdr)
     assert an.json()["n_quiz_attempts"] >= 3

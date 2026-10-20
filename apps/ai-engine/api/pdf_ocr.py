@@ -36,7 +36,7 @@ def recognize_image(image):
     with tempfile.TemporaryDirectory(prefix="kodmod-ocr-") as folder:
         path = Path(folder) / "region.png"
         image.save(path)
-        process = subprocess.run(
+        process = subprocess.run(  # noqa: S603 - PATH lookup, argument list, and no shell
             [
                 executable,
                 str(path),
@@ -52,7 +52,7 @@ def recognize_image(image):
             capture_output=True,
             timeout=settings.OCR_PAGE_TIMEOUT,
             check=True,
-        )  # noqa: S603
+        )
     words = list(csv.DictReader(io.StringIO(process.stdout.decode("utf-8")), delimiter="\t"))
     lines: dict[tuple[str | None, ...], list[str]] = {}
     confidence: list[float] = []

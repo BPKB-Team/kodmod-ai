@@ -48,12 +48,108 @@ def _looks_like_json_request(prompt: str) -> bool:
     return "json" in p or "schema" in p or "rubric" in p or '"intent"' in p
 
 
+def _json_payloads(prompt: str) -> list[dict]:
+    decoder = json.JSONDecoder()
+    payloads = []
+    for match in re.finditer(r"\{", prompt):
+        try:
+            value, _ = decoder.raw_decode(prompt, match.start())
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict):
+            payloads.append(value)
+    return payloads
+
+
+def _grounded_quiz_reply(payload: dict) -> str:
+    request = payload["request"]
+    sources = [source for source in payload.get("sources", []) if source.get("evidence_id")]
+    source = sources[0] if sources else {}
+    evidence_id = str(source.get("evidence_id", "missing-source"))
+    excerpt = str(source.get("excerpt", "Materi belajar yang tersedia."))
+    topic = str(request.get("topic") or "materi")
+    count = max(1, min(20, int(request.get("count", 1))))
+    concepts = request.get("approved_concepts") or []
+    concept_id = request.get("concept_id") or ""
+    if concepts:
+        first = concepts[0]
+        concept_id = first.get("id", "") if isinstance(first, dict) else str(first)
+
+    question_templates = (
+        ("Informasi apa yang dijelaskan sumber tentang {topic}?", "recall"),
+        ("Apa kesimpulan yang didukung oleh rincian sumber tentang {topic}?", "understanding"),
+        (
+            "Bagaimana informasi dari sumber dapat digunakan untuk menjelaskan {topic}?",
+            "application",
+        ),
+        ("Alasan apa yang dapat kamu berikan tentang {topic} berdasarkan sumber?", "reasoning"),
+    )
+    questions = []
+    for index in range(count):
+        template, cognitive_level = question_templates[index % len(question_templates)]
+        question = template.format(topic=topic)
+        if index >= len(question_templates):
+            question = f"{question} (butir {index + 1})"
+        questions.append(
+            {
+                "text": question,
+                "type": "mcq",
+                "options": [
+                    f"A. {excerpt[:180]}",
+                    "B. Informasi yang tidak terdapat dalam sumber",
+                    "C. Kebalikan dari informasi pada sumber",
+                    "D. Tidak ada informasi yang dapat disimpulkan",
+                ],
+                "expected_answer": "A",
+                "rubric": {"key_points": [excerpt[:180]]},
+                "explanation": f"Pilihan A merangkum kutipan sumber: {excerpt[:500]}",
+                "evidence_refs": [evidence_id],
+                "objective": f"Memahami isi sumber tentang {topic}",
+                "cognitive_level": cognitive_level,
+                "concept_id": concept_id,
+                "difficulty": request.get("difficulty", "easy"),
+            }
+        )
+    return json.dumps({"questions": questions}, ensure_ascii=False)
+
+
 def _canned_reply(prompt: str) -> str:
     """A safe, accessibility-friendly canned answer.
 
     If the caller clearly wants JSON (intent router / scoring rubric / analyzer),
     hand back a minimal valid object that downstream parsers accept.
     """
+    payloads = _json_payloads(prompt)
+    if "strict evidence verifier" in prompt.lower():
+        review = next(
+            (
+                payload
+                for payload in reversed(payloads)
+                if "questions" in payload and "sources" in payload and "instruction" in payload
+            ),
+            None,
+        )
+        if review is not None:
+            return json.dumps(
+                {
+                    "decisions": [
+                        {"accepted": True, "reasons": [], "feedback": ""}
+                        for _ in review["questions"]
+                    ]
+                }
+            )
+
+    quiz_request = next(
+        (
+            payload
+            for payload in reversed(payloads)
+            if isinstance(payload.get("request"), dict) and "sources" in payload
+        ),
+        None,
+    )
+    if quiz_request is not None:
+        return _grounded_quiz_reply(quiz_request)
+
     requested = re.search(r"<n_questions>(\d+)</n_questions>", prompt)
     if requested:
         count = max(1, min(20, int(requested.group(1))))

@@ -257,6 +257,33 @@ def test_source_bundle_preserves_versioned_block_and_page_evidence_and_rejects_e
         bundle_from_unit({"retrieval_text": "Judul modul: Pecahan", "block_ids": []}, scope)
 
 
+def test_source_bundle_preserves_zero_mapping_version_from_retrieval_docs():
+    from rag.source_bundle import MaterialScope, bundle_from_docs
+
+    scope = MaterialScope(
+        student_id=uuid.uuid4(),
+        class_id=uuid.uuid4(),
+        material_id=uuid.uuid4(),
+        content_version=1,
+        mapping_version=0,
+    )
+    evidence = bundle_from_docs(
+        "pecahan",
+        scope,
+        [
+            {
+                "chunk_id": "chunk-1",
+                "text": "Pecahan senilai memiliki pembilang dan penyebut dengan nilai sama.",
+                "material_id": str(scope.material_id),
+                "content_version": 1,
+                "mapping_version": 0,
+            }
+        ],
+    )
+
+    assert evidence.sources[0].mapping_version == 0
+
+
 def test_class_filter_cannot_silently_use_a_text_topic_as_all_material_scope():
     from rag.retrieval_service import scope_from_filters
 

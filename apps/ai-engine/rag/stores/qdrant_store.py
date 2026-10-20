@@ -178,7 +178,7 @@ async def _postgres_query(
 ) -> list[dict]:
     from rag.stores import pgvector_store
 
-    filters = {
+    filters: pgvector_store.PostgresQueryFilters = {
         "top_k": top_k,
         "concept_id": concept_id,
         "subject_id": subject_id,

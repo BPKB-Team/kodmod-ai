@@ -62,18 +62,21 @@ async def test_quiz_introduction_transition_and_finish_use_account_language(monk
     assert "quiz is complete" in finished["generated_response"]
 
 
-async def test_mini_quiz_framing_uses_account_language(monkeypatch):
+async def test_mini_quiz_framing_uses_account_language():
     from agents import quiz_agent
 
-    class QuizLLM:
-        async def ainvoke(self, _messages):
-            return SimpleNamespace(
-                content='{"text":"What is two plus two?","type":"spoken","expected_answer":"4"}'
-            )
-
-    monkeypatch.setattr(quiz_agent, "get_quiz_llm", QuizLLM)
     answer = await quiz_agent.mini_quiz_node(
-        {"learning_profile": {"language": "en"}, "generated_response": "Two plus two is four."}
+        {
+            "learning_profile": {"language": "en"},
+            "generated_response": "Pecahan adalah bagian dari keseluruhan.",
+            "quiz_source_docs": [
+                {
+                    "chunk_id": "language-fixture-pecahan",
+                    "text": "Pecahan adalah bagian dari keseluruhan. Satu per dua ditambah satu per dua adalah satu.",
+                    "source": "language-fixture",
+                }
+            ],
+        }
     )
     assert "Quick understanding check:" in answer["generated_response"]
 

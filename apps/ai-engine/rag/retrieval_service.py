@@ -71,11 +71,13 @@ async def retrieve_sources(request: RetrievalRequest) -> RetrievalResult:
     backend = "qdrant" if settings.VECTOR_BACKEND == "qdrant" else "pgvector"
     if not request.query.strip():
         bundle = bundle_from_docs(request.query, request.scope, [])
-        return RetrievalResult([], bundle, RetrievalTrace(0, 0, 0, None, backend, 0))
+        trace = RetrievalTrace(0, 0, 0, "empty_query", backend, 0)
+        await _trace_retrieval(request, bundle, trace)
+        return RetrievalResult([], bundle, trace)
 
     scope = request.scope
     embedding = (await embed_text([request.query]))[0]
-    args = {
+    args: pgvector_store.QueryFilters = {
         "top_k": request.candidate_k,
         "concept_id": scope.concept_id,
         "subject_id": scope.subject_id,
@@ -117,7 +119,34 @@ async def retrieve_sources(request: RetrievalRequest) -> RetrievalResult:
         backend=backend,
         latency_ms=max(0, round((time.perf_counter() - started) * 1000)),
     )
+    await _trace_retrieval(request, bundle, trace)
     return RetrievalResult(ranked, bundle, trace)
+
+
+async def _trace_retrieval(request, bundle, trace):
+    from tools.learning_trace import LearningTraceEvent, record_learning_trace
+    from tools.provider_usage import current_usage_context
+
+    context = current_usage_context()
+    if context is None:
+        return
+    fallback = trace.fallback_reason or (
+        "no_authorized_candidates" if trace.returned_count == 0 else None
+    )
+    await record_learning_trace(
+        LearningTraceEvent(
+            request_id=context.request_id,
+            student_id=request.scope.student_id,
+            stage="retrieval",
+            node=f"rag.retrieval.{trace.backend}",
+            source_ids=[source.id for source in bundle.sources[:32]],
+            candidate_count=trace.candidate_count,
+            accepted_count=trace.hydrated_count,
+            returned_count=trace.returned_count,
+            fallback_reason=fallback[:80] if fallback else None,
+            latency_ms=min(180_000, trace.latency_ms),
+        )
+    )
 
 
 def _uuid(value, name, *, allow_text=False):

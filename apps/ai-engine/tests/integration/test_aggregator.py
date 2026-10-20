@@ -70,7 +70,9 @@ async def _seed_activity(student_id, concept_id, *, n_sessions=2, n_correct=2, n
         )
 
 
-async def test_km_int_070_student_summary_rollups(make_student, concept_ids) -> None:  # type: ignore[no-untyped-def]
+async def test_km_int_070_student_rollup_does_not_promote_legacy_mastery(
+    make_student, concept_ids
+) -> None:  # type: ignore[no-untyped-def]
     from analytics.aggregator import StudentAggregator
 
     st = await make_student()
@@ -82,7 +84,10 @@ async def test_km_int_070_student_summary_rollups(make_student, concept_ids) -> 
     assert out["avg_quiz_score"] == pytest.approx(2 / 3, abs=1e-3)
     assert out["quiz_accuracy"] == pytest.approx(2 / 3, abs=1e-3)
     assert 0.0 <= out["overall_mastery"] <= 1.0
-    assert len(out["weak_concepts"]) >= 1
+    # These fixture attempts predate the public evidence receipt/event path.
+    # The legacy MasteryScore row must not be exposed as released progress.
+    assert out["mastery_available"] is False
+    assert out["weak_concepts"] == []
     assert out["open_misconceptions"]
     assert 0.0 <= out["engagement_index"] <= 1.0
     assert out["total_minutes"] > 0

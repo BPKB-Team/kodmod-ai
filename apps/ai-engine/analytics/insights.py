@@ -19,6 +19,7 @@ from __future__ import annotations
 import logging
 
 from langchain_core.messages import HumanMessage, SystemMessage
+
 from tools.llm_client import get_recommendation_llm, language_instruction
 
 logger = logging.getLogger(__name__)

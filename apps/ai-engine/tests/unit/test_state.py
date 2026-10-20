@@ -26,6 +26,10 @@ def test_initial_state_fills_every_field() -> None:  # KM-UNIT-070
     assert st["detected_language"] == "id"
     assert st["emotional_state"] == "neutral"
     assert st["last_node"] == "entry"
+    assert st["quiz_source_bundle"] is None
+    assert st["quiz_generation_calls"] == 0
+    assert st["quiz_verification_calls"] == 0
+    assert st["retrieval_trace"] is None
 
 
 def test_session_id_is_required_positional() -> None:  # KM-UNIT-071

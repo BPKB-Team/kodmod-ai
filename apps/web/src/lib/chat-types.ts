@@ -30,6 +30,7 @@ export type ChatTurn = {
   intent?: string | null;
   timestamp?: string | null;
   sources?: TutorSource[];
+  quiz_session_id?: string | null;
 };
 
 export type ChatSessionDetail = ChatSessionSummary & {
@@ -45,4 +46,5 @@ export type ChatMessageResponse = {
   context?: TutorContext | null;
   latency_ms: number;
   quiz_progress: { index: number; total: number } | null;
+  quiz_session_id?: string | null;
 };

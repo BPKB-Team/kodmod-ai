@@ -115,10 +115,10 @@ def build_learning_units(document: MaterialDocument, *, limit=2400):
         raise ValueError("Learning unit limit must be positive")
     blocks = accepted_learning_blocks(document)
     units = []
-    parts = []
-    spoken = []
-    ids = []
-    spans = []
+    parts: list[str] = []
+    spoken: list[str] = []
+    ids: list[str] = []
+    spans: list[dict] = []
     title = None
     heading = None
 

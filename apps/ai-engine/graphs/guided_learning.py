@@ -24,8 +24,8 @@ class GuidedTurn(TypedDict, total=False):
 
 async def teach_unit(state: GuidedTurn):
     instruction = {
-        "teach": "Teach this section now. Explain the main idea, one concrete example, and ask one short comprehension question.",
-        "continue": "Teach the next section now. Connect it briefly to the previous explanation, then give an example and one comprehension question.",
+        "teach": "Teach this section now. Explain the main idea and one concrete example. Do not create a quiz or append a comprehension question.",
+        "continue": "Teach the next section now. Connect it briefly to the previous explanation and give an example. Do not create a quiz or append a comprehension question.",
         "repeat": "Re-explain the same section more simply using a different example. Do not move to the next section.",
         "question": "Answer the student's question using this section. If it is outside the source, say so and guide them back. Do not start or answer a quiz.",
     }[state["action"]]

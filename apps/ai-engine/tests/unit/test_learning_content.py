@@ -124,5 +124,24 @@ def test_exercise_or_unreviewed_image_cannot_be_only_evidence():
 
 
 def test_short_detail_blocks_remain_with_substantive_body():
-    document=MaterialDocument.model_validate({"blocks":[{"id":"body","type":"paragraph","inlines":[{"text":"Pecahan senilai mempunyai nilai yang sama meskipun pembilang dan penyebut berbeda."}]},{"id":"detail","type":"paragraph","inlines":[{"text":"Contoh: satu per dua."}]}]})
+    document = MaterialDocument.model_validate(
+        {
+            "blocks": [
+                {
+                    "id": "body",
+                    "type": "paragraph",
+                    "inlines": [
+                        {
+                            "text": "Pecahan senilai mempunyai nilai yang sama meskipun pembilang dan penyebut berbeda."
+                        }
+                    ],
+                },
+                {
+                    "id": "detail",
+                    "type": "paragraph",
+                    "inlines": [{"text": "Contoh: satu per dua."}],
+                },
+            ]
+        }
+    )
     assert "Contoh: satu per dua." in build_learning_units(document)[0]["text"]

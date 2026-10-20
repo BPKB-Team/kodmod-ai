@@ -43,16 +43,18 @@ def generation(monkeypatch, concept_ids=(PRIMARY,)):
 
     class LLM:
         async def ainvoke(self, messages):
-            prompts.append(json.loads(messages[1]["content"]))
+            prompt = json.loads(messages[-1]["content"])
+            prompts.append(prompt)
+            evidence_id = prompt["sources"][0]["evidence_id"]
             return SimpleNamespace(
                 content=json.dumps(
                     {
                         "questions": [
                             {
-                                "text": f"Apa arti pecahan nomor {index + 1}?",
+                                "text": f"Apa arti setengah menurut materi ini? Soal {index + 1}.",
                                 "type": "spoken",
                                 "expected_answer": "Satu bagian dari beberapa bagian sama besar",
-                                "source_indices": [1],
+                                "evidence_refs": [evidence_id],
                                 "concept_id": concept,
                             }
                             for index, concept in enumerate(concept_ids)
@@ -223,8 +225,18 @@ async def test_material_http_adapts_to_reviewed_primary_and_rejects_mixed_scope(
     async def generate(state, config=None):
         # Exercise real selection, probability, quality checks and attribution;
         # replace only the external LLM and the graph transport at this boundary.
+        reviewed_source = SOURCE | {
+            "class_id": state["class_id"],
+            "material_id": state["material_id"],
+            "content_version": state["material_content_version"],
+            "mapping_version": state["material_mapping_version"],
+            "document_hash": "a" * 64,
+            "block_ids": ["adaptive-pecahan-block"],
+            "spans": [{"block_id": "adaptive-pecahan-block", "page": 1}],
+            "approved_concept_ids": [str(primary.id)],
+        }
         generated = await problem_generator.problem_generator_node(
-            state | {"quiz_source_docs": [SOURCE]}
+            state | {"quiz_source_docs": [reviewed_source]}
         )
         return state | generated
 

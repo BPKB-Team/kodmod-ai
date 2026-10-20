@@ -46,7 +46,7 @@ def interaction(owned: QuizSession) -> QuizInteractionView:
     from api.quiz_points import session_result_text
     from models.quiz import ScoreSummary
 
-    state = owned.assessment_state
+    state = owned.assessment_state or {}
     index = state.get("current_question_index", 0)
     questions = state.get("quiz_questions", [])
     phase = state.get("question_state", "answering")
@@ -125,7 +125,9 @@ async def finalize_question_outcome(
         .limit(1)
     )
     attempt = await session.get(QuizAttempt, first.quiz_attempt_id) if first else None
-    state = owned.assessment_state
+    if first is not None and attempt is None:
+        raise HTTPException(409, "Hasil jawaban belum tersedia. Muat ulang sesi.")
+    state = owned.assessment_state or {}
     assisted = state.get("first_answer_assisted", {}).get(str(question_id), False)
     outcome = QuizQuestionOutcome(
         quiz_session_id=owned.id,
@@ -136,15 +138,16 @@ async def finalize_question_outcome(
         assisted=assisted,
     )
     session.add(outcome)
-    if first and not assisted:
+    if first and attempt is not None and not assisted:
         question = next(q for q in state["quiz_questions"] if q["question_id"] == str(question_id))
         cid = as_uuid(question.get("concept_id"))
         approved = {c["id"] for c in state.get("approved_material_concepts", [])}
-        if (
-            cid
-            and (not state.get("material_id") or str(cid) in approved)
-            and await session.get(Concept, cid)
-        ):
+        concept = (
+            await session.get(Concept, cid)
+            if cid is not None and (not state.get("material_id") or str(cid) in approved)
+            else None
+        )
+        if concept is not None:
             model, rows = await load_model(session, owned.student_id)
             key = str(cid)
             before = model._scores.get(key, 0.5)
@@ -188,7 +191,7 @@ async def finalize_question_outcome(
     from api.quiz_points import build_score_summary
 
     owned.assessment_state = {
-        **owned.assessment_state,
+        **state,
         "score_summary": build_score_summary(
             outcomes, total_questions=owned.total_questions
         ).model_dump(),
@@ -389,7 +392,7 @@ async def apply_quiz_action(
     else:
         if not pending:
             await finalize_question_outcome(session, owned, body.question_id)
-            state["score_summary"] = owned.assessment_state["score_summary"]
+            state["score_summary"] = (owned.assessment_state or {})["score_summary"]
             state["last_review"] = review(
                 questions[index], english=state.get("detected_language") == "en"
             )

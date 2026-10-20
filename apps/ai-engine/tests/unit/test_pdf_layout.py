@@ -66,6 +66,26 @@ def test_mixed_page_recovers_image_table(monkeypatch):
     assert "Paragraf native" in project_material(result).retrieval_text
 
 
+def test_skips_ocr_for_image_region_with_dense_native_text_layer(monkeypatch):
+    image = Image.new("RGB", (350, 150), "white")
+
+    def draw(c):
+        c.drawImage(ImageReader(image), 50, 400, width=350, height=150)
+        c.setFont("Helvetica", 12)
+        c.drawString(60, 500, "Lapisan teks PDF ini sudah dapat diekstrak secara langsung.")
+        c.drawString(60, 482, "OCR ulang pada gambar yang sama hanya membuang waktu.")
+
+    def unexpected_ocr(*args, **kwargs):
+        raise AssertionError("A dense native text layer should suppress duplicate OCR")
+
+    monkeypatch.setattr(pdf_regions, "recognize_region", unexpected_ocr)
+    result = extract_pdf_layout(make_pdf(draw), first_page=1, last_page=1, allow_ocr=True)
+
+    image_block = next(block for block in result.blocks if block.type == "image")
+    assert any("OCR dilewati" in warning for warning in image_block.warnings)
+    assert "Lapisan teks PDF" in project_material(result).retrieval_text
+
+
 def test_reading_order_two_columns():
     def draw(c):
         for n in range(5):
@@ -87,7 +107,6 @@ def test_region_merge_avoids_duplicate_text(monkeypatch):
 
 def test_bounds_and_scan_review(monkeypatch):
     from api import pdf_ocr
-    from api.pdf_ocr import recognize_page
 
     monkeypatch.setattr(
         pdf_ocr,

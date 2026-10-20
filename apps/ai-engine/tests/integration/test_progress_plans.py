@@ -1,3 +1,4 @@
+import os
 import uuid
 from contextlib import asynccontextmanager
 
@@ -218,6 +219,10 @@ async def test_unrelated_quiz_result_does_not_finish_linked_step(plan_http):
     assert after["steps"][0]["status"] == "in_progress"
 
 
+@pytest.mark.skipif(
+    os.getenv("KODMOD_GUIDED_POSTGRES") != "1",
+    reason="Concurrent refresh depends on PostgreSQL row-level locks.",
+)
 async def test_two_tabs_create_one_job_and_one_active_cycle(plan_http):
     import asyncio
 
@@ -359,3 +364,31 @@ async def test_completed_cycle_waits_for_explicit_new_cycle_and_skip_has_no_mast
     )
     assert next_cycle.status_code == 202, next_cycle.text
     assert next_cycle.json()["plan_id"] != plan["id"]
+
+
+@pytest.mark.parametrize("full_before_review", [False, True])
+async def test_regular_tutor_start_never_resumes_a_planner_review(plan_http, full_before_review):
+    client, _, _, material, *_ = plan_http
+
+    async def start_full():
+        response = await client.post(
+            "/learning/start",
+            json={"class_id": str(material.class_id), "material_id": str(material.id)},
+        )
+        assert response.status_code == 200, response.text
+        return response.json()
+
+    original = await start_full() if full_before_review else None
+    plan = (await publish(plan_http))["plan"]
+    review = next(step for step in plan["steps"] if step["kind"] == "review_unit")
+    started = await start_step(client, plan, review)
+
+    full = await start_full()
+    assert full["scope"] == "full_material"
+    assert full["session_id"] != started["session_id"]
+    assert "quiz" in full["available_actions"]
+    if original:
+        assert full["session_id"] == original["session_id"]
+    planned = (await client.get(f"/learning/sessions/{started['session_id']}")).json()
+    assert planned["scope"] == "planned_review"
+    assert planned["phase"] == "learning"

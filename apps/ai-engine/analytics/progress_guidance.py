@@ -5,12 +5,12 @@ import json
 import re
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 from analytics.progress_projection import aware, public_progress
 from api.learning_content import material_learning_units
 from api.learning_progress import canonical_manifest
-from api.learning_service import learning_units
 from database.models import ClassMaterial
 from models.progress_guidance import GuidanceSnapshot, PlanCandidate, ProgressFact, ProgressInsight
 
@@ -124,7 +124,7 @@ async def build_guidance_snapshot(session, *, student, timezone: str) -> Guidanc
         strong_id = next(
             (c for c in row["concept_ids"] if concepts.get(c) == "strong_concept"), None
         )
-        choices = [
+        choices: list[tuple[Literal["review_unit", "practice", "self_explain"], int]] = [
             ("review_unit", 0 if row["status"] == "in_progress" else 2 if cid else 3),
             ("practice", 1 if not any(c in concepts for c in row["concept_ids"]) else 2),
         ]

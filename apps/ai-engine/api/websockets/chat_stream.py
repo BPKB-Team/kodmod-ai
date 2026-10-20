@@ -42,7 +42,7 @@ from api.chat_service import (
     update_session_mode,
 )
 from api.dependencies import authenticate_ws
-from api.routes.chat import ChatMessageRequest
+from api.routes.chat import ChatMessageRequest, _clear_transient_quiz_checkpoint
 from database.session import async_session
 from graphs.main_graph import run_turn
 
@@ -200,7 +200,37 @@ async def _run_one_turn(
         )
         return
 
+    quiz_session_id = None
+    if final.get("quiz_questions") and not final.get("assessment_managed"):
+        try:
+            from api.quiz_session_factory import persist_conversational_quiz
+
+            async with async_session() as session:
+                quiz = await persist_conversational_quiz(
+                    session, student, final, learning_session_id=resolved_id
+                )
+            quiz_session_id = quiz.quiz_session_id if quiz else None
+        except HTTPException as exc:
+            await websocket.send_json(
+                {"type": "error", "status": exc.status_code, "message": exc.detail}
+            )
+            return
+        except Exception:
+            log.exception("Could not persist conversational quiz for session %s", resolved_id)
+            await websocket.send_json(
+                {"type": "error", "message": "Kuis belum dapat disimpan. Silakan coba kembali."}
+            )
+            return
+        finally:
+            await _clear_transient_quiz_checkpoint(graph, resolved_id)
+
     answer = reply_text(final)
+    if quiz_session_id:
+        answer = (
+            "Your quick check is ready below."
+            if (final.get("learning_profile") or {}).get("language") == "en"
+            else "Soal cek pemahaman siap dijawab di bawah."
+        )
     latency_ms = int((time.perf_counter() - started) * 1000)
 
     await log_turn(resolved_id, role="student", text=text, intent=final.get("intent"))
@@ -211,6 +241,7 @@ async def _run_one_turn(
         intent=final.get("intent"),
         latency_ms=latency_ms,
         source_refs=sources(final),
+        quiz_session_id=quiz_session_id,
     )
     await update_session_mode(resolved_id, final.get("intent"))
 
@@ -219,7 +250,7 @@ async def _run_one_turn(
             "index": final.get("current_question_index", 0),
             "total": len(final.get("quiz_questions") or []),
         }
-        if final.get("intent") == "quiz" and final.get("quiz_questions")
+        if quiz_session_id and final.get("quiz_questions")
         else None
     )
 
@@ -233,6 +264,7 @@ async def _run_one_turn(
             "sources": sources(final),
             "latency_ms": latency_ms,
             "quiz_progress": quiz_progress,
+            "quiz_session_id": str(quiz_session_id) if quiz_session_id else None,
             "context": context,
         }
     )

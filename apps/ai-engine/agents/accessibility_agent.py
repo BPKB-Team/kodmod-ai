@@ -144,8 +144,8 @@ def _normalize_dashes(text: str) -> str:
     "anak-anak", "benar-benar") and negative numbers (e.g. "-5").
     """
     text = re.sub(r"\s*[—–]\s*", ", ", text)
-    text = re.sub(r"(?<=\s)-(?=\s)", ", ", text)
-    return re.sub(r",\s*,+", ",", text)
+    text = re.sub(r"\s+-\s+", ", ", text)
+    return re.sub(r",\s*,+", ",", text).strip()
 
 
 def _replace_visual_refs(text: str) -> str:
@@ -158,6 +158,7 @@ def _split_long_sentences(text: str) -> str:
 
     Preserves natural comma breathing pauses instead of breaking dependent clauses.
     """
+
     def splitter(match: re.Match) -> str:
         sentence = match.group(1)
         terminator = match.group(2)
@@ -170,7 +171,7 @@ def _split_long_sentences(text: str) -> str:
         )
         if conj_match:
             split_point = 60 + conj_match.start()
-            return f"{sentence[:split_point]}. {sentence[split_point + 1:].strip()}{terminator} "
+            return f"{sentence[:split_point]}. {sentence[split_point + 1 :].strip()}{terminator} "
         return match.group(0)
 
     return _LONG_SENTENCE.sub(splitter, text)

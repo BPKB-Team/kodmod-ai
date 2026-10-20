@@ -24,6 +24,7 @@ import asyncio
 import json
 import logging
 import re
+import time
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -145,17 +146,44 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
     if not bundle.sources:
         raise ValueError("No approved source available for quiz generation")
 
-    batch = await generate_grounded_questions(
-        bundle,
-        count=n_questions,
-        difficulty=difficulty,
-        language=state.get("learning_profile", {}).get("language") or "id",
-        only_mcq=bool(state.get("quiz_mcq_only")),
-        topic=topic,
-        concept_id=concept_id,
-        mastery=mastery,
-        predicted_success=predicted_success,
-        approved_concepts=approved,
+    quality_started = time.perf_counter()
+    try:
+        batch = await generate_grounded_questions(
+            bundle,
+            count=n_questions,
+            difficulty=difficulty,
+            language=state.get("learning_profile", {}).get("language") or "id",
+            only_mcq=bool(state.get("quiz_mcq_only")),
+            topic=topic,
+            concept_id=concept_id,
+            mastery=mastery,
+            predicted_success=predicted_success,
+            approved_concepts=approved,
+        )
+    except QuestionQualityError as error:
+        from tools.learning_trace import LearningTraceEvent, record_learning_trace
+
+        await record_learning_trace(
+            LearningTraceEvent(
+                student_id=_optional_uuid(state.get("student_id")),
+                stage="verification" if error.code == "source_quality_failed" else "generation",
+                node="problem_generator",
+                source_ids=[source.id for source in bundle.sources[:32]],
+                quality_reasons=[error.code],
+                latency_ms=min(180_000, round((time.perf_counter() - quality_started) * 1000)),
+            )
+        )
+        raise
+    from tools.learning_trace import record_grounded_batch
+
+    await record_grounded_batch(
+        node="problem_generator",
+        student_id=_optional_uuid(state.get("student_id")),
+        source_ids=[source.id for source in bundle.sources],
+        prompt_version=batch.prompt_version,
+        generation_calls=batch.generation_calls,
+        verification_calls=batch.verification_calls,
+        latency_ms=round((time.perf_counter() - quality_started) * 1000),
     )
     generated = batch.questions
     if (
@@ -163,6 +191,17 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
         and approved
         and any(q.concept_id and q.concept_id not in allowed_concepts for q in generated)
     ):
+        from tools.learning_trace import LearningTraceEvent, record_learning_trace
+
+        await record_learning_trace(
+            LearningTraceEvent(
+                student_id=_optional_uuid(state.get("student_id")),
+                stage="verification",
+                node="problem_generator",
+                source_ids=[source.id for source in bundle.sources[:32]],
+                quality_reasons=["unapproved_concept"],
+            )
+        )
         raise QuestionQualityError("source_quality_failed", "Generated concept was not approved.")
     questions: list[QuizQuestion] = [
         QuizQuestion(
@@ -180,32 +219,15 @@ async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
                 if source.id in q.evidence_refs
             ],
             explanation=q.explanation,
+            evidence_refs=q.evidence_refs,
+            objective=q.objective,
+            cognitive_level=q.cognitive_level,
         )
         for q in generated
     ]
     log.info("Problem generator produced %d questions on concept=%s", len(questions), concept_id)
 
     quiz_session_id = f"quiz-{uuid4().hex[:10]}"
-    session_id = state.get("session_id")
-    if session_id and not state.get("assessment_managed"):
-        try:
-            from memory.short_term import store_quiz_session
-
-            await store_quiz_session(
-                session_id,
-                {
-                    "quiz_session_id": quiz_session_id,
-                    "quiz_questions": questions,
-                    "current_question_index": 0,
-                    "quiz_question": questions[0],
-                    "quiz_attempts": [],
-                    "mastery_applied_attempts": 0,
-                    "cumulative_quiz_score": 0.0,
-                },
-            )
-        except Exception:  # pragma: no cover - Redis best-effort
-            log.warning("Could not persist quiz session to short-term memory", exc_info=True)
-
     return {
         "quiz_session_id": quiz_session_id,
         "quiz_questions": questions,
@@ -436,7 +458,7 @@ def _scope_from_state(state: KODMODState) -> MaterialScope:
         material_id=_optional_uuid(state.get("material_id")),
         concept_id=_optional_uuid(state.get("current_concept_id")),
         subject_id=_optional_uuid(state.get("subject_id")),
-        content_version=state.get("material_content_version"),
+        content_version=state.get("material_content_version") or state.get("material_version"),
         mapping_version=state.get("material_mapping_version"),
         language=state.get("learning_profile", {}).get("language"),
     )

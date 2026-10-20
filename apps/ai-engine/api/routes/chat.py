@@ -61,6 +61,7 @@ class ChatMessageResponse(BaseModel):
     sources: list[dict] = Field(default_factory=list)
     latency_ms: int
     quiz_progress: dict | None = None
+    quiz_session_id: uuid.UUID | None = None
     context: dict | None = None
 
 
@@ -86,7 +87,25 @@ async def send_message(
     graph = request.app.state.graph
     final = await graph.ainvoke(state, config={"configurable": {"thread_id": str(session_id)}})
 
+    quiz_session_id = None
+    if final.get("quiz_questions") and not final.get("assessment_managed"):
+        try:
+            from api.quiz_session_factory import persist_conversational_quiz
+
+            quiz = await persist_conversational_quiz(
+                session, student, final, learning_session_id=session_id
+            )
+            quiz_session_id = quiz.quiz_session_id if quiz else None
+        finally:
+            await _clear_transient_quiz_checkpoint(graph, session_id)
+
     answer = reply_text(final)
+    if quiz_session_id:
+        answer = (
+            "Your quick check is ready below."
+            if (final.get("learning_profile") or {}).get("language") == "en"
+            else "Soal cek pemahaman siap dijawab di bawah."
+        )
     latency_ms = int((time.perf_counter() - started) * 1000)
 
     await log_turn(session_id, role="student", text=body.text, intent=final.get("intent"))
@@ -97,6 +116,7 @@ async def send_message(
         intent=final.get("intent"),
         latency_ms=latency_ms,
         source_refs=sources(final),
+        quiz_session_id=quiz_session_id,
     )
     await update_session_mode(session_id, final.get("intent"))
 
@@ -105,7 +125,7 @@ async def send_message(
             "index": final.get("current_question_index", 0),
             "total": len(final.get("quiz_questions") or []),
         }
-        if final.get("intent") == "quiz" and final.get("quiz_questions")
+        if quiz_session_id and final.get("quiz_questions")
         else None
     )
 
@@ -117,8 +137,32 @@ async def send_message(
         sources=sources(final),
         latency_ms=latency_ms,
         quiz_progress=quiz_progress,
+        quiz_session_id=quiz_session_id,
         context=context,
     )
+
+
+async def _clear_transient_quiz_checkpoint(graph, session_id: uuid.UUID) -> None:
+    """Keep question state in SQL; never leave a duplicate graph-only session."""
+    update = getattr(graph, "aupdate_state", None)
+    if update is None:
+        return
+    try:
+        await update(
+            {"configurable": {"thread_id": str(session_id)}},
+            {
+                "quiz_session_id": "",
+                "quiz_questions": [],
+                "quiz_question": {},
+                "quiz_attempts": [],
+                "current_question_index": 0,
+                "current_question_attempts": 0,
+                "student_answer": "",
+                "quiz_score": 0.0,
+            },
+        )
+    except Exception as error:  # the durable row remains canonical
+        log.warning("Could not clear transient quiz checkpoint (%s)", type(error).__name__)
 
 
 @router.get("/sessions")
@@ -208,6 +252,7 @@ async def get_session(
                 "intent": t.intent,
                 "timestamp": t.timestamp.isoformat() if t.timestamp else None,
                 "sources": (t.metadata_ or {}).get("sources", []),
+                "quiz_session_id": (t.metadata_ or {}).get("quiz_session_id"),
             }
             for t in turns
         ],

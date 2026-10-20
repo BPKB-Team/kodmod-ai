@@ -12,6 +12,7 @@ from __future__ import annotations
 import logging
 import uuid
 from pathlib import PurePosixPath
+from typing import TypedDict
 
 from sqlalchemy import Text, delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +22,23 @@ from database.models import ClassMaterial, Classroom, CurriculumChunk, Enrollmen
 from database.session import async_session
 
 logger = logging.getLogger(__name__)
+
+
+class QueryFilters(TypedDict, total=False):
+    top_k: int
+    concept_id: uuid.UUID | None
+    subject_id: uuid.UUID | None
+    language: str | None
+    student_id: uuid.UUID | None
+    class_id: uuid.UUID | None
+    material_id: uuid.UUID | None
+    content_version: int | None
+    mapping_version: int | None
+
+
+class PostgresQueryFilters(QueryFilters, total=False):
+    candidate_ids: list[uuid.UUID]
+    include_vector_hash: bool
 
 
 def _vec_literal(vec: list[float]) -> str:

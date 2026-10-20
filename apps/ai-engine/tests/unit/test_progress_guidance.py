@@ -1,7 +1,4 @@
-import pytest
 from database import models
-from sqlalchemy import select
-
 from tests.unit.test_guided_learning import learning_http as learning_http
 from tests.unit.test_progress_rollup import prepare_rollup
 

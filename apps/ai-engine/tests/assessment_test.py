@@ -32,6 +32,25 @@ class AssessmentGraph:
         self.calls += 1
         result = {**copy.deepcopy(self.saved), **copy.deepcopy(state)}
         if not result.get("student_answer"):
+            source_docs = result.get("quiz_source_docs") or [
+                {
+                    "chunk_id": "fixture-chunk",
+                    "evidence_id": "fixture-evidence",
+                    "text": "Pecahan senilai memiliki nilai yang sama. Satu per dua setara dua per empat.",
+                    "source": "fixture",
+                    "class_id": result.get("class_id"),
+                    "material_id": result.get("material_id"),
+                    "content_version": result.get("material_content_version")
+                    or result.get("material_version"),
+                    "mapping_version": result.get("material_mapping_version"),
+                    "document_hash": "f" * 64,
+                    "block_ids": ["fixture-block"],
+                    "spans": [{"block_id": "fixture-block", "page": 1}],
+                }
+            ]
+            evidence_id = source_docs[0].get("evidence_id") or source_docs[0].get(
+                "chunk_id", "fixture-chunk"
+            )
             result.update(
                 quiz_session_id="generated-quiz",
                 quiz_questions=[
@@ -39,9 +58,13 @@ class AssessmentGraph:
                         "question_id": qid,
                         "text": "Pilih satu",
                         "type": "mcq",
-                        "options": ["A. satu", "B. dua"],
+                        "options": ["A. satu", "B. dua", "C. tiga", "D. empat"],
                         "expected_answer": "A",
                         "rubric": {},
+                        "explanation": "Pecahan senilai dapat ditulis dengan lebih dari satu bentuk.",
+                        "evidence_refs": [evidence_id],
+                        "objective": "Memilih bentuk pecahan yang sesuai dengan materi.",
+                        "cognitive_level": "understanding",
                         "concept_id": result.get("current_concept_id", ""),
                         "difficulty": "easy",
                     }
@@ -51,6 +74,11 @@ class AssessmentGraph:
                 current_question_index=0,
                 current_question_attempts=0,
                 mastery_applied_attempts=0,
+                retrieved_docs=source_docs,
+                quiz_prompt_version="grounded-question-v1",
+                quiz_prompt_hash="a" * 64,
+                quiz_generation_calls=1,
+                quiz_verification_calls=1,
             )
             result["quiz_question"] = result["quiz_questions"][0]
         else:
@@ -365,7 +393,10 @@ async def test_real_graph_remediation_and_completion_share_the_canonical_transac
         "retrieve",
         AsyncMock(
             return_value=[
-                {"text": "Satu per dua ditambah satu per dua adalah satu. Dua per dua adalah satu."}
+                {
+                    "chunk_id": "fraction-source-1",
+                    "text": "Satu per dua ditambah satu per dua adalah satu. Dua per dua adalah satu.",
+                }
             ]
         ),
     )
@@ -456,7 +487,10 @@ async def test_unmapped_class_scope_never_persists_global_concept_evidence(
             id=uuid.uuid4(),
             class_id=room.id,
             title="Pecahan",
-            content="Pecahan senilai",
+            content=(
+                "Pecahan senilai mempunyai nilai yang sama. Satu per dua setara dua per empat. "
+                * 12
+            ),
             published=True,
             rag_status="ready",
             content_version=1,

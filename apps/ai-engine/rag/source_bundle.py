@@ -99,14 +99,18 @@ def bundle_from_docs(
                 spans=tuple(dict(item) for item in spans if isinstance(item, dict)),
                 text=text,
                 content_version=_optional_int(
-                    document.get("content_version")
-                    or document.get("material_version")
-                    or metadata.get("content_version")
+                    _first_not_none(
+                        document.get("content_version"),
+                        document.get("material_version"),
+                        metadata.get("content_version"),
+                    )
                 ),
                 mapping_version=_optional_int(
-                    document.get("mapping_version")
-                    or document.get("material_mapping_version")
-                    or metadata.get("mapping_version")
+                    _first_not_none(
+                        document.get("mapping_version"),
+                        document.get("material_mapping_version"),
+                        metadata.get("mapping_version"),
+                    )
                 ),
                 document_hash=document.get("document_hash") or metadata.get("document_hash"),
                 approved_concept_ids=tuple(str(value) for value in concepts),
@@ -179,3 +183,7 @@ def _optional_int(value) -> int | None:
         return int(value) if value is not None else None
     except (ValueError, TypeError):
         return None
+
+
+def _first_not_none(*values):
+    return next((value for value in values if value is not None), None)

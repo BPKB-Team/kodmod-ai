@@ -96,7 +96,7 @@ async def record_learning_unit(
     student_id,
     material,
     manifest: LearningUnitManifest,
-    completed_unit_id: str,
+    completed_unit_id: str | None,
     finish: bool,
 ):
     expected = canonical_manifest(material)

@@ -273,7 +273,7 @@ async def fetch_active_recommendations(student_id: uuid.UUID, limit: int = 5) ->
         from database.models import LearningPlan, LearningPlanStep, User
 
         now = datetime.now(UTC)
-        student = None
+        student: User | None = None
         for row in rows:
             if row.expires_at and aware(row.expires_at) <= now:
                 continue

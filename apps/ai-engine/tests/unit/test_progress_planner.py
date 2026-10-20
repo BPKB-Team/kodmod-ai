@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
+
 from models.progress_guidance import GuidanceSnapshot, PlanCandidate, PlanProposal, ProgressFact
 
 

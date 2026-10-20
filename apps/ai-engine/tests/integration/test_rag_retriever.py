@@ -179,11 +179,11 @@ async def test_km_int_098_store_backend_selection(monkeypatch) -> None:
 
     called = []
 
-    async def query(embedding, **filters):
+    async def query_with_trace(embedding, **filters):
         called.append(filters)
-        return []
+        return [], {"candidate_count": 0, "hydrated_count": 0, "fallback_reason": None}
 
-    monkeypatch.setattr(qdrant_store, "query", query)
+    monkeypatch.setattr(qdrant_store, "query_with_trace", query_with_trace)
     monkeypatch.setattr(retriever.settings, "VECTOR_BACKEND", "qdrant")
     assert await retriever.retrieve("pecahan", use_reranker=False) == []
     assert len(called) == 1

@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "corpus": {
+    "use": "private local validation only; do not commit source PDFs or extracted reports",
+    "sources": [
+      {
+        "id": "nasa-space-math-solar-system-i",
+        "filename": "nasa-space-math-solar-system-i.pdf",
+        "title": "Math Problems Related to the Solar System I",
+        "publisher": "NASA / SpaceMath@NASA",
+        "source_url": "https://science.nasa.gov/learn/heat/resource/space-math-at-nasa-math-problems-related-to-the-solar-system-i/",
+        "download_url": "https://assets.science.nasa.gov/content/dam/science/hpd/heat/space-math/problem-sets/Space%20Math_Solar%20System_I.pdf",
+        "sha256": "f4f35106a0e9321d6ff0d9d814a851ea0daffd6252afdefcadb528dc18964310",
+        "physical_page_count": 42,
+        "imported_pages": {"first": 2, "last": 3},
+        "expected_evidence": ["introductory solar-system math problems", "Saturn ring scale problem"],
+        "review_notes": ["Physical page 4 begins the answer key and is intentionally excluded from student evidence."]
+      },
+      {
+        "id": "nist-periodic-table-2024",
+        "filename": "nist-periodic-table-2024.pdf",
+        "title": "Periodic Table of the Elements (NIST SP 966, June 2024)",
+        "publisher": "NIST Physical Measurement Laboratory",
+        "source_url": "https://www.nist.gov/pml/periodic-table-elements",
+        "download_url": "https://www.nist.gov/document/periodic-table-2024",
+        "sha256": "11bb30f912e5efd4961750434a9fe4de9998a4261d04c6fefd4747fdaf9e7d12",
+        "physical_page_count": 2,
+        "imported_pages": {"first": 1, "last": 2},
+        "expected_evidence": ["atomic properties of elements", "physical constants table"],
+        "review_notes": ["Table layout interleaves columns in extracted text; require visual teacher review before generating factual questions from individual cells."]
+      },
+      {
+        "id": "nasa-our-solar-system-poster-a-back",
+        "filename": "poster_ss_back_a.pdf",
+        "title": "Our Solar System Poster, Version A (back)",
+        "publisher": "NASA",
+        "source_url": "https://science.nasa.gov/resource/our-solar-system-poster-version-a/",
+        "download_url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/s/SSE_A_PDF.zip",
+        "sha256": "2a356a0570b012b0a9dfd852b4b7013d7fc85b83d438df981bd7555cf89f20bc",
+        "physical_page_count": 1,
+        "imported_pages": {"first": 1, "last": 1},
+        "expected_evidence": ["planet and orbit labels in the source diagram"],
+        "review_notes": ["Extraction yields a short text sample; diagram labels remain visual material and need manual review."]
+      },
+      {
+        "id": "usgs-natural-water-chemistry-section-2",
+        "filename": "usgs-natural-water-chemistry-section2.pdf",
+        "title": "Study and Interpretation of the Chemical Characteristics of Natural Water, Section 2",
+        "publisher": "U.S. Geological Survey, Water-Supply Paper 2254",
+        "source_url": "https://pubs.usgs.gov/wsp/wsp2254/html/pdf.html",
+        "download_url": "https://pubs.usgs.gov/wsp/wsp2254/pdf/section2.pdf",
+        "sha256": "f39b5e68438cc4eeef396e812cb4b46fe39d38a23898ddd6ed482bdf64ac9786",
+        "physical_page_count": 33,
+        "imported_pages": {"first": 5, "last": 7},
+        "expected_evidence": ["law of mass action introduction on physical page 5"],
+        "review_notes": ["The native text around the equation on physical page 6 is garbled; treat the formula as review-required, not as a verified answer."]
+      }
+    ]
+  },
+  "synthetic_fixture": {
+    "key": "math-chemistry-structured-v1",
+    "document": {
+      "schema_version": 1,
+      "blocks": [
+        {
+          "id": "exponent-heading",
+          "type": "heading",
+          "level": 2,
+          "inlines": [{"text": "Perkalian dengan basis sama"}],
+          "provenance": {"method": "native", "page": 2}
+        },
+        {
+          "id": "exponent-rule",
+          "type": "paragraph",
+          "inlines": [
+            {"text": "Untuk mengalikan dua pangkat dengan basis sama, jumlahkan eksponennya: a"},
+            {"text": "p", "marks": ["superscript"]},
+            {"text": " kali a"},
+            {"text": "q", "marks": ["superscript"]},
+            {"text": " sama dengan a"},
+            {"text": "p+q", "marks": ["superscript"]},
+            {"text": ". Aturan ini membantu menyederhanakan perkalian berpangkat."}
+          ],
+          "provenance": {"method": "native", "page": 2}
+        },
+        {
+          "id": "urea-table",
+          "type": "table",
+          "headers": ["Rumus", "Nama"],
+          "rows": [["CO(NH_{2})_{2}", "Urea"]],
+          "provenance": {"method": "table", "page": 3}
+        },
+        {
+          "id": "urea-explanation",
+          "type": "paragraph",
+          "inlines": [{"text": "Tabel contoh mempertahankan rumus kimia urea dan nama senyawanya dalam dua kolom yang berpasangan."}],
+          "provenance": {"method": "native", "page": 3}
+        },
+        {
+          "id": "private-answer-key",
+          "type": "paragraph",
+          "role": "answer_key",
+          "inlines": [{"text": "SYNTHETIC_PRIVATE_ANSWER_KEY_DO_NOT_RETRIEVE"}],
+          "provenance": {"method": "native", "page": 4}
+        }
+      ]
+    },
+    "expected_projection_markers": ["a^{p+q}", "CO(NH_{2})_{2}", "Urea"],
+    "expected_evidence_markers": ["basis sama", "jumlahkan eksponennya", "CO(NH_{2})_{2}", "Urea"],
+    "expected_block_ids": ["exponent-heading", "exponent-rule", "urea-table", "urea-explanation"],
+    "excluded_markers": ["SYNTHETIC_PRIVATE_ANSWER_KEY_DO_NOT_RETRIEVE"],
+    "metadata_only": {
+      "schema_version": 1,
+      "blocks": [
+        {
+          "id": "metadata-title",
+          "type": "heading",
+          "role": "frontmatter",
+          "level": 1,
+          "inlines": [{"text": "Identitas Modul: Eksponen"}]
+        }
+      ]
+    }
+  },
+  "live_local_limits": {
+    "max_batches": 3,
+    "max_questions_per_batch": 3,
+    "default_batches": 1,
+    "default_questions_per_batch": 3
+  }
+}

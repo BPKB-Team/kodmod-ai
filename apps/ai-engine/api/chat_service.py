@@ -28,7 +28,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import LearningSession, User
+from database.models import LearningSession, QuizSession, User
 from database.session import async_session
 from graphs.state import KODMODState, build_learning_profile, initial_state
 
@@ -73,6 +73,22 @@ async def resolve_chat_context(
             ):
                 raise HTTPException(
                     409, "Mulai sesi baru untuk belajar dari kelas atau materi lain."
+                )
+            active_quizzes = (
+                await session.scalars(
+                    select(QuizSession).where(
+                        QuizSession.student_id == student.id,
+                        QuizSession.status == "in_progress",
+                    )
+                )
+            ).all()
+            if any(
+                (quiz.assessment_state or {}).get("learning_session_id") == str(existing.id)
+                for quiz in active_quizzes
+            ):
+                raise HTTPException(
+                    409,
+                    "Selesaikan kuis pada percakapan ini sebelum mengirim pertanyaan berikutnya.",
                 )
             class_id, material_id = existing.class_id, existing.material_id
     return await resolve_tutoring_context(session, class_id, material_id, student)
@@ -272,6 +288,7 @@ async def log_turn(
     intent: str | None = None,
     latency_ms: int | None = None,
     source_refs: list[dict] | None = None,
+    quiz_session_id: uuid.UUID | None = None,
 ) -> None:
     """Append one turn to the transcript. Never raises into the request path."""
     from memory.long_term import log_interaction
@@ -283,7 +300,11 @@ async def log_turn(
             text=text,
             intent=intent,
             latency_ms=latency_ms,
-            metadata={"sources": source_refs} if source_refs else None,
+            metadata={
+                **({"sources": source_refs} if source_refs else {}),
+                **({"quiz_session_id": str(quiz_session_id)} if quiz_session_id else {}),
+            }
+            or None,
         )
     except Exception:  # pragma: no cover - a lost log line must not break the reply
         log.warning("Could not log %s turn for session %s", role, session_id, exc_info=True)

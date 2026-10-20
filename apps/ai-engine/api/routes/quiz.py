@@ -5,9 +5,17 @@ from __future__ import annotations
 import logging
 import uuid
 
+from fastapi import APIRouter, Depends, HTTPException, Request
+
+from api.assessment_service import (
+    active_assessments,
+    recover_assessment,
+    start_assessment,
+    submit_assessment,
+)
+from api.dependencies import require_student
 from database.models import User
 from database.session import async_session
-from fastapi import APIRouter, Depends, HTTPException, Request
 from models.quiz import (
     QuizActionRequest,
     QuizInteractionView,
@@ -17,14 +25,6 @@ from models.quiz import (
     QuizSubmitRequest,
     QuizSubmitResponse,
 )
-
-from api.assessment_service import (
-    active_assessments,
-    recover_assessment,
-    start_assessment,
-    submit_assessment,
-)
-from api.dependencies import require_student
 
 log = logging.getLogger(__name__)
 router = APIRouter(tags=["quiz"])
@@ -52,6 +52,18 @@ async def start_quiz(
     try:
         async with async_session() as session:
             response = await start_assessment(session, request.app.state.graph, student, body)
+        from tools.learning_trace import LearningTraceEvent, record_learning_trace
+
+        await record_learning_trace(
+            LearningTraceEvent(
+                student_id=student.id,
+                quiz_session_id=response.quiz_session_id,
+                stage="session",
+                node="quiz.start",
+                policy_version=response.policy_version,
+                accepted_count=response.total_questions,
+            )
+        )
         return response
     except HTTPException:
         raise
@@ -68,6 +80,17 @@ async def submit_answer(
     try:
         async with async_session() as session:
             response = await submit_assessment(session, request.app.state.graph, student, body)
+        from tools.learning_trace import LearningTraceEvent, record_learning_trace
+
+        await record_learning_trace(
+            LearningTraceEvent(
+                student_id=student.id,
+                quiz_session_id=body.quiz_session_id,
+                stage="scoring",
+                node="quiz.submit",
+                policy_version=response.policy_version,
+            )
+        )
         return response
     except HTTPException:
         raise
@@ -86,17 +109,34 @@ async def _load_mastery(student_id: str) -> tuple[dict, dict]:
     return await model.mastery_scores(), dict(model._confidence)
 
 
-@router.post("/{session_id}/actions", response_model=QuizInteractionView)
+@router.post(
+    "/{session_id}/actions",
+    response_model=QuizInteractionView,
+    summary="Advance or skip the current quiz question",
+)
 async def quiz_action(
     session_id: uuid.UUID,
     body: QuizActionRequest,
     student: User = Depends(require_student),
 ):
+    """Record a durable next/skip action without forcing another attempt."""
     from api.quiz_actions import apply_quiz_action
 
     try:
         async with async_session() as session:
-            return await apply_quiz_action(session, student, session_id, body)
+            response = await apply_quiz_action(session, student, session_id, body)
+        from tools.learning_trace import LearningTraceEvent, record_learning_trace
+
+        await record_learning_trace(
+            LearningTraceEvent(
+                student_id=student.id,
+                quiz_session_id=session_id,
+                stage=body.action,
+                node=f"quiz.{body.action}",
+                policy_version=response.policy_version,
+            )
+        )
+        return response
     except HTTPException:
         raise
     except Exception:

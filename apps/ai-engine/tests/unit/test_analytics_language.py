@@ -1,6 +1,7 @@
 """Localized deterministic analytics must work without an LLM call."""
 
 import pytest
+
 from analytics.insights import (
     generate_cohort_alerts,
     generate_insights,

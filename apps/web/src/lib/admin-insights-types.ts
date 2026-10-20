@@ -97,3 +97,40 @@ export type AdminAiUsage = {
     average_latency_ms: number | null; estimated_cost_usd: number | null; known_cost_subtotal_usd: number | null; unpriced_requests: number };
   pagination?: { page: number; limit: number; total: number; has_next: boolean };
 };
+
+export type AdminLearningTraceItem = {
+  id: string;
+  request_id: string | null;
+  correlation_id: string | null;
+  stage: string;
+  node: string | null;
+  policy_version: number | null;
+  prompt_version: string | null;
+  extractor_version: string | null;
+  source_ids: string[];
+  candidate_count: number | null;
+  accepted_count: number | null;
+  returned_count: number | null;
+  quality_reasons: string[];
+  fallback_reason: string | null;
+  model_call_count: number | null;
+  latency_ms: number | null;
+  trace_cost_usd: number | string | null;
+  provider_usage: {
+    calls: number;
+    failures: number;
+    estimated_cost_usd: number;
+    services: string[];
+  };
+  occurred_at: string | null;
+};
+
+export type AdminLearningTraces = {
+  items: AdminLearningTraceItem[];
+  request_id: string | null;
+  page: number;
+  limit: number;
+  total: number;
+  has_next: boolean;
+  generated_at: string;
+};

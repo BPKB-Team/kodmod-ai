@@ -11,17 +11,43 @@ from __future__ import annotations
 import re
 
 SUPERSCRIPTS = {
-    "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4",
-    "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9",
-    "⁺": " tambah ", "⁻": " minus ",
-    "ⁿ": "n", "ˣ": "x", "ʸ": "y", "ᵃ": "a", "ᵇ": "b", "ᵐ": "m",
+    "⁰": "0",
+    "¹": "1",
+    "²": "2",
+    "³": "3",
+    "⁴": "4",
+    "⁵": "5",
+    "⁶": "6",
+    "⁷": "7",
+    "⁸": "8",
+    "⁹": "9",
+    "⁺": " tambah ",
+    "⁻": " minus ",
+    "ⁿ": "n",
+    "ˣ": "x",
+    "ʸ": "y",
+    "ᵃ": "a",
+    "ᵇ": "b",
+    "ᵐ": "m",
 }
 
 SUBSCRIPTS = {
-    "₀": "0", "₁": "1", "₂": "2", "₃": "3", "₄": "4",
-    "₅": "5", "₆": "6", "₇": "7", "₈": "8", "₉": "9",
-    "₊": " tambah ", "₋": " minus ",
-    "ₐ": "a", "ₑ": "e", "ₒ": "o", "ₓ": "x",
+    "₀": "0",
+    "₁": "1",
+    "₂": "2",
+    "₃": "3",
+    "₄": "4",
+    "₅": "5",
+    "₆": "6",
+    "₇": "7",
+    "₈": "8",
+    "₉": "9",
+    "₊": " tambah ",
+    "₋": " minus ",
+    "ₐ": "a",
+    "ₑ": "e",
+    "ₒ": "o",
+    "ₓ": "x",
 }
 
 VULGAR_FRACTIONS = {
@@ -204,9 +230,7 @@ def normalize_math_speech(text: str, language: str = "id") -> str:
     def _ordinal_sub(m: re.Match) -> str:
         num = m.group(1)
         word = (
-            ORDINALS_EN.get(num, f"Step {num}")
-            if is_en
-            else ORDINALS_ID.get(num, f"Langkah {num}")
+            ORDINALS_EN.get(num, f"Step {num}") if is_en else ORDINALS_ID.get(num, f"Langkah {num}")
         )
         return f"{word}, "
 

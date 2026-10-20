@@ -4,8 +4,14 @@ import hashlib
 import json
 import re
 from dataclasses import dataclass
+from typing import Literal
 
-from models.material_document import MaterialBlock, MaterialDocument
+from models.material_document import (
+    MaterialBlock,
+    MaterialDocument,
+    MaterialInline,
+    MaterialProvenance,
+)
 
 
 def math_speech(latex: str) -> str:
@@ -57,7 +63,8 @@ def block_text(block: MaterialBlock, *, speech=False):
     if block.type in ("heading", "paragraph"):
         return inline_text(block.inlines, speech=speech)
     if block.type == "math":
-        return math_speech(block.latex) if speech else block.latex
+        latex = block.latex or ""
+        return math_speech(latex) if speech else latex
     if block.type == "image":
         return " ".join(filter(None, [block.alt, block.caption])) if not block.decorative else ""
     if block.type == "list":
@@ -99,7 +106,7 @@ def legacy_document(content: str) -> MaterialDocument:
     # Old imports sometimes contained markup. Strip tags; never execute them.
     content = re.sub(r"<[^>]+>", "", content)
     blocks = []
-    role = "instruction"
+    role: Literal["instruction", "frontmatter", "answer_key", "reference"] = "instruction"
     for index, part in enumerate(re.split(r"\n\s*\n", content)):
         if not part.strip():
             continue
@@ -123,9 +130,9 @@ def legacy_document(content: str) -> MaterialDocument:
                 role=role,
                 type="heading" if heading else "paragraph",
                 level=len(heading[1]) if heading else None,
-                inlines=[{"text": heading[2] if heading else part.strip()}],
+                inlines=[MaterialInline(text=heading[2] if heading else part.strip())],
                 review_origin="legacy_unverified",
-                provenance={"method": "legacy"},
+                provenance=MaterialProvenance(method="legacy"),
             )
         )
     return MaterialDocument(blocks=blocks)
@@ -156,12 +163,21 @@ async def material_values(session, class_id, body, previous=None):
     document = body.document.model_copy(deep=True) if body.document is not None else None
     if document is not None:
         await validate_document_assets(session, class_id, document)
-        if previous is not None:
+        if previous is not None and previous.source_import_id == body.source_import_id:
             old = {b.id: b for b in material_document(previous).blocks}
             for block in document.blocks:
                 before = old.get(block.id)
-                if before:
-                    # Original location/method are immutable attribution. Edits refer to new revision.
+                if before and (
+                    previous.source_import_id is not None
+                    or (
+                        before.provenance.source_sha256 == block.provenance.source_sha256
+                        and before.provenance.import_id == block.provenance.import_id
+                    )
+                ):
+                    # Keep attribution immutable within one source. A replacement PDF
+                    # can reuse geometry-derived block IDs but has its own provenance.
+                    # Detached documents use per-block source identity; two null import
+                    # links do not identify the same PDF.
                     block.provenance = before.provenance.model_copy(deep=True)
                     if block.model_dump(
                         exclude={"provenance", "review_state", "confidence"}

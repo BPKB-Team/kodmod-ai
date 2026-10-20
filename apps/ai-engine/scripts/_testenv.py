@@ -72,4 +72,5 @@ def apply_test_env() -> None:
         raise RuntimeError(
             "Test entrypoints require a kodmod_test database; refusing application data"
         )
-    Path(ROOT / ".runtime" / "uploads").mkdir(parents=True, exist_ok=True)
+    Path(os.environ["UPLOAD_DIR"]).mkdir(parents=True, exist_ok=True)
+    Path(os.environ["AUDIO_DIR"]).mkdir(parents=True, exist_ok=True)

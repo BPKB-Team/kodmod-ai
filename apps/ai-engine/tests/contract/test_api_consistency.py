@@ -57,17 +57,14 @@ def _body_attr_reads(func: ast.AST, param: str = "body") -> set[str]:
 # --------------------------------------------------------------------------- #
 # KM-CONTRACT-020 - quiz handlers only pass fields the response model declares
 # --------------------------------------------------------------------------- #
-@pytest.mark.known_bug(
-    "#5 - api/routes/quiz.py builds QuizStartResponse/QuizSubmitResponse with kwargs "
-    "(session_id, question_audio_uri, feedback_text, feedback_audio_uri, is_session_complete) "
-    "that models/quiz.py does not declare"
-)
 def test_km_contract_020_quiz_handler_response_kwargs_match_model() -> None:
     from models.quiz import QuizStartResponse, QuizSubmitResponse
 
-    # Response construction now lives in the transaction service used by routes.
+    # Start response construction lives in the shared persistence factory;
+    # submit response construction remains in the assessment transaction service.
     quiz_py = _ROUTES_DIR.parent / "assessment_service.py"
-    start = _func_ast(quiz_py, "start_assessment")
+    factory_py = _ROUTES_DIR.parent / "quiz_session_factory.py"
+    start = _func_ast(factory_py, "create_quiz_session_from_questions")
     submit = _func_ast(quiz_py, "submit_assessment")
 
     start_kwargs = _response_call_kwargs(start, "QuizStartResponse")
@@ -127,10 +124,6 @@ def test_km_contract_023_openapi_schema_valid(fastapi_app) -> None:  # type: ign
 # --------------------------------------------------------------------------- #
 # KM-CONTRACT-024 - every operation carries a summary or description
 # --------------------------------------------------------------------------- #
-@pytest.mark.known_bug(
-    "docs - several route handlers (health.live/ready/version, student.get_me, ...) have "
-    "neither a summary nor a docstring-derived description in the OpenAPI schema"
-)
 def test_km_contract_024_every_route_documented(resolved_routes) -> None:  # type: ignore[no-untyped-def]
     from fastapi.routing import APIRoute
 

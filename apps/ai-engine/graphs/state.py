@@ -86,9 +86,11 @@ class QuizQuestion(TypedDict, total=False):
     rubric: dict[str, Any]
     source_indices: list[int]
     explanation: str
+    evidence_refs: list[str]
+    objective: str
+    cognitive_level: str
     concept_id: str
     difficulty: DifficultyLevel
-    evidence_refs: list[str]
 
 
 class QuizAttempt(TypedDict, total=False):
@@ -197,8 +199,8 @@ class KODMODState(TypedDict, total=False):
     quiz_generation_calls: int
     quiz_verification_calls: int
     material_content_version: int | None
-    material_mapping_version: int | None
     authorized_teacher_id: str | None
+    learning_session_id: str
     quiz_session_id: str
     quiz_n_questions: int  # explicit length request (0 = let the agent decide)
     quiz_questions: list[QuizQuestion]
@@ -289,18 +291,29 @@ def initial_state(
         current_difficulty="medium",
         tutoring_context=[],
         retrieved_docs=[],
+        retrieval_trace=None,
         generated_response="",
         accessible_response="",
         quiz_session_id="",
+        learning_session_id="",
         assessment_managed=False,
         assessment_kind="assessment",
         quiz_policy_version=1,
+        hint_text=None,
+        score_summary={},
         presentation_context="session",
         material_version=None,
+        material_content_version=None,
         material_mapping_version=None,
         approved_material_concepts=[],
         quiz_source_docs=[],
+        quiz_source_bundle=None,
         quiz_mcq_only=False,
+        quiz_prompt_version="",
+        quiz_prompt_hash="",
+        quiz_generation_calls=0,
+        quiz_verification_calls=0,
+        authorized_teacher_id=None,
         quiz_n_questions=0,
         quiz_questions=[],
         current_question_index=0,

@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import logging
 import tempfile
+import time
 from contextlib import suppress
 from pathlib import Path
 
@@ -76,8 +77,10 @@ async def process(job):
             ):
                 if row.rag_status != "ready":
                     raise ValueError("Index not ready")
+                return {"processed": True, "n_chunks": row.n_chunks}
         return {"processed": True}
     if job.kind == "document_index":
+        from models.material_document import MaterialDocument
         from rag.ingestion import build_material_records
 
         async with async_session() as session:
@@ -99,7 +102,11 @@ async def process(job):
         )
         if not preview.get("content"):
             raise ValueError("Select chapter through reviewed classroom import")
-        records = await build_material_records(preview["content"], source=filename)
+        records = await build_material_records(
+            preview["content"],
+            source=filename,
+            document=MaterialDocument.model_validate(preview["document"]),
+        )
         if not records:
             raise ValueError("No document chunks")
         async with async_session() as session:
@@ -133,21 +140,66 @@ async def process(job):
 
             document.ingested_at = datetime.now(UTC)
             await session.commit()
-        return {"processed": True}
+        return {"processed": True, "n_chunks": len(records)}
     raise ValueError("Unknown job kind")
 
 
 async def _run_job(job):
     heartbeat = asyncio.create_task(keep_lease(job))
+    started = time.perf_counter()
     try:
         result = await process(job)
-        await jobs.finish(
+        finished = await jobs.finish(
             job.id, job.lease_token, result=result, require_ready=job.kind == "material_index"
         )
+        if finished and job.kind in {"material_import", "material_index", "document_index"}:
+            from tools.learning_trace import LearningTraceEvent, record_learning_trace
+
+            document = result.get("document") if isinstance(result, dict) else None
+            blocks = document.get("blocks", []) if isinstance(document, dict) else []
+            accepted = sum(
+                1
+                for block in blocks
+                if isinstance(block, dict) and block.get("review_state") == "accepted"
+            )
+            indexed_count = result.get("n_chunks") if isinstance(result, dict) else None
+            await record_learning_trace(
+                LearningTraceEvent(
+                    request_id=job.id,
+                    correlation_id=job.id,
+                    stage="import" if job.kind == "material_import" else "unit",
+                    node=f"material_worker.{job.kind}",
+                    actor_role="admin" if job.kind == "document_index" else "teacher",
+                    source_ids=[str(job.target_id)],
+                    extractor_version=(
+                        str(document.get("extractor_version"))[:80]
+                        if isinstance(document, dict) and document.get("extractor_version")
+                        else None
+                    ),
+                    candidate_count=len(blocks) if blocks else None,
+                    accepted_count=accepted if blocks else indexed_count,
+                    latency_ms=min(180_000, round((time.perf_counter() - started) * 1000)),
+                )
+            )
     except jobs.LeaseLostError:
         log.info("Worker lease expired for job %s", job.id)
     except Exception:
         log.warning("Background job %s failed", job.id)
+        if job.kind in {"material_import", "material_index", "document_index"}:
+            from tools.learning_trace import LearningTraceEvent, record_learning_trace
+
+            await record_learning_trace(
+                LearningTraceEvent(
+                    request_id=job.id,
+                    correlation_id=job.id,
+                    stage="import" if job.kind == "material_import" else "unit",
+                    node=f"material_worker.{job.kind}",
+                    actor_role="admin" if job.kind == "document_index" else "teacher",
+                    source_ids=[str(job.target_id)],
+                    fallback_reason="worker_error",
+                    latency_ms=min(180_000, round((time.perf_counter() - started) * 1000)),
+                )
+            )
         await jobs.fail(job.id, job.lease_token)
     finally:
         heartbeat.cancel()

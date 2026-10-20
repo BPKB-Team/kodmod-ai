@@ -9,10 +9,10 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
-from api import learning_service
-from database.models import LearningActionReceipt, LearningSession, User
 from sqlalchemy import create_engine, func, inspect, select, text
 
+from api import learning_service
+from database.models import LearningActionReceipt, LearningSession, User
 from tests.unit.test_guided_learning import action_body, open_lesson
 from tests.unit.test_guided_learning import learning_http as learning_http
 
@@ -22,9 +22,10 @@ pytestmark = pytest.mark.skipif(
 
 
 async def test_admin_material_update_waits_for_class_before_locking_material(learning_http):
+    from fastapi import BackgroundTasks
+
     from api.routes import admin_materials, classrooms
     from database.models import ClassMaterial, Classroom
-    from fastapi import BackgroundTasks
 
     _, factory, _, material, _, admin = learning_http
     async with factory() as teacher_session, factory() as admin_session:

@@ -19,7 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import { UiText, UiDate, useI18n } from "./language-provider";
-import type { AdminAiUsage } from "@/lib/admin-insights-types";
+import type { AdminAiUsage, AdminLearningTraces } from "@/lib/admin-insights-types";
 import { notifyResult } from "@/lib/dialogs";
 
 export function AdminAiMonitor({
@@ -33,6 +33,9 @@ export function AdminAiMonitor({
   const [filterProvider, setFilterProvider] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [traceRequestId, setTraceRequestId] = useState("");
+  const [traceData, setTraceData] = useState<AdminLearningTraces | null>(null);
+  const [traceLoading, setTraceLoading] = useState(false);
 
   async function handleRefresh(page = 1, provider = filterProvider, status = filterStatus) {
     setLoading(true);
@@ -49,6 +52,23 @@ export function AdminAiMonitor({
       await notifyResult(err instanceof Error ? err.message : "Gagal memperbarui data.", true);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleTraceLookup(requestId = traceRequestId) {
+    const value = requestId.trim();
+    if (!value) return;
+    setTraceLoading(true);
+    setTraceRequestId(value);
+    try {
+      const query = new URLSearchParams({ request_id: value, page: "1", limit: "50" });
+      const res = await fetch(`/api/admin/insights/learning-traces?${query}`, { cache: "no-store" });
+      if (!res.ok) throw new Error("Gagal memuat jejak alur belajar untuk request ID ini.");
+      setTraceData((await res.json()) as AdminLearningTraces);
+    } catch (err) {
+      await notifyResult(err instanceof Error ? err.message : "Gagal memuat jejak alur belajar.", true);
+    } finally {
+      setTraceLoading(false);
     }
   }
 
@@ -391,6 +411,15 @@ export function AdminAiMonitor({
                       <div className="log-target-cell">
                         <strong>{t(req.actor_name)}</strong>
                         <small>{req.target}</small>
+                        <small><code>{req.request_id}</code></small>
+                        <button
+                          type="button"
+                          className="button secondary"
+                          disabled={traceLoading}
+                          onClick={() => void handleTraceLookup(req.request_id)}
+                        >
+                          {t("Lihat jejak")}
+                        </button>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -434,6 +463,81 @@ export function AdminAiMonitor({
         <span>{t("Halaman {page}", { page: data.pagination.page })} · {metric(data.pagination.total)} {t("permintaan")}</span>
         <button className="button secondary" disabled={loading || !data.pagination.has_next} onClick={() => void handleRefresh((data.pagination?.page || 1) + 1)}>{t("Berikutnya")}</button>
       </nav>}
+      <section className="panel table-panel ai-logs-panel" aria-labelledby="learning-traces-title">
+        <div className="panel-heading">
+          <div>
+            <h2 id="learning-traces-title"><UiText>{"Jejak alur belajar"}</UiText></h2>
+            <p><UiText>{"Telusuri retrieval, generasi soal, review, sesi, dan pemakaian provider memakai request ID."}</UiText></p>
+          </div>
+        </div>
+        <form
+          className="ai-log-controls"
+          onSubmit={(event) => { event.preventDefault(); void handleTraceLookup(); }}
+        >
+          <label className="ai-search-input-wrap">
+            <span className="sr-only"><UiText>{"Request ID"}</UiText></span>
+            <input
+              type="text"
+              className="ai-search-input"
+              aria-label={t("Request ID")}
+              placeholder={t("Tempel request ID")}
+              maxLength={40}
+              value={traceRequestId}
+              onChange={(event) => setTraceRequestId(event.target.value)}
+            />
+          </label>
+          <button className="button secondary" type="submit" disabled={traceLoading || !traceRequestId.trim()}>
+            {traceLoading ? t("Memuat…") : t("Cari jejak")}
+          </button>
+        </form>
+        {traceData && (
+          traceData.items.length > 0 ? (
+            <div className="table-responsive">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead><UiText>{"Waktu / tahap"}</UiText></TableHead>
+                    <TableHead><UiText>{"Sumber dan versi"}</UiText></TableHead>
+                    <TableHead><UiText>{"Validasi / fallback"}</UiText></TableHead>
+                    <TableHead><UiText>{"Provider / latensi"}</UiText></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {traceData.items.map((trace) => (
+                    <TableRow key={trace.id}>
+                      <TableCell>
+                        <strong>{t(trace.stage)}</strong>
+                        <small className="log-target-cell">{trace.node}</small>
+                        <small><UiDate value={trace.occurred_at} empty="Waktu tidak tersedia" /></small>
+                      </TableCell>
+                      <TableCell>
+                        <small>{t("ID sumber")}: {trace.source_ids.length ? trace.source_ids.join(", ") : t("Tidak ada")}</small>
+                        <small>{t("Prompt")}: {trace.prompt_version || t("Belum tersedia")}</small>
+                        <small>{t("Ekstraktor")}: {trace.extractor_version || t("Belum tersedia")}</small>
+                        <small>{t("Kandidat / diterima / hasil")}: {trace.candidate_count ?? "—"} / {trace.accepted_count ?? "—"} / {trace.returned_count ?? "—"}</small>
+                      </TableCell>
+                      <TableCell>
+                        <small>{t("Alasan kualitas")}: {trace.quality_reasons.length ? trace.quality_reasons.join(", ") : t("Tidak ada")}</small>
+                        <small>{t("Fallback")}: {trace.fallback_reason || t("Tidak ada")}</small>
+                        <small>{t("Versi kebijakan")}: {trace.policy_version ?? "—"}</small>
+                      </TableCell>
+                      <TableCell>
+                        <small>{t("Panggilan provider")}: {trace.provider_usage.calls} ({t("gagal")}: {trace.provider_usage.failures})</small>
+                        <small>{t("Layanan")}: {trace.provider_usage.services.join(", ") || t("Belum tersedia")}</small>
+                        <small>{t("Panggilan model")}: {trace.model_call_count ?? "—"}</small>
+                        <small>{t("Latensi")}: {trace.latency_ms ?? "—"} ms</small>
+                        <small>{t("Estimasi biaya")}: {cost(trace.provider_usage.estimated_cost_usd)}</small>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="ai-logs-empty"><p><UiText>{"Belum ada jejak untuk request ID ini."}</UiText></p></div>
+          )
+        )}
+      </section>
     </div>
   );
 }

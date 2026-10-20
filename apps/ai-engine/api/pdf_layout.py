@@ -15,9 +15,24 @@ from models.material_document import MaterialBlock, MaterialDocument, MaterialIn
 
 
 def text_overlap(first, second):
-    words = lambda value: set(re.findall(r"\w+", value.lower()))
+    def words(value):
+        return set(re.findall(r"\w+", value.lower()))
+
     a, b = words(first), words(second)
     return bool(a and b and len(a & b) / min(len(a), len(b)) >= 0.85)
+
+
+def native_text_coverage(chars, box):
+    x0, top, x1, bottom = box
+    area = (x1 - x0) * (bottom - top)
+    if area <= 0:
+        return 0.0
+    glyph_area = 0.0
+    for char in chars:
+        width = max(0.0, min(x1, char["x1"]) - max(x0, char["x0"]))
+        height = max(0.0, min(bottom, char["bottom"]) - max(top, char["top"]))
+        glyph_area += width * height
+    return glyph_area / area
 
 
 def glyph_lines(chars):
@@ -121,18 +136,18 @@ def extract_pdf_layout(
             page = pdf.pages[index]
             page_blocks = []
 
-            def provenance(box, method):
+            def provenance(box, method, *, page_number=index + 1):
                 return {
                     "source_sha256": source_hash,
-                    "page": index + 1,
+                    "page": page_number,
                     "bbox": tuple(round(float(x), 3) for x in box),
                     "method": method,
                     "extractor_version": EXTRACTOR_VERSION,
                 }
 
-            def ident(box, kind):
+            def ident(box, kind, *, page_number=index + 1):
                 return (
-                    f"p{index + 1}-{kind}-"
+                    f"p{page_number}-{kind}-"
                     + hashlib.sha256(
                         str(tuple(round(float(x), 2) for x in box)).encode()
                     ).hexdigest()[:12]
@@ -156,7 +171,7 @@ def extract_pdf_layout(
                 centers = [(cell[0] + cell[2]) / 2 for _, cell in header_cells]
                 normalized = []
                 for source_row in table.rows[1:]:
-                    result = [""] * len(header_cells)
+                    normalized_row = [""] * len(header_cells)
                     for cell in source_row.cells:
                         if cell is None:
                             continue
@@ -181,8 +196,10 @@ def extract_pdf_layout(
                                 range(len(centers)),
                                 key=lambda n: abs(centers[n] - (cell[0] + cell[2]) / 2),
                             )
-                            result[slot] = " ".join(filter(None, [result[slot], value.strip()]))
-                    normalized.append(result)
+                            normalized_row[slot] = " ".join(
+                                filter(None, [normalized_row[slot], value.strip()])
+                            )
+                    normalized.append(normalized_row)
                 box = table.bbox
                 table_boxes.append(box)
                 page_blocks.append(
@@ -197,9 +214,10 @@ def extract_pdf_layout(
                         warnings=["Verifikasi header, sel gabungan dan rumus tabel."],
                     )
                 )
+            native_chars = page.dedupe_chars().chars
             chars = [
                 char
-                for char in page.dedupe_chars().chars
+                for char in native_chars
                 if not any(
                     box[0] <= char["x0"] < box[2] and box[1] <= char["top"] < box[3]
                     for box in table_boxes
@@ -234,7 +252,7 @@ def extract_pdf_layout(
                     block = MaterialBlock(
                         id=ident(box, "text"),
                         type="paragraph",
-                        inlines=[{"text": cleaned}],
+                        inlines=[MaterialInline(text=cleaned)],
                         review_state="needs_review",
                         review_origin="extracted",
                         provenance=provenance(box, "native"),
@@ -303,28 +321,38 @@ def extract_pdf_layout(
                     )
                 )
                 if allow_ocr:
+                    if native_text_coverage(native_chars, box) >= 0.02:
+                        page_blocks[-1].warnings.append(
+                            "OCR dilewati karena region sudah memiliki lapisan teks PDF; "
+                            "tinjau teks dan sumber gambar."
+                        )
+                        continue
                     try:
-                        result = pdf_regions.recognize_region(data, page_index=index, bbox=box)
+                        region_result = pdf_regions.recognize_region(
+                            data, page_index=index, bbox=box
+                        )
                     except Exception:
                         page_blocks[-1].warnings.append(
                             "OCR region gagal; sumber gambar tetap perlu ditinjau."
                         )
                         continue
-                    if result.text.strip() and not any(
-                        text_overlap(result.text, block_text(b)) for b in page_blocks
+                    if region_result.text.strip() and not any(
+                        text_overlap(region_result.text, block_text(b)) for b in page_blocks
                     ):
                         page_blocks.append(
                             MaterialBlock(
                                 id=ident(box, "ocr"),
                                 type="paragraph",
-                                inlines=[{"text": re.sub(r"<[^>]*>", "", result.text)}],
+                                inlines=[
+                                    MaterialInline(text=re.sub(r"<[^>]*>", "", region_result.text))
+                                ],
                                 review_state="needs_review",
                                 review_origin="extracted",
-                                confidence=result.confidence / 100
-                                if result.confidence is not None
+                                confidence=region_result.confidence / 100
+                                if region_result.confidence is not None
                                 else None,
                                 provenance=provenance(box, "ocr"),
-                                warnings=result.warnings,
+                                warnings=region_result.warnings,
                             )
                         )
             if not chars and not tables and not images and allow_ocr:
@@ -336,7 +364,7 @@ def extract_pdf_layout(
                         MaterialBlock(
                             id=ident(box, "scan"),
                             type="paragraph",
-                            inlines=[{"text": re.sub(r"<[^>]*>", "", text)}],
+                            inlines=[MaterialInline(text=re.sub(r"<[^>]*>", "", text))],
                             review_state="needs_review",
                             review_origin="extracted",
                             confidence=result["confidence"] / 100

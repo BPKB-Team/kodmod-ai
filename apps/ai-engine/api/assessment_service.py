@@ -65,6 +65,12 @@ STATE_KEYS = (
     "approved_material_concepts",
     "assessment_kind",
     "quiz_policy_version",
+    "quiz_prompt_version",
+    "quiz_prompt_hash",
+    "quiz_generation_calls",
+    "quiz_verification_calls",
+    "learning_session_id",
+    "retrieval_trace",
     "question_state",
     "last_review",
     "review_question_id",
@@ -185,6 +191,7 @@ async def start_assessment(
             assessment_kind=kind,
             quiz_policy_version=2,
             material_version=material.content_version if material else None,
+            material_content_version=material.content_version if material else None,
             material_mapping_version=material.mapping_version if material else None,
             approved_material_concepts=context.get("approved_material_concepts", [])
             if context
@@ -212,70 +219,38 @@ async def start_assessment(
         }:
             raise HTTPException(422, "Konsep harus sudah disetujui untuk materi ini.")
     final = await invoke(graph, dict(state), sid)
-    questions = copy.deepcopy(final.get("quiz_questions", []))
-    if len(questions) != body.n_questions:
+    generated_questions = final.get("quiz_questions", [])
+    if len(generated_questions) != body.n_questions:
         raise ValueError("Graph did not generate a valid quiz")
-    for question in questions:
-        # Provider/cached question identifiers are never shared between owned sessions.
-        question["question_id"] = str(uuid.uuid4())
-        cid = as_uuid(question.get("concept_id"))
-        if context:
-            allowed = {c["id"] for c in state["approved_material_concepts"]}
-            if allowed and cid and str(cid) not in allowed:
-                raise ValueError("Question claims an unapproved material Concept")
-            question["concept_id"] = str(cid) if allowed and cid else ""
-        else:
-            known_concept = await session.get(Concept, cid) if cid is not None else None
-            question["concept_id"] = str(cid) if known_concept is not None else ""
-    final.update(
-        quiz_questions=questions,
-        quiz_question=questions[0],
-        quiz_session_id=str(sid),
-        quiz_attempts=[],
-        current_question_index=0,
-        current_question_attempts=0,
-        mastery_applied_attempts=0,
-        quiz_policy_version=2,
-        question_state="answering",
+    from api.quiz_session_factory import (
+        create_quiz_session_from_questions,
+        grounded_batch_from_state,
     )
-    from api.quiz_points import build_score_summary
+    from rag.source_bundle import MaterialScope
 
-    final["score_summary"] = build_score_summary([], total_questions=len(questions)).model_dump()
-    session.add(
-        QuizSession(
-            id=sid,
-            student_id=student.id,
-            concept_id=body.concept_id,
-            total_questions=len(questions),
-            status="in_progress",
-            assessment_state=snapshot(final),
-        )
+    scope = MaterialScope(
+        student_id=student.id,
+        class_id=body.class_id,
+        material_id=body.material_id,
+        concept_id=body.concept_id,
+        content_version=material.content_version if material else None,
+        mapping_version=material.mapping_version if material else None,
+        subject_id=concept.subject_id
+        if concept
+        else context.get("subject_id")
+        if context
+        else None,
+        language=body.language,
     )
-    await session.flush()
-    for index, question in enumerate(questions):
-        session.add(
-            QuizQuestion(
-                id=uuid.UUID(question["question_id"]),
-                quiz_session_id=sid,
-                order_index=index,
-                question=question.get("text", ""),
-                question_type=question.get("type", "spoken"),
-                options=question.get("options", []),
-                correct_answer=question.get("expected_answer", ""),
-                concept_id=as_uuid(question.get("concept_id")),
-                difficulty=question.get("difficulty", "medium"),
-            )
-        )
-    await session.flush()
-    return QuizStartResponse(
-        quiz_session_id=sid,
-        first_question=question_out(questions[0], 0),
-        total_questions=len(questions),
-        policy_version=2,
-        score_presentation="session_total",
-        score_summary=final["score_summary"],
-        current_question=question_out(questions[0], 0),
-        available_actions=["answer", "hint", "advance"] if kind == "tutor" else ["answer"],
+    batch, source_bundle = grounded_batch_from_state(final, scope)
+    return await create_quiz_session_from_questions(
+        session,
+        student,
+        batch,
+        scope=scope,
+        source_bundle=source_bundle,
+        mode=kind,
+        base_state=final,
     )
 
 

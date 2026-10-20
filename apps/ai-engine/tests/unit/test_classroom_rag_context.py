@@ -104,7 +104,7 @@ async def test_quiz_questions_use_selected_class_material_instead_of_shared_know
             {
                 "chunk_id": "selected-class-chunk",
                 "text": (
-                    "Bahan kelas yang dipilih memuat penjelasan konsep dan contoh penerapan pembelajaran."
+                    "Bahan kelas yang dipilih memuat latihan materi pilihan, penjelasan konsep dan contoh penerapan pembelajaran."
                     if authorized
                     else "Kurikulum umum memuat penjelasan konsep dan contoh penerapan pembelajaran."
                 ),
@@ -113,11 +113,20 @@ async def test_quiz_questions_use_selected_class_material_instead_of_shared_know
 
     class ContextLLM:
         async def ainvoke(self, messages):
+            prompt = json.loads(messages[-1]["content"])
             grounded = "Bahan kelas yang dipilih" in messages[-1]["content"]
             return SimpleNamespace(
-                content='{"questions":[{"text":"'
-                + ("Latihan materi pilihan" if grounded else "Latihan umum")
-                + '","expected_answer":"A","source_indices":[1]}]}'
+                content=json.dumps(
+                    {
+                        "questions": [
+                            {
+                                "text": "Latihan materi pilihan" if grounded else "Latihan umum",
+                                "expected_answer": "A",
+                                "evidence_refs": [prompt["sources"][0]["evidence_id"]],
+                            }
+                        ]
+                    }
+                )
             )
 
     monkeypatch.setattr(problem_generator.RAGTool, "retrieve", retrieve)
@@ -172,6 +181,7 @@ async def test_unmapped_classroom_quiz_never_attributes_an_unrelated_concept(
     class ContextLLM:
         async def ainvoke(self, messages):
             prompt = messages[-1]["content"]
+            evidence_id = json.loads(prompt)["sources"][0]["evidence_id"]
             grounded = json.loads(prompt)["request"]["topic"] == "Pecahan senilai"
             return SimpleNamespace(
                 content=json.dumps(
@@ -184,7 +194,7 @@ async def test_unmapped_classroom_quiz_never_attributes_an_unrelated_concept(
                                 "type": "spoken",
                                 "expected_answer": "Dua per empat",
                                 "concept_id": unrelated_concept,
-                                "source_indices": [1],
+                                "evidence_refs": [evidence_id],
                             }
                             for number in range(generated_count)
                         ]
@@ -243,6 +253,8 @@ async def test_standalone_subject_quiz_keeps_its_resolved_concept(monkeypatch):
 
     class SubjectLLM:
         async def ainvoke(self, messages):
+            prompt = json.loads(messages[-1]["content"])
+            evidence_id = prompt["sources"][0]["evidence_id"]
             grounded = "Pecahan dari mapel pilihan" in messages[-1]["content"]
             return SimpleNamespace(
                 content=json.dumps(
@@ -252,7 +264,7 @@ async def test_standalone_subject_quiz_keeps_its_resolved_concept(monkeypatch):
                                 "text": "Latihan mapel pilihan" if grounded else "Latihan keliru",
                                 "type": "spoken",
                                 "expected_answer": "Satu per dua",
-                                "source_indices": [1],
+                                "evidence_refs": [evidence_id],
                             }
                         ]
                     }
@@ -294,6 +306,7 @@ async def test_managed_quiz_generation_leaves_session_persistence_to_assessment(
 
     class QuizLLM:
         async def ainvoke(self, messages):
+            prompt = json.loads(messages[-1]["content"])
             return SimpleNamespace(
                 content=json.dumps(
                     {
@@ -301,7 +314,7 @@ async def test_managed_quiz_generation_leaves_session_persistence_to_assessment(
                             {
                                 "text": "Jelaskan pecahan senilai.",
                                 "expected_answer": "Pecahan yang nilainya tetap sama.",
-                                "source_indices": [1],
+                                "evidence_refs": [prompt["sources"][0]["evidence_id"]],
                             }
                         ]
                     }
@@ -321,10 +334,6 @@ async def test_managed_quiz_generation_leaves_session_persistence_to_assessment(
         }
     )
 
-    if assessment_managed:
-        assert stored_sessions == []
-    else:
-        assert len(stored_sessions) == 1
-        assert stored_sessions[0][0] == "session-1"
-        assert stored_sessions[0][1]["quiz_session_id"] == result["quiz_session_id"]
-        assert stored_sessions[0][1]["quiz_questions"] == result["quiz_questions"]
+    assert stored_sessions == []
+    assert result["quiz_session_id"].startswith("quiz-")
+    assert result["quiz_questions"]

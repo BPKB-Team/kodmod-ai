@@ -1,7 +1,12 @@
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from types import SimpleNamespace as Row
 
-import pytest
+from analytics import aggregator
+from api.routes import analytics as analytics_routes
+from database import models
+from tests.unit.test_guided_learning import action_body, open_lesson
+from tests.unit.test_guided_learning import learning_http as learning_http
 
 
 def test_today_uses_browser_timezone():
@@ -50,24 +55,13 @@ def test_private_or_assisted_evidence_cannot_change_public_mastery_or_hash():
         }
     ]
     hidden = {**events[0], "id": "hidden", "visible": False, "score": 0}
-    first = visible_concept_projection(events + [hidden])
-    second = visible_concept_projection(events + [{**hidden, "score": 1}])
+    first = visible_concept_projection([*events, hidden])
+    second = visible_concept_projection([*events, {**hidden, "score": 1}])
     assert first == second
     assisted = {**events[0], "id": "assisted", "assisted": True, "score": 0}
-    assert visible_concept_projection(events + [assisted]) == visible_concept_projection(events)
+    assert visible_concept_projection([*events, assisted]) == visible_concept_projection(events)
     assert first["weak_concepts"] == [] and first["strong_concepts"] == []
     assert first["mastery_available"]
-
-
-from contextlib import asynccontextmanager
-
-from analytics import aggregator
-from api.routes import analytics as analytics_routes
-from database import models
-from sqlalchemy import select
-
-from tests.unit.test_guided_learning import action_body, open_lesson
-from tests.unit.test_guided_learning import learning_http as learning_http
 
 
 async def prepare_rollup(learning_http, monkeypatch):
@@ -127,8 +121,6 @@ async def test_tutor_completion_reaches_self_rollup_without_mastery(learning_htt
 
 
 async def test_old_legacy_activity_remains_in_all_not_recent_week(learning_http, monkeypatch):
-    import uuid
-
     await prepare_rollup(learning_http, monkeypatch)
     client, factory, controls, *_ = learning_http
     async with factory() as db:
@@ -171,13 +163,25 @@ async def test_old_legacy_activity_remains_in_all_not_recent_week(learning_http,
     assert all_data["n_practice_answers"] == 1 and recent["n_practice_answers"] == 0
 
 
-
 def test_concept_labels_require_independent_questions_in_multiple_sessions():
     from analytics.progress_projection import visible_concept_projection
-    events=[{"id":str(i),"concept_id":"c","concept_name":"Pecahan","score":0,"confidence":1,"session_id":"s1" if i<2 else "s2","question_id":str(i),"at":datetime(2026,10,18+i//2,tzinfo=UTC)} for i in range(3)]
+
+    events = [
+        {
+            "id": str(i),
+            "concept_id": "c",
+            "concept_name": "Pecahan",
+            "score": 0,
+            "confidence": 1,
+            "session_id": "s1" if i < 2 else "s2",
+            "question_id": str(i),
+            "at": datetime(2026, 10, 18 + i // 2, tzinfo=UTC),
+        }
+        for i in range(3)
+    ]
     assert not visible_concept_projection(events[:2])["weak_concepts"]
-    enough=visible_concept_projection(events)
-    assert enough["weak_concepts"][0]["evidence_count"]==3
-    assert len(enough["concept_evidence"][0]["history"])==2
-    repeated=[{**e,"question_id":"same"} for e in events]
+    enough = visible_concept_projection(events)
+    assert enough["weak_concepts"][0]["evidence_count"] == 3
+    assert len(enough["concept_evidence"][0]["history"]) == 2
+    repeated = [{**e, "question_id": "same"} for e in events]
     assert not visible_concept_projection(repeated)["weak_concepts"]
