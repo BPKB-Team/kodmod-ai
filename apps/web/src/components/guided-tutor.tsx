@@ -1,11 +1,8 @@
 "use client";
-import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
-
 
 import { useRef, useState } from "react";
 import { LoadingStatus } from "./loading-feedback";
-import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Headphones, Library, LoaderCircle, RotateCcw, Send, Sparkles } from "lucide-react";
 import type { StudentMaterial } from "@/lib/class-types";
 import type { LearningSession } from "@/lib/learning-types";
@@ -13,7 +10,7 @@ import { createQuizSubmissionId } from "@/lib/quiz-submission.mjs";
 import { confirmAction } from "@/lib/dialogs";
 import { UiText, useI18n } from "./language-provider";
 import { Button } from "./ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
+import { Card } from "./ui/card";
 import { VoiceControls } from "./voice-controls";
 import { StudentQuiz } from "./student-quiz";
 import "@/styles/guided-learning.css";
@@ -55,7 +52,6 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
   const explanation = useRef<HTMLHeadingElement>(null);
   const locked = lesson?.phase === "quiz";
   const selected = materials.find((row) => row.id === materialId);
-  const ready = selected?.rag_status === "ready" && selected.indexed_version === selected.content_version && (selected.indexed_mapping_version ?? 0) === (selected.mapping_version ?? 0);
 
   function accept(next: LearningSession, play = false) {
     setLesson(next);
@@ -123,26 +119,11 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
     } finally { inFlight.current = false; setBusy(false); }
   }
 
-  return <><LoadingStatus active={busy} label={busyLabel} /><div className="guided-workspace">
-    <aside className="guided-sidebar">
-      <Card className="guided-material-picker">
-        <CardHeader><BookOpen size={22} aria-hidden="true" /><CardTitle><UiText>{"Materi belajarmu"}</UiText></CardTitle><CardDescription><UiText>{"Pilih materi dari kartu di samping atau gunakan pilihan di bawah."}</UiText></CardDescription></CardHeader>
-        <CardContent><label className="field"><UiText>{"Materi terpilih"}</UiText><NativeSelect value={materialId} onChange={(event) => setMaterialId(event.target.value)} disabled={busy || locked || uncertain}>
-          <option value=""><UiText>{"Pilih materi"}</UiText></option>
-          {materials.map((row) => <option key={row.id} value={row.id}>{row.subject} · {row.title}</option>)}
-        </NativeSelect></label>
-        {selected && !ready && <p className="info-note" role="status"><UiText>{"Materi sedang disiapkan. Coba lagi setelah guru selesai memprosesnya."}</UiText></p>}
-        {!materials.length && <p className="info-note"><UiText>{"Minta guru membagikan materi di kelasmu untuk mulai belajar."}</UiText></p>}
-        <Button type="button" onClick={() => void begin()} disabled={busy || locked || uncertain || !ready} loading={busy && busyAction === "start"} loadingText={t("Menyiapkan Tutor…")}><Headphones size={17} aria-hidden="true" /><UiText>{"Mulai belajar"}</UiText></Button>
-        </CardContent>
-      </Card>
-      {!!sessions.length && <Card className="guided-sessions"><CardTitle><UiText>{"Lanjutkan sesi"}</UiText></CardTitle>
-        <ul>{sessions.filter((row) => row.phase !== "completed").map((row) => <li key={row.session_id}><button type="button" onClick={() => void recover(row.session_id)} disabled={busy || uncertain || (locked && row.session_id !== lesson?.session_id)} aria-current={lesson?.session_id === row.session_id ? "true" : undefined} aria-label={`${t("Lanjutkan")} ${row.material_title}. ${row.phase === "quiz" ? t("Mini kuis berjalan") : `${t("Bagian")} ${row.unit_index + 1} / ${row.total_units}`}`}>
-          <span>{row.material_title}</span><small>{row.phase === "quiz" ? t("Mini kuis berjalan") : `${t("Bagian")} ${row.unit_index + 1} / ${row.total_units}`}</small></button></li>)}</ul>
-      </Card>}
-      <div className="guided-other-paths"><Link href="/siswa/latihan"><UiText>{"Asesmen mandiri"}</UiText><ArrowRight size={16} aria-hidden="true" /></Link><Link href="/siswa/tugas"><UiText>{"Tugas"}</UiText><ArrowRight size={16} aria-hidden="true" /></Link></div>
-    </aside>
-    <div className="guided-main" aria-busy={busy}>
+  return (
+    <>
+      <LoadingStatus active={busy} label={busyLabel} />
+      <div className="guided-workspace">
+        <div className="guided-main" aria-busy={busy}>
       {error && <div className="alert error-message" role="alert"><p>{t(error)}</p>{uncertain && <Button type="button" variant="outline" disabled={busy} onClick={() => void act("repeat", true)}><UiText>{"Coba kirim kembali"}</UiText></Button>}</div>}
       {!lesson ? (
         <div className="guided-selection-container">
@@ -274,6 +255,8 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId }: {
           </> : <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><UiText>{"Sesi belajar selesai. Pilih materi lain untuk melanjutkan."}</UiText></div>}
         </Card>}
       </>}
-    </div>
-  </div></>;
+        </div>
+      </div>
+    </>
+  );
 }
