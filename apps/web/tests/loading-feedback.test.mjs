@@ -33,6 +33,10 @@ function loadComponents(language = "id", overrides = {}) {
       if (id.endsWith(".css")) return {};
       if (mocks[id]) return mocks[id];
       if (id.startsWith("@/components/")) return load(resolve(components, `${id.slice(13)}.tsx`));
+      if (id.startsWith("@/lib/")) {
+        const library = fileURLToPath(new URL("../src/lib/", import.meta.url));
+        return load(resolve(library, `${id.slice(6)}.ts`));
+      }
       if (id.startsWith(".")) return load(resolve(dirname(path), `${id}.tsx`));
       return require(id);
     };
