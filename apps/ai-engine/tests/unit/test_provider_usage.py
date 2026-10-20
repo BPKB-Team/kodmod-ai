@@ -302,6 +302,23 @@ async def test_admin_usage_is_real_bounded_filtered_and_role_protected(usage_db,
         return {"available": False}
 
     monkeypatch.setattr(admin_insights, "get_subscription_info", quota)
+    actual_costs = {
+        "configured": True,
+        "available": True,
+        "period_days": 30,
+        "currency": "USD",
+        "total_usd": 0.5,
+        "total_idr": 8250,
+        "exchange_rate": 16500.0,
+        "exchange_rate_date": "2026-10-19",
+        "fetched_at": "2026-10-20T12:00:00+00:00",
+        "error_code": None,
+    }
+
+    async def costs():
+        return actual_costs
+
+    monkeypatch.setattr(admin_insights, "get_openai_costs", costs, raising=False)
     await usage.record_usage(
         provider="openai",
         service="tutor",
@@ -339,6 +356,7 @@ async def test_admin_usage_is_real_bounded_filtered_and_role_protected(usage_db,
         response = await client.get("/admin/insights/ai-usage?limit=1&provider=openai")
         assert response.status_code == 200
         body = response.json()
+        assert body["openai_costs"] == actual_costs
         assert body["summary"]["requests"] == 2 and body["summary"]["cache_hits"] == 1
         assert body["openai"]["total_tokens"] == 10
         assert body["summary"]["estimated_cost_usd"] is None

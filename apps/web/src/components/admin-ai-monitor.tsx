@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   CircleAlert,
   Clock,
+  CircleDollarSign,
   Cpu,
   Filter,
   RefreshCw,
@@ -73,6 +74,7 @@ export function AdminAiMonitor({
   }
 
   const { elevenlabs, openai } = data;
+  const actualCosts = data.openai_costs;
 
   // ElevenLabs Calculations
   const elUsed = elevenlabs.character_count ?? 0;
@@ -81,6 +83,8 @@ export function AdminAiMonitor({
   const elPct = elLimit > 0 ? Math.min(100, Math.round((elUsed / elLimit) * 100)) : 0;
   const metric = (value: number | null | undefined) => value === null || value === undefined ? t("Belum tersedia") : value.toLocaleString(locale);
   const cost = (value: number | null | undefined) => value == null ? t("Belum tersedia") : new Intl.NumberFormat(locale, { style: "currency", currency: "USD", maximumFractionDigits: 6 }).format(value);
+  const rupiah = (value: number | null | undefined) => value == null ? t("Belum tersedia") : new Intl.NumberFormat(locale, { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
+  const displayRate = (value: number | null | undefined) => value == null ? t("Belum tersedia") : value.toLocaleString(locale, { maximumFractionDigits: 2 });
 
   // Filter requests
   const filteredRequests = data.recent_requests || [];
@@ -147,6 +151,43 @@ export function AdminAiMonitor({
       <p className="muted" style={{ margin: "-8px 0 8px 4px", fontSize: "0.82rem", color: "#64748b" }}>
         {t("Ringkasan 7 hari terakhir. Estimasi biaya memerlukan tarif dan angka penggunaan yang tersedia.")}
       </p>
+      <section className="panel ai-cost-actual" aria-labelledby="ai-cost-actual-title">
+        <div className="ai-cost-actual-heading">
+          <div>
+            <span className="analytics-kicker">
+              <CircleDollarSign size={14} aria-hidden="true" />
+              <UiText>{" BIAYA AKTUAL ORGANISASI"}</UiText>
+            </span>
+            <h2 id="ai-cost-actual-title"><UiText>{"Biaya aktual OpenAI"}</UiText></h2>
+            <p><UiText>{"Biaya seluruh organisasi OpenAI dari Costs API untuk 30 hari terakhir."}</UiText></p>
+          </div>
+          <span className="ai-cost-actual-source"><UiText>{"Sumber: OpenAI Costs API"}</UiText></span>
+        </div>
+        <div className="ai-cost-actual-values">
+          <div>
+            <span><UiText>{"USD aktual"}</UiText></span>
+            <strong>{cost(actualCosts.total_usd)}</strong>
+          </div>
+          <div>
+            <span><UiText>{"Konversi rupiah"}</UiText></span>
+            <strong>{rupiah(actualCosts.total_idr)}</strong>
+          </div>
+        </div>
+        <p className="ai-cost-actual-note">
+          {actualCosts.exchange_rate !== null && actualCosts.exchange_rate_date ? (
+            <>
+              <UiText>{"Kurs referensi"}</UiText>: 1 USD = {displayRate(actualCosts.exchange_rate)} IDR · <UiText>{"Data kurs"}</UiText> {actualCosts.exchange_rate_date}.{" "}
+              <UiText>{"Konversi rupiah hanya referensi dan bukan nilai tagihan OpenAI."}</UiText>
+            </>
+          ) : actualCosts.error_code === "admin_key_missing" ? (
+            <UiText>{"Tambahkan OPENAI_ADMIN_KEY ke environment backend untuk memuat biaya aktual."}</UiText>
+          ) : actualCosts.available ? (
+            <UiText>{"Biaya USD tersedia, tetapi kurs konversi rupiah belum dapat dimuat."}</UiText>
+          ) : (
+            <UiText>{"Biaya aktual belum dapat dimuat. Periksa Admin API key dan akses organisasi OpenAI."}</UiText>
+          )}
+        </p>
+      </section>
 
       {/* Grid: 2 Provider Quota Cards */}
       <div className="ai-quota-grid">

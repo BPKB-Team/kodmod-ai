@@ -140,6 +140,7 @@ export function createLearningFixture({ legacyPending = false, quizFailureQueue 
           character_limit: null, next_reset_unix: null, tts_model: "eleven_multilingual_v2", tts_voice_id: "fixture", stt_backend: "elevenlabs" },
         openai: { configured: true, usage_available: false, total_tokens: null, prompt_tokens: null, completion_tokens: null,
           models: { tutor: "gpt-6-luna", router: "gpt-6-luna", quiz: "gpt-6-luna", embedding: "fixture" } },
+        openai_costs: { configured: false, available: false, period_days: 30, currency: "USD", total_usd: null, total_idr: null, exchange_rate: null, exchange_rate_date: null, fetched_at: "2026-10-20T12:00:00Z", error_code: "admin_key_missing" },
       });
       return true;
     }

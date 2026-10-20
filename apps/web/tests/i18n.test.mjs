@@ -21,6 +21,11 @@ test("interface language keeps content and word boundaries intact", () => {
   assert.equal(translate("Keluarkan {name}", "en", { name: "Siswa Uji" }), "Remove Siswa Uji");
 });
 
+test("OpenAI billing labels have English interface copy", () => {
+  for (const key of ["Biaya aktual OpenAI", "USD aktual", "Konversi rupiah", "Sumber: OpenAI Costs API"]) {
+    assert.notEqual(translate(key, "en"), key);
+  }
+});
 test("registration, onboarding, narration and confirmation have English copy", () => {
   for (const key of ["Buat akun KODMOD", "Pilih suara untuk belajar", "Pembaca menu", "Suara Tutor", "Pengaturan suara", "Ya, keluar", "Username atau kata sandi tidak sesuai.", "Menunggu review", "Belum ada materi"]) {
     assert.ok(Object.hasOwn(english, key), `Missing English interface copy: ${key}`);

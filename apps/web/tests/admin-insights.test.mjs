@@ -28,6 +28,10 @@ test("admin insights returns operational overview and redacted activity", () => 
   assert.equal(overview.data.providers.elevenlabs.enabled, false);
   assert.equal(typeof overview.data.providers.elevenlabs.configured, "boolean");
 
+  const aiUsage = request("/admin/insights/ai-usage");
+  assert.equal(aiUsage.status, 200);
+  assert.equal(aiUsage.data.openai_costs.configured, false);
+  assert.equal(aiUsage.data.openai_costs.error_code, "admin_key_missing");
   const activity = request("/admin/activity?limit=10");
   assert.equal(activity.status, 200);
   assert.ok(Array.isArray(activity.data.items));

@@ -28,6 +28,7 @@ from database.models import (
     QuizSession,
     User,
 )
+from tools.openai_costs import get_openai_costs
 from voice.elevenlabs import get_subscription_info
 
 router = APIRouter(
@@ -317,6 +318,7 @@ async def ai_usage(
     )
     return {
         "generated_at": datetime.now(UTC).isoformat(),
+        "openai_costs": await get_openai_costs(),
         "elevenlabs": {
             "enabled": settings.TTS_BACKEND == "elevenlabs" or settings.STT_BACKEND == "elevenlabs",
             "configured": bool(settings.ELEVENLABS_API_KEY),

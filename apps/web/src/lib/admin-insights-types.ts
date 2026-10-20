@@ -91,6 +91,18 @@ export type AdminAiUsage = {
       embedding: string;
     };
   };
+  openai_costs: {
+    configured: boolean;
+    available: boolean;
+    period_days: number;
+    currency: "USD";
+    total_usd: number | null;
+    total_idr: number | null;
+    exchange_rate: number | null;
+    exchange_rate_date: string | null;
+    fetched_at: string;
+    error_code: "admin_key_missing" | "openai_costs_unavailable" | "exchange_rate_unavailable" | "unsupported_currency" | null;
+  };
   recent_requests: AdminAiRequestLog[];
   period_days?: number;
   summary?: { requests: number; provider_calls: number; successes: number; errors: number; cache_hits: number;
