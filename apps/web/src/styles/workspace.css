@@ -136,11 +136,9 @@
 }
 
 .workspace-main .guided-workspace {
-  grid-template-columns: minmax(15rem, 19rem) minmax(0, 1fr);
-}
-
-.workspace-main .guided-sidebar {
   grid-template-columns: minmax(0, 1fr);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .workspace-main .guided-material-card,
@@ -179,17 +177,13 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .workspace-main .guided-sidebar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .workspace-main :is(.editorial-aside, .editorial-progress) {
     position: static;
   }
 }
 
 @container workspace (max-width: 46rem) {
-  .workspace-main :is(.analytics-columns, .analytics-lower-grid, .teacher-columns, .admin-insight-columns, .guided-sidebar) {
+  .workspace-main :is(.analytics-columns, .analytics-lower-grid, .teacher-columns, .admin-insight-columns) {
     grid-template-columns: minmax(0, 1fr);
   }
 

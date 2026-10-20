@@ -1406,46 +1406,64 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
 }
 
 .student-main-content .analytics-voice-card .voice-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .student-main-content .analytics-voice-card .voice-actions .button {
+  width: 100%;
+  min-height: 46px;
   padding: 8px 16px;
-  border-radius: 12px;
-  font-weight: 700;
+  border-radius: 13px;
+  font-weight: 750;
   font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .student-main-content .analytics-voice-card .voice-actions .button.primary {
-  background: #1e3a8a;
+  background: #2563eb;
   border: 1.5px solid #3b82f6;
-  box-shadow: 0 4px 0 #172554;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);
   color: #ffffff;
-  transition: all 0.15s ease;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .student-main-content .analytics-voice-card .voice-actions .button.primary:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 #172554;
+  background: #1d4ed8;
+  border-color: #2563eb;
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.32);
+}
+
+.student-main-content .analytics-voice-card .voice-actions .button.primary:active {
+  transform: translateY(0);
 }
 
 .student-main-content .analytics-voice-card .voice-actions .button.secondary {
-  background: #f8fafc;
+  background: #ffffff;
   border: 1.5px solid #cbd5e1;
-  box-shadow: 0 3px 0 #94a3b8;
-  color: #334155;
-  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  color: #1e3a8a;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .student-main-content .analytics-voice-card .voice-actions .button.secondary:hover {
+  background: #f0f7ff;
   border-color: #3b82f6;
   color: #1d4ed8;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 0 #2563eb;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+.student-main-content .analytics-voice-card .voice-actions .button.secondary:active {
+  transform: translateY(0);
 }
 
 .student-main-content .analytics-voice-card .voice-status {

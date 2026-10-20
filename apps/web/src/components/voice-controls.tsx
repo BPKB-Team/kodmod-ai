@@ -1,7 +1,7 @@
 "use client";
 import { Spinner } from "./ui/spinner";
 import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
-import { Headphones, Mic, Pause, Play, Settings2, Square } from "lucide-react";
+import { Headphones, Mic, Pause, Play, RotateCcw, Settings2, Square } from "lucide-react";
 import { speechOutput } from "@/lib/browser-speech";
 import { useVoicePreferences } from "./voice-preferences-provider";
 import { useI18n } from "./language-provider";
@@ -114,7 +114,7 @@ export function VoiceControls({ text, onTranscript, autoPlayKey, language: conte
         {t(capture === "recording" ? "Berhenti" : busy ? busyLabel : "Jawab dengan suara")}
       </button>}
       <button type="button" className="button secondary" onClick={stop} disabled={!active && capture === "idle"}><Square size={16} aria-hidden="true" />{t("Hentikan suara")}</button>
-      <button type="button" className="button secondary" onClick={() => void play()} disabled={!text.trim() || busy || capture === "recording" || state === "loading"}>{t("Ulangi")}</button>
+      <button type="button" className="button secondary" onClick={() => void play()} disabled={!text.trim() || busy || capture === "recording" || state === "loading"}><RotateCcw size={16} aria-hidden="true" />{t("Ulangi")}</button>
     </div>
     <p className={`voice-status ${state === "error" || state === "blocked" ? "voice-status-error" : ""}`} role="status">
       {!busy && state !== "loading" && t(output.owner === owner && output.message ? output.message : message || (state === "playing" ? "Sedang membacakan." : state === "paused" ? "Pembacaan dijeda." : ""))}
