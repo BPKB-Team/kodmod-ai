@@ -20,7 +20,7 @@ test("question autoplay survives StrictMode cleanup and pauses while voice setti
   const icon = () => null;
   const mocks = {
     "./loading-feedback": { LoadingStatus: icon }, "./ui/spinner": { Spinner: icon },
-    "lucide-react": { Headphones: icon, Mic: icon, Pause: icon, Play: icon, Settings2: icon, Square: icon },
+    "lucide-react": { Headphones: icon, Mic: icon, Pause: icon, Play: icon, RotateCcw: icon, Settings2: icon, Square: icon },
     "@/lib/browser-speech": { speechOutput: speech },
     "./voice-preferences-provider": { useVoicePreferences: () => preferences },
     "./language-provider": { useI18n: () => ({ language: "id", t: text => text }) },

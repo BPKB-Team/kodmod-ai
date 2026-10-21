@@ -17,6 +17,7 @@ import { quizPointsLabel, legacyItemPointsLabel } from "@/lib/quiz-points-displa
 import { prepareQuizAction, readQuizInteraction, quizUiState } from "@/lib/quiz-actions.mjs";
 import { VoiceControls } from "./voice-controls";
 import { LoadingStatus } from "./loading-feedback";
+import { speechOutput } from "@/lib/browser-speech";
 
 type Phase = "idle" | "starting" | "active" | "submitting" | "review" | "complete";
 
@@ -122,6 +123,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
       setAnswer("");
       setNextQuestion(null);
       setItemPoints(null);
+      void speechOutput.play({ owner: "quiz", text: "Sedang menyiapkan soal latihan dari materi, mohon tunggu sebentar...", language: "id", engine: "app" });
       const payload: Record<string, number | string> = { n_questions: Number(count) };
       payload.class_id = selectedMaterial.class_id;
       payload.material_id = selectedMaterial.id;
@@ -139,6 +141,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
       setTotalQuestions(result.total_questions);
       beginAnswer();
       setPhase("active");
+      void speechOutput.play({ owner: "quiz", text: "Soal latihan sudah siap, silakan mulai menjawab.", language: "id", engine: "app" });
     } catch (caught) {
       setPhase("idle");
       setError(caught instanceof Error ? caught.message : "Latihan belum dapat dimulai.");
@@ -154,6 +157,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
     acceptingAnswer.current = false;
     setPhase("submitting");
     setError("");
+    void speechOutput.play({ owner: "quiz", text: "Sedang memeriksa jawabanmu...", language: "id", engine: "app" });
     let completionMessage: string | null = null;
     try {
       const payload = prepareQuizSubmission(pendingSubmission.current, {
@@ -182,6 +186,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
       setPhase(result.quiz_complete ? "complete" : "review");
       if (result.quiz_complete) {
         completionMessage = result.policy_version === 2 ? result.final_summary || "Latihan selesai." : t("Latihan selesai.");
+        void speechOutput.play({ owner: "quiz", text: `Latihan selesai! ${completionMessage}`, language: "id", engine: "app" });
       }
     } catch (caught) {
       const action = pendingSubmission.current ? submissionFailureAction(caught) : "edit";

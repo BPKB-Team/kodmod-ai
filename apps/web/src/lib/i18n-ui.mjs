@@ -566,4 +566,5 @@ export const englishUi = {
   "{count} dari {total} materi selesai bersama Tutor": "{count} of {total} materials completed with Tutor",
   "Cek pemahaman siap dijawab di bawah.": "Your understanding check is ready below.",
   "Mini kuis percakapan": "Conversation quiz",
+  "Pertanyaan Tutor": "Tutor Question",
 };

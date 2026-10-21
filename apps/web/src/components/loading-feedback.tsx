@@ -25,7 +25,6 @@ export function PageLoading({ label = "Memuat halaman…", layout = "dashboard" 
       {Array.from({ length: 4 }, (_, i) => <div key={i}><Skeleton /><Skeleton /></div>)}
     </div>}
     <div className="page-loading-body" aria-hidden="true">
-      {layout === "tutor" && <div className="page-loading-sidebar"><Skeleton /><Skeleton /><Skeleton /></div>}
       <div className="page-loading-panel">
         <Skeleton className="page-loading-line-title" />
         {Array.from({ length: layout === "form" ? 4 : 5 }, (_, i) => <Skeleton key={i} className={layout === "form" ? "page-loading-field" : "page-loading-line"} />)}

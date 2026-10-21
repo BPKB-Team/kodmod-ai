@@ -29,7 +29,10 @@ const hooks=registerHooks({
   }
   if(specifier.startsWith(".")&&context.parentURL?.startsWith("file:")){
    const url=new URL(specifier,context.parentURL);
-   if(!existsSync(url)&&existsSync(new URL(url.href+".tsx")))return{shortCircuit:true,url:url.href+".tsx"};
+   if(!existsSync(url)){
+    const extension=[".tsx",".ts"].find(value=>existsSync(new URL(url.href+value)));
+    if(extension)return{shortCircuit:true,url:url.href+extension};
+   }
   }
   return next(specifier,context);
  },

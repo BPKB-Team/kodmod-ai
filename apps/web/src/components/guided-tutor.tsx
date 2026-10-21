@@ -16,7 +16,141 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { VoiceControls } from "./voice-controls";
 import { StudentQuiz } from "./student-quiz";
+import { speechOutput } from "@/lib/browser-speech";
 import "@/styles/guided-learning.css";
+
+function formatLessonContent(text: string) {
+  if (!text || !text.trim()) return null;
+
+  const raw = text.trim();
+  const explicitParagraphs = raw.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+
+  // If text is a single continuous wall of text without newlines, intelligently format into paragraphs, examples, and socratic prompts
+  if (explicitParagraphs.length === 1 && raw.length > 130) {
+    const sentences = raw.match(/[^.!?]+[.!?]+(?:\s+|$)|[^.!?]+$/g)?.map((s) => s.trim()).filter(Boolean) || [raw];
+    if (sentences.length >= 3) {
+      const parsedBlocks: { type: "paragraph" | "example" | "socratic"; text: string }[] = [];
+      let currentParagraph: string[] = [];
+
+      for (let i = 0; i < sentences.length; i++) {
+        const s = sentences[i];
+        const isLast = i === sentences.length - 1;
+        const isQuestion = s.endsWith("?") || /^(menurutmu|bagaimana|coba|apa yang|mengapa|apakah)/i.test(s);
+        const isExample = /^(contohnya|misalnya|sebagai contoh|sebagai gambaran|contoh:)/i.test(s);
+
+        if (isLast && isQuestion) {
+          if (currentParagraph.length) {
+            parsedBlocks.push({ type: "paragraph", text: currentParagraph.join(" ") });
+            currentParagraph = [];
+          }
+          parsedBlocks.push({ type: "socratic", text: s });
+        } else if (isExample) {
+          if (currentParagraph.length) {
+            parsedBlocks.push({ type: "paragraph", text: currentParagraph.join(" ") });
+            currentParagraph = [];
+          }
+          const nextS = sentences[i + 1];
+          const nextIsQuestion = nextS && (nextS.endsWith("?") || /^(menurutmu|bagaimana)/i.test(nextS));
+          if (nextS && !nextIsQuestion && !/^(contohnya|misalnya)/i.test(nextS) && i + 1 < sentences.length - 1) {
+            parsedBlocks.push({ type: "example", text: `${s} ${nextS}` });
+            i++;
+          } else {
+            parsedBlocks.push({ type: "example", text: s });
+          }
+        } else {
+          currentParagraph.push(s);
+          if (currentParagraph.length >= 2) {
+            parsedBlocks.push({ type: "paragraph", text: currentParagraph.join(" ") });
+            currentParagraph = [];
+          }
+        }
+      }
+      if (currentParagraph.length) {
+        parsedBlocks.push({ type: "paragraph", text: currentParagraph.join(" ") });
+      }
+
+      return (
+        <>
+          {parsedBlocks.map((b, idx) => {
+            if (b.type === "socratic") {
+              return (
+                <div key={idx} className="guided-socratic-prompt">
+                  <div className="guided-prompt-header">
+                    <Sparkles size={16} aria-hidden="true" />
+                    <span><UiText>{"Pertanyaan Tutor"}</UiText></span>
+                  </div>
+                  <p>{b.text}</p>
+                </div>
+              );
+            }
+            if (b.type === "example") {
+              return (
+                <div key={idx} className="guided-example-card">
+                  <p>{b.text}</p>
+                </div>
+              );
+            }
+            return <p key={idx}>{b.text}</p>;
+          })}
+        </>
+      );
+    }
+  }
+
+  // Handle explicit paragraphs and list items
+  return (
+    <>
+      {explicitParagraphs.map((block, idx) => {
+        const lines = block.split(/\n/).map((l) => l.trim()).filter(Boolean);
+        const isBulletList = lines.length > 1 && lines.every((l) => /^[-*•]\s+/.test(l));
+        const isNumList = lines.length > 1 && lines.every((l) => /^\d+[.)]\s+/.test(l));
+
+        if (isBulletList) {
+          return (
+            <ul key={idx}>
+              {lines.map((l, liIdx) => (
+                <li key={liIdx}>{l.replace(/^[-*•]\s+/, "")}</li>
+              ))}
+            </ul>
+          );
+        }
+        if (isNumList) {
+          return (
+            <ol key={idx}>
+              {lines.map((l, liIdx) => (
+                <li key={liIdx}>{l.replace(/^\d+[.)]\s+/, "")}</li>
+              ))}
+            </ol>
+          );
+        }
+
+        const isQuestion = block.endsWith("?") && /^(menurutmu|bagaimana|coba|apa yang|mengapa|apakah)/i.test(block);
+        if (isQuestion) {
+          return (
+            <div key={idx} className="guided-socratic-prompt">
+              <div className="guided-prompt-header">
+                <Sparkles size={16} aria-hidden="true" />
+                <span><UiText>{"Pertanyaan Tutor"}</UiText></span>
+              </div>
+              <p>{block}</p>
+            </div>
+          );
+        }
+
+        const isExample = /^(contohnya|misalnya|sebagai contoh|sebagai gambaran|contoh:)/i.test(block);
+        if (isExample) {
+          return (
+            <div key={idx} className="guided-example-card">
+              <p>{block}</p>
+            </div>
+          );
+        }
+
+        return <p key={idx}>{block}</p>;
+      })}
+    </>
+  );
+}
 
 async function read<T>(response: Response): Promise<T> {
   const body = await response.json();
@@ -82,9 +216,12 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
     if (!(await confirmAction({ title: "Mulai belajar materi ini?", text: mat.title, confirmText: "Mulai belajar" }))) return;
     inFlight.current = true; setBusy(true); setError("");
     setBusyLabel("Menyiapkan penjelasan Tutor…"); setBusyAction("start");
+    void speechOutput.play({ owner: "guided-tutor", text: "Sedang menyiapkan penjelasan Tutor, mohon tunggu sebentar...", language: "id", engine: "app" });
     try {
       const response = await fetch("/api/learning/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ class_id: mat.class_id, material_id: mat.id }) });
-      accept(await read<LearningSession>(response), true); setLastQuestion(""); setDraft("");
+      const nextSession = await read<LearningSession>(response);
+      accept(nextSession, true); setLastQuestion(""); setDraft("");
+      void speechOutput.play({ owner: "guided-tutor", text: "Penjelasan Tutor sudah siap, selamat belajar.", language: "id", engine: "app" });
     } catch (caught) { setError(caught instanceof Error ? caught.message : t("Belajar belum dapat dimulai.")); }
     finally { inFlight.current = false; setBusy(false); }
   }
@@ -107,11 +244,35 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
     const requestedAction = String(request.body.action);
     setBusyAction(requestedAction);
     setBusyLabel(requestedAction === "question" ? "Tutor sedang menyiapkan jawaban…" : ["quiz", "check"].includes(requestedAction) ? "Menyiapkan mini kuis…" : requestedAction === "finish" ? "Menyimpan progres belajar…" : "Menyiapkan penjelasan Tutor…");
+    if (requestedAction === "question") {
+      void speechOutput.play({ owner: "guided-tutor", text: "Tutor sedang menyiapkan jawaban untuk pertanyaanmu, mohon tunggu sebentar...", language: "id", engine: "app" });
+    } else if (["quiz", "check"].includes(requestedAction)) {
+      void speechOutput.play({ owner: "guided-tutor", text: "Sedang menyiapkan mini kuis pemahaman materi, mohon tunggu sebentar...", language: "id", engine: "app" });
+    } else if (requestedAction === "finish") {
+      void speechOutput.play({ owner: "guided-tutor", text: "Sedang menyelesaikan dan menyimpan progres belajar...", language: "id", engine: "app" });
+    } else if (requestedAction === "repeat") {
+      void speechOutput.play({ owner: "guided-tutor", text: "Sedang menyiapkan penjelasan ulang yang lebih sederhana, mohon tunggu sebentar...", language: "id", engine: "app" });
+    } else {
+      void speechOutput.play({ owner: "guided-tutor", text: "Sedang menyiapkan bagian materi berikutnya, mohon tunggu sebentar...", language: "id", engine: "app" });
+    }
     try {
       const next = await read<LearningSession>(await fetch(request.path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request.body) }));
       pending.current = null; setUncertain(false); accept(next, true);
-      if (request.body.action === "question") { setLastQuestion(String(request.body.text)); setDraft(""); }
-      else setLastQuestion("");
+      if (request.body.action === "question") {
+        setLastQuestion(String(request.body.text)); setDraft("");
+        void speechOutput.play({ owner: "guided-tutor", text: "Jawaban dari Tutor sudah siap.", language: "id", engine: "app" });
+      } else if (["quiz", "check"].includes(requestedAction)) {
+        void speechOutput.play({ owner: "guided-tutor", text: "Mini kuis sudah siap, mari kita uji pemahamanmu.", language: "id", engine: "app" });
+      } else if (requestedAction === "finish") {
+        void speechOutput.play({ owner: "guided-tutor", text: "Sesi belajar selesai, kerja bagus! Kembali ke pilihan materi dalam beberapa detik...", language: "id", engine: "app" });
+        await new Promise((r) => setTimeout(r, 2500));
+        setLesson(null);
+      } else if (requestedAction === "repeat") {
+        void speechOutput.play({ owner: "guided-tutor", text: "Penjelasan ulang sudah siap.", language: "id", engine: "app" });
+      } else {
+        void speechOutput.play({ owner: "guided-tutor", text: "Materi berikutnya sudah siap, mari kita lanjutkan.", language: "id", engine: "app" });
+      }
+      if (request.body.action !== "question") setLastQuestion("");
     } catch (caught) {
       const status = caught && typeof caught === "object" && "status" in caught ? Number(caught.status) : 503;
       if ([400, 401, 403, 404, 409, 422].includes(status)) { pending.current = null; setUncertain(false); }
@@ -247,7 +408,7 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
         ) : <Card className="guided-lesson">
           <header className="guided-lesson-heading"><span className="guided-symbol"><Headphones size={24} aria-hidden="true" /></span><h2 ref={explanation} tabIndex={-1}>{lesson.unit_title || `${t("Bagian")} ${lesson.unit_index + 1}`}</h2></header>
           {lastQuestion && <div className="guided-your-question"><strong><UiText>{"Pertanyaanmu"}</UiText></strong><p>{lastQuestion}</p></div>}
-          <div className="guided-explanation" role="region" aria-label={t("Penjelasan Tutor")}><p>{lesson.text}</p></div>
+          <div className="guided-explanation" role="region" aria-label={t("Penjelasan Tutor")}>{formatLessonContent(lesson.text)}</div>
           <VoiceControls text={lesson.text} language={lesson.language} autoPlayKey={autoPlayKey} onTranscript={lesson.phase === "learning" && !busy && !uncertain ? setDraft : undefined} />
           <p className="guided-source"><BookOpen size={16} aria-hidden="true" /><UiText>{"Sumber"}</UiText>{`: ${lesson.source_filename || lesson.material_title}`}</p>
           {lesson.quiz?.status === "completed" && <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><div><strong><UiText>{"Mini kuis selesai"}</UiText> · {lesson.quiz.score_summary ? quizPointsLabel(lesson.quiz.score_summary, language) : t("Hasil tersimpan")}</strong><p>{lesson.quiz.policy_version === 2 ? lesson.quiz.last_review : t("Hasil latihan tersimpan.")}</p></div></div>}
