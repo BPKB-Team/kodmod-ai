@@ -20,6 +20,7 @@ function loadComponents(language = "id", overrides = {}) {
     "@/components/language-provider": i18n,
     "@/lib/utils": { cn: (...parts) => parts.filter(Boolean).join(" ") },
     "@/lib/dialogs": { confirmAction: async () => true, notifyResult: async () => {} },
+    "@/lib/browser-speech": { speechOutput: { play: async () => {}, stop: () => {}, getState: () => ({ status: "idle" }), subscribe: () => () => {} } },
     ...overrides,
   };
   function load(path) {

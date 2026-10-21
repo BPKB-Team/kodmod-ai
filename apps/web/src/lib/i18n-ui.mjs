@@ -456,4 +456,5 @@ export const englishUi = {
   "Sumber": "Source", "Belajar dengan Tutor": "Learn with Tutor", "Belajar:": "Learning:", "Daftar materi": "Material list",
   "Navigasi dengan geser": "Swipe navigation",
   "Geser kanan atau kiri untuk pindah menu. Matikan saat memakai pembaca layar perangkat.": "Swipe right or left to move between controls. Turn this off when using your device screen reader.",
+  "Pertanyaan Tutor": "Tutor Question",
 };

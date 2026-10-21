@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { backend, BackendError } from "@/lib/server-api";
 import { requireSession } from "@/lib/session";
 import type { ActionState } from "@/lib/types";
@@ -48,7 +47,10 @@ export async function createClass(
     return failure(error);
   }
   refresh();
-  redirect(`/guru/kelas/${row.id}?success=class-created`);
+  return {
+    success: "Kelas berhasil dibuat. Tambahkan siswa dan materi untuk mulai belajar.",
+    redirectUrl: `/guru/kelas/${row.id}?success=class-created`,
+  };
 }
 
 export async function changeClass(
@@ -144,7 +146,11 @@ export async function saveMaterial(
     return failure(error);
   }
   refresh();
-  if (!materialId)
-    redirect(`/guru/kelas/${effectiveClassId}/materi/${row.id}?success=material-saved`);
+  if (!materialId) {
+    return {
+      success: "Materi berhasil disimpan dan siap dipelajari.",
+      redirectUrl: `/guru/kelas/${effectiveClassId}/materi/${row.id}?success=material-saved`,
+    };
+  }
   return { success: "Materi disimpan sesuai status publikasinya." };
 }

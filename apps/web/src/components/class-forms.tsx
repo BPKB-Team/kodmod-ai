@@ -20,6 +20,7 @@ import { LoadingStatus } from "./loading-feedback";
 import { Spinner } from "./ui/spinner";
 import { Button } from "./ui/button";
 import { RefreshButton } from "./refresh-button";
+import { speechOutput } from "@/lib/browser-speech";
 
 export function ClassForm({ subjects = [] }: { subjects?: CurriculumSubject[] }) {
   const { t } = useI18n();
@@ -33,7 +34,7 @@ export function ClassForm({ subjects = [] }: { subjects?: CurriculumSubject[] })
     title: "Buat kelas baru?",
     text: "Kelas akan tersedia untuk Anda. Siswa dapat mengakses setelah ditambahkan sebagai anggota.",
     confirmText: "Ya, buat kelas",
-  });
+  }, "Sedang memproses pembuatan kelas baru, mohon tunggu sebentar...");
   const creatingSubject = values.subjectId === "__new__";
   return (
     <form
@@ -292,6 +293,9 @@ export function MaterialForm({
         : "Materi ini hanya dapat dibaca guru. Siswa tidak akan melihatnya sampai diterbitkan.",
       confirmText: published ? "Ya, terbitkan" : "Ya, simpan draft",
     },
+    published
+      ? "Sedang memproses dan menerbitkan materi pembelajaran, mohon tunggu sebentar..."
+      : "Sedang menyimpan draft materi pembelajaran, mohon tunggu sebentar...",
   );
   const canChangeTarget = canChangeMaterialTarget({ importing, hasBook: Boolean(book), sourceImportId, pending });
 
@@ -325,6 +329,7 @@ export function MaterialForm({
     setImportStage("Mengunggah dokumen…");
     setImportError("");
     setImportNotice("");
+    void speechOutput.play({ owner: "material-form", text: "Sedang membaca dan memproses dokumen materi dengan kecerdasan buatan, mohon tunggu sebentar...", language: "id", engine: "app" });
     try {
       const body = new FormData();
       body.set("file", file);
@@ -354,8 +359,12 @@ export function MaterialForm({
       record = await response.json();
     }
     setImportRefresh(value => value + 1);
-    if (record.state === "complete") await applyPreview(record);
-    else setImportNotice(t("Dokumen sedang diproses. Anda boleh meninggalkan halaman ini dan melanjutkan dari Dokumen tersimpan."));
+    if (record.state === "complete") {
+      void speechOutput.play({ owner: "material-form", text: "Pemrosesan dokumen selesai, isi materi siap ditinjau.", language: "id", engine: "app" });
+      await applyPreview(record);
+    } else {
+      setImportNotice(t("Dokumen sedang diproses. Anda boleh meninggalkan halaman ini dan melanjutkan dari Dokumen tersimpan."));
+    }
   }
 
   async function applyPreview(record: MaterialImportRecord) {
@@ -396,6 +405,7 @@ export function MaterialForm({
       if (!(await confirmAction({ title: "Baca halaman terpilih?", text: "Halaman ini akan dibaca dari dokumen yang tersimpan.", confirmText: "Baca halaman" }))) return;
       setImporting(true);
       setImportStage("Menyiapkan halaman terpilih…");
+      void speechOutput.play({ owner: "material-form", text: "Sedang membaca halaman terpilih dari dokumen, mohon tunggu sebentar...", language: "id", engine: "app" });
       const response = await fetch(`/api/classes/${effectiveClassId}/imports/${book.importId}/pages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ first_page: selection.first, last_page: selection.last }) });
       const receipt = await response.json();
       if (!response.ok) throw new Error(receipt.message || "Pilihan halaman tidak valid.");
@@ -407,11 +417,13 @@ export function MaterialForm({
   async function retryIndex() {
     if (!material?.published || !effectiveClassId || !(await confirmAction({ title: "Siapkan materi untuk Tutor?", text: "Tutor akan memakai isi materi yang terakhir disimpan. Perubahan di editor perlu disimpan terlebih dahulu.", confirmText: "Ya, siapkan materi" }))) return;
     setIndexing(true);
+    void speechOutput.play({ owner: "material-form", text: "Sedang menyiapkan materi untuk Tutor kecerdasan buatan, mohon tunggu sebentar...", language: "id", engine: "app" });
     try {
       const response = await fetch(`/api/classes/${effectiveClassId}/materials/${material.id}/index`, { method: "POST" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Materi belum dapat disiapkan.");
       await notifyResult("Materi sedang disiapkan untuk Tutor. Perbarui status untuk melihat hasilnya.");
+      void speechOutput.play({ owner: "material-form", text: "Materi berhasil disiapkan untuk Tutor kecerdasan buatan.", language: "id", engine: "app" });
       router.refresh();
     } catch (error) { await notifyResult(error instanceof Error ? error.message : "Materi belum dapat disiapkan.", true); }
     finally { setIndexing(false); }
@@ -568,9 +580,29 @@ export function MaterialForm({
           <div className="material-preview-card">
             {content.trim() ? (
               <div className="material-formatted-preview">
-                {content.split(/\n\n+/).map((para, i) => (
-                  <p key={i}>{para}</p>
-                ))}
+                {content.split(/\n\s*\n+/).map((para, i) => {
+                  const trimmed = para.trim();
+                  const lines = trimmed.split(/\n/).map((l) => l.trim()).filter(Boolean);
+                  if (lines.length > 1 && lines.every((l) => /^[-*•]\s+/.test(l))) {
+                    return (
+                      <ul key={i}>
+                        {lines.map((l, liIdx) => (
+                          <li key={liIdx}>{l.replace(/^[-*•]\s+/, "")}</li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  if (lines.length > 1 && lines.every((l) => /^\d+[.)]\s+/.test(l))) {
+                    return (
+                      <ol key={i}>
+                        {lines.map((l, liIdx) => (
+                          <li key={liIdx}>{l.replace(/^\d+[.)]\s+/, "")}</li>
+                        ))}
+                      </ol>
+                    );
+                  }
+                  return <p key={i}>{trimmed}</p>;
+                })}
               </div>
             ) : (
               <div className="material-preview-empty">

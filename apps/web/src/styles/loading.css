@@ -8,21 +8,21 @@
 .loading-feedback p { margin: .2rem 0 0; font-size: .88rem; color: var(--muted, #52677f); }
 .loading-feedback-compact { display: inline-flex; gap: .5rem; padding: .3rem 0; border: 0; background: transparent; margin-block: .25rem; }
 .loading-feedback-compact strong { font-size: .85rem; }
-.page-loading { display: grid; gap: 1.4rem; padding-block: .5rem; }
+.page-loading { display: grid; gap: 1.4rem; padding-block: .5rem; width: 100%; max-width: 100%; }
 .page-loading > .loading-feedback { margin: 0; justify-self: start; }
 .kodmod-skeleton { border-radius: 8px; background: var(--line, #d7e4f6); position: relative; overflow: hidden; min-height: 1rem; }
 .kodmod-skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, #ffffff75, transparent); transform: translateX(-100%); animation: kodmod-loading-shimmer 1.8s ease-in-out infinite; }
 @keyframes kodmod-loading-shimmer { to { transform: translateX(100%); } }
-.page-loading-heading { display: grid; gap: .75rem; }
+.page-loading-heading { display: grid; gap: .75rem; width: 100%; }
 .page-loading-heading > :first-child { width: min(20rem, 65%); min-height: 2.25rem; }
 .page-loading-heading > :last-child { width: min(34rem, 90%); }
-.page-loading-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
-.page-loading-stats > div, .page-loading-panel, .page-loading-sidebar { padding: 1.4rem; border: 1px solid var(--line, #d7e4f6); border-radius: 18px; background: var(--white, #fff); display: grid; gap: 1rem; }
+.page-loading-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; width: 100%; }
+.page-loading-stats > div, .page-loading-panel, .page-loading-sidebar { padding: 1.4rem; border: 1px solid var(--line, #d7e4f6); border-radius: 18px; background: var(--white, #fff); display: grid; gap: 1rem; box-sizing: border-box; }
 .page-loading-stats > div > :first-child { width: 65%; }
 .page-loading-stats > div > :last-child { width: 40%; min-height: 2rem; }
-.page-loading-body { display: grid; gap: 1rem; }
-.page-loading-tutor .page-loading-body { grid-template-columns: minmax(12rem, 1fr) minmax(0, 3fr); }
-.page-loading-panel { min-height: 15rem; align-content: start; gap: 1.15rem; }
+.page-loading-body { display: grid; gap: 1rem; width: 100%; max-width: 100%; }
+.page-loading-tutor .page-loading-body { grid-template-columns: minmax(0, 1fr); width: 100%; }
+.page-loading-panel { min-height: 15rem; align-content: start; gap: 1.15rem; width: 100%; max-width: 100%; }
 .page-loading-line-title { width: 45%; min-height: 1.5rem; }
 .page-loading-line:nth-child(2n) { width: 88%; }
 .page-loading-line:last-child { width: 62%; }

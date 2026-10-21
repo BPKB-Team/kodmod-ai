@@ -137,8 +137,9 @@
 
 .workspace-main .guided-workspace {
   grid-template-columns: minmax(0, 1fr);
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
 }
 
 .workspace-main .guided-material-card,
@@ -148,7 +149,8 @@
 
 .workspace-main .quiz-shell {
   width: 100%;
-  max-width: 76rem;
+  max-width: 100%;
+  margin: 0;
 }
 
 .workspace-main .quiz-start-card {

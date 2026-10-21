@@ -1,4 +1,4 @@
-.guided-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; width: 100%; max-width: 1200px; margin: 0 auto; }
+.guided-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; width: 100%; max-width: 100%; margin: 0; }
 .guided-main { display: grid; gap: 1.25rem; min-width: 0; width: 100%; }
 .guided-lesson, .guided-welcome { padding: clamp(1.2rem, 3vw, 2rem); }
 .guided-material-picker { min-width: 0; overflow: hidden; }
@@ -17,8 +17,15 @@
 .guided-lesson-heading { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.5rem; }
 .guided-lesson-heading h2 { margin: 0; font-size: clamp(1.3rem, 2.5vw, 1.8rem); line-height: 1.45; }
 .guided-symbol { display: inline-flex; padding: .85rem; color: #245be4; background: #ecf3ff; border-radius: 1rem; flex: 0 0 auto; }
-.guided-explanation { max-width: 70ch; font-size: 1.125rem; line-height: 1.9; }
-.guided-explanation p { white-space: pre-line; overflow-wrap: anywhere; margin: 0 0 1.5rem; }
+.guided-explanation { max-width: 100%; width: 100%; font-size: 1.125rem; line-height: 1.85; display: flex; flex-direction: column; gap: 1.25rem; }
+.guided-explanation p { margin: 0; line-height: 1.85; color: #1e293b; overflow-wrap: anywhere; }
+.guided-explanation .guided-example-card { padding: 1.1rem 1.35rem; background: #f0f7ff; border-left: 4px solid #2563eb; border-radius: 0 14px 14px 0; margin: 0.25rem 0; }
+.guided-explanation .guided-example-card p { color: #1e3a8a; font-weight: 500; margin: 0; }
+.guided-explanation .guided-socratic-prompt { padding: 1.25rem 1.5rem; background: linear-gradient(135deg, #eff6ff 0%, #e0effe 100%); border: 1.5px solid #bfdbfe; border-radius: 16px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.06); margin-top: 0.4rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.guided-explanation .guided-socratic-prompt .guided-prompt-header { display: inline-flex; align-items: center; gap: 0.45rem; color: #1d4ed8; font-weight: 750; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.guided-explanation .guided-socratic-prompt p { font-size: 1.15rem; font-weight: 600; color: #0f2d59; line-height: 1.6; margin: 0; }
+.guided-explanation ul, .guided-explanation ol { margin: 0.25rem 0; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.guided-explanation li { line-height: 1.7; color: #1e293b; }
 .guided-question-form { display: grid; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid #dce7f6; margin-top: 1rem; }
 .guided-question-form .button { justify-self: end; min-height: 44px; padding: 0.7rem 1.4rem; font-weight: 750; border-radius: 13px; }
 .guided-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid #dce7f6; }

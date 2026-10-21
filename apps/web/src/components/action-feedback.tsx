@@ -1,15 +1,17 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { confirmAction, notifyResult, type Confirmation } from "@/lib/dialogs";
 import type { ActionState } from "@/lib/types";
 import { useI18n } from "@/components/language-provider";
 import { LoadingStatus } from "./loading-feedback";
+import { speechOutput } from "@/lib/browser-speech";
 
 export function useConfirmedAction(
   action: (state: ActionState, data: FormData) => Promise<ActionState>,
   confirmation: Confirmation,
+  processSpeech?: string,
 ) {
   return useActionState(async (state: ActionState, data: FormData) => {
     const trigger = document.activeElement;
@@ -22,19 +24,46 @@ export function useConfirmedAction(
       );
       return state;
     }
+    if (processSpeech) {
+      void speechOutput.play({ owner: "action-feedback", text: processSpeech, language: "id", engine: "app" });
+    }
     return action(state, data);
   }, {});
 }
 
 export function ActionFeedback({ state, pending = false, pendingLabel = "Menyimpan…" }: { state: ActionState; pending?: boolean; pendingLabel?: string }) {
   const { t } = useI18n();
+  const router = useRouter();
   const shown = useRef<ActionState | null>(null);
   useEffect(() => {
     if (shown.current === state) return;
     shown.current = state;
-    if (state.error || state.success)
-      void notifyResult(state.error || state.success || "", !!state.error);
-  }, [state]);
+    if (state.error) {
+      void notifyResult(state.error, true);
+    } else if (state.success) {
+      void notifyResult(state.success);
+      if (state.redirectUrl && router) {
+        // Announce completion and wait 2.5 seconds before redirecting
+        void speechOutput.play({
+          owner: "action-feedback",
+          text: `${state.success} Mengalihkan halaman dalam beberapa detik...`,
+          language: "id",
+          engine: "app",
+        });
+        const timer = setTimeout(() => {
+          router.push(state.redirectUrl!);
+        }, 2500);
+        return () => clearTimeout(timer);
+      } else {
+        void speechOutput.play({
+          owner: "action-feedback",
+          text: state.success,
+          language: "id",
+          engine: "app",
+        });
+      }
+    }
+  }, [state, router]);
   return (<>
     <LoadingStatus active={pending} label={pendingLabel} compact />
     <div aria-live="polite" aria-atomic="true">
@@ -73,6 +102,7 @@ export function RedirectFeedback() {
     url.searchParams.delete("success");
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
     void notifyResult(messages[code]);
+    void speechOutput.play({ owner: "redirect-feedback", text: messages[code], language: "id", engine: "app" });
   }, [code]);
   return null;
 }
