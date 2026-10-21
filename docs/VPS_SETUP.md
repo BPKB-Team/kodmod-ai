@@ -103,7 +103,7 @@ Buka aplikasi di `http://localhost:3100` dan Grafana di
 `http://localhost:3001`. Username awal keduanya `admin`.
 Password aplikasi ada di `.runtime/admin-password`; password Grafana adalah
 `GRAFANA_ADMIN_PASSWORD` pada root `.env`. Baca hanya melalui sesi privat.
-Tidak ada akun demo dengan password `password` pada database VPS.
+Rincian akun demo VPS ada pada bagian berikut.
 
 ## Akun demo pada VPS
 
@@ -113,11 +113,14 @@ Tidak ada akun demo dengan password `password` pada database VPS.
 | `guru.demo` | teacher | `/guru` |
 | `admin.demo` | admin | `/admin` |
 
-Masing-masing akun memakai password acak berbeda. Kredensial tersimpan pada
+Atas permintaan pemilik pada 19 Oktober 2026, ketiga akun demo saat ini memakai
+password bersama `password`. Kredensial tersimpan pada
 `/home/kodmod-admin/kodmod-ai/.runtime/demo-accounts.json`, milik
 `kodmod-admin` dengan izin `600`. Baca file tersebut hanya dalam sesi privat.
 Login di `https://kodmodai.com/masuk`. Akun admin utama tetap memakai
-password pada `.runtime/admin-password`.
+password pada `.runtime/admin-password`. Password bersama ini memberi akses
+admin melalui `admin.demo`; gunakan hanya untuk demo dan ganti atau nonaktifkan
+akun tersebut setelah pengujian publik selesai.
 
 Seeder VPS dapat dijalankan ulang:
 
@@ -126,19 +129,22 @@ cd /home/kodmod-admin/kodmod-ai
 sudo bash scripts/seed-demo-vps.sh
 ```
 
-Helper membuat file kredensial pada pemakaian pertama, lalu menggunakan
-file yang sama pada pemakaian berikutnya. Backup database dibuat sebelum
-seeding tanpa menghentikan aplikasi. Seeder memakai container sementara
+Pada VPS baru helper membuat password acak berbeda pada pemakaian pertama,
+lalu menggunakan file yang sama pada pemakaian berikutnya. Untuk tiga akun
+demo yang sudah ada, file privat dapat menetapkan password bersama persis
+`password`. Backup database dibuat sebelum seeding tanpa menghentikan aplikasi.
+Seeder memakai container sementara
 dan script checkout melalui mount read-only; rebuild image tidak diperlukan.
 Ketiga akun dibuat atau password-nya diatur ulang sesuai file privat.
 Konflik peran membatalkan transaksi; akun lain tidak diubah. Snapshot harian
 juga menyertakan file kredensial demo dalam arsip konfigurasi privat.
 
-Validasi 5 Oktober 2026: ketiga akun berhasil login melalui server action
-HTTPS, menerima cookie Secure/HttpOnly/SameSite=Lax, mengakses identitas API
-dan halaman sesuai peran. Password `password` ditolak. Menjalankan seeder
-ulang mempertahankan ID akun demo dan tidak mengubah akun lain; kredensial
-admin utama tetap valid.
+Validasi 5 Oktober 2026 (sebelum perubahan password): ketiga akun berhasil
+login melalui server action HTTPS, menerima cookie Secure/HttpOnly/SameSite=Lax,
+mengakses identitas API dan halaman sesuai peran; saat itu password `password`
+ditolak. Setelah reset 19 Oktober, uji login ulang untuk ketiga akun memakai
+password bersama `password`. Menjalankan seeder mempertahankan ID akun demo dan
+tidak mengubah akun lain; kredensial admin utama tetap valid.
 
 ## Operasi
 

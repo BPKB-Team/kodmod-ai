@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Opt-in demo provisioning on the VPS, using a different private password per role.
+# Opt-in demo provisioning on the VPS. Fresh installs use unique random passwords.
 set -Eeuo pipefail
 umask 077
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
@@ -31,10 +31,21 @@ with path.open() as source:
 expected = {'siswa.demo', 'guru.demo', 'admin.demo'}
 if not isinstance(passwords, dict) or set(passwords) != expected:
     raise SystemExit('Demo credentials must contain exactly the three demo usernames.')
-if any(not isinstance(value, str) or len(value) < 16 or len(value.encode('utf-8')) > 72 for value in passwords.values()):
-    raise SystemExit('VPS demo passwords must have at least 16 characters and at most 72 bytes.')
-if len(set(passwords.values())) != 3:
-    raise SystemExit('VPS demo accounts must use different passwords.')
+shared_password = all(
+    isinstance(value, str) and value == 'password' for value in passwords.values()
+)
+minimum_length = 8 if shared_password else 16
+if any(
+    not isinstance(value, str)
+    or len(value) < minimum_length
+    or len(value.encode('utf-8')) > 72
+    for value in passwords.values()
+):
+    raise SystemExit(f'VPS demo passwords must have at least {minimum_length} characters and at most 72 bytes.')
+if not shared_password and len(set(passwords.values())) != 3:
+    raise SystemExit(
+        'VPS demo accounts must use different passwords unless all three use the configured shared demo password.'
+    )
 print('Private demo credentials ready: .runtime/demo-accounts.json')
 PY
 # Only database records change; the online dump keeps the app available.
