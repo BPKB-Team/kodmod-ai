@@ -2140,3 +2140,30 @@
   color: #1e40af;
   font-size: 0.8125rem;
 }
+
+.editorial-published-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 14px;
+  color: #166534;
+}
+.editorial-published-box strong {
+  display: block;
+  font-size: 0.9375rem;
+  color: #14532d;
+  margin-bottom: 2px;
+}
+.editorial-published-box p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #15803d;
+}
+.editorial-publish-btn {
+  width: 100%;
+  justify-content: center;
+}

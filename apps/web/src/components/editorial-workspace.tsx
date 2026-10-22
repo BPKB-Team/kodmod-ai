@@ -227,7 +227,7 @@ export function QuizWorkspace({
         accept(next);
         if (!draft) router.replace(`/guru/kuis/${next.id}`);
       },
-      "Revisi disimpan. Pilih reviewer, lalu ajukan untuk review.",
+      "Draft kuis tersimpan. Anda dapat langsung menerbitkan kuis untuk dibagikan ke kelas.",
       "save",
     );
   }
@@ -862,7 +862,7 @@ export function QuizWorkspace({
                   )}
                 </form>
               ) : (
-                <p className="info-note"><UiText>{"Penugasan tersedia setelah revisi ini disetujui dan diterbitkan."}</UiText></p>
+                <p className="info-note"><UiText>{"Penugasan tersedia setelah kuis ini diterbitkan."}</UiText></p>
               )}
               <div className="editorial-assignment-list">
                 {draft.assignments.map((a) => (
@@ -893,20 +893,20 @@ export function QuizWorkspace({
             <ol className="editorial-lifecycle-stepper">
               {[
                 "Tulis & simpan draft",
-                "Review oleh guru lain / admin",
-                "Terbitkan revisi disetujui",
+                "Terbitkan kuis",
                 "Tugaskan ke kelas",
               ].map((label, index) => {
-                const currentStepIndex =
-                  state === "published"
-                    ? 3
-                    : state === "approved"
-                      ? 2
-                      : state === "in_review"
-                        ? 1
-                        : 0;
-                const isDone = index < currentStepIndex;
-                const isCurrent = index === currentStepIndex;
+                const isDraftSaved = Boolean(draft && !dirty);
+                const isPublished = state === "published";
+                const isAssigned = Boolean(draft?.assignments && draft.assignments.length > 0);
+                const isDone =
+                  index === 0 ? isDraftSaved :
+                  index === 1 ? isPublished :
+                  isAssigned;
+                const isCurrent =
+                  index === 0 ? !isDraftSaved :
+                  index === 1 ? (isDraftSaved && !isPublished) :
+                  (isPublished && !isAssigned);
                 return (
                   <li
                     key={label}
@@ -922,83 +922,43 @@ export function QuizWorkspace({
             </ol>
             {owner ? (
               <div className="editorial-lifecycle-actions">
-                <label className="field"><UiText>{"Reviewer"}</UiText><NativeSelect
-                    value={reviewer}
-                    onChange={(e) => setReviewer(e.target.value)}
-                    disabled={busy || dirty || state !== "draft"}
-                  >
-                    <option value=""><UiText>{"Antrean admin"}</UiText></option>
-                    {reviewers
-                      .filter((r) => r.id !== draft?.teacher_id)
-                      .map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.full_name}
-                        </option>
-                      ))}
-                  </NativeSelect>
-                </label>
-                {draft && state === "draft" && (
+                {!draft && (
+                  <p className="editorial-help">
+                    <UiText>{"Simpan draft kuis terlebih dahulu untuk menerbitkan."}</UiText>
+                  </p>
+                )}
+                {draft && state !== "published" && (
                   <>
                     <button
-                      className="button secondary"
+                      className="button primary editorial-publish-btn"
                       type="button"
-                      disabled={
-                        busy ||
-                        dirty ||
-                        (draft.version.reviewer_id ?? "") === reviewer
-                      }
+                      disabled={busy || dirty}
                       onClick={() =>
                         void transition(
-                          "reviewer",
-                          "Simpan pilihan reviewer?",
-                          "Guru reviewer hanya dapat menilai isi kuis, tanpa melihat data siswa.",
-                          { reviewer_id: reviewer || null },
-                        )
-                      }
-                    >{busy && busyAction === "reviewer" && <Spinner />}<UiText>{"Simpan reviewer"}</UiText></button>
-                    <button
-                      className="button primary"
-                      type="button"
-                      disabled={
-                        busy ||
-                        dirty ||
-                        (draft.version.reviewer_id ?? "") !== reviewer
-                      }
-                      onClick={() =>
-                        void transition(
-                          "submit-review",
-                          "Ajukan revisi untuk review?",
-                          "Reviewer akan memeriksa revisi yang saat ini tersimpan.",
+                          "publish",
+                          "Terbitkan kuis?",
+                          "Kuis yang diterbitkan siap dibagikan sebagai penugasan ke kelas siswa.",
                         )
                       }
                     >
-                      {busy && busyAction === "submit-review" ? <Spinner /> : <Send size={16} aria-hidden="true" />}<UiText>{"Ajukan review"}</UiText></button>
+                      {busy && busyAction === "publish" ? <Spinner /> : <CheckCircle2 size={17} aria-hidden="true" />}
+                      <UiText>{"Terbitkan kuis"}</UiText>
+                    </button>
+                    {dirty && (
+                      <p className="editorial-help">
+                        <UiText>{"Simpan perubahan isi sebelum menerbitkan kuis."}</UiText>
+                      </p>
+                    )}
                   </>
                 )}
-                {draft && state === "approved" && (
-                  <button
-                    className="button primary"
-                    type="button"
-                    disabled={busy || dirty}
-                    onClick={() =>
-                      void transition(
-                        "publish",
-                        "Terbitkan kuis?",
-                        "Revisi yang disetujui siap dibagikan sebagai penugasan kelas.",
-                      )
-                    }
-                  >
-                    {busy && busyAction === "publish" ? <Spinner /> : <CheckCircle2 size={17} aria-hidden="true" />}<UiText>{"Terbitkan kuis"}</UiText></button>
-                )}
-                {!draft && (
-                  <p className="editorial-help"><UiText>{"Simpan draft pertama untuk mulai review."}</UiText></p>
-                )}
-                {["in_review", "rejected"].includes(state) && (
-                  <p className="editorial-help">
-                    {state === "in_review"
-                      ? <UiText>{"Sedang menunggu keputusan reviewer. Perubahan isi akan menjadi revisi baru."}</UiText>
-                      : <UiText>{"Periksa catatan di bawah, perbaiki isi, lalu simpan dan ajukan revisi baru."}</UiText>}
-                  </p>
+                {draft && state === "published" && (
+                  <div className="editorial-published-box">
+                    <CheckCircle2 size={18} className="text-success" aria-hidden="true" />
+                    <div>
+                      <strong><UiText>{"Kuis telah diterbitkan"}</UiText></strong>
+                      <p><UiText>{"Kuis ini aktif dan dapat ditugaskan ke kelas di bawah."}</UiText></p>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (

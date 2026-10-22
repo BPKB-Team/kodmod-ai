@@ -788,4 +788,11 @@ export const englishUi = {
   "Hapus soal ini": "Delete this question",
   "Tuliskan pertanyaan soal... Gunakan toolbar untuk rumus dan notasi ilmiah.": "Write question text... Use the toolbar for formulas and scientific notations.",
   "Jelaskan alasan jawaban benar dengan bahasa sederhana. Gunakan toolbar untuk rumus.": "Explain the correct answer in simple terms. Use the toolbar for formulas.",
+  "Kuis telah diterbitkan": "Quiz has been published",
+  "Kuis ini aktif dan dapat ditugaskan ke kelas di bawah.": "This quiz is active and can be assigned to classes below.",
+  "Simpan draft kuis terlebih dahulu untuk menerbitkan.": "Save the quiz draft first to publish.",
+  "Simpan perubahan isi sebelum menerbitkan kuis.": "Save content changes before publishing the quiz.",
+  "Penugasan tersedia setelah kuis ini diterbitkan.": "Assignments are available after this quiz is published.",
+  "Kuis yang diterbitkan siap dibagikan sebagai penugasan ke kelas siswa.": "Published quizzes are ready to be assigned to classes.",
+  "Draft kuis tersimpan. Anda dapat langsung menerbitkan kuis untuk dibagikan ke kelas.": "Quiz draft saved. You can now publish the quiz to share it with your classes.",
 };

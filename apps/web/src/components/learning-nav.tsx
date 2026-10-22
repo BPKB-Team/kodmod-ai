@@ -13,7 +13,6 @@ import {
   MessageCircle,
   LineChart,
   ChevronRight,
-  FileCheck2,
   ClipboardList,
   Menu,
   X,
@@ -68,7 +67,6 @@ export function LearningNav({ base }: { base: string }) {
               { href: "/guru/kelas", title: "Kelas", icon: Library },
               { href: "/guru/materi", title: "Materi", icon: BookOpen },
               { href: "/guru/kuis", title: "Kuis & Tugas", icon: ListChecks },
-              { href: "/guru/review-kuis", title: "Review kuis", icon: FileCheck2 },
               { href: "/guru/analitik", title: "Analitik", icon: LineChart },
             ]
           : []),
