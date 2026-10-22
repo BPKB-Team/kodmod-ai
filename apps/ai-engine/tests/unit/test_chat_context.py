@@ -434,3 +434,29 @@ async def test_voice_text_validates_session_uuid(scoped_chat):
         "/voice/text", data={"text": "Halo", "session_id": "not-a-uuid"}
     )
     assert response.status_code == 422, response.text
+
+
+@pytest.mark.parametrize("code", ["insufficient_learning_content", "source_quality_failed"])
+async def test_chat_source_rejection_is_actionable_and_does_not_save_a_false_turn(
+    scoped_chat, monkeypatch, code
+):
+    from agents.question_quality import QuestionQualityError
+
+    workspace = scoped_chat
+
+    class RejectGraph:
+        async def ainvoke(self, *args, **kwargs):
+            raise QuestionQualityError(code, "private provider diagnostics")
+
+    original = workspace.app.state.graph
+    monkeypatch.setattr(workspace.app.state, "graph", RejectGraph())
+    rejected = await workspace.client.post("/chat/message", json=scoped_body(workspace))
+    assert rejected.status_code == 409
+    assert rejected.json()["detail"]["code"] == code
+    assert "private provider diagnostics" not in rejected.text
+    async with workspace.sessions() as session:
+        assert (await session.scalars(select(InteractionLog))).all() == []
+        assert (await session.scalars(select(QuizSession))).all() == []
+    monkeypatch.setattr(workspace.app.state, "graph", original)
+    retry = await workspace.client.post("/chat/message", json=scoped_body(workspace))
+    assert retry.status_code == 200

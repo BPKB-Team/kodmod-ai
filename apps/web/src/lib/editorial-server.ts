@@ -21,7 +21,7 @@ async function editorialFetch<T>(
       ...init,
       cache: "no-store",
       redirect: "error",
-      signal: AbortSignal.timeout(path === "/teacher/quizzes/propose" ? 90_000 : 12000),
+      signal: AbortSignal.timeout(path === "/teacher/quizzes/propose" ? 180_000 : 12000),
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",

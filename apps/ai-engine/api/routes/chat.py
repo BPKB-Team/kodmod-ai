@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from agents.question_quality import QuestionQualityError
 from api.chat_service import (
     close_session,
     log_turn,
@@ -85,7 +86,16 @@ async def send_message(
     )
 
     graph = request.app.state.graph
-    final = await graph.ainvoke(state, config={"configurable": {"thread_id": str(session_id)}})
+    try:
+        final = await graph.ainvoke(state, config={"configurable": {"thread_id": str(session_id)}})
+    except QuestionQualityError as error:
+        raise HTTPException(
+            409,
+            {
+                "code": error.code,
+                "message": "Soal belum lolos pemeriksaan sumber. Pilih bagian lain atau minta guru meninjau isi materi.",
+            },
+        ) from None
 
     quiz_session_id = None
     if final.get("quiz_questions") and not final.get("assessment_managed"):
