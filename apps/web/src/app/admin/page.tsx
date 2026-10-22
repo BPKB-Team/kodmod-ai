@@ -10,6 +10,7 @@ import {
   Plus,
   BookOpen,
   LayoutDashboard,
+  GraduationCap,
 } from "lucide-react";
 import { requireSession } from "@/lib/session";
 import { backend } from "@/lib/server-api";
@@ -54,31 +55,43 @@ export default async function AdminPage() {
           <BookOpen strokeWidth={0.8} />
         </div>
       </section>
-      <div className="metrics">
+      <div className="metrics admin-metrics-grid">
         {[
           {
             label: "Total pengguna",
             value: users.length,
             detail: "Akun terdaftar",
             Icon: Users,
+            colorScheme: "blue",
           },
           {
             label: "Pengguna aktif",
             value: active,
             detail: `${users.length - active} akun nonaktif`,
             Icon: UserCheck,
+            colorScheme: "green",
           },
           {
             label: "Guru terdaftar",
             value: users.filter((u) => u.role === "teacher").length,
             detail: "Akun pengajar",
             Icon: BookOpen,
+            colorScheme: "purple",
           },
-        ].map(({ label, value, detail, Icon }) => (
-          <section className="metric" key={label}>
+          {
+            label: "Siswa terdaftar",
+            value: users.filter((u) => u.role === "student").length,
+            detail: "Akun pembelajar",
+            Icon: GraduationCap,
+            colorScheme: "amber",
+          },
+        ].map(({ label, value, detail, Icon, colorScheme }) => (
+          <section className={`metric metric-${colorScheme}`} key={label}>
             <div>
-              <span>{label}</span>
-              <Icon size={20} aria-hidden="true" />
+              <span><UiText>{label}</UiText></span>
+              <span className={`metric-icon-wrap ${colorScheme}`} aria-hidden="true">
+                <Icon size={18} />
+              </span>
             </div>
             <strong>{value}</strong>
             <small>{detail}</small>
@@ -86,7 +99,7 @@ export default async function AdminPage() {
         ))}
       </div>
       <AdminOverviewCharts overview={overview} />
-      <section className="panel table-panel">
+      <section className="panel table-panel admin-recent-users-panel">
         <div className="panel-heading">
           <div>
             <h2><UiText>{"Pengguna terbaru"}</UiText></h2>
@@ -107,13 +120,13 @@ export default async function AdminPage() {
             </TableHeader>
             <TableBody>
               {users.slice(0, 5).map((u) => (
-                <TableRow key={u.id}>
+                <TableRow key={u.id} className="admin-user-row">
                   <TableCell>
                     <Link
                       className="user-link"
                       href={`/admin/pengguna/${u.id}`}
                     >
-                      <span className="avatar" aria-hidden="true">
+                      <span className={`avatar avatar-${u.role}`} aria-hidden="true">
                         {u.full_name.slice(0, 1)}
                       </span>
                       <span>
@@ -122,7 +135,11 @@ export default async function AdminPage() {
                       </span>
                     </Link>
                   </TableCell>
-                  <TableCell data-label="Peran">{<UiText>{roleLabel[u.role]}</UiText>}</TableCell>
+                  <TableCell data-label="Peran">
+                    <span className={`role-badge-pill role-${u.role}`}>
+                      <UiText>{roleLabel[u.role]}</UiText>
+                    </span>
+                  </TableCell>
                   <TableCell data-label="Bergabung">{<UiDate value={u.created_at} />}</TableCell>
                   <TableCell>
                     <Badge active={u.is_active}>

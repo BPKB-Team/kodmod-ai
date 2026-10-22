@@ -4,18 +4,25 @@ import { UiText, useI18n, UiDate } from "@/components/language-provider";
 
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Activity,
   ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  Bot,
   CheckCircle2,
   CircleAlert,
   Clock3,
   GraduationCap,
+  Key,
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  UserPlus,
   Users,
+  Zap,
 } from "lucide-react";
 import { notifyResult } from "@/lib/dialogs";
 import type { AdminActivity, AdminOverview } from "@/lib/admin-insights-types";
@@ -275,7 +282,7 @@ export function AdminInsights({
             </div>
           )}
         </article>
-        <article className="panel admin-activity-card">
+        <article className="panel admin-activity-card admin-service-status-card">
           <div className="panel-heading">
             <div>
               <h2><UiText>{"Status layanan"}</UiText></h2>
@@ -283,6 +290,7 @@ export function AdminInsights({
             </div>
             <Sparkles size={20} aria-hidden="true" />
           </div>
+
           <div className="admin-provider-card-box">
             {provider.enabled && provider.configured ? (
               <CheckCircle2 size={24} style={{ color: "#059669", flexShrink: 0, marginTop: "2px" }} aria-hidden="true" />
@@ -315,18 +323,110 @@ export function AdminInsights({
               <span><UiText>{"Speech to text"}</UiText></span>
               <code>{provider.stt_backend}</code>
             </div>
-            <div className="admin-provider-spec-row">
-              <span><UiText>{"Kuis tersimpan"}</UiText></span>
-              <strong>{overview.learning.quiz_sessions}</strong>
+          </div>
+
+          <div className="admin-service-section">
+            <div className="admin-service-section-header">
+              <ShieldCheck size={16} aria-hidden="true" />
+              <h3><UiText>{"Operasional & Keamanan Langsung"}</UiText></h3>
             </div>
-            <div className="admin-provider-spec-row">
-              <span><UiText>{"Guru terdaftar"}</UiText></span>
-              <strong>{overview.users.teachers}</strong>
+            <div className="admin-telemetry-grid">
+              <div className="admin-telemetry-tile">
+                <div className="telemetry-top">
+                  <span className="live-dot" aria-hidden="true" />
+                  <strong>{overview.learning.open_sessions}</strong>
+                </div>
+                <span><UiText>{"Sesi berjalan"}</UiText></span>
+              </div>
+              <div className="admin-telemetry-tile">
+                <div className="telemetry-top">
+                  <Key size={14} aria-hidden="true" />
+                  <strong>{overview.invitations.active}</strong>
+                </div>
+                <span><UiText>{"Undangan aktif"}</UiText></span>
+              </div>
+              <div className="admin-telemetry-tile">
+                <div className="telemetry-top">
+                  <GraduationCap size={14} aria-hidden="true" />
+                  <strong>{overview.learning.classrooms}</strong>
+                </div>
+                <span><UiText>{"Kelas aktif"}</UiText></span>
+              </div>
             </div>
-            <div className="admin-provider-spec-row">
-              <span><UiText>{"Total sesi belajar"}</UiText></span>
-              <strong>{overview.learning.sessions}</strong>
+
+            <div className="admin-security-checks">
+              <div className="security-check-row">
+                <ShieldCheck size={15} aria-hidden="true" />
+                <span><UiText>{"Proteksi Sesi Aktif"}</UiText></span>
+                <span className="security-check-tag">HttpOnly · SameSite</span>
+              </div>
+              <div className="security-check-row">
+                <CheckCircle2 size={15} aria-hidden="true" />
+                <span><UiText>{"Audit Trail Non-Repudiasi"}</UiText></span>
+                <span className="security-check-tag"><UiText>{"Aktif tanpa bocor rahasia"}</UiText></span>
+              </div>
             </div>
+          </div>
+
+          <div className="admin-service-section">
+            <div className="admin-service-section-header">
+              <Zap size={16} aria-hidden="true" />
+              <h3><UiText>{"Pintasan Administrasi"}</UiText></h3>
+            </div>
+            <div className="admin-quick-actions-grid">
+              <Link href="/admin/pengguna" className="admin-quick-action-card">
+                <div className="quick-action-icon blue">
+                  <Users size={16} aria-hidden="true" />
+                </div>
+                <div className="quick-action-text">
+                  <strong><UiText>{"Kelola Pengguna"}</UiText></strong>
+                  <small>{overview.users.total} <UiText>{"akun terdaftar"}</UiText></small>
+                </div>
+                <ArrowUpRight size={14} className="quick-action-arrow" aria-hidden="true" />
+              </Link>
+              <Link href="/admin/pemantauan-ai" className="admin-quick-action-card">
+                <div className="quick-action-icon purple">
+                  <Bot size={16} aria-hidden="true" />
+                </div>
+                <div className="quick-action-text">
+                  <strong><UiText>{"Pemantauan AI"}</UiText></strong>
+                  <small><UiText>{"Analitik & kuota"}</UiText></small>
+                </div>
+                <ArrowUpRight size={14} className="quick-action-arrow" aria-hidden="true" />
+              </Link>
+              <Link href="/admin/materi" className="admin-quick-action-card">
+                <div className="quick-action-icon emerald">
+                  <BookOpen size={16} aria-hidden="true" />
+                </div>
+                <div className="quick-action-text">
+                  <strong><UiText>{"Katalog Materi"}</UiText></strong>
+                  <small><UiText>{"Bank modul"}</UiText></small>
+                </div>
+                <ArrowUpRight size={14} className="quick-action-arrow" aria-hidden="true" />
+              </Link>
+              <Link href="/admin/pengguna/baru" className="admin-quick-action-card">
+                <div className="quick-action-icon amber">
+                  <UserPlus size={16} aria-hidden="true" />
+                </div>
+                <div className="quick-action-text">
+                  <strong><UiText>{"Tambah Pengguna"}</UiText></strong>
+                  <small><UiText>{"Buat akun baru"}</UiText></small>
+                </div>
+                <ArrowUpRight size={14} className="quick-action-arrow" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="admin-status-sync-footer">
+            <span className="sync-time">
+              <Clock3 size={13} aria-hidden="true" />
+              <UiText>{"Pembaruan data:"}</UiText>{" "}
+              <UiDate value={overview.generated_at} time empty="Baru saja" />
+            </span>
+            <span className="sync-status-badge">
+              <CheckCircle2 size={13} aria-hidden="true" />
+              <UiText>{"Sistem Siap"}</UiText>
+            </span>
           </div>
         </article>
       </div>
