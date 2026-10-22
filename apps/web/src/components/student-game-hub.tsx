@@ -249,7 +249,7 @@ export function StudentGameHub({
                 </div>
 
                 <div className="game-pad-icon-wrap" aria-hidden="true">
-                  <Icon size={34} strokeWidth={2.2} />
+                  <Icon size={40} strokeWidth={2.3} className="game-pad-svg-icon" />
                 </div>
 
                 <div className="game-pad-info">
