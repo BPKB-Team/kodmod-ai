@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { session } from "@/lib/session";
 import { validLanguage } from "@/lib/i18n.mjs";
-import { normalizeSpeechText } from "@/lib/speech-text-normalizer";
+import { normalizeSpeechText } from "@/lib/speech-text-normalizer.mjs";
 
 export const runtime = "nodejs";
 

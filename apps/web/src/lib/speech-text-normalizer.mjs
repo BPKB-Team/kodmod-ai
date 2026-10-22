@@ -76,11 +76,109 @@ function mapSubString(raw) {
   return result.trim().replace(/\s+/g, " ");
 }
 
+const LATEX_WORDS = {
+  "\\times": ["kali", "times"],
+  "\\cdot": ["kali", "times"],
+  "\\div": ["dibagi", "divided by"],
+  "\\pm": ["plus minus", "plus or minus"],
+  "\\neq": ["tidak sama dengan", "does not equal"],
+  "\\leq": ["kurang dari atau sama dengan", "less than or equal to"],
+  "\\le": ["kurang dari atau sama dengan", "less than or equal to"],
+  "\\geq": ["lebih dari atau sama dengan", "greater than or equal to"],
+  "\\ge": ["lebih dari atau sama dengan", "greater than or equal to"],
+  "\\approx": ["kira-kira sama dengan", "approximately equal to"],
+  "\\pi": ["pi", "pi"],
+  "\\alpha": ["alfa", "alpha"],
+  "\\beta": ["beta", "beta"],
+  "\\gamma": ["gamma", "gamma"],
+  "\\theta": ["teta", "theta"],
+  "\\infty": ["tak hingga", "infinity"],
+  "\\to": ["menuju", "to"],
+};
+
+function stripSpeechMarkup(text, isEn) {
+  let out = text;
+
+  // Keep the words in links and code, but remove markup a voice would spell out.
+  out = out.replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1");
+  out = out.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+  out = out.replace(/```[a-zA-Z0-9_+-]*[ \t]*\r?\n?/g, " ");
+  out = out.replace(/`+/g, "");
+  out = out.replace(/^[ \t]{0,3}#{1,6}[ \t]*/gm, "");
+  out = out.replace(/^[ \t]{0,3}>[ \t]?/gm, "");
+  out = out.replace(/^[ \t]*[-+•·][ \t]+/gm, "\n");
+  out = out.replace(/^[ \t]*(?:[-*_][ \t]*){3,}$/gm, "\n");
+
+  // Remove math delimiters and unwrap common LaTeX commands before translating symbols.
+  out = out.replace(/\\\[(.*?)\\\]/gs, "$1").replace(/\\\((.*?)\\\)/gs, "$1");
+  out = out.replace(/\$\$([\s\S]*?)\$\$/g, "$1").replace(/\$([^$\n]+)\$/g, "$1");
+  for (let pass = 0; pass < 8; pass += 1) {
+    const previous = out;
+    out = out.replace(/\\(?:dfrac|tfrac|frac)\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, (_match, n, d) =>
+      isEn ? `${n} over ${d}` : `${n} per ${d}`,
+    );
+    out = out.replace(/\\sqrt\s*\[([^\]]+)\]\s*\{([^{}]+)\}/g, (_match, n, value) =>
+      isEn ? `${n}th root of ${value}` : `akar pangkat ${n} dari ${value}`,
+    );
+    out = out.replace(/\\sqrt\s*\{([^{}]+)\}/g, (_match, value) =>
+      isEn ? `square root of ${value}` : `akar dari ${value}`,
+    );
+    out = out.replace(/\\(?:text|mathrm|mathbf|mathit|operatorname)\s*\{([^{}]*)\}/g, "$1");
+    if (out === previous) break;
+  }
+
+  for (const [command, words] of Object.entries(LATEX_WORDS)) {
+    out = out.replaceAll(command, ` ${words[isEn ? 1 : 0]} `);
+  }
+  out = out.replace(/\\(?:left|right|displaystyle|textstyle|quad|qquad)\b/g, " ");
+  out = out.replace(/\\[,;:!]/g, " ");
+  out = out.replace(/\\([%_&#{}$])/g, "$1");
+  out = out.replace(/\\([a-zA-Z]+)\b/g, "$1");
+  out = out.replace(/[{}]/g, " ");
+
+  // Spoken equations should not say “asterisk”; retain multiplication intent first.
+  out = out.replace(/(?<=[0-9a-zA-Z\)])\s*\*\s*(?=[0-9a-zA-Z\(])/g, isEn ? " times " : " kali ");
+  out = out.replace(/([a-zA-Z])_\s*\{([^{}]+)\}/g, "$1 $2 ");
+  out = out.replace(/([a-zA-Z])_([0-9]+)/g, "$1 $2 ");
+  out = out.replace(/(?:\*\*|__|~~|[*_`])/g, "");
+
+  if (isEn) {
+    out = out.replace(/\be\.g\.(?=\s|$)/gi, "for example");
+    out = out.replace(/\bi\.e\.(?=\s|$)/gi, "that is");
+    out = out.replace(/\b(\d+)\.(\d{1,2})\b(?!\.\d)/g, (_match, whole, decimal) =>
+      `${whole} point ${decimal.split("").join(" ")}`,
+    );
+  } else {
+    const abbreviations = {
+      yg: "yang",
+      dgn: "dengan",
+      krn: "karena",
+      tdk: "tidak",
+      utk: "untuk",
+      spt: "seperti",
+      dll: "dan lain-lain",
+      dsb: "dan sebagainya",
+      dst: "dan seterusnya",
+    };
+    out = out.replace(/\b(yg|dgn|krn|tdk|utk|spt|dll|dsb|dst)\b\.?/gi, (match, key) =>
+      `${abbreviations[key.toLowerCase()]}${match.endsWith(".") ? "." : ""}`,
+    );
+    out = out.replace(/\b(\d+),(\d+)\b/g, (_match, whole, decimal) =>
+      `${whole} koma ${decimal.split("").join(" ")}`,
+    );
+    out = out.replace(/\b(\d+)\.(\d{1,2})\b(?!\.\d)/g, (_match, whole, decimal) =>
+      `${whole} titik ${decimal.split("").join(" ")}`,
+    );
+  }
+
+  return out;
+}
+
 export function normalizeSpeechText(text, language = "id") {
   if (!text || typeof text !== "string") return "";
 
   const isEn = language === "en";
-  let out = text;
+  let out = stripSpeechMarkup(text, isEn);
 
   // 1. Vulgar fractions: ½, ⅓, ¼, ¾, etc.
   for (const [char, labels] of Object.entries(VULGAR_FRACTIONS)) {

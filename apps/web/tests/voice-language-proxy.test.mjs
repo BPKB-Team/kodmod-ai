@@ -29,6 +29,23 @@ test('authenticated student teacher and admin speech stays private and follows t
   const recorded = await (await fetch(api + '/__fixture/voice')).json();
   for (const role of ['student', 'teacher', 'admin']) assert.ok(recorded.requests.some(r => r.user === 'test-' + role && r.language === 'en'));
 });
+test('generated markdown and LaTeX are normalized before reaching the speech service', { skip: !enabled }, async () => {
+  const response = await fetch(origin + '/api/voice/tts', {
+    method: 'POST',
+    headers: headers('student'),
+    body: JSON.stringify({
+      text: '# Ringkasan **pecahan**\n\n1. Gunakan `3/4` dari 24 benda.\nRumus: $\\frac{1}{2} \\times 8 = 4$.',
+      language: 'id',
+    }),
+  });
+  assert.equal(response.status, 200);
+  const recorded = await (await fetch(api + '/__fixture/voice')).json();
+  const forwarded = recorded.requests.find(request => request.user === 'test-student' && request.text?.includes('Ringkasan pecahan'));
+  assert.ok(forwarded);
+  assert.equal(forwarded.language, 'id');
+  assert.equal(forwarded.text, 'Ringkasan pecahan Pertama, Gunakan 3 per 4 dari 24 benda.\nRumus: 1 per 2 kali 8 sama dengan 4.');
+  assert.doesNotMatch(forwarded.text, /[#*$`{}\\]|\\\\frac|\\\\times/);
+});
 test('profile scope is account-specific while guest menu audio is reusable', { skip: !enabled }, async () => {
   const profiles = await Promise.all([null, 'student', 'teacher'].map(async role => {
     const response = await fetch(origin + '/api/voice/profile', { headers: headers(role) });

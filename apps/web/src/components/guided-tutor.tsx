@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRef, useState } from "react";
 import { LoadingStatus } from "./loading-feedback";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, Headphones, Library, LoaderCircle, RotateCcw, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Headphones, Library, LoaderCircle, RotateCcw, Send, Sparkles } from "lucide-react";
 import type { StudentMaterial } from "@/lib/class-types";
 import type { LearningSession } from "@/lib/learning-types";
 import { createQuizSubmissionId } from "@/lib/quiz-submission.mjs";
