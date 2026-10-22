@@ -678,4 +678,7 @@ export const englishUi = {
   "Aturan kuis 2": "Quiz rule 2",
   "Aturan kuis 3": "Quiz rule 3",
   "Persyaratan dan petunjuk kuis": "Quiz rules and instructions",
+  "Sponsor kami PT Telkom Indonesia (Persero) Tbk": "Our sponsor PT Telkom Indonesia (Persero) Tbk",
+  "Sponsor kami PT Telekomunikasi Indonesia International (Telin)": "Our sponsor PT Telekomunikasi Indonesia International (Telin)",
+  "Sponsor kami Telkom University": "Our sponsor Telkom University",
 };

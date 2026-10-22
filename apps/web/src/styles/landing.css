@@ -2244,13 +2244,29 @@ html[data-reduced-motion="true"] .spin-pulse {
 }
 
 .lp-sponsors-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  max-width: 980px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  max-width: 1140px;
   margin: 0 auto;
   position: relative;
   z-index: 2;
+  align-items: stretch;
+}
+
+@keyframes lp-sponsor-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(0.4deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-3px) rotate(-0.4deg);
+  }
 }
 
 .lp-sponsor-card {
@@ -2258,180 +2274,115 @@ html[data-reduced-motion="true"] .spin-pulse {
   border: 2px solid #e2e8f0;
   border-bottom: 4px solid #cbd5e1;
   border-radius: 22px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  padding: 32px 24px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
   position: relative;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.lp-sponsor-card:hover {
-  transform: translateY(-3px);
+.lp-sponsor-card:nth-child(1) {
+  animation: lp-sponsor-float 4.8s ease-in-out infinite 0s;
+}
+
+.lp-sponsor-card:nth-child(2) {
+  animation: lp-sponsor-float 5.2s ease-in-out infinite 0.9s;
+}
+
+.lp-sponsor-card:nth-child(3) {
+  animation: lp-sponsor-float 4.6s ease-in-out infinite 1.8s;
+}
+
+.lp-sponsor-card:hover,
+.lp-sponsor-card:focus-visible {
+  animation-play-state: paused;
+  transform: translateY(-10px) scale(1.02);
+  border-color: #3b82f6;
+  border-bottom-color: #2563eb;
+  box-shadow: 0 18px 36px rgba(37, 99, 235, 0.14), 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 .lp-sponsor-card:focus-visible {
-  outline: 3px solid #f0b429 !important;
+  outline: 3px solid #2563eb !important;
   outline-offset: 3px !important;
 }
 
-/* Tier 1: Lead Sponsor (Telkom Indonesia) */
-.lp-sponsor-card-lead {
-  padding: 42px 36px 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  border-color: #cbd5e1;
-  border-bottom: 4px solid #94a3b8;
-  background: linear-gradient(135deg, #ffffff 0%, #fafcff 100%);
-}
-
-.lp-sponsor-card-lead:hover {
-  border-color: #ef4444;
-  border-bottom-color: #dc2626;
-  box-shadow: 0 16px 40px rgba(239, 68, 68, 0.12);
-}
-
-.lp-sponsor-logo-box.lead {
+.lp-sponsor-logo-box {
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 30px 48px;
+  border-radius: 18px;
+  padding: 24px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  min-height: 150px;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.02);
-  min-height: 180px;
-  width: 100%;
-  max-width: 580px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
-.lp-sponsor-logo.lead {
-  max-height: 125px;
-  width: auto;
-  object-fit: contain;
-  transition: transform 0.25s ease;
-}
-
-.lp-sponsor-card-lead:hover .lp-sponsor-logo.lead {
-  transform: scale(1.04);
-}
-
-.lp-sponsor-tier-badge {
-  position: absolute;
-  top: 16px;
-  right: 20px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 14px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.lp-sponsor-tier-badge.lead {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1.5px solid #fecaca;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.08);
-}
-
-.lp-tier-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #dc2626;
-  animation: pulseDot 2s ease-in-out infinite;
-}
-
-@keyframes pulseDot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.8); }
-}
-
-.lp-sponsor-tier-badge.telin {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1.5px solid #bfdbfe;
-}
-
-.lp-sponsor-tier-badge.telu {
-  background: #faf5ff;
-  color: #7e22ce;
-  border: 1.5px solid #e9d5ff;
-}
-
-.lp-sponsor-meta {
-  margin-top: 16px;
-  text-align: center;
-}
-
-.lp-sponsor-name {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-/* Tier 2: Subgrid (Telin & Telkom University) */
-.lp-sponsors-subgrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-}
-
-.lp-sponsor-card-sub {
-  padding: 38px 28px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.lp-sponsor-card-sub:hover {
-  border-color: #3b82f6;
-  border-bottom-color: #2563eb;
-  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.1);
-}
-
-.lp-sponsor-card-sub .lp-sponsor-logo-box {
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 22px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 140px;
+.lp-sponsor-card:hover .lp-sponsor-logo-box,
+.lp-sponsor-card:focus-visible .lp-sponsor-logo-box {
+  background: #f0f7ff;
+  border-color: #bfdbfe;
 }
 
 .lp-sponsor-logo {
-  max-height: 85px;
+  max-height: 82px;
+  max-width: 85%;
   width: auto;
+  height: auto;
   object-fit: contain;
-  transition: transform 0.25s ease;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lp-sponsor-logo.telkom {
+  max-height: 88px;
+}
+
+.lp-sponsor-logo.telin {
+  max-height: 74px;
 }
 
 .lp-sponsor-logo.telu {
-  max-height: 95px;
+  max-height: 90px;
 }
 
-.lp-sponsor-card-sub:hover .lp-sponsor-logo {
-  transform: scale(1.05);
+.lp-sponsor-card:hover .lp-sponsor-logo,
+.lp-sponsor-card:focus-visible .lp-sponsor-logo {
+  transform: scale(1.06);
 }
 
-.lp-sponsor-card-sub .lp-sponsor-name {
-  font-size: 1.15rem;
-  margin-bottom: 6px;
+.lp-sponsor-meta {
+  margin-top: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
-.lp-sponsor-card-sub .lp-sponsor-copy {
-  font-size: 0.9rem;
+.lp-sponsor-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-sponsor-card {
+    animation: none !important;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -2452,24 +2403,24 @@ html[data-reduced-motion="true"] .spin-pulse {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
-  .lp-sponsor-card-lead {
-    grid-template-columns: 1fr;
-    text-align: center;
-    padding: 36px 24px 28px;
-    gap: 20px;
+  .lp-sponsors-grid {
+    gap: 18px;
   }
-  .lp-sponsor-tier-badge {
-    position: static;
-    margin-bottom: 8px;
-    align-self: center;
+  .lp-sponsor-card {
+    padding: 24px 18px 20px;
   }
-  .lp-sponsor-card-sub {
-    align-items: center;
-    text-align: center;
+  .lp-sponsor-logo-box {
+    min-height: 130px;
+    padding: 16px 14px;
   }
-  .lp-sponsors-subgrid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .lp-sponsor-logo {
+    max-height: 70px;
+  }
+  .lp-sponsor-logo.telu {
+    max-height: 80px;
+  }
+  .lp-sponsor-name {
+    font-size: 0.95rem;
   }
 }
 
@@ -2498,19 +2449,16 @@ html[data-reduced-motion="true"] .spin-pulse {
   .lp-sponsors-desc {
     font-size: 0.94rem;
   }
-  .lp-sponsor-card-lead {
-    padding: 24px 18px;
+  .lp-sponsors-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    gap: 16px;
   }
-  .lp-sponsor-logo-box.lead {
+  .lp-sponsor-card {
+    padding: 22px 18px 18px;
+  }
+  .lp-sponsor-logo-box {
     min-height: 120px;
-    padding: 16px 20px;
-    width: 100%;
-  }
-  .lp-sponsor-logo.lead {
-    max-height: 76px;
-  }
-  .lp-sponsor-card-sub {
-    padding: 24px 18px;
   }
   .tutor-agent-card {
     padding: 16px 14px;

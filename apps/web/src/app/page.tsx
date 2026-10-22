@@ -293,19 +293,20 @@ export default async function HomePage() {
           </div>
 
           <div className="lp-sponsors-grid">
-            {/* Tier 1: Main Sponsor (Telkom Indonesia) */}
-            <div className="lp-sponsor-card lp-sponsor-card-lead" data-voice-menu="sponsor-telkom" tabIndex={0}>
-              <div className="lp-sponsor-tier-badge lead">
-                <span className="lp-tier-dot" aria-hidden="true" />
-                <span>{t("Sponsor Utama")}</span>
-              </div>
-              <div className="lp-sponsor-logo-box lead">
+            {/* Sponsor 1: Telkom Indonesia */}
+            <div
+              className="lp-sponsor-card"
+              data-voice-menu="sponsor-telkom"
+              tabIndex={0}
+              aria-label={t("Sponsor kami PT Telkom Indonesia (Persero) Tbk")}
+            >
+              <div className="lp-sponsor-logo-box">
                 <Image
                   src="/images/landing/Sponsor/telkom-indonesia.png"
                   alt="Telkom Indonesia - the world in your hand"
-                  width={420}
-                  height={220}
-                  className="lp-sponsor-logo lead"
+                  width={340}
+                  height={180}
+                  className="lp-sponsor-logo telkom"
                   priority
                 />
               </div>
@@ -314,44 +315,45 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Tier 2: Subgrid for Telin & Telkom University */}
-            <div className="lp-sponsors-subgrid">
-              {/* Co-Sponsor: Telin */}
-              <div className="lp-sponsor-card lp-sponsor-card-sub" data-voice-menu="sponsor-telin" tabIndex={0}>
-                <div className="lp-sponsor-tier-badge telin">
-                  <span>{t("Mitra Global Connectivity")}</span>
-                </div>
-                <div className="lp-sponsor-logo-box">
-                  <Image
-                    src="/images/landing/Sponsor/telin.png"
-                    alt="Telin by Telkom Indonesia"
-                    width={320}
-                    height={160}
-                    className="lp-sponsor-logo telin"
-                  />
-                </div>
-                <div className="lp-sponsor-meta">
-                  <h3 className="lp-sponsor-name">{t("PT Telekomunikasi Indonesia International (Telin)")}</h3>
-                </div>
+            {/* Sponsor 2: Telin */}
+            <div
+              className="lp-sponsor-card"
+              data-voice-menu="sponsor-telin"
+              tabIndex={0}
+              aria-label={t("Sponsor kami PT Telekomunikasi Indonesia International (Telin)")}
+            >
+              <div className="lp-sponsor-logo-box">
+                <Image
+                  src="/images/landing/Sponsor/telin.png"
+                  alt="Telin by Telkom Indonesia"
+                  width={300}
+                  height={150}
+                  className="lp-sponsor-logo telin"
+                />
               </div>
+              <div className="lp-sponsor-meta">
+                <h3 className="lp-sponsor-name">{t("PT Telekomunikasi Indonesia International (Telin)")}</h3>
+              </div>
+            </div>
 
-              {/* Academic Partner: Telkom University */}
-              <div className="lp-sponsor-card lp-sponsor-card-sub" data-voice-menu="sponsor-telu" tabIndex={0}>
-                <div className="lp-sponsor-tier-badge telu">
-                  <span>{t("Mitra Akademik & Riset")}</span>
-                </div>
-                <div className="lp-sponsor-logo-box">
-                  <Image
-                    src="/images/landing/Sponsor/telkom-university.png"
-                    alt="Telkom University"
-                    width={260}
-                    height={160}
-                    className="lp-sponsor-logo telu"
-                  />
-                </div>
-                <div className="lp-sponsor-meta">
-                  <h3 className="lp-sponsor-name">{t("Telkom University")}</h3>
-                </div>
+            {/* Sponsor 3: Telkom University */}
+            <div
+              className="lp-sponsor-card"
+              data-voice-menu="sponsor-telu"
+              tabIndex={0}
+              aria-label={t("Sponsor kami Telkom University")}
+            >
+              <div className="lp-sponsor-logo-box">
+                <Image
+                  src="/images/landing/Sponsor/telkom-university.png"
+                  alt="Telkom University"
+                  width={240}
+                  height={150}
+                  className="lp-sponsor-logo telu"
+                />
+              </div>
+              <div className="lp-sponsor-meta">
+                <h3 className="lp-sponsor-name">{t("Telkom University")}</h3>
               </div>
             </div>
           </div>
