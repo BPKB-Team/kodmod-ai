@@ -2271,11 +2271,10 @@ html[data-reduced-motion="true"] .spin-pulse {
 
 .lp-sponsor-card {
   background: #ffffff;
-  border: 2px solid #e2e8f0;
-  border-bottom: 4px solid #cbd5e1;
-  border-radius: 22px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
-  padding: 32px 24px 26px;
+  border: 1.5px solid #e8eef5;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  padding: 38px 28px 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2304,10 +2303,9 @@ html[data-reduced-motion="true"] .spin-pulse {
 .lp-sponsor-card:hover,
 .lp-sponsor-card:focus-visible {
   animation-play-state: paused;
-  transform: translateY(-10px) scale(1.02);
+  transform: translateY(-8px) scale(1.02);
   border-color: #3b82f6;
-  border-bottom-color: #2563eb;
-  box-shadow: 0 18px 36px rgba(37, 99, 235, 0.14), 0 0 0 3px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.12), 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .lp-sponsor-card:focus-visible {
@@ -2316,28 +2314,21 @@ html[data-reduced-motion="true"] .spin-pulse {
 }
 
 .lp-sponsor-logo-box {
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 24px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 150px;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-
-.lp-sponsor-card:hover .lp-sponsor-logo-box,
-.lp-sponsor-card:focus-visible .lp-sponsor-logo-box {
-  background: #f0f7ff;
-  border-color: #bfdbfe;
+  min-height: 165px;
+  box-shadow: none;
 }
 
 .lp-sponsor-logo {
-  max-height: 82px;
-  max-width: 85%;
+  max-height: 130px;
+  max-width: 92%;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -2345,15 +2336,15 @@ html[data-reduced-motion="true"] .spin-pulse {
 }
 
 .lp-sponsor-logo.telkom {
-  max-height: 88px;
+  max-height: 140px;
 }
 
 .lp-sponsor-logo.telin {
-  max-height: 74px;
+  max-height: 115px;
 }
 
 .lp-sponsor-logo.telu {
-  max-height: 90px;
+  max-height: 145px;
 }
 
 .lp-sponsor-card:hover .lp-sponsor-logo,
@@ -2407,17 +2398,23 @@ html[data-reduced-motion="true"] .spin-pulse {
     gap: 18px;
   }
   .lp-sponsor-card {
-    padding: 24px 18px 20px;
+    padding: 30px 20px 22px;
   }
   .lp-sponsor-logo-box {
-    min-height: 130px;
-    padding: 16px 14px;
+    min-height: 140px;
+    padding: 6px 10px;
   }
   .lp-sponsor-logo {
-    max-height: 70px;
+    max-height: 105px;
+  }
+  .lp-sponsor-logo.telkom {
+    max-height: 115px;
+  }
+  .lp-sponsor-logo.telin {
+    max-height: 95px;
   }
   .lp-sponsor-logo.telu {
-    max-height: 80px;
+    max-height: 120px;
   }
   .lp-sponsor-name {
     font-size: 0.95rem;
@@ -2455,10 +2452,23 @@ html[data-reduced-motion="true"] .spin-pulse {
     gap: 16px;
   }
   .lp-sponsor-card {
-    padding: 22px 18px 18px;
+    padding: 30px 20px 22px;
   }
   .lp-sponsor-logo-box {
-    min-height: 120px;
+    min-height: 140px;
+    padding: 6px 10px;
+  }
+  .lp-sponsor-logo {
+    max-height: 110px;
+  }
+  .lp-sponsor-logo.telkom {
+    max-height: 120px;
+  }
+  .lp-sponsor-logo.telin {
+    max-height: 98px;
+  }
+  .lp-sponsor-logo.telu {
+    max-height: 125px;
   }
   .tutor-agent-card {
     padding: 16px 14px;
