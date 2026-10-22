@@ -122,12 +122,7 @@ export function AdminLearningTraceExplorer({
       </Link>
 
       <Heading
-        kicker={
-          <span className="analytics-kicker">
-            <Activity size={14} aria-hidden="true" />
-            <UiText>{"DIAGNOSTIK ALUR BELAJAR"}</UiText>
-          </span>
-        }
+        icon={<Activity size={24} aria-hidden="true" />}
         title={<UiText>{"Jejak Diagnostik AI"}</UiText>}
         description={
           <UiText>

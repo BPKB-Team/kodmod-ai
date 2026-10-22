@@ -105,7 +105,6 @@ export function TeacherStudentDetailView({
         <div className="teacher-profile-heading">
           <span className="teacher-profile-avatar" aria-hidden="true">{data.account.full_name.slice(0, 1).toUpperCase()}</span>
           <div>
-            <span className="analytics-kicker"><UiText>{"PROFIL SISWA"}</UiText></span>
             <h2>{data.account.full_name}</h2>
             <p>@{data.account.username} · {data.account.is_active ? <UiText>{"Akun aktif"}</UiText> : <UiText>{"Akun nonaktif"}</UiText>}</p>
           </div>

@@ -117,13 +117,14 @@ export function AdminInsights({
       <LoadingStatus active={loading} label="Memuat analitik dan aktivitas…" />
       {isStandalonePage ? (
         <div className="admin-activity-page-header">
-          <div>
-            <span className="analytics-kicker">
-              <Activity size={14} aria-hidden="true" />
-              <UiText>{"OPERASIONAL"}</UiText>
-            </span>
-            <h1><UiText>{"Aktivitas & Layanan"}</UiText></h1>
-            <p><UiText>{"Pantau kesehatan operasional KODMOD dan status provider pendukung."}</UiText></p>
+          <div className="page-heading-main">
+            <div className="heading-icon-badge" aria-hidden="true">
+              <Activity size={24} />
+            </div>
+            <div className="page-heading-text">
+              <h1><UiText>{"Aktivitas & Layanan"}</UiText></h1>
+              <p><UiText>{"Pantau kesehatan operasional KODMOD dan status provider pendukung."}</UiText></p>
+            </div>
           </div>
           <button type="button" className="button secondary refresh-btn" onClick={() => void refresh()} disabled={loading}>
             <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
@@ -132,10 +133,14 @@ export function AdminInsights({
         </div>
       ) : (
         <div className="admin-insights-heading">
-          <div>
-            <span className="analytics-kicker"><Activity size={14} aria-hidden="true" /><UiText>{"OPERASIONAL"}</UiText></span>
-            <h2><UiText>{"Semua sinyal penting dalam satu pandangan."}</UiText></h2>
-            <p><UiText>{"Angka agregat untuk memantau kesehatan ruang belajar dan layanan pendukung."}</UiText></p>
+          <div className="page-heading-main">
+            <div className="heading-icon-badge" aria-hidden="true">
+              <Activity size={24} />
+            </div>
+            <div className="page-heading-text">
+              <h2><UiText>{"Semua sinyal penting dalam satu pandangan."}</UiText></h2>
+              <p><UiText>{"Angka agregat untuk memantau kesehatan ruang belajar dan layanan pendukung."}</UiText></p>
+            </div>
           </div>
           <button type="button" className="button secondary refresh-btn" onClick={() => void refresh()} disabled={loading}>
             <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />

@@ -9,9 +9,13 @@ import {
   CalendarClock,
   FileCheck2,
   Plus,
+  RotateCcw,
+  Search,
   ShieldCheck,
 } from "lucide-react";
 import { notFound } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { editorialBackend, editorialData } from "@/lib/editorial-server";
 import { backend } from "@/lib/server-api";
 import { requireSession } from "@/lib/session";
@@ -72,21 +76,42 @@ function Pagination({
   );
 }
 
-export async function TeacherQuizIndex({ page: raw }: { page?: string }) {
+export async function TeacherQuizIndex({
+  page: raw,
+  search: rawSearch,
+  status: rawStatus,
+}: {
+  page?: string;
+  search?: string;
+  status?: string;
+}) {
   const page = pageNumber(raw);
-  const rows = await editorialData<QuizSummary[]>(
-    `/teacher/quizzes?limit=25&offset=${page * 25}`,
+  const search = (rawSearch ?? "").trim().slice(0, 120);
+  const status = (rawStatus ?? "").trim();
+  const allRows = await editorialData<QuizSummary[]>(
+    `/teacher/quizzes?limit=50&offset=${page * 50}`,
     "teacher",
   );
+
+  const rows = allRows.filter((q) => {
+    if (search) {
+      const s = search.toLowerCase();
+      const matchTitle = q.title.toLowerCase().includes(s);
+      const matchDesc = (q.description || "").toLowerCase().includes(s);
+      if (!matchTitle && !matchDesc) return false;
+    }
+    if (status && q.state !== status) {
+      return false;
+    }
+    return true;
+  });
+
+  const hasActiveFilters = Boolean(search || status);
+
   return (
     <>
       <Heading
-        kicker={
-          <span className="analytics-kicker">
-            <BookOpenCheck size={14} aria-hidden="true" />
-            <UiText>{"KUIS & PENUGASAN"}</UiText>
-          </span>
-        }
+        icon={<BookOpenCheck size={24} aria-hidden="true" />}
         title={<UiText>{"Kuis & penugasan"}</UiText>}
         description={<UiText>{"Dari pertanyaan yang baik, menuju pemahaman yang lebih terarah."}</UiText>}
       >
@@ -107,8 +132,59 @@ export async function TeacherQuizIndex({ page: raw }: { page?: string }) {
           <span><UiText>{"04 · Penugasan"}</UiText></span>
         </div>
       </section>
+
+      {/* Filter and Search Bar */}
+      <form className="filters" action="/guru/kuis">
+        <div className="field search-field">
+          <label htmlFor="search" className="sr-only">
+            <UiText>{"Cari judul kuis"}</UiText>
+          </label>
+          <div className="search-input-wrapper">
+            <Search size={18} className="search-input-icon" aria-hidden="true" />
+            <Input
+              name="search"
+              id="search"
+              defaultValue={search}
+              maxLength={120}
+              placeholder="Cari judul kuis atau pembahasan..."
+              type="search"
+              className="search-input-field"
+            />
+          </div>
+        </div>
+
+        <div className="field filter-select-field">
+          <label htmlFor="status" className="filter-label">
+            <UiText>{"Status:"}</UiText>
+          </label>
+          <NativeSelect id="status" name="status" defaultValue={status}>
+            <option value=""><UiText>{"Semua status"}</UiText></option>
+            <option value="draft"><UiText>{"Draft"}</UiText></option>
+            <option value="in_review"><UiText>{"Dalam review"}</UiText></option>
+            <option value="approved"><UiText>{"Disetujui"}</UiText></option>
+            <option value="published"><UiText>{"Dipublikasikan"}</UiText></option>
+            <option value="rejected"><UiText>{"Ditolak"}</UiText></option>
+          </NativeSelect>
+        </div>
+
+        <button className="button primary search-submit-btn" type="submit">
+          <Search size={15} aria-hidden="true" />
+          <UiText>{"Cari"}</UiText>
+        </button>
+
+        {hasActiveFilters && (
+          <Link href="/guru/kuis" className="filter-reset-btn">
+            <RotateCcw size={14} aria-hidden="true" />
+            <UiText>{"Reset filter"}</UiText>
+          </Link>
+        )}
+      </form>
+
       <div className="learning-section-heading">
-        <h2><UiText>{"Kuis Anda"}</UiText></h2>
+        <h2>
+          <UiText>{"Kuis Anda"}</UiText>
+          <span className="count">{rows.length}</span>
+        </h2>
         <Link className="learning-back" href="/guru/review-kuis"><UiText>{"Antrean review"}</UiText><ArrowUpRight size={16} aria-hidden="true" />
         </Link>
       </div>
@@ -141,6 +217,18 @@ export async function TeacherQuizIndex({ page: raw }: { page?: string }) {
             </Link>
           ))}
         </div>
+      ) : hasActiveFilters ? (
+        <section className="panel">
+          <Empty title={<UiText>{"Kuis tidak ditemukan"}</UiText>}>
+            <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
+              <UiText>{"Tidak ada kuis yang sesuai dengan pencarian atau filter yang dipilih."}</UiText>
+              <Link href="/guru/kuis" className="button secondary">
+                <RotateCcw size={15} aria-hidden="true" />
+                <UiText>{"Hapus filter"}</UiText>
+              </Link>
+            </div>
+          </Empty>
+        </section>
       ) : (
         <section className="panel">
           <Empty title={<UiText>{"Mulai dari satu pertanyaan."}</UiText>}><UiText>{"Buat kuis pilihan ganda, lalu minta review sebelum membagikannya ke siswa."}</UiText></Empty>
@@ -190,25 +278,36 @@ export async function TeacherQuizEditor({ id }: { id?: string }) {
 export async function QuizReviewIndex({
   role,
   page: raw,
+  search: rawSearch,
 }: {
   role: "teacher" | "admin";
   page?: string;
+  search?: string;
 }) {
   const page = pageNumber(raw),
     base = role === "admin" ? "/admin/review-kuis" : "/guru/review-kuis";
-  const rows = await editorialData<QuizSummary[]>(
-    `/quiz-reviews?limit=25&offset=${page * 25}`,
+  const search = (rawSearch ?? "").trim().slice(0, 120);
+  const allRows = await editorialData<QuizSummary[]>(
+    `/quiz-reviews?limit=50&offset=${page * 50}`,
     role,
   );
+
+  const rows = allRows.filter((q) => {
+    if (search) {
+      const s = search.toLowerCase();
+      const matchTitle = q.title.toLowerCase().includes(s);
+      const matchOwner = (q.owner_name || "").toLowerCase().includes(s);
+      if (!matchTitle && !matchOwner) return false;
+    }
+    return true;
+  });
+
+  const hasActiveFilters = Boolean(search);
+
   return (
     <>
       <Heading
-        kicker={
-          <span className="analytics-kicker">
-            <FileCheck2 size={14} aria-hidden="true" />
-            <UiText>{"KURASI & REVIEW KUIS"}</UiText>
-          </span>
-        }
+        icon={<FileCheck2 size={24} aria-hidden="true" />}
         title={<UiText>{"Review kuis"}</UiText>}
         description={
           role === "admin"
@@ -223,6 +322,47 @@ export async function QuizReviewIndex({
           <p><UiText>{"Periksa soal, kunci, dan narasi. Persetujuan memberi guru izin untuk menerbitkan revisi tersebut."}</UiText></p>
         </div>
       </section>
+
+      {/* Filter and Search Bar */}
+      <form className="filters" action={base}>
+        <div className="field search-field">
+          <label htmlFor="search" className="sr-only">
+            <UiText>{"Cari judul kuis atau nama guru"}</UiText>
+          </label>
+          <div className="search-input-wrapper">
+            <Search size={18} className="search-input-icon" aria-hidden="true" />
+            <Input
+              name="search"
+              id="search"
+              defaultValue={search}
+              maxLength={120}
+              placeholder="Cari judul kuis atau nama guru pengunggah..."
+              type="search"
+              className="search-input-field"
+            />
+          </div>
+        </div>
+
+        <button className="button primary search-submit-btn" type="submit">
+          <Search size={15} aria-hidden="true" />
+          <UiText>{"Cari"}</UiText>
+        </button>
+
+        {hasActiveFilters && (
+          <Link href={base} className="filter-reset-btn">
+            <RotateCcw size={14} aria-hidden="true" />
+            <UiText>{"Reset filter"}</UiText>
+          </Link>
+        )}
+      </form>
+
+      <div className="learning-section-heading">
+        <h2>
+          <UiText>{"Antrean review"}</UiText>
+          <span className="count">{rows.length}</span>
+        </h2>
+      </div>
+
       {rows.length ? (
         <div className="editorial-card-grid">
           {rows.map((q) => (
@@ -245,6 +385,18 @@ export async function QuizReviewIndex({
             </Link>
           ))}
         </div>
+      ) : hasActiveFilters ? (
+        <section className="panel">
+          <Empty title={<UiText>{"Kuis tidak ditemukan"}</UiText>}>
+            <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
+              <UiText>{"Tidak ada kuis dalam antrean review yang cocok dengan pencarian."}</UiText>
+              <Link href={base} className="button secondary">
+                <RotateCcw size={15} aria-hidden="true" />
+                <UiText>{"Hapus filter"}</UiText>
+              </Link>
+            </div>
+          </Empty>
+        </section>
       ) : (
         <section className="panel">
           <Empty title={<UiText>{"Antrean review sudah bersih."}</UiText>}><UiText>{"Kuis yang menunggu penilaian akan muncul di sini."}</UiText></Empty>

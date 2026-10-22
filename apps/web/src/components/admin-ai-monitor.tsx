@@ -125,13 +125,14 @@ export function AdminAiMonitor({
       <LoadingStatus active={loading} label="Memuat penggunaan layanan AI…" />
       {/* Top Header Controls */}
       <div className="admin-activity-page-header">
-        <div>
-          <span className="analytics-kicker">
-            <Bot size={14} aria-hidden="true" />
-            <UiText>{"PEMANTAUAN MESIN AI"}</UiText>
-          </span>
-          <h1><UiText>{"Status Kuota & Penggunaan API Eksternal"}</UiText></h1>
-          <p><UiText>{"Periksa konfigurasi layanan dan kuota suara yang berhasil dimuat dari penyedia."}</UiText></p>
+        <div className="page-heading-main">
+          <div className="heading-icon-badge" aria-hidden="true">
+            <Bot size={24} />
+          </div>
+          <div className="page-heading-text">
+            <h1><UiText>{"Status Kuota & Penggunaan API Eksternal"}</UiText></h1>
+            <p><UiText>{"Periksa konfigurasi layanan dan kuota suara yang berhasil dimuat dari penyedia."}</UiText></p>
+          </div>
         </div>
         <div className="heading-actions">
           <Link href="/admin/pemantauan-ai/jejak" className="button secondary refresh-btn trace-nav-btn">

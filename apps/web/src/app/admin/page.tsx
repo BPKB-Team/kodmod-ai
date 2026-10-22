@@ -32,12 +32,7 @@ export default async function AdminPage() {
   return (
     <>
       <Heading
-        kicker={
-          <span className="analytics-kicker">
-            <LayoutDashboard size={14} aria-hidden="true" />
-            <UiText>{"RINGKASAN SISTEM"}</UiText>
-          </span>
-        }
+        icon={<LayoutDashboard size={24} aria-hidden="true" />}
         title={`Selamat datang, ${user.full_name.split(" ")[0]}.`}
         description={<UiText>{"Kelola akses, siapkan ruang belajar, dan dampingi sekolah Anda."}</UiText>}
       >

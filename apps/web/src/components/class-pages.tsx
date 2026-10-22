@@ -9,8 +9,12 @@ import {
   Layers3,
   LayoutDashboard,
   Plus,
+  RotateCcw,
+  Search,
   Users,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { classroomData } from "@/lib/classrooms";
 import { requireSession } from "@/lib/session";
 import { dateLabel } from "@/lib/types";
@@ -113,31 +117,54 @@ function ClassCards({ rows, role }: { rows: Classroom[]; role: LearningRole }) {
 export async function ClassIndex({
   role,
   dashboard = false,
+  search: rawSearch,
+  status: rawStatus,
 }: {
   role: LearningRole;
   dashboard?: boolean;
+  search?: string;
+  status?: string;
 }) {
   const teacher = role === "teacher";
-  const [{ user }, rows, studentMaterials] = await Promise.all([
+  const search = (rawSearch ?? "").trim().slice(0, 120);
+  const status = (rawStatus ?? "").trim();
+  const [{ user }, allRows, studentMaterials] = await Promise.all([
     requireSession(role),
     classroomData<Classroom[]>(role),
     !teacher && dashboard
       ? classroomData<StudentMaterial[]>("student", "/student/materials")
       : Promise.resolve([]),
   ]);
-  const active = rows.filter((row) => !row.is_archived);
+  const active = allRows.filter((row) => !row.is_archived);
   const completedMaterialsCount = studentMaterials.filter(
     (m) => m.progress?.completed,
   ).length;
+
+  const rows = allRows.filter((row) => {
+    if (dashboard) return true;
+    if (search) {
+      const s = search.toLowerCase();
+      const matchName = row.name.toLowerCase().includes(s);
+      const matchSubject = (row.subject || "").toLowerCase().includes(s);
+      const matchDesc = (row.description || "").toLowerCase().includes(s);
+      if (!matchName && !matchSubject && !matchDesc) return false;
+    }
+    if (status === "active" && row.is_archived) return false;
+    if (status === "archived" && !row.is_archived) return false;
+    return true;
+  });
+
+  const hasActiveFilters = Boolean(!dashboard && (search || status));
   return (
     <>
       <Heading
-        kicker={
+        icon={
           teacher ? (
-            <span className="analytics-kicker">
-              {dashboard ? <LayoutDashboard size={14} aria-hidden="true" /> : <Users size={14} aria-hidden="true" />}
-              <UiText>{dashboard ? "RUANG MENGAJAR" : "MANAJEMEN KELAS"}</UiText>
-            </span>
+            dashboard ? (
+              <LayoutDashboard size={24} aria-hidden="true" />
+            ) : (
+              <Users size={24} aria-hidden="true" />
+            )
           ) : undefined
         }
         title={
@@ -216,11 +243,73 @@ export async function ClassIndex({
         </>
       )}
       {dashboard && !teacher && <StudentOverview />}
+      {/* Search and filter toolbar for full class catalog */}
+      {teacher && !dashboard && (
+        <form className="filters" action="/guru/kelas">
+          <div className="field search-field">
+            <label htmlFor="search" className="sr-only">
+              <UiText>{"Cari nama kelas atau mata pelajaran"}</UiText>
+            </label>
+            <div className="search-input-wrapper">
+              <Search size={18} className="search-input-icon" aria-hidden="true" />
+              <Input
+                name="search"
+                id="search"
+                defaultValue={search}
+                maxLength={120}
+                placeholder="Cari nama kelas, mapel, atau deskripsi..."
+                type="search"
+                className="search-input-field"
+              />
+            </div>
+          </div>
+
+          <div className="field filter-select-field">
+            <label htmlFor="status" className="filter-label">
+              <UiText>{"Status:"}</UiText>
+            </label>
+            <NativeSelect id="status" name="status" defaultValue={status}>
+              <option value=""><UiText>{"Semua status"}</UiText></option>
+              <option value="active"><UiText>{"Aktif"}</UiText></option>
+              <option value="archived"><UiText>{"Diarsipkan"}</UiText></option>
+            </NativeSelect>
+          </div>
+
+          <button className="button primary search-submit-btn" type="submit">
+            <Search size={15} aria-hidden="true" />
+            <UiText>{"Cari"}</UiText>
+          </button>
+
+          {hasActiveFilters && (
+            <Link href="/guru/kelas" className="filter-reset-btn">
+              <RotateCcw size={14} aria-hidden="true" />
+              <UiText>{"Reset filter"}</UiText>
+            </Link>
+          )}
+        </form>
+      )}
+
       <div className="learning-section-heading">
         <h2>{dashboard ? <UiText>{"Ruang belajar terbaru"}</UiText> : <UiText>{"Semua ruang belajar"}</UiText>}</h2>
         <span>{rows.length}<UiText>{" kelas"}</UiText></span>
       </div>
-      <ClassCards rows={dashboard ? rows.slice(0, 6) : rows} role={role} />
+      {rows.length ? (
+        <ClassCards rows={dashboard ? rows.slice(0, 6) : rows} role={role} />
+      ) : hasActiveFilters ? (
+        <section className="panel">
+          <Empty title={<UiText>{"Kelas tidak ditemukan"}</UiText>}>
+            <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
+              <UiText>{"Tidak ada kelas yang sesuai dengan pencarian atau filter yang dipilih."}</UiText>
+              <Link href={`${baseFor(role)}/kelas`} className="button secondary">
+                <RotateCcw size={15} aria-hidden="true" />
+                <UiText>{"Hapus filter"}</UiText>
+              </Link>
+            </div>
+          </Empty>
+        </section>
+      ) : (
+        <ClassCards rows={[]} role={role} />
+      )}
       {dashboard && rows.length > 6 && (
         <Link className="learning-back" href={`${baseFor(role)}/kelas`}><UiText>{"Lihat semua kelas"}</UiText><ArrowUpRight size={16} aria-hidden="true" />
         </Link>

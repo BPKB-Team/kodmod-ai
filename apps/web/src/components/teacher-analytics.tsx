@@ -63,12 +63,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
     <section className="teacher-analytics-workspace" aria-label={t("Analitik siswa")}>
       <LoadingStatus active={loading} label="Memuat analitik kelas…" />
       <Heading
-        kicker={
-          <span className="analytics-kicker">
-            <BarChart3 size={14} aria-hidden="true" />
-            <UiText>{"ANALITIK SISWA"}</UiText>
-          </span>
-        }
+        icon={<BarChart3 size={24} aria-hidden="true" />}
         title={<UiText>{"Analitik siswa"}</UiText>}
         description={<UiText>{"Pantau pola belajar cohort dan buka detail siswa untuk tindak lanjut yang lebih terarah."}</UiText>}
       >
