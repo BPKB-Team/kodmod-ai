@@ -430,32 +430,75 @@
   justify-content: space-between;
   align-items: center;
 }
-.class-card-top .badge {
-  max-width: 70%;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
 .class-symbol {
   display: grid;
   place-items: center;
   background: #eff6ff;
   color: #2563eb;
-  width: 46px;
-  height: 46px;
-  border-radius: 13px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
   flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.class-card:hover .class-symbol {
+  background: #2563eb;
+  color: #ffffff;
+}
+.class-card-subject {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+.class-subject-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.785rem;
+  font-weight: 650;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.class-card:hover .class-subject-badge {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+.class-status-badge.archived {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
 }
 .class-card h3 {
   color: #1b3155;
-  margin: 25px 0 10px;
+  margin: 0 0 10px;
   font-size: 1.1875rem;
+  font-weight: 700;
+  line-height: 1.4;
   overflow-wrap: anywhere;
 }
 .class-card p {
   color: var(--learning-muted);
   line-height: 1.6;
   font-size: 0.875rem;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -467,10 +510,17 @@
   align-items: center;
   gap: 8px;
   margin-top: auto;
-  padding-top: 17px;
+  padding-top: 16px;
   border-top: 1px solid #edf1f7;
   color: #43618c;
   font-size: 0.75rem;
+}
+.class-card-bottom svg {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.class-card:hover .class-card-bottom svg {
+  transform: translate(2px, -2px);
+  color: #2563eb;
 }
 .learning-back {
   display: inline-flex;
@@ -2877,4 +2927,283 @@
 @media (max-width: 640px) {
   .quiz-policy-actions { flex-direction: column; width: 100%; }
   .quiz-policy-actions .button { width: 100% !important; min-height: 48px; justify-content: center; }
+}
+
+/* Teacher Class Creation Form & Subject Combobox */
+.teacher-form-wrapper {
+  max-width: 760px;
+  margin-top: 1.25rem;
+}
+.teacher-create-class-card {
+  background: #ffffff;
+  border: 1px solid #dce7f4;
+  border-radius: 20px;
+  padding: 2rem 2.25rem;
+  box-shadow: 0 4px 20px -2px rgba(16, 42, 85, 0.04);
+}
+.teacher-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.field-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+  font-size: 0.925rem;
+  font-weight: 650;
+  color: #1b3155;
+}
+.field-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.field-icon {
+  color: #2563eb;
+}
+.field-required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+.field-optional {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+}
+.field-hint {
+  display: block;
+  font-size: 0.825rem;
+  color: #64748b;
+  margin-top: 0.35rem;
+  line-height: 1.45;
+}
+.teacher-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #eef4fb;
+}
+
+/* Subject Combobox & Search */
+.subject-combobox {
+  position: relative;
+  width: 100%;
+}
+.subject-selected-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.subject-selected-card:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.subject-selected-content {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.subject-selected-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+.subject-selected-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.subject-selected-name {
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: #1e293b;
+}
+.subject-new-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.subject-change-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.subject-change-button:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+.subject-search-container {
+  position: relative;
+  width: 100%;
+}
+.subject-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.subject-input-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #64748b;
+  pointer-events: none;
+}
+.subject-combobox-input {
+  width: 100%;
+  height: 44px;
+  padding: 0.5rem 2.25rem 0.5rem 2.4rem;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.925rem;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.subject-combobox-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.subject-input-clear-btn {
+  position: absolute;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: #e2e8f0;
+  color: #64748b;
+  cursor: pointer;
+}
+.subject-input-clear-btn:hover {
+  background: #cbd5e1;
+  color: #1e293b;
+}
+.subject-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  box-shadow: 0 14px 34px -4px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+}
+.subject-options-group {
+  display: flex;
+  flex-direction: column;
+}
+.subject-dropdown-heading {
+  padding: 8px 14px 4px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.subject-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 9px 14px;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: #1e293b;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.subject-dropdown-item:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.subject-item-icon {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+.subject-item-name {
+  font-weight: 550;
+}
+.subject-dropdown-empty {
+  padding: 14px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+.subject-dropdown-hint {
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  color: #64748b;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+}
+.subject-dropdown-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #2563eb;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.subject-dropdown-add-btn:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.subject-dropdown-add-btn strong {
+  color: #1e40af;
+}
+.subject-error-msg {
+  color: #dc2626;
+  font-size: 0.825rem;
+  font-weight: 550;
+  margin-top: 0.35rem;
 }

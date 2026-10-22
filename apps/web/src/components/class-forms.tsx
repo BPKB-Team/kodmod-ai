@@ -5,9 +5,10 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { UiText, useI18n } from "@/components/language-provider";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, CheckCircle2, Edit3, Eye, FileText, Search, UploadCloud, UserPlus, X } from "lucide-react";
+import { BookOpen, BookOpenCheck, CheckCircle2, Edit3, Eye, FileText, FolderPlus, Plus, Search, UploadCloud, UserPlus, X } from "lucide-react";
 import { addMembers, createClass, changeClass, saveMaterial } from "@/app/class-actions";
 import { ActionFeedback, useConfirmedAction } from "./action-feedback";
 import type { Classroom, Material } from "@/lib/class-types";
@@ -28,73 +29,329 @@ import {MaterialSourceReview} from "./material-source-review";
 import {legacyMaterialDocument,materialPlainText,validateMaterialDocument} from "@/lib/material-document-adapter.mjs";
 import type {MaterialDocument} from "@/lib/material-document-types";
 
+function SubjectPicker({
+  subjects,
+  value,
+  newValue,
+  onChange,
+  disabled,
+}: {
+  subjects: CurriculumSubject[];
+  value: string;
+  newValue: string;
+  onChange: (subjectId: string, newSubjectName: string) => void;
+  disabled?: boolean;
+}) {
+  const { t } = useI18n();
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const selectedExisting = subjects.find((s) => s.id === value);
+  const isNew = value === "__new__";
+  const isSelected = Boolean(selectedExisting || (isNew && newValue.trim()));
+  const displayName = selectedExisting
+    ? selectedExisting.name
+    : isNew
+      ? newValue
+      : "";
+
+  const cleanQuery = query.trim().toLowerCase();
+  const filtered = subjects.filter((s) =>
+    s.name.toLowerCase().includes(cleanQuery),
+  );
+  const exactMatch = subjects.some(
+    (s) => s.name.toLowerCase() === cleanQuery,
+  );
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectExisting = (subj: CurriculumSubject) => {
+    onChange(subj.id, "");
+    setQuery("");
+    setIsOpen(false);
+  };
+
+  const handleSelectNew = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onChange("__new__", trimmed);
+    setQuery("");
+    setIsOpen(false);
+  };
+
+  const handleClear = () => {
+    onChange("", "");
+    setQuery("");
+    setIsOpen(true);
+  };
+
+  return (
+    <div className="subject-combobox" ref={containerRef}>
+      <input type="hidden" name="subject_id" value={value} />
+      <input type="hidden" name="new_subject" value={newValue} />
+
+      {isSelected ? (
+        <div className="subject-selected-card">
+          <div className="subject-selected-content">
+            <span className="subject-selected-icon">
+              <BookOpenCheck size={18} aria-hidden="true" />
+            </span>
+            <div className="subject-selected-text">
+              <span className="subject-selected-name">{displayName}</span>
+              {isNew && (
+                <span className="subject-new-chip">
+                  <UiText>{"Mata pelajaran baru"}</UiText>
+                </span>
+              )}
+            </div>
+          </div>
+          {!disabled && (
+            <button
+              type="button"
+              className="subject-change-button"
+              onClick={handleClear}
+              title={t("Ganti mata pelajaran")}
+            >
+              <X size={15} aria-hidden="true" />
+              <UiText>{"Ganti"}</UiText>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="subject-search-container">
+          <div className="subject-input-wrapper">
+            <Search
+              size={17}
+              className="subject-input-search-icon"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              className="subject-combobox-input"
+              placeholder={t("Ketik untuk mencari atau menambah mata pelajaran...")}
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setIsOpen(true);
+              }}
+              onFocus={() => setIsOpen(true)}
+              disabled={disabled}
+              autoComplete="off"
+              role="combobox"
+              aria-expanded={isOpen}
+            />
+            {query && (
+              <button
+                type="button"
+                className="subject-input-clear-btn"
+                onClick={() => setQuery("")}
+                aria-label={t("Hapus pencarian")}
+              >
+                <X size={14} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+
+          {isOpen && (
+            <div className="subject-dropdown-menu" role="listbox">
+              {filtered.length > 0 ? (
+                <div className="subject-options-group">
+                  <div className="subject-dropdown-heading">
+                    <UiText>{"Pilih mata pelajaran yang tersedia:"}</UiText>
+                  </div>
+                  {filtered.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className="subject-dropdown-item"
+                      onClick={() => handleSelectExisting(s)}
+                    >
+                      <BookOpen
+                        size={16}
+                        className="subject-item-icon"
+                        aria-hidden="true"
+                      />
+                      <span className="subject-item-name">{s.name}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="subject-dropdown-empty">
+                  <UiText>{"Tidak ada mata pelajaran yang cocok."}</UiText>
+                </div>
+              )}
+
+              {query.trim().length > 0 && !exactMatch ? (
+                <button
+                  type="button"
+                  className="subject-dropdown-add-btn"
+                  onClick={() => handleSelectNew(query)}
+                >
+                  <Plus size={16} aria-hidden="true" />
+                  <span>
+                    <UiText>{"Tambah mata pelajaran baru: "}</UiText>
+                    <strong>&ldquo;{query.trim()}&rdquo;</strong>
+                  </span>
+                </button>
+              ) : query.trim().length === 0 ? (
+                <div className="subject-dropdown-hint">
+                  <UiText>{"Ketik nama mata pelajaran jika belum ada di daftar."}</UiText>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ClassForm({ subjects = [] }: { subjects?: CurriculumSubject[] }) {
   const { t } = useI18n();
   const [values, setValues] = useState({
     name: "",
-    subjectId: subjects.length ? "" : "__new__",
+    subjectId: "",
     newSubject: "",
     description: "",
   });
+  const [subjectError, setSubjectError] = useState(false);
   const [state, action, pending] = useConfirmedAction(createClass, {
     title: "Buat kelas baru?",
     text: "Kelas akan tersedia untuk Anda. Siswa dapat mengakses setelah ditambahkan sebagai anggota.",
     confirmText: "Ya, buat kelas",
   }, "Sedang memproses pembuatan kelas baru, mohon tunggu sebentar...");
-  const creatingSubject = values.subjectId === "__new__";
+
+  const handleSubmit = (formData: FormData) => {
+    if (!values.subjectId) {
+      setSubjectError(true);
+      return;
+    }
+    setSubjectError(false);
+    action(formData);
+  };
+
   return (
-    <form
-      action={action}
-      onReset={(e) => e.preventDefault()}
-      className="panel form-panel form-stack"
-    >
-      <ActionFeedback state={state} pending={pending} />
-      <label className="field"><UiText>{"Nama kelas"}</UiText><Input
-          required
-          name="name"
-          maxLength={120}
-          placeholder={t("Contoh: Matematika • Kelas 8A")}
-          value={values.name}
-          onChange={(e) => setValues({ ...values, name: e.target.value })}
-        />
-      </label>
-      <label className="field"><UiText>{"Mata pelajaran"}</UiText><NativeSelect
-          required
-          name="subject_id"
-          value={values.subjectId}
-          onChange={(e) => setValues({ ...values, subjectId: e.target.value })}
-        >
-          <option value="" disabled><UiText>{"Pilih mata pelajaran"}</UiText></option>
-          {subjects.map(subject => <option value={subject.id} key={subject.id}>{subject.name}</option>)}
-          <option value="__new__">{t("+ Tambah mata pelajaran baru")}</option>
-        </NativeSelect>
-      </label>
-      {creatingSubject && <label className="field"><UiText>{"Nama mata pelajaran baru"}</UiText><Input
-          required
-          name="new_subject"
-          maxLength={120}
-          placeholder={t("Contoh: Matematika")}
-          value={values.newSubject}
-          onChange={(e) => setValues({ ...values, newSubject: e.target.value })}
-        />
-        <small><UiText>{"Mata pelajaran baru otomatis masuk ke daftar dan bisa dipakai kelas lain."}</UiText></small>
-      </label>}
-      <label className="field"><UiText>{"Tentang kelas"}</UiText><Textarea
-          name="description"
-          rows={4}
-          maxLength={2000}
-          placeholder={t("Apa yang akan dipelajari di kelas ini?")}
-          value={values.description}
-          onChange={(e) =>
-            setValues({ ...values, description: e.target.value })
-          }
-        />
-      </label>
-      <button className="button primary" disabled={pending}>
-        {pending && <Spinner />}
-        {pending ? <UiText>{"Memproses…"}</UiText> : <UiText>{"Buat kelas"}</UiText>}
-      </button>
-    </form>
+    <div className="teacher-form-wrapper">
+      <form
+        action={handleSubmit}
+        onReset={(e) => e.preventDefault()}
+        className="panel teacher-create-class-card"
+      >
+        <ActionFeedback state={state} pending={pending} />
+
+        <div className="teacher-form-section">
+          <div className="field">
+            <label className="field-label" htmlFor="class_name">
+              <span className="field-title">
+                <FolderPlus size={17} className="field-icon" aria-hidden="true" />
+                <UiText>{"Nama kelas"}</UiText>
+              </span>
+              <span className="field-required">*</span>
+            </label>
+            <Input
+              id="class_name"
+              required
+              name="name"
+              maxLength={120}
+              placeholder={t("Contoh: Matematika • Kelas 8A")}
+              value={values.name}
+              onChange={(e) => setValues({ ...values, name: e.target.value })}
+            />
+            <span className="field-hint">
+              <UiText>{"Beri nama yang jelas agar mudah dikenali oleh siswa di beranda kelas."}</UiText>
+            </span>
+          </div>
+
+          <div className="field">
+            <label className="field-label">
+              <span className="field-title">
+                <BookOpen size={17} className="field-icon" aria-hidden="true" />
+                <UiText>{"Mata pelajaran"}</UiText>
+              </span>
+              <span className="field-required">*</span>
+            </label>
+            <SubjectPicker
+              subjects={subjects}
+              value={values.subjectId}
+              newValue={values.newSubject}
+              onChange={(subjectId, newSubjectName) => {
+                setValues({ ...values, subjectId, newSubject: newSubjectName });
+                if (subjectId) setSubjectError(false);
+              }}
+              disabled={pending}
+            />
+            {subjectError && (
+              <p className="subject-error-msg">
+                <UiText>{"Pilih atau tambahkan mata pelajaran terlebih dahulu."}</UiText>
+              </p>
+            )}
+            <span className="field-hint">
+              <UiText>{"Cari dari kurikulum yang sudah ada atau ketik untuk menambahkan mata pelajaran baru."}</UiText>
+            </span>
+          </div>
+
+          <div className="field">
+            <label className="field-label" htmlFor="class_description">
+              <span className="field-title">
+                <FileText size={17} className="field-icon" aria-hidden="true" />
+                <UiText>{"Tentang kelas"}</UiText>
+              </span>
+              <span className="field-optional">
+                <UiText>{"(Opsional)"}</UiText>
+              </span>
+            </label>
+            <Textarea
+              id="class_description"
+              name="description"
+              rows={4}
+              maxLength={2000}
+              placeholder={t("Apa yang akan dipelajari di kelas ini?")}
+              value={values.description}
+              onChange={(e) =>
+                setValues({ ...values, description: e.target.value })
+              }
+            />
+            <span className="field-hint">
+              <UiText>{"Ceritakan cakupan materi, target pembelajaran, atau catatan awal untuk siswa."}</UiText>
+            </span>
+          </div>
+        </div>
+
+        <div className="teacher-form-actions">
+          <Link href="/guru/kelas" className="button secondary">
+            <UiText>{"Batal"}</UiText>
+          </Link>
+          <button
+            className="button primary"
+            disabled={pending || !values.name.trim()}
+          >
+            {pending ? (
+              <>
+                <Spinner />
+                <UiText>{"Memproses…"}</UiText>
+              </>
+            ) : (
+              <>
+                <Plus size={16} aria-hidden="true" />
+                <UiText>{"Buat kelas"}</UiText>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 

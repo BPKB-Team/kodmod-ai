@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowUpRight,
   BookOpen,
+  BookOpenCheck,
   CheckCircle2,
   Layers3,
   LayoutDashboard,
@@ -25,7 +26,7 @@ import type {
   Material,
   StudentMaterial,
 } from "@/lib/class-types";
-import { Badge, Empty, Heading } from "./ui";
+import { Empty, Heading } from "./ui";
 import { ClassAction, MaterialForm, MemberPicker } from "./class-forms";
 import {MaterialRenderer} from "./material-renderer";
 import {legacyMaterialDocument} from "@/lib/material-document-adapter.mjs";
@@ -70,11 +71,19 @@ function ClassCards({ rows, role }: { rows: Classroom[]; role: LearningRole }) {
         >
           <div className="class-card-top">
             <span className="class-symbol">
-              <BookOpen size={23} aria-hidden="true" />
+              <BookOpen size={22} aria-hidden="true" />
             </span>
-            <Badge active={!row.is_archived}>
-              {row.is_archived ? <UiText>{"Arsip"}</UiText> : row.subject}
-            </Badge>
+            {row.is_archived && (
+              <span className="class-status-badge archived">
+                <UiText>{"Diarsipkan"}</UiText>
+              </span>
+            )}
+          </div>
+          <div className="class-card-subject">
+            <span className="class-subject-badge" title={row.subject}>
+              <BookOpenCheck size={13} aria-hidden="true" />
+              <span>{row.subject}</span>
+            </span>
           </div>
           <h3>{row.name}</h3>
           <p>
@@ -345,9 +354,15 @@ export async function ClassRoom({
         )}
       </Heading>
       <div className="class-meta">
-        <Badge active={!row.is_archived}>
-          {row.is_archived ? <UiText>{"Diarsipkan"}</UiText> : row.subject}
-        </Badge>
+        <span className="class-subject-badge">
+          <BookOpenCheck size={14} aria-hidden="true" />
+          <span>{row.subject}</span>
+        </span>
+        {row.is_archived && (
+          <span className="class-status-badge archived">
+            <UiText>{"Diarsipkan"}</UiText>
+          </span>
+        )}
         <span><UiText>{"Guru: "}</UiText>{row.teacher_name}</span>
         <span>{row.member_count}<UiText>{" siswa"}</UiText></span>
       </div>
