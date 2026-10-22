@@ -120,12 +120,12 @@ export function AdminInsights({
           <div>
             <span className="analytics-kicker">
               <Activity size={14} aria-hidden="true" />
-              <UiText>{" OPERASIONAL"}</UiText>
+              <UiText>{"OPERASIONAL"}</UiText>
             </span>
             <h1><UiText>{"Aktivitas & Layanan"}</UiText></h1>
             <p><UiText>{"Pantau kesehatan operasional KODMOD dan status provider pendukung."}</UiText></p>
           </div>
-          <button type="button" className="button secondary" onClick={() => void refresh()} disabled={loading}>
+          <button type="button" className="button secondary refresh-btn" onClick={() => void refresh()} disabled={loading}>
             <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
             <UiText>{"Perbarui Data"}</UiText>
           </button>
@@ -133,11 +133,11 @@ export function AdminInsights({
       ) : (
         <div className="admin-insights-heading">
           <div>
-            <span className="analytics-kicker"><Activity size={14} aria-hidden="true" /><UiText>{" OPERASIONAL"}</UiText></span>
+            <span className="analytics-kicker"><Activity size={14} aria-hidden="true" /><UiText>{"OPERASIONAL"}</UiText></span>
             <h2><UiText>{"Semua sinyal penting dalam satu pandangan."}</UiText></h2>
             <p><UiText>{"Angka agregat untuk memantau kesehatan ruang belajar dan layanan pendukung."}</UiText></p>
           </div>
-          <button type="button" className="button secondary" onClick={() => void refresh()} disabled={loading}>
+          <button type="button" className="button secondary refresh-btn" onClick={() => void refresh()} disabled={loading}>
             <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
             <UiText>{"Perbarui Data"}</UiText>
           </button>

@@ -7,6 +7,7 @@ import {
   BookOpen,
   CheckCircle2,
   Layers3,
+  LayoutDashboard,
   Plus,
   Users,
 } from "lucide-react";
@@ -131,6 +132,14 @@ export async function ClassIndex({
   return (
     <>
       <Heading
+        kicker={
+          teacher ? (
+            <span className="analytics-kicker">
+              {dashboard ? <LayoutDashboard size={14} aria-hidden="true" /> : <Users size={14} aria-hidden="true" />}
+              <UiText>{dashboard ? "RUANG MENGAJAR" : "MANAJEMEN KELAS"}</UiText>
+            </span>
+          ) : undefined
+        }
         title={
           dashboard ? (
             <><UiText>{"Halo, "}</UiText> {user.full_name}.</>

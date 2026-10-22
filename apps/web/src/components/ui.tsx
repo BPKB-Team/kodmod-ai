@@ -27,19 +27,24 @@ export function Brand({ href = "/" }: { href?: string } = {}) {
 export function Heading({
   title,
   description,
+  kicker,
   children,
+  className,
 }: {
   title: ReactNode;
   description: ReactNode;
+  kicker?: ReactNode;
   children?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="page-heading">
+    <div className={`page-heading${className ? ` ${className}` : ""}`}>
       <div>
+        {kicker && <div className="heading-kicker-wrap">{kicker}</div>}
         <h1>{title}</h1>
         <p>{description}</p>
       </div>
-      {children}
+      {children && <div className="heading-actions">{children}</div>}
     </div>
   );
 }

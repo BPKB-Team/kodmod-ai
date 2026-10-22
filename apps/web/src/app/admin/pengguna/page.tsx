@@ -3,7 +3,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { UiText } from "@/components/language-provider";
 import Link from "next/link";
-import { Plus, Search, ArrowUpRight, ArrowLeft, ArrowRight, RotateCcw } from "lucide-react";
+import { Plus, Search, ArrowUpRight, ArrowLeft, ArrowRight, RotateCcw, Users } from "lucide-react";
 import { backend } from "@/lib/server-api";
 import { requireSession } from "@/lib/session";
 import { roleLabel, type User } from "@/lib/types";
@@ -70,6 +70,12 @@ export default async function UsersPage({
   return (
     <>
       <Heading
+        kicker={
+          <span className="analytics-kicker">
+            <Users size={14} aria-hidden="true" />
+            <UiText>{"MANAJEMEN PENGGUNA"}</UiText>
+          </span>
+        }
         title={<UiText>{"Pengguna"}</UiText>}
         description={<UiText>{"Orang-orang di balik setiap perjalanan belajar."}</UiText>}
       >

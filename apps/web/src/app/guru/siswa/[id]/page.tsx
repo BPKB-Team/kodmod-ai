@@ -1,7 +1,5 @@
 
-import { UiText } from "@/components/language-provider";
 import { TeacherStudentDetailView } from "@/components/teacher-student-detail";
-import { Heading } from "@/components/ui";
 import type { TeacherSession, TeacherStudentDetail } from "@/lib/teacher-types";
 import { requireSession } from "@/lib/session";
 import { backend } from "@/lib/server-api";
@@ -18,12 +16,6 @@ export default async function TeacherStudentPage({ params }: Context) {
   ]);
 
   return (
-    <>
-      <Heading
-        title={<UiText>{"Detail siswa"}</UiText>}
-        description={<UiText>{"Baca sinyal belajar dan transcript tutor sebagai bahan pendampingan."}</UiText>}
-      />
-      <TeacherStudentDetailView key={user.preferred_language} initial={detail} initialSessions={sessions} />
-    </>
+    <TeacherStudentDetailView key={user.preferred_language} initial={detail} initialSessions={sessions} />
   );
 }

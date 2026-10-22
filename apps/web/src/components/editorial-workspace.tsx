@@ -248,8 +248,9 @@ export function QuizWorkspace({
       <LoadingStatus active={busy} label={busyLabel} />
       <div className="editorial-status-bar">
         <Badge active={state !== "rejected"}>{<UiText>{quizState[state]}</UiText>}</Badge>
-        <span><UiText>{"Revisi "}</UiText>{draft?.current_version ?? 1} · {items.length}<UiText>{" soal"}</UiText></span>
-        <span className={dirty ? "editorial-unsaved" : ""}>
+        <span className="editorial-status-meta"><UiText>{"Revisi "}</UiText>{draft?.current_version ?? 1} · {items.length}<UiText>{" soal"}</UiText></span>
+        <span className={`editorial-status-save ${dirty ? "editorial-unsaved" : "editorial-saved"}`}>
+          <span className="editorial-status-dot" aria-hidden="true" />
           {dirty ? <UiText>{"Perubahan belum disimpan"}</UiText> : <UiText>{"Isi sudah tersimpan"}</UiText>}
         </span>
       </div>
@@ -275,17 +276,64 @@ export function QuizWorkspace({
                   </div>
                 </div>
                 <section className="editorial-proposal" aria-label={t("Usulan soal dari materi")}>
-                  <h3><UiText>{"Usulkan soal dari materi"}</UiText></h3>
-                  <p><UiText>{"Soal yang dibuat tetap perlu Anda tinjau sebelum diajukan untuk review dan diterbitkan."}</UiText></p>
-                  <div className="quiz-settings"><label className="field"><UiText>{"Materi sumber"}</UiText><NativeSelect value={proposalMaterial} onChange={(event) => setProposalMaterial(event.target.value)} disabled={busy}><option value=""><UiText>{"Pilih materi"}</UiText></option>{materials.filter((row) => !row.is_archived).map((row) => <option key={row.id} value={row.id}>{row.class_name} · {row.title}</option>)}</NativeSelect></label><label className="field"><UiText>{"Jumlah soal"}</UiText><NativeSelect value={proposalCount} onChange={(event) => setProposalCount(event.target.value)} disabled={busy}><option value="3">3</option><option value="5">5</option><option value="10">10</option></NativeSelect></label></div>
-                  <button type="button" className="button secondary" disabled={busy || !proposalMaterial} onClick={() => {
-                    const source = materials.find((row) => row.id === proposalMaterial);
-                    if (!source) return;
-                    void run("Ganti soal dengan usulan dari materi?", "Soal di editor akan diganti. Tinjau semua pertanyaan, pilihan, dan pembahasannya sebelum menyimpan.", async () => {
-                      const proposed = await editorialRequest<{ questions: EditableQuestion[] }>("/teacher/quizzes/propose", "POST", { class_id: source.class_id, material_id: source.id, n_questions: Number(proposalCount), language });
-                      setItems(proposed.questions); if (!title.trim()) setTitle(source.title); setDirty(true);
-                    }, "Usulan soal siap ditinjau. Belum diterbitkan ke siswa.", "propose");
-                  }}>{busy && busyAction === "propose" ? <Spinner /> : <Sparkles size={17} aria-hidden="true" />}<UiText>{"Buat usulan soal"}</UiText></button>
+                  <div className="editorial-proposal-header">
+                    <div className="editorial-proposal-icon">
+                      <Sparkles size={20} aria-hidden="true" />
+                    </div>
+                    <div>
+                      <h3><UiText>{"Usulkan soal dari materi"}</UiText></h3>
+                      <p><UiText>{"Soal yang dibuat tetap perlu Anda tinjau sebelum diajukan untuk review dan diterbitkan."}</UiText></p>
+                    </div>
+                  </div>
+                  <div className="editorial-proposal-body">
+                    <div className="quiz-settings">
+                      <label className="field">
+                        <UiText>{"Materi sumber"}</UiText>
+                        <NativeSelect value={proposalMaterial} onChange={(event) => setProposalMaterial(event.target.value)} disabled={busy}>
+                          <option value=""><UiText>{"Pilih materi"}</UiText></option>
+                          {materials.filter((row) => !row.is_archived).map((row) => (
+                            <option key={row.id} value={row.id}>{row.class_name} · {row.title}</option>
+                          ))}
+                        </NativeSelect>
+                      </label>
+                      <label className="field editorial-proposal-count">
+                        <UiText>{"Jumlah soal"}</UiText>
+                        <NativeSelect value={proposalCount} onChange={(event) => setProposalCount(event.target.value)} disabled={busy}>
+                          <option value="3">3</option>
+                          <option value="5">5</option>
+                          <option value="10">10</option>
+                        </NativeSelect>
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      className="button secondary editorial-proposal-button"
+                      disabled={busy || !proposalMaterial}
+                      onClick={() => {
+                        const source = materials.find((row) => row.id === proposalMaterial);
+                        if (!source) return;
+                        void run(
+                          "Ganti soal dengan usulan dari materi?",
+                          "Soal di editor akan diganti. Tinjau semua pertanyaan, pilihan, dan pembahasannya sebelum menyimpan.",
+                          async () => {
+                            const proposed = await editorialRequest<{ questions: EditableQuestion[] }>(
+                              "/teacher/quizzes/propose",
+                              "POST",
+                              { class_id: source.class_id, material_id: source.id, n_questions: Number(proposalCount), language }
+                            );
+                            setItems(proposed.questions);
+                            if (!title.trim()) setTitle(source.title);
+                            setDirty(true);
+                          },
+                          "Usulan soal siap ditinjau. Belum diterbitkan ke siswa.",
+                          "propose"
+                        );
+                      }}
+                    >
+                      {busy && busyAction === "propose" ? <Spinner /> : <Sparkles size={17} aria-hidden="true" />}
+                      <UiText>{"Buat usulan soal"}</UiText>
+                    </button>
+                  </div>
                 </section>
                 <label className="field"><UiText>{"Judul kuis"}</UiText><Input
                     value={title}
@@ -455,76 +503,82 @@ export function QuizWorkspace({
                     <div className="editorial-option-help"><UiText>{"Pilih satu kunci jawaban. Kunci hanya terlihat oleh guru dan reviewer sebelum pembahasan dirilis."}</UiText></div>
                     <fieldset className="editorial-options">
                       <legend><UiText>{"Kunci dan pilihan soal "}</UiText>{index + 1}</legend>
-                      {q.options.map((option, oi) => (
-                        <div className="editorial-option" key={option.id}>
-                          <label className="editorial-key">
-                            <input
-                              type="radio"
-                              name={`correct-${index}`}
-                              checked={q.correct_option_id === option.id}
-                              onChange={() =>
-                                change(index, { correct_option_id: option.id })
-                              }
-                              disabled={busy}
-                              aria-label={t("Kunci jawaban pilihan {letter} soal {number}", { letter: String.fromCharCode(65 + oi), number: index + 1 })}
-                            />
-                            <span>{String.fromCharCode(65 + oi)}</span>
-                          </label>
-                          <label className="field">
-                            <span className="sr-only"><UiText>{"Isi pilihan "}</UiText>{String.fromCharCode(65 + oi)}<UiText>{" soal"}</UiText>{" "}
-                              {index + 1}
-                            </span>
-                            <Input
-                              value={option.label}
-                              required
-                              maxLength={1000}
-                              disabled={busy}
-                              placeholder={`Pilihan ${String.fromCharCode(65 + oi)}`}
-                              onChange={(e) =>
-                                change(index, {
-                                  options: q.options.map((o) =>
-                                    o.id === option.id
-                                      ? { ...o, label: e.target.value }
-                                      : o,
-                                  ),
-                                })
-                              }
-                            />
-                          </label>
-                          <button
-                            type="button"
-                            className="editorial-icon-button"
-                            aria-label={t("Hapus pilihan {letter} soal {number}", { letter: String.fromCharCode(65 + oi), number: index + 1 })}
-                            disabled={busy || q.options.length <= 2}
-                            onClick={async () => {
-                              if (
-                                await confirmAction({
-                                  title: "Hapus pilihan jawaban?",
-                                  text: "Jika pilihan ini adalah kunci, pilih kembali kunci jawaban yang benar.",
-                                  destructive: true,
-                                })
-                              ) {
-                                const options = q.options.filter(
-                                  (o) => o.id !== option.id,
-                                );
-                                change(index, {
-                                  options,
-                                  correct_option_id:
-                                    q.correct_option_id === option.id
-                                      ? options[0].id
-                                      : q.correct_option_id,
-                                });
-                              }
-                            }}
+                      {q.options.map((option, oi) => {
+                        const isCorrect = q.correct_option_id === option.id;
+                        return (
+                          <div
+                            className={`editorial-option ${isCorrect ? "is-correct" : ""}`}
+                            key={option.id}
                           >
-                            <Trash2 size={15} aria-hidden="true" />
-                          </button>
-                        </div>
-                      ))}
+                            <label className="editorial-key">
+                              <input
+                                type="radio"
+                                name={`correct-${index}`}
+                                checked={isCorrect}
+                                onChange={() =>
+                                  change(index, { correct_option_id: option.id })
+                                }
+                                disabled={busy}
+                                aria-label={t("Kunci jawaban pilihan {letter} soal {number}", { letter: String.fromCharCode(65 + oi), number: index + 1 })}
+                              />
+                              <span className="editorial-option-letter">{String.fromCharCode(65 + oi)}</span>
+                            </label>
+                            <label className="field">
+                              <span className="sr-only"><UiText>{"Isi pilihan "}</UiText>{String.fromCharCode(65 + oi)}<UiText>{" soal"}</UiText>{" "}
+                                {index + 1}
+                              </span>
+                              <Input
+                                value={option.label}
+                                required
+                                maxLength={1000}
+                                disabled={busy}
+                                placeholder={`Pilihan ${String.fromCharCode(65 + oi)}`}
+                                onChange={(e) =>
+                                  change(index, {
+                                    options: q.options.map((o) =>
+                                      o.id === option.id
+                                        ? { ...o, label: e.target.value }
+                                        : o,
+                                    ),
+                                  })
+                                }
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              className="editorial-option-delete"
+                              aria-label={t("Hapus pilihan {letter} soal {number}", { letter: String.fromCharCode(65 + oi), number: index + 1 })}
+                              disabled={busy || q.options.length <= 2}
+                              onClick={async () => {
+                                if (
+                                  await confirmAction({
+                                    title: "Hapus pilihan jawaban?",
+                                    text: "Jika pilihan ini adalah kunci, pilih kembali kunci jawaban yang benar.",
+                                    destructive: true,
+                                  })
+                                ) {
+                                  const options = q.options.filter(
+                                    (o) => o.id !== option.id,
+                                  );
+                                  change(index, {
+                                    options,
+                                    correct_option_id:
+                                      q.correct_option_id === option.id
+                                        ? options[0].id
+                                        : q.correct_option_id,
+                                  });
+                                }
+                              }}
+                            >
+                              <Trash2 size={16} aria-hidden="true" />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </fieldset>
                     <button
                       type="button"
-                      className="button secondary small"
+                      className="editorial-add-option-btn"
                       disabled={busy || q.options.length >= 6}
                       onClick={() =>
                         change(index, {
@@ -583,7 +637,7 @@ export function QuizWorkspace({
                 ))}
                 <button
                   type="button"
-                  className="button secondary"
+                  className="editorial-add-question-btn"
                   disabled={busy || items.length >= 20}
                   onClick={() => {
                     setItems((rows) => [

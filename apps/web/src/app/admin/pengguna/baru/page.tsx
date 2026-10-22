@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UserPlus } from "lucide-react";
 import { UiText } from "@/components/language-provider";
 import { requireSession } from "@/lib/session";
 import { Heading } from "@/components/ui";
@@ -14,6 +14,12 @@ export default async function NewUserPage() {
         <UiText>{"Daftar pengguna"}</UiText>
       </Link>
       <Heading
+        kicker={
+          <span className="analytics-kicker">
+            <UserPlus size={14} aria-hidden="true" />
+            <UiText>{"TAMBAH PENGGUNA"}</UiText>
+          </span>
+        }
         title={<UiText>{"Tambah pengguna"}</UiText>}
         description={<UiText>{"Berikan akses yang sesuai untuk anggota sekolah."}</UiText>}
       />

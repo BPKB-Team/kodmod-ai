@@ -134,9 +134,6 @@ export function LoginForm() {
           <span>{t("Kembali ke beranda")}</span>
         </Link>
       </div>
-      <p className="form-help form-help-muted">
-        {t("Lupa kata sandi? Hubungi administrator sekolah.")}
-      </p>
     </form>
   );
 }

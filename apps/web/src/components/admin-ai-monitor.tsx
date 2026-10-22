@@ -2,25 +2,30 @@
 import { LoadingStatus } from "./loading-feedback";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { Dialog } from "@/components/ui/dialog";
 
-
-import { useState } from "react";
+import Link from "next/link";
+import { useState, useRef } from "react";
 import {
+  Activity,
+  ArrowUpRight,
   Bot,
+  Check,
   CheckCircle2,
   CircleAlert,
   Clock,
   CircleDollarSign,
-  Cpu,
+  Copy,
   Filter,
   RefreshCw,
   Search,
   Sparkles,
   Volume2,
+  X,
   Zap,
 } from "lucide-react";
 import { UiText, UiDate, useI18n } from "./language-provider";
-import type { AdminAiUsage, AdminLearningTraces } from "@/lib/admin-insights-types";
+import type { AdminAiUsage, AdminAiRequestLog, AdminLearningTraces } from "@/lib/admin-insights-types";
 import { notifyResult } from "@/lib/dialogs";
 
 export function AdminAiMonitor({
@@ -37,6 +42,31 @@ export function AdminAiMonitor({
   const [traceRequestId, setTraceRequestId] = useState("");
   const [traceData, setTraceData] = useState<AdminLearningTraces | null>(null);
   const [traceLoading, setTraceLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<AdminAiRequestLog | null>(null);
+  const [copiedId, setCopiedId] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  function handleOpenTrace(req: AdminAiRequestLog) {
+    setSelectedRequest(req);
+    void handleTraceLookup(req.request_id);
+    if (dialogRef.current && !dialogRef.current.open) {
+      dialogRef.current.showModal();
+    }
+  }
+
+  function handleCloseTrace() {
+    setSelectedRequest(null);
+    dialogRef.current?.close();
+  }
+
+  function handleCopyId(id: string) {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(id).then(() => {
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    }).catch(() => {});
+  }
+
 
   async function handleRefresh(page = 1, provider = filterProvider, status = filterStatus) {
     setLoading(true);
@@ -97,21 +127,27 @@ export function AdminAiMonitor({
       <div className="admin-activity-page-header">
         <div>
           <span className="analytics-kicker">
-            <Cpu size={14} aria-hidden="true" />
-            <UiText>{" PEMANTAUAN MESIN AI"}</UiText>
+            <Bot size={14} aria-hidden="true" />
+            <UiText>{"PEMANTAUAN MESIN AI"}</UiText>
           </span>
           <h1><UiText>{"Status Kuota & Penggunaan API Eksternal"}</UiText></h1>
           <p><UiText>{"Periksa konfigurasi layanan dan kuota suara yang berhasil dimuat dari penyedia."}</UiText></p>
         </div>
-        <button
-          type="button"
-          onClick={() => void handleRefresh(data.pagination?.page || 1)}
-          disabled={loading}
-          className="button secondary refresh-btn"
-        >
-          <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
-          <UiText>{"Perbarui Data"}</UiText>
-        </button>
+        <div className="heading-actions">
+          <Link href="/admin/pemantauan-ai/jejak" className="button secondary refresh-btn trace-nav-btn">
+            <Activity size={15} aria-hidden="true" />
+            <UiText>{"Jejak Alur Belajar"}</UiText>
+          </Link>
+          <button
+            type="button"
+            onClick={() => void handleRefresh(data.pagination?.page || 1)}
+            disabled={loading}
+            className="button secondary refresh-btn"
+          >
+            <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
+            <UiText>{"Perbarui Data"}</UiText>
+          </button>
+        </div>
       </div>
 
       <div className="ai-usage-summary" aria-label={t("Penggunaan 7 hari terakhir")}>
@@ -154,39 +190,53 @@ export function AdminAiMonitor({
       <section className="panel ai-cost-actual" aria-labelledby="ai-cost-actual-title">
         <div className="ai-cost-actual-heading">
           <div>
-            <span className="analytics-kicker">
+            <span className="analytics-kicker emerald">
               <CircleDollarSign size={14} aria-hidden="true" />
-              <UiText>{" BIAYA AKTUAL ORGANISASI"}</UiText>
+              <UiText>{"BIAYA AKTUAL ORGANISASI"}</UiText>
             </span>
             <h2 id="ai-cost-actual-title"><UiText>{"Biaya aktual OpenAI"}</UiText></h2>
             <p><UiText>{"Biaya seluruh organisasi OpenAI dari Costs API untuk 30 hari terakhir."}</UiText></p>
           </div>
-          <span className="ai-cost-actual-source"><UiText>{"Sumber: OpenAI Costs API"}</UiText></span>
+          <span className="ai-cost-actual-source">
+            <Sparkles size={13} aria-hidden="true" />
+            <UiText>{"Sumber: OpenAI Costs API"}</UiText>
+          </span>
         </div>
         <div className="ai-cost-actual-values">
-          <div>
-            <span><UiText>{"USD aktual"}</UiText></span>
+          <div className="ai-cost-val-box">
+            <div className="ai-cost-val-header">
+              <span><UiText>{"USD aktual"}</UiText></span>
+              <span className="ai-cost-icon-wrap emerald"><CircleDollarSign size={16} aria-hidden="true" /></span>
+            </div>
             <strong>{cost(actualCosts.total_usd)}</strong>
+            <small>{actualCosts.available ? t("Akumulasi biaya 30 hari") : t("Kunci admin diperlukan")}</small>
           </div>
-          <div>
-            <span><UiText>{"Konversi rupiah"}</UiText></span>
+          <div className="ai-cost-val-box">
+            <div className="ai-cost-val-header">
+              <span><UiText>{"Konversi rupiah"}</UiText></span>
+              <span className="ai-cost-icon-wrap indigo"><Zap size={16} aria-hidden="true" /></span>
+            </div>
             <strong>{rupiah(actualCosts.total_idr)}</strong>
+            <small>{actualCosts.exchange_rate ? `1 USD ≈ ${displayRate(actualCosts.exchange_rate)} IDR` : t("Estimasi nilai rupiah")}</small>
           </div>
         </div>
-        <p className="ai-cost-actual-note">
-          {actualCosts.exchange_rate !== null && actualCosts.exchange_rate_date ? (
-            <>
-              <UiText>{"Kurs referensi"}</UiText>: 1 USD = {displayRate(actualCosts.exchange_rate)} IDR · <UiText>{"Data kurs"}</UiText> {actualCosts.exchange_rate_date}.{" "}
-              <UiText>{"Konversi rupiah hanya referensi dan bukan nilai tagihan OpenAI."}</UiText>
-            </>
-          ) : actualCosts.error_code === "admin_key_missing" ? (
-            <UiText>{"Tambahkan OPENAI_ADMIN_KEY ke environment backend untuk memuat biaya aktual."}</UiText>
-          ) : actualCosts.available ? (
-            <UiText>{"Biaya USD tersedia, tetapi kurs konversi rupiah belum dapat dimuat."}</UiText>
-          ) : (
-            <UiText>{"Biaya aktual belum dapat dimuat. Periksa Admin API key dan akses organisasi OpenAI."}</UiText>
-          )}
-        </p>
+        <div className="ai-cost-actual-note">
+          <CircleAlert size={15} aria-hidden="true" className="ai-cost-note-icon" />
+          <p>
+            {actualCosts.exchange_rate !== null && actualCosts.exchange_rate_date ? (
+              <>
+                <UiText>{"Kurs referensi"}</UiText>: 1 USD = {displayRate(actualCosts.exchange_rate)} IDR · <UiText>{"Data kurs"}</UiText> {actualCosts.exchange_rate_date}.{" "}
+                <UiText>{"Konversi rupiah hanya referensi dan bukan nilai tagihan OpenAI."}</UiText>
+              </>
+            ) : actualCosts.error_code === "admin_key_missing" ? (
+              <UiText>{"Tambahkan OPENAI_ADMIN_KEY ke environment backend untuk memuat biaya aktual."}</UiText>
+            ) : actualCosts.available ? (
+              <UiText>{"Biaya USD tersedia, tetapi kurs konversi rupiah belum dapat dimuat."}</UiText>
+            ) : (
+              <UiText>{"Biaya aktual belum dapat dimuat. Periksa Admin API key dan akses organisasi OpenAI."}</UiText>
+            )}
+          </p>
+        </div>
       </section>
 
       {/* Grid: 2 Provider Quota Cards */}
@@ -451,16 +501,25 @@ export function AdminAiMonitor({
                     <TableCell>
                       <div className="log-target-cell">
                         <strong>{t(req.actor_name)}</strong>
-                        <small>{req.target}</small>
-                        <small><code>{req.request_id}</code></small>
-                        <button
-                          type="button"
-                          className="button secondary"
-                          disabled={traceLoading}
-                          onClick={() => void handleTraceLookup(req.request_id)}
-                        >
-                          {t("Lihat jejak")}
-                        </button>
+                        {req.target && <small className="log-target-id">{req.target}</small>}
+                        <div className="trace-btns-row">
+                          <button
+                            type="button"
+                            className="trace-action-btn"
+                            disabled={traceLoading && selectedRequest?.id === req.id}
+                            onClick={() => handleOpenTrace(req)}
+                          >
+                            <Activity size={12} aria-hidden="true" />
+                            <span>{t("Lihat jejak")}</span>
+                          </button>
+                          <Link
+                            href={`/admin/pemantauan-ai/jejak?request_id=${encodeURIComponent(req.request_id)}`}
+                            className="trace-action-btn secondary"
+                            title={t("Buka halaman jejak lengkap")}
+                          >
+                            <ArrowUpRight size={12} aria-hidden="true" />
+                          </Link>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -504,81 +563,247 @@ export function AdminAiMonitor({
         <span>{t("Halaman {page}", { page: data.pagination.page })} · {metric(data.pagination.total)} {t("permintaan")}</span>
         <button className="button secondary" disabled={loading || !data.pagination.has_next} onClick={() => void handleRefresh((data.pagination?.page || 1) + 1)}>{t("Berikutnya")}</button>
       </nav>}
-      <section className="panel table-panel ai-logs-panel" aria-labelledby="learning-traces-title">
-        <div className="panel-heading">
-          <div>
-            <h2 id="learning-traces-title"><UiText>{"Jejak alur belajar"}</UiText></h2>
-            <p><UiText>{"Telusuri retrieval, generasi soal, review, sesi, dan pemakaian provider memakai request ID."}</UiText></p>
-          </div>
-        </div>
-        <form
-          className="ai-log-controls"
-          onSubmit={(event) => { event.preventDefault(); void handleTraceLookup(); }}
-        >
-          <label className="ai-search-input-wrap">
-            <span className="sr-only"><UiText>{"Request ID"}</UiText></span>
-            <input
-              type="text"
-              className="ai-search-input"
-              aria-label={t("Request ID")}
-              placeholder={t("Tempel request ID")}
-              maxLength={40}
-              value={traceRequestId}
-              onChange={(event) => setTraceRequestId(event.target.value)}
-            />
-          </label>
-          <button className="button secondary" type="submit" disabled={traceLoading || !traceRequestId.trim()}>
-            {traceLoading ? t("Memuat…") : t("Cari jejak")}
-          </button>
-        </form>
-        {traceData && (
-          traceData.items.length > 0 ? (
-            <div className="table-responsive">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead><UiText>{"Waktu / tahap"}</UiText></TableHead>
-                    <TableHead><UiText>{"Sumber dan versi"}</UiText></TableHead>
-                    <TableHead><UiText>{"Validasi / fallback"}</UiText></TableHead>
-                    <TableHead><UiText>{"Provider / latensi"}</UiText></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {traceData.items.map((trace) => (
-                    <TableRow key={trace.id}>
-                      <TableCell>
-                        <strong>{t(trace.stage)}</strong>
-                        <small className="log-target-cell">{trace.node}</small>
-                        <small><UiDate value={trace.occurred_at} empty="Waktu tidak tersedia" /></small>
-                      </TableCell>
-                      <TableCell>
-                        <small>{t("ID sumber")}: {trace.source_ids.length ? trace.source_ids.join(", ") : t("Tidak ada")}</small>
-                        <small>{t("Prompt")}: {trace.prompt_version || t("Belum tersedia")}</small>
-                        <small>{t("Ekstraktor")}: {trace.extractor_version || t("Belum tersedia")}</small>
-                        <small>{t("Kandidat / diterima / hasil")}: {trace.candidate_count ?? "—"} / {trace.accepted_count ?? "—"} / {trace.returned_count ?? "—"}</small>
-                      </TableCell>
-                      <TableCell>
-                        <small>{t("Alasan kualitas")}: {trace.quality_reasons.length ? trace.quality_reasons.join(", ") : t("Tidak ada")}</small>
-                        <small>{t("Fallback")}: {trace.fallback_reason || t("Tidak ada")}</small>
-                        <small>{t("Versi kebijakan")}: {trace.policy_version ?? "—"}</small>
-                      </TableCell>
-                      <TableCell>
-                        <small>{t("Panggilan provider")}: {trace.provider_usage.calls} ({t("gagal")}: {trace.provider_usage.failures})</small>
-                        <small>{t("Layanan")}: {trace.provider_usage.services.join(", ") || t("Belum tersedia")}</small>
-                        <small>{t("Panggilan model")}: {trace.model_call_count ?? "—"}</small>
-                        <small>{t("Latensi")}: {trace.latency_ms ?? "—"} ms</small>
-                        <small>{t("Estimasi biaya")}: {cost(trace.provider_usage.estimated_cost_usd)}</small>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+
+
+      {/* Detail & Jejak Permintaan Modal */}
+      <Dialog
+        ref={dialogRef}
+        className="ai-trace-dialog"
+        aria-labelledby="ai-trace-dialog-title"
+        onClose={handleCloseTrace}
+        onClick={(e) => {
+          if (e.target === dialogRef.current) handleCloseTrace();
+        }}
+      >
+        {selectedRequest && (
+          <div className="ai-trace-content">
+            <div className="ai-trace-header">
+              <div className="ai-trace-header-titles">
+                <span className="analytics-kicker">
+                  <Activity size={13} aria-hidden="true" />
+                  <UiText>{"Detail & Jejak Permintaan AI"}</UiText>
+                </span>
+                <h2 id="ai-trace-dialog-title">
+                  {selectedRequest.provider.toUpperCase()} · {t(serviceLabels[selectedRequest.service] || selectedRequest.service)}
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="ai-trace-close-btn"
+                onClick={handleCloseTrace}
+                aria-label={t("Tutup")}
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
             </div>
-          ) : (
-            <div className="ai-logs-empty"><p><UiText>{"Belum ada jejak untuk request ID ini."}</UiText></p></div>
-          )
+
+            {/* Badges bar */}
+            <div className="ai-trace-badges-bar">
+              <span className={`provider-badge ${selectedRequest.provider.toLowerCase()}`}>
+                {selectedRequest.provider}
+              </span>
+              <span className={`log-status-tag ${selectedRequest.status}`}>
+                {selectedRequest.status === "success" ? (
+                  <UiText>{"Sukses"}</UiText>
+                ) : selectedRequest.status === "cache_hit" ? (
+                  <UiText>{"Audio dari cache"}</UiText>
+                ) : selectedRequest.status === "cancelled" ? (
+                  <UiText>{"Dibatalkan"}</UiText>
+                ) : (
+                  <UiText>{"Gagal"}</UiText>
+                )}
+              </span>
+              <span className="log-latency">
+                <Zap size={13} aria-hidden="true" />
+                {metric(selectedRequest.latency_ms)} ms
+              </span>
+              <span className="log-time">
+                <Clock size={13} aria-hidden="true" />
+                <UiDate value={selectedRequest.timestamp} time empty="Baru saja" />
+              </span>
+            </div>
+
+            {/* Execution Details Grid */}
+            <div className="ai-trace-grid">
+              <div className="ai-trace-item">
+                <span className="ai-trace-item-label">{t("Siswa / Target")}</span>
+                <strong>{t(selectedRequest.actor_name)}</strong>
+                {selectedRequest.target && <small className="muted">{selectedRequest.target}</small>}
+              </div>
+
+              <div className="ai-trace-item">
+                <span className="ai-trace-item-label">{t("Model / Voice")}</span>
+                <code className="model-code">{selectedRequest.model}</code>
+              </div>
+
+              <div className="ai-trace-item">
+                <span className="ai-trace-item-label">{t("Volume")}</span>
+                <strong>
+                  {selectedRequest.total_tokens != null
+                    ? `${metric(selectedRequest.total_tokens)} ${t("token")}`
+                    : selectedRequest.characters != null
+                    ? `${metric(selectedRequest.characters)} ${t("karakter")}`
+                    : selectedRequest.audio_bytes != null
+                    ? `${metric(selectedRequest.audio_bytes)} ${t("byte audio")}`
+                    : t("Belum tersedia")}
+                </strong>
+                {selectedRequest.input_tokens != null && selectedRequest.output_tokens != null && (
+                  <small className="muted">
+                    {metric(selectedRequest.input_tokens)} in / {metric(selectedRequest.output_tokens)} out
+                  </small>
+                )}
+              </div>
+
+              <div className="ai-trace-item">
+                <span className="ai-trace-item-label">{t("Estimasi biaya")}</span>
+                <strong>{cost(selectedRequest.estimated_cost_usd)}</strong>
+                {actualCosts?.exchange_rate && selectedRequest.estimated_cost_usd != null && (
+                  <small className="muted">
+                    ≈ {rupiah(selectedRequest.estimated_cost_usd * actualCosts.exchange_rate)}
+                  </small>
+                )}
+              </div>
+            </div>
+
+            {/* Request ID bar with Copy button */}
+            <div className="ai-trace-reqid-box">
+              <div className="ai-trace-reqid-text">
+                <span className="ai-trace-reqid-label"><UiText>{"Request ID"}</UiText></span>
+                <code>{selectedRequest.request_id}</code>
+              </div>
+              <button
+                type="button"
+                className="ai-trace-copy-btn"
+                onClick={() => handleCopyId(selectedRequest.request_id)}
+              >
+                {copiedId ? (
+                  <>
+                    <Check size={14} aria-hidden="true" />
+                    <span><UiText>{"Tersalin!"}</UiText></span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={14} aria-hidden="true" />
+                    <span><UiText>{"Salin"}</UiText></span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {selectedRequest.error_code && (
+              <div className="alert error-message ai-trace-error">
+                <CircleAlert size={16} aria-hidden="true" />
+                <span><UiText>{"Kode error:"}</UiText>{" "}<strong>{selectedRequest.error_code}</strong></span>
+              </div>
+            )}
+
+            {/* Learning Flow Diagnostic Trace section */}
+            <div className="ai-trace-stages-section">
+              <div className="ai-trace-stages-header">
+                <h3><UiText>{"Tahapan Alur Belajar (Diagnostics)"}</UiText></h3>
+                {traceLoading && <span className="ai-trace-loading-pill"><RefreshCw size={12} className="spin" /> <UiText>{"Memuat tahapan jejak alur belajar…"}</UiText></span>}
+              </div>
+
+              {traceLoading ? (
+                <div className="ai-trace-loading-state">
+                  <div className="ai-trace-skeleton-box" />
+                  <div className="ai-trace-skeleton-box" />
+                </div>
+              ) : traceData && traceData.items.length > 0 ? (
+                <div className="ai-trace-stages-list">
+                  {traceData.items.map((trace) => (
+                    <div key={trace.id} className="ai-trace-stage-card">
+                      <div className="ai-trace-stage-top">
+                        <span className="ai-trace-stage-badge">{t(trace.stage)}</span>
+                        <code className="ai-trace-node-code">{trace.node}</code>
+                        {trace.occurred_at && (
+                          <span className="ai-trace-stage-time">
+                            <Clock size={12} aria-hidden="true" />
+                            <UiDate value={trace.occurred_at} time empty="Waktu tidak tersedia" />
+                          </span>
+                        )}
+                      </div>
+                      <div className="ai-trace-stage-details">
+                        {trace.source_ids.length > 0 && (
+                          <div>
+                            <span className="muted">{t("ID sumber")}: </span>
+                            <strong>{trace.source_ids.join(", ")}</strong>
+                          </div>
+                        )}
+                        {trace.prompt_version && (
+                          <div>
+                            <span className="muted">{t("Prompt")}: </span>
+                            <code>{trace.prompt_version}</code>
+                          </div>
+                        )}
+                        {trace.candidate_count != null && (
+                          <div>
+                            <span className="muted">{t("Kandidat / diterima / hasil")}: </span>
+                            <span>{trace.candidate_count} / {trace.accepted_count ?? "—"} / {trace.returned_count ?? "—"}</span>
+                          </div>
+                        )}
+                        {trace.quality_reasons.length > 0 && (
+                          <div>
+                            <span className="muted">{t("Alasan kualitas")}: </span>
+                            <span className="ai-trace-reasons">{trace.quality_reasons.join(", ")}</span>
+                          </div>
+                        )}
+                        {trace.fallback_reason && (
+                          <div>
+                            <span className="muted">{t("Fallback")}: </span>
+                            <span className="ai-trace-fallback">{trace.fallback_reason}</span>
+                          </div>
+                        )}
+                        {trace.latency_ms != null && (
+                          <div>
+                            <span className="muted">{t("Latensi")}: </span>
+                            <span>{trace.latency_ms} ms</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="ai-trace-direct-call-card">
+                  <div className="ai-trace-direct-icon">
+                    {selectedRequest.provider.toLowerCase() === "elevenlabs" ? (
+                      <Volume2 size={24} aria-hidden="true" />
+                    ) : (
+                      <Sparkles size={24} aria-hidden="true" />
+                    )}
+                  </div>
+                  <div>
+                    <h4><UiText>{"Panggilan Langsung ke Provider"}</UiText></h4>
+                    <p>
+                      <UiText>
+                        {"Panggilan pembacaan suara (Text-to-Speech) dijalankan langsung ke API penyedia tanpa melalui tahapan orkestrasi inferensi multi-langkah LangGraph. Metrik latensi, volume suara, dan biaya telah tercatat lengkap pada rincian di atas."}
+                      </UiText>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="ai-trace-footer">
+              <Link
+                href={`/admin/pemantauan-ai/jejak?request_id=${encodeURIComponent(selectedRequest.request_id)}`}
+                className="button secondary"
+              >
+                <ArrowUpRight size={14} aria-hidden="true" />
+                <UiText>{"Buka halaman jejak lengkap"}</UiText>
+              </Link>
+              <button
+                type="button"
+                className="button primary"
+                onClick={handleCloseTrace}
+              >
+                <UiText>{"Tutup"}</UiText>
+              </button>
+            </div>
+          </div>
         )}
-      </section>
+      </Dialog>
     </div>
   );
 }

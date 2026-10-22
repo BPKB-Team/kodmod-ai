@@ -1,6 +1,7 @@
 "use client";
 import { LoadingStatus } from "./loading-feedback";
 import { UiText, useI18n } from "@/components/language-provider";
+import { Heading } from "./ui";
 
 
 import Link from "next/link";
@@ -61,15 +62,21 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
   return (
     <section className="teacher-analytics-workspace" aria-label={t("Analitik siswa")}>
       <LoadingStatus active={loading} label="Memuat analitik kelas…" />
-      <div className="analytics-toolbar">
-        <div>
-          <span className="analytics-kicker"><BarChart3 size={14} aria-hidden="true" /><UiText>{" RUANG GURU"}</UiText></span>
-          <h2><UiText>{"Pahami kelas, dampingi dengan tepat."}</UiText></h2>
-          <p><UiText>{"Mulai dari pola cohort, lalu buka detail siswa yang membutuhkan tindak lanjut."}</UiText></p>
-        </div>
+      <Heading
+        kicker={
+          <span className="analytics-kicker">
+            <BarChart3 size={14} aria-hidden="true" />
+            <UiText>{"ANALITIK SISWA"}</UiText>
+          </span>
+        }
+        title={<UiText>{"Analitik siswa"}</UiText>}
+        description={<UiText>{"Pantau pola belajar cohort dan buka detail siswa untuk tindak lanjut yang lebih terarah."}</UiText>}
+      >
         <button type="button" className="button secondary" onClick={() => void refresh()} disabled={loading}>
-          <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" /><UiText>{"Perbarui data"}</UiText></button>
-      </div>
+          <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
+          <UiText>{"Perbarui data"}</UiText>
+        </button>
+      </Heading>
 
       <div className="analytics-window-tabs" role="tablist" aria-label={t("Rentang waktu cohort")}>
         {windows.map((item) => (

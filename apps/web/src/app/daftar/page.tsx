@@ -10,9 +10,11 @@ export default async function RegisterPage() {
   if (current) redirect(homeFor(current.user.role));
   return (
     <AuthShell register>
-      <span className="auth-badge-pill"><UiText>{"Daftar akun baru"}</UiText></span>
-      <h1><UiText>{"Buat akun KODMOD"}</UiText></h1>
-      <p className="auth-description"><UiText>{"Pilih peranmu dan mulai belajar atau mengajar."}</UiText></p>
+      <div className="auth-header-block">
+        <span className="auth-badge-pill"><UiText>{"Daftar akun baru"}</UiText></span>
+        <h1><UiText>{"Buat akun KODMOD"}</UiText></h1>
+        <p className="auth-description"><UiText>{"Pilih peranmu dan mulai belajar atau mengajar."}</UiText></p>
+      </div>
       <RegisterForm />
     </AuthShell>
   );

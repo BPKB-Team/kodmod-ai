@@ -9,6 +9,7 @@ import {
   UserCheck,
   Plus,
   BookOpen,
+  LayoutDashboard,
 } from "lucide-react";
 import { requireSession } from "@/lib/session";
 import { backend } from "@/lib/server-api";
@@ -31,11 +32,19 @@ export default async function AdminPage() {
   return (
     <>
       <Heading
+        kicker={
+          <span className="analytics-kicker">
+            <LayoutDashboard size={14} aria-hidden="true" />
+            <UiText>{"RINGKASAN SISTEM"}</UiText>
+          </span>
+        }
         title={`Selamat datang, ${user.full_name.split(" ")[0]}.`}
         description={<UiText>{"Kelola akses, siapkan ruang belajar, dan dampingi sekolah Anda."}</UiText>}
       >
         <Link className="button primary" href="/admin/pengguna/baru">
-          <Plus size={18} aria-hidden="true" /><UiText>{"Tambah pengguna"}</UiText></Link>
+          <Plus size={18} aria-hidden="true" />
+          <UiText>{"Tambah pengguna"}</UiText>
+        </Link>
       </Heading>
       <section className="dashboard-welcome">
         <div>

@@ -16,6 +16,12 @@ export default async function Page() {
   return (
     <>
       <Heading
+        kicker={
+          <span className="analytics-kicker">
+            <BookOpen size={14} aria-hidden="true" />
+            <UiText>{"MATERI SAYA"}</UiText>
+          </span>
+        }
         title={<UiText>{"Materi saya"}</UiText>}
         description={<UiText>{"Upload dokumen, tinjau isinya, lalu terbitkan untuk belajar bersama Tutor."}</UiText>}
       >

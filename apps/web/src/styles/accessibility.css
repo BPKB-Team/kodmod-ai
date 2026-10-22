@@ -24,16 +24,6 @@ html[data-reduced-motion=true] *,html[data-reduced-motion=true] *::before,html[d
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 @media (forced-colors: active) { .panel,.card,.kodmod-input,.kodmod-select,.kodmod-textarea { border: 1px solid CanvasText; } :focus-visible { outline-color: Highlight; } }
 .ai-usage-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1rem; }
-.ai-cost-actual { display: grid; gap: 1rem; padding: 1.25rem 1.4rem; border: 1px solid var(--line); background: var(--white); }
-.ai-cost-actual-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-.ai-cost-actual-heading h2 { margin: .45rem 0 .25rem; color: var(--ink); font-size: 1.25rem; }
-.ai-cost-actual-heading p { margin: 0; color: var(--muted); }
-.ai-cost-actual-source { color: var(--muted); font-size: .85rem; }
-.ai-cost-actual-values { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .8rem; }
-.ai-cost-actual-values > div { display: grid; gap: .35rem; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--canvas); }
-.ai-cost-actual-values span { color: var(--muted); font-size: .85rem; }
-.ai-cost-actual-values strong { color: var(--ink); font-size: clamp(1.2rem,2vw,1.6rem); overflow-wrap: anywhere; }
-.ai-cost-actual-note { margin: 0; color: var(--muted); font-size: .85rem; overflow-wrap: anywhere; }
 .ai-usage-summary > div { display: grid; gap: .5rem; padding: 1rem; background: var(--white); border: 1px solid var(--line); border-radius: 16px; overflow-wrap: anywhere; }
 .ai-usage-summary span { color: var(--muted); }
 .ai-usage-summary strong { color: var(--ink); font-size: 1.4rem; }

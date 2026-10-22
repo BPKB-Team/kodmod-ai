@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import db_session, require_admin
@@ -216,7 +216,12 @@ async def learning_traces(
     """Read bounded learning-stage diagnostics joined to provider usage by request ID."""
     conditions = [AuditEvent.category == "learning"]
     if request_id is not None:
-        conditions.append(AuditEvent.details["request_id"].as_string() == str(request_id))
+        conditions.append(
+            or_(
+                AuditEvent.details["request_id"].as_string() == str(request_id),
+                AuditEvent.details["request_id"].as_string() == f'"{request_id}"',
+            )
+        )
     total = int(
         await session.scalar(select(func.count()).select_from(AuditEvent).where(*conditions)) or 0
     )

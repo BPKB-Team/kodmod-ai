@@ -81,6 +81,12 @@ export async function TeacherQuizIndex({ page: raw }: { page?: string }) {
   return (
     <>
       <Heading
+        kicker={
+          <span className="analytics-kicker">
+            <BookOpenCheck size={14} aria-hidden="true" />
+            <UiText>{"KUIS & PENUGASAN"}</UiText>
+          </span>
+        }
         title={<UiText>{"Kuis & penugasan"}</UiText>}
         description={<UiText>{"Dari pertanyaan yang baik, menuju pemahaman yang lebih terarah."}</UiText>}
       >
@@ -197,6 +203,12 @@ export async function QuizReviewIndex({
   return (
     <>
       <Heading
+        kicker={
+          <span className="analytics-kicker">
+            <FileCheck2 size={14} aria-hidden="true" />
+            <UiText>{"KURASI & REVIEW KUIS"}</UiText>
+          </span>
+        }
         title={<UiText>{"Review kuis"}</UiText>}
         description={
           role === "admin"
