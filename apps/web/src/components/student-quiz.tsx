@@ -18,6 +18,7 @@ import { prepareQuizAction, readQuizInteraction, quizUiState } from "@/lib/quiz-
 import { VoiceControls } from "./voice-controls";
 import { LoadingStatus } from "./loading-feedback";
 import { speechOutput } from "@/lib/browser-speech";
+import { FormattedMathText } from "./formatted-math-text";
 
 type Phase = "idle" | "starting" | "active" | "submitting" | "review" | "complete";
 
@@ -313,7 +314,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
               <span><UiText>{"Soal "}</UiText>{questionNumber}</span>
               <span>{question.difficulty === "medium" ? <UiText>{"Seimbang"}</UiText> : question.difficulty}</span>
             </div>
-            <h2 ref={heading} tabIndex={-1}>{question.question}</h2>
+            <h2 ref={heading} tabIndex={-1}><FormattedMathText text={question.question} /></h2>
             <VoiceControls
               key={`${answerAttempt}:${answerLocked ? "read" : "answer"}`}
               text={feedback || [question.question, ...question.options.map((option, index) => `${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}: ${option}`)].join(". ")}
@@ -339,7 +340,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                           aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}, ${option}`}
                         />
                         <span className="quiz-option-key">{String.fromCharCode(65 + index)}</span>
-                        <span>{option}</span>
+                        <span><FormattedMathText text={option} /></span>
                       </label>
                     ))}
                   </fieldset>
@@ -357,7 +358,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                 {submissionPending && phase === "active" && !restartRequired && (
                   <p role="status"><UiText>{"Jawaban dikunci sampai hasil diterima. Kirim kembali untuk memeriksa hasil jawaban yang sama."}</UiText></p>
                 )}
-              </form>{v2 && renderActions()}{feedback && <p className="info-note" role="status">{feedback}</p>}</>
+              </form>{v2 && renderActions()}{feedback && <p className="info-note" role="status"><FormattedMathText text={feedback} /></p>}</>
             ) : (
               <section className={`quiz-feedback ${isCorrect ? "correct" : "incorrect"}`} aria-live="polite">
                 <div className="quiz-feedback-heading">
@@ -365,10 +366,10 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                   <strong>{isCorrect ? <UiText>{"Jawabanmu tepat"}</UiText> : <UiText>{"Mari kita periksa lagi"}</UiText>}</strong>
                   {v2 ? itemPoints !== null && <span>{itemPoints} / 100 <UiText>{"poin"}</UiText></span> : <span>{legacyItemPointsLabel(score, language)}</span>}
                 </div>
-                <p>{feedback}</p>
+                <p><FormattedMathText text={feedback} /></p>
                 {phase === "complete" ? (
                   <div className="quiz-complete-summary">
-                    <strong>{summary || <UiText>{"Latihan selesai."}</UiText>}</strong>
+                    <strong>{summary ? <FormattedMathText text={summary} /> : <UiText>{"Latihan selesai."}</UiText>}</strong>
                     <div className="quiz-complete-actions">
                       <Link className="button secondary" href="/siswa/progres">
                         <LineChart size={18} aria-hidden="true" />

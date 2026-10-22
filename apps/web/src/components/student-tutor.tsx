@@ -31,6 +31,7 @@ import type { StudentMaterial } from "@/lib/class-types";
 import type { QuizRecoveryResponse } from "@/lib/quiz-types";
 import { VoiceControls } from "./voice-controls";
 import { StudentQuiz } from "./student-quiz";
+import { FormattedMathText } from "./formatted-math-text";
 
 const prompts = [
   "Jelaskan materi ini dengan contoh sederhana.",
@@ -443,7 +444,7 @@ export function StudentTutor({
                   </span>
                   <div className="tutor-message-content">
                     <span className="tutor-message-label">{t(turnLabel(turn.role))}</span>
-                    <p className="tutor-bubble">{turn.text}</p>
+                    <p className="tutor-bubble"><FormattedMathText text={turn.text} /></p>
                     {!!turn.sources?.length && <div className="tutor-sources" aria-label={t("Sumber jawaban")}><strong><UiText>{"Sumber materi"}</UiText></strong><ul>{turn.sources.map((source, sourceIndex) => <li key={`${source.material_id || source.source}-${sourceIndex}`}>{source.class_id && source.material_id && materials.some((item) => item.id === source.material_id && item.class_id === source.class_id) ? <Link href={`/siswa/kelas/${source.class_id}/materi/${source.material_id}`}>{source.title || source.source || <UiText>{"Materi kelas"}</UiText>}{source.section_title ? ` · ${source.section_title}` : ""}</Link> : <span>{source.title || source.source || <UiText>{"Materi pembelajaran"}</UiText>}{source.section_title ? ` · ${source.section_title}` : ""}</span>}</li>)}</ul></div>}
                   </div>
                 </article>
@@ -453,7 +454,7 @@ export function StudentTutor({
                   <span className="tutor-message-avatar" aria-hidden="true"><UiText>{"K"}</UiText></span>
                   <div className="tutor-message-content">
                     <span className="tutor-message-label"><UiText>{"Kamu"}</UiText></span>
-                    <p className="tutor-bubble">{pendingText}</p>
+                    <p className="tutor-bubble"><FormattedMathText text={pendingText} /></p>
                   </div>
                 </article>
               )}

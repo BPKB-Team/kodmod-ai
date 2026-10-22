@@ -1757,3 +1757,82 @@ html[data-high-contrast="true"] .inner-footer-badge {
 html[data-high-contrast="true"] .inner-footer-badge svg {
   color: #06172c !important;
 }
+
+/* ========================================================
+   Mathematical Formatting, Subscripts, Superscripts, & Formulas
+   ======================================================== */
+sub,
+sup {
+  font-size: 0.76em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+  font-weight: 600;
+}
+
+sup {
+  top: -0.52em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+.formatted-math-text {
+  display: inline;
+  line-height: inherit;
+}
+
+.math-formula {
+  display: inline-block;
+  font-style: normal;
+  padding: 0 2px;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.math-formula var {
+  font-style: italic;
+  font-family: inherit;
+  padding: 0 1px;
+}
+
+.math-formula.display-block {
+  display: block;
+  text-align: center;
+  margin: 16px auto;
+  padding: 12px 20px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  max-width: fit-content;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.math-frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: -0.5em;
+  text-align: center;
+  font-size: 0.88em;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.math-frac-num {
+  border-bottom: 1.5px solid currentColor;
+  padding: 0 2px 2px;
+  line-height: 1;
+}
+
+.math-frac-den {
+  padding: 2px 2px 0;
+  line-height: 1;
+}
+
+html[data-high-contrast="true"] .math-formula.display-block {
+  background: #ffffff;
+  border-color: #06172c;
+}
+

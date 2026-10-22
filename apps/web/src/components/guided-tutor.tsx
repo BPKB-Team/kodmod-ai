@@ -17,9 +17,10 @@ import { Card } from "./ui/card";
 import { VoiceControls } from "./voice-controls";
 import { StudentQuiz } from "./student-quiz";
 import { speechOutput } from "@/lib/browser-speech";
+import { FormattedMathText } from "./formatted-math-text";
 import "@/styles/guided-learning.css";
 
-function formatLessonContent(text: string) {
+function formatLessonContent(text: string, language = "id") {
   if (!text || !text.trim()) return null;
 
   const raw = text.trim();
@@ -79,18 +80,18 @@ function formatLessonContent(text: string) {
                     <Sparkles size={16} aria-hidden="true" />
                     <span><UiText>{"Pertanyaan Tutor"}</UiText></span>
                   </div>
-                  <p>{b.text}</p>
+                  <p><FormattedMathText text={b.text} language={language} /></p>
                 </div>
               );
             }
             if (b.type === "example") {
               return (
                 <div key={idx} className="guided-example-card">
-                  <p>{b.text}</p>
+                  <p><FormattedMathText text={b.text} language={language} /></p>
                 </div>
               );
             }
-            return <p key={idx}>{b.text}</p>;
+            return <p key={idx}><FormattedMathText text={b.text} language={language} /></p>;
           })}
         </>
       );
@@ -109,7 +110,7 @@ function formatLessonContent(text: string) {
           return (
             <ul key={idx}>
               {lines.map((l, liIdx) => (
-                <li key={liIdx}>{l.replace(/^[-*•]\s+/, "")}</li>
+                <li key={liIdx}><FormattedMathText text={l.replace(/^[-*•]\s+/, "")} language={language} /></li>
               ))}
             </ul>
           );
@@ -118,7 +119,7 @@ function formatLessonContent(text: string) {
           return (
             <ol key={idx}>
               {lines.map((l, liIdx) => (
-                <li key={liIdx}>{l.replace(/^\d+[.)]\s+/, "")}</li>
+                <li key={liIdx}><FormattedMathText text={l.replace(/^\d+[.)]\s+/, "")} language={language} /></li>
               ))}
             </ol>
           );
@@ -132,7 +133,7 @@ function formatLessonContent(text: string) {
                 <Sparkles size={16} aria-hidden="true" />
                 <span><UiText>{"Pertanyaan Tutor"}</UiText></span>
               </div>
-              <p>{block}</p>
+              <p><FormattedMathText text={block} language={language} /></p>
             </div>
           );
         }
@@ -141,12 +142,12 @@ function formatLessonContent(text: string) {
         if (isExample) {
           return (
             <div key={idx} className="guided-example-card">
-              <p>{block}</p>
+              <p><FormattedMathText text={block} language={language} /></p>
             </div>
           );
         }
 
-        return <p key={idx}>{block}</p>;
+        return <p key={idx}><FormattedMathText text={block} language={language} /></p>;
       })}
     </>
   );
@@ -422,8 +423,8 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
           </div>
         ) : <Card className="guided-lesson">
           <header className="guided-lesson-heading"><span className="guided-symbol"><Headphones size={24} aria-hidden="true" /></span><h2 ref={explanation} tabIndex={-1}>{lesson.unit_title || `${t("Bagian")} ${lesson.unit_index + 1}`}</h2></header>
-          {lastQuestion && <div className="guided-your-question"><strong><UiText>{"Pertanyaanmu"}</UiText></strong><p>{lastQuestion}</p></div>}
-          <div className="guided-explanation" role="region" aria-label={t("Penjelasan Tutor")}>{formatLessonContent(lesson.text)}</div>
+          {lastQuestion && <div className="guided-your-question"><strong><UiText>{"Pertanyaanmu"}</UiText></strong><p><FormattedMathText text={lastQuestion} language={lesson.language} /></p></div>}
+          <div className="guided-explanation" role="region" aria-label={t("Penjelasan Tutor")}>{formatLessonContent(lesson.text, lesson.language)}</div>
           <VoiceControls text={lesson.text} language={lesson.language} autoPlayKey={autoPlayKey} onTranscript={lesson.phase === "learning" && !busy && !uncertain ? setDraft : undefined} />
           {lesson.quiz?.status === "completed" && <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><div><strong><UiText>{"Mini kuis selesai"}</UiText> · {lesson.quiz.score_summary ? quizPointsLabel(lesson.quiz.score_summary, language) : t("Hasil tersimpan")}</strong><p>{lesson.quiz.policy_version === 2 ? lesson.quiz.last_review : t("Hasil latihan tersimpan.")}</p></div></div>}
           {lesson.phase === "learning" ? <>
