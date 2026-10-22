@@ -25,10 +25,11 @@ export function StudentTopNav({ user }: StudentTopNavProps) {
           <Brand href="/siswa" />
         </div>
 
+        <div className="student-header-toolbar-wrap">
+          <ExperienceToolbar />
+        </div>
+
         <div className="student-header-right">
-          <div className="student-header-toolbar-wrap">
-            <ExperienceToolbar />
-          </div>
           <UserProfileDropdown
             user={user}
             roleLabel={t("Siswa")}

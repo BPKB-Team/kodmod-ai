@@ -6,11 +6,19 @@
    - High contrast focus outlines & rich voice audio feedback
    ========================================================================== */
 
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 .student-app-shell {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   position: relative;
   background-color: #f1f6fd;
   background-image:
@@ -183,6 +191,13 @@ html[data-high-contrast="true"] .student-bg-decoration {
   color: #ffffff;
 }
 
+.student-header-toolbar-wrap {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+  margin-inline-end: 0.75rem;
+}
+
 .student-header-right {
   display: flex;
   align-items: center;
@@ -199,11 +214,31 @@ html[data-high-contrast="true"] .student-bg-decoration {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .student-main-content > .page-heading {
   order: 1;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.student-main-content > .page-heading h1 {
+  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f274a;
+  margin: 0;
+}
+
+.student-main-content > .page-heading p,
+.student-main-content .page-heading p {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .page-heading p {
+    display: none !important;
+  }
 }
 
 .student-main-content > .learning-back {
@@ -617,7 +652,7 @@ html[data-high-contrast="true"] .student-bg-decoration {
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 1.25rem;
   flex-wrap: wrap;
 }
@@ -625,7 +660,9 @@ html[data-high-contrast="true"] .student-bg-decoration {
 .inner-app-footer-brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .inner-footer-symbol {
@@ -695,23 +732,30 @@ html[data-high-contrast="true"] .student-bg-decoration {
 
 @media (max-width: 768px) {
   .inner-app-footer {
-    padding: 1rem 1.25rem;
+    padding: 0.85rem 1.25rem;
   }
   .inner-app-footer-inner {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
     align-items: center;
     text-align: center;
-    gap: 0.85rem;
+    gap: 0.5rem;
   }
   .inner-app-footer-brand {
-    flex-direction: column;
-    gap: 6px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   .inner-footer-titles {
     justify-content: center;
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
   }
   .inner-app-footer-meta {
-    justify-content: center;
+    display: none;
   }
 }
 
@@ -743,12 +787,13 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .student-header-inner {
     flex-wrap: wrap;
     row-gap: 8px;
     padding: 8px 16px 10px;
     min-height: auto;
+    justify-content: space-between;
   }
   .student-header-left {
     order: 1;
@@ -766,13 +811,16 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   .student-header-toolbar-wrap {
     order: 3;
     width: 100%;
+    margin-inline-start: 0;
+    margin-inline-end: 0;
     display: flex;
     justify-content: center;
     padding-top: 6px;
     border-top: 1px dashed #e2e8f0;
   }
   .student-header-toolbar-wrap .experience-toolbar {
-    width: 100%;
+    width: auto;
+    max-width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -782,6 +830,7 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 9999px;
+    box-sizing: border-box;
   }
   .student-header-toolbar-wrap .experience-button {
     min-width: 36px;
@@ -915,19 +964,36 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
     font-size: 1.45rem !important;
   }
   .student-main-content .page-heading p {
-    font-size: 0.88rem !important;
+    display: none !important;
   }
 }
 
 @media (max-width: 480px) {
   .student-main-content {
-    padding: 16px 14px 28px;
+    padding: 14px 12px 24px;
   }
   .student-hub-hero {
-    padding: 18px 14px;
+    padding: 16px 14px;
   }
   .game-pad-card {
-    padding: 18px 16px;
+    padding: 16px 14px;
+  }
+  .student-header-toolbar-wrap .experience-toolbar {
+    gap: 4px;
+    padding: 4px 6px;
+  }
+  .student-header-toolbar-wrap .experience-button {
+    min-width: 33px;
+    min-height: 33px;
+    padding: 0 4px;
+  }
+  .student-header-toolbar-wrap .toolbar-language {
+    min-height: 33px;
+    width: 38px;
+    min-width: 38px;
+  }
+  .profile-dropdown-text strong {
+    max-width: 110px;
   }
 }
 
