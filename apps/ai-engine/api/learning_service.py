@@ -87,9 +87,15 @@ async def owned_lesson(session, sid, student, *, lock=False):
         raise HTTPException(404, "Sesi belajar tidak ditemukan.")
     await resolve_tutoring_context(session, row.class_id, row.material_id, student)
     material = await session.get(ClassMaterial, row.material_id)
-    if material is None or material.content_version != row.guided_state["material_version"]:
+    if material is None or material.content_version != row.guided_state.get("material_version"):
         raise HTTPException(409, "Materi telah diperbarui. Mulai sesi dari versi materi terbaru.")
-    if build_unit_manifest(material, row.guided_state["units"]) != canonical_manifest(material):
+    try:
+        current_manifest = build_unit_manifest(
+            material, row.guided_state["units"]
+        ) == canonical_manifest(material)
+    except (KeyError, TypeError, ValueError):
+        current_manifest = False
+    if not current_manifest:
         raise HTTPException(409, "Pembagian materi berubah. Mulai sesi dari versi terbaru.")
     return row, material
 
@@ -227,6 +233,14 @@ async def start_lesson(session, student, body: LearningStart):
         )
     ).all()
     for existing in rows:
+        # Old block partitions can share the same content version. Preserve their
+        # history, but never resume them or let a stale mini quiz block a new lesson.
+        try:
+            await owned_lesson(session, existing.id, student)
+        except HTTPException as error:
+            if error.status_code in (404, 409):
+                continue
+            raise
         state = existing.guided_state
         if (
             existing.material_id == body.material_id

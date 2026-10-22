@@ -235,6 +235,38 @@ def action_body(state, action, **extra):
     }
 
 
+@pytest.mark.parametrize("phase", ["learning", "quiz"])
+async def test_start_skips_legacy_partitions_without_deleting_the_old_session(learning_http, phase):
+    client, factory, _, material, _, _ = learning_http
+    original = await open_lesson(client, material)
+    sid = uuid.UUID(original["session_id"])
+    async with factory() as session:
+        row = await session.get(models.LearningSession, sid)
+        legacy = {
+            **row.guided_state,
+            "phase": phase,
+            "units": [{"text": "Bagian lama sebelum pembagian blok kanonik.", "title": "Pecahan"}],
+            "quiz_id": str(uuid.uuid4()) if phase == "quiz" else None,
+        }
+        row.guided_state = legacy
+        await session.commit()
+    assert (await client.get(f"/learning/sessions/{sid}")).status_code == 409
+    fresh = await open_lesson(client, material)
+    assert fresh["session_id"] != str(sid)
+    assert fresh["phase"] == "learning" and fresh["text"]
+    assert fresh["total_units"] == original["total_units"]
+    assert {row["session_id"] for row in (await client.get("/learning/active")).json()} == {
+        fresh["session_id"]
+    }
+    async with factory() as session:
+        old = await session.get(models.LearningSession, sid)
+        assert old.guided_state == legacy
+        assert old.ended_at is None
+        assert (
+            await session.get(models.ClassMaterial, material.id)
+        ).content_version == material.content_version
+
+
 async def test_teach_question_continue_repeat_restore_and_retry(learning_http):
     client, factory, controls, material, outsider, _ = learning_http
     state = await open_lesson(client, material)
