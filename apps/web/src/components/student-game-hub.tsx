@@ -280,10 +280,11 @@ export function StudentGameHub({
             </h2>
             <Link
               href="/siswa/kelas"
-              className="student-see-all-link"
+              className="student-see-all-btn student-see-all-link"
               data-voice-menu="classes"
+              aria-label={t("Lihat kelas saya. Buka daftar lengkap semua kelas terdaftar kamu.")}
             >
-              <span>{t("Lihat semua kelas")}</span>
+              <span><UiText>{"Lihat kelas saya"}</UiText></span>
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </div>

@@ -384,7 +384,7 @@ export async function MaterialPage({
   ]) : [null, []];
   return (
     <>
-      <Link className="learning-back" href={`${baseFor(role)}/kelas/${id}`}>
+      <Link className={`learning-back ${role === "student" ? "student-back-link" : ""}`} href={`${baseFor(role)}/kelas/${id}`}>
         <ArrowLeft size={16} aria-hidden="true" />
         {row.name}
       </Link>

@@ -7,9 +7,12 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
   CheckCircle2,
+  Lightbulb,
   Save,
   Send,
+  X,
 } from "lucide-react";
 import { RefreshButton } from "./refresh-button";
 import { confirmAction, notifyResult } from "@/lib/dialogs";
@@ -272,7 +275,30 @@ export function StudentAssignment({
     }
   }
 
-  if (result)
+  if (result) {
+    const totalQuestions = result.total_questions;
+    const correctCount = result.correct_count;
+    const incorrectCount = Math.max(0, totalQuestions - correctCount);
+    const accuracyPercent =
+      totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+
+    const scoreText = result.score_summary
+      ? quizPointsLabel(result.score_summary, language)
+      : `${correctCount} ${t("dari")} ${totalQuestions} ${t("jawaban benar")}`;
+
+    const recapSpoken =
+      language === "en"
+        ? `Assignment results recap for ${assignment.title}. Your score is ${scoreText}, with ${correctCount} of ${totalQuestions} correct answers. ${
+            correctCount === totalQuestions
+              ? "All your answers are correct, great job!"
+              : `${incorrectCount} questions need review in the answer explanation below.`
+          }`
+        : `Rekap hasil tugas ${assignment.title}. Nilaimu ${scoreText}, dengan ${correctCount} dari ${totalQuestions} jawaban benar. ${
+            correctCount === totalQuestions
+              ? "Semua jawabanmu tepat, kerja sangat bagus!"
+              : `${incorrectCount} soal perlu dipelajari lagi pada pembahasan jawaban di bawah.`
+          }`;
+
     return (
       <div className="editorial-result">
         <section className="panel editorial-result-hero">
@@ -283,43 +309,125 @@ export function StudentAssignment({
             {result.score_summary ? quizPointsLabel(result.score_summary, language) : `${result.correct_count} / ${result.total_questions} ${t("jawaban benar")}`}
           </div>
           <p>
-            {result.correct_count}<UiText>{" dari "}</UiText>{result.total_questions}<UiText>{" jawaban benar."}</UiText></p>
+            {result.correct_count}<UiText>{" dari "}</UiText>{result.total_questions}<UiText>{" jawaban benar."}</UiText>
+          </p>
           <small><UiText>{"Dikirim "}</UiText>{<UiDate value={result.submitted_at} time empty="Tanpa batas waktu" />}</small>
+
+          <div className="editorial-recap-grid" role="region" aria-label={t("Rekapitulasi hasil tugas")}>
+            <div className="editorial-recap-item">
+              <span className="editorial-recap-label"><UiText>{"Total soal"}</UiText></span>
+              <strong className="editorial-recap-value">{totalQuestions}</strong>
+            </div>
+            <div className="editorial-recap-item is-success">
+              <span className="editorial-recap-label"><UiText>{"Jawaban benar"}</UiText></span>
+              <strong className="editorial-recap-value">{correctCount}</strong>
+            </div>
+            <div className="editorial-recap-item is-warning">
+              <span className="editorial-recap-label"><UiText>{"Perlu dipelajari"}</UiText></span>
+              <strong className="editorial-recap-value">{incorrectCount}</strong>
+            </div>
+            <div className="editorial-recap-item is-info">
+              <span className="editorial-recap-label"><UiText>{"Akurasi"}</UiText></span>
+              <strong className="editorial-recap-value">{accuracyPercent}%</strong>
+            </div>
+          </div>
+
+          <div className="editorial-recap-voice">
+            <VoiceControls
+              text={recapSpoken}
+              autoPlayKey={`recap-${assignment.id}-${result.submitted_at || correctCount}`}
+            />
+          </div>
         </section>
+
         {result.feedback_released ? (
           <section className="panel editorial-section">
-            <h2><UiText>{"Pembahasan jawaban"}</UiText></h2>
-            {result.review.map((r, i) => (
-              <article
-                key={r.question_id}
-                className="editorial-review-question"
-              >
-                <Badge active={r.is_correct}>
-                  {r.is_correct ? <UiText>{"Benar"}</UiText> : <UiText>{"Perlu dipelajari lagi"}</UiText>}
-                </Badge>
-                <h3>
-                  {i + 1}. {r.prompt}
-                </h3>
-                <p><UiText>{"Jawabanmu:"}</UiText>{" "}
-                  <strong>
-                    {r.options.find((o) => o.id === r.option_id)?.label}
-                  </strong>
-                </p>
-                <p><UiText>{"Jawaban benar:"}</UiText>{" "}
-                  <strong>
-                    {r.options.find((o) => o.id === r.correct_option_id)?.label}
-                  </strong>
-                </p>
-                <p className="editorial-feedback">
-                  {r.explanation ||
-                    <UiText>{"Guru belum menambahkan pembahasan untuk soal ini."}</UiText>}
-                </p>
-                <VoiceControls
-                  key={r.question_id}
-                  text={`${r.prompt}. ${t("Jawaban benar:")} ${r.options.find((o) => o.id === r.correct_option_id)?.label}. ${r.explanation}`}
-                />
-              </article>
-            ))}
+            <div className="editorial-section-header">
+              <h2><UiText>{"Pembahasan jawaban"}</UiText></h2>
+              <p className="editorial-section-subtitle">
+                <UiText>{"Pelajari pembahasan di bawah ini untuk memperdalam pemahaman materimu."}</UiText>
+              </p>
+            </div>
+            <div className="editorial-review-list">
+              {result.review.map((r, i) => {
+                const userOption = r.options.find((o) => o.id === r.option_id);
+                const correctOption = r.options.find((o) => o.id === r.correct_option_id);
+                const questionNarration = `${t("Soal")} ${i + 1}. ${r.prompt}. ${
+                  r.is_correct
+                    ? `${t("Jawaban benar:")} ${correctOption?.label ?? ""}.`
+                    : `${t("Jawabanmu:")} ${userOption?.label ?? t("Tidak dijawab")}. ${t("Jawaban benar:")} ${correctOption?.label ?? ""}.`
+                } ${r.explanation || ""}`;
+
+                return (
+                  <article
+                    key={r.question_id}
+                    className={`editorial-review-card editorial-review-question ${r.is_correct ? "is-correct" : "is-incorrect"}`}
+                  >
+                    <div className="editorial-review-card-header">
+                      <div className="editorial-review-badges">
+                        <span className="editorial-question-number">
+                          <UiText>{"Soal"}</UiText> {i + 1}
+                        </span>
+                        <Badge active={r.is_correct}>
+                          {r.is_correct ? <UiText>{"Benar"}</UiText> : <UiText>{"Perlu dipelajari lagi"}</UiText>}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <h3 className="editorial-review-prompt">
+                      {r.prompt}
+                    </h3>
+
+                    <div className="editorial-answer-comparison">
+                      <div className={`editorial-answer-box ${r.is_correct ? "is-correct" : "is-incorrect"}`}>
+                        <div className="editorial-answer-header">
+                          <span className="editorial-answer-icon" aria-hidden="true">
+                            {r.is_correct ? <Check size={14} /> : <X size={14} />}
+                          </span>
+                          <span className="editorial-answer-label"><UiText>{"Jawabanmu:"}</UiText></span>
+                        </div>
+                        <div className="editorial-answer-text">
+                          {userOption?.label || <span className="muted"><UiText>{"Tidak dijawab"}</UiText></span>}
+                        </div>
+                      </div>
+
+                      <div className="editorial-answer-box is-key">
+                        <div className="editorial-answer-header">
+                          <span className="editorial-answer-icon" aria-hidden="true">
+                            <CheckCircle2 size={14} />
+                          </span>
+                          <span className="editorial-answer-label"><UiText>{"Kunci jawaban:"}</UiText></span>
+                        </div>
+                        <div className="editorial-answer-text">
+                          {correctOption?.label || "—"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="editorial-explanation-box">
+                      <div className="editorial-explanation-header">
+                        <Lightbulb size={16} className="editorial-explanation-icon" aria-hidden="true" />
+                        <strong><UiText>{"Pembahasan:"}</UiText></strong>
+                      </div>
+                      <p className="editorial-explanation-content">
+                        {r.explanation || (
+                          <span className="muted">
+                            <UiText>{"Guru belum menambahkan pembahasan untuk soal ini."}</UiText>
+                          </span>
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="editorial-review-voice">
+                      <VoiceControls
+                        key={r.question_id}
+                        text={questionNarration}
+                      />
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </section>
         ) : (
           <section className="panel editorial-section">
@@ -332,6 +440,7 @@ export function StudentAssignment({
         )}
       </div>
     );
+  }
 
   return (
     <>
@@ -380,36 +489,40 @@ export function StudentAssignment({
       ) : (
         question && (
           <div className="editorial-attempt-grid">
-            <aside className="panel editorial-section editorial-progress">
-              <h2><UiText>{"Progres tugas"}</UiText></h2>
-              <strong>
-                {answeredCount}
-                <span> / {attempt.questions.length}<UiText>{" soal tersimpan"}</UiText></span>
-              </strong>
+            <aside className="panel editorial-section editorial-progress editorial-progress-top">
+              <div className="editorial-progress-header">
+                <div className="editorial-progress-info">
+                  <h2><UiText>{"Progres tugas"}</UiText></h2>
+                  <strong>
+                    {answeredCount}
+                    <span> / {attempt.questions.length}<UiText>{" soal tersimpan"}</UiText></span>
+                  </strong>
+                </div>
+                <nav
+                  className="editorial-question-nav"
+                  aria-label={t("Pilih nomor soal")}
+                >
+                  {attempt.questions.map((q, i) => (
+                    <button
+                      type="button"
+                      key={q.id}
+                      onClick={() => void navigate(i)}
+                      disabled={busy || !!pending}
+                      aria-current={index === i ? "step" : undefined}
+                      className={attempt.answers[q.id] ? "answered" : ""}
+                      aria-label={t("Soal {number}", { number: q.order_index }) + t(attempt.answers[q.id] ? ", jawaban tersimpan" : ", belum dijawab")}
+                    >
+                      {q.order_index}
+                    </button>
+                  ))}
+                </nav>
+              </div>
               <progress
                 value={answeredCount}
                 max={attempt.questions.length}
                 aria-label={t("{count} dari {total} jawaban tersimpan", { count: answeredCount, total: attempt.questions.length })}
               />
-              <nav
-                className="editorial-question-nav"
-                aria-label={t("Pilih nomor soal")}
-              >
-                {attempt.questions.map((q, i) => (
-                  <button
-                    type="button"
-                    key={q.id}
-                    onClick={() => void navigate(i)}
-                    disabled={busy || !!pending}
-                    aria-current={index === i ? "step" : undefined}
-                    className={attempt.answers[q.id] ? "answered" : ""}
-                    aria-label={t("Soal {number}", { number: q.order_index }) + t(attempt.answers[q.id] ? ", jawaban tersimpan" : ", belum dijawab")}
-                  >
-                    {q.order_index}
-                  </button>
-                ))}
-              </nav>
-              <p><UiText>{"Jawaban tersimpan saat kamu menekan Simpan & lanjut."}</UiText></p>
+              <p className="editorial-progress-hint"><UiText>{"Jawaban tersimpan saat kamu menekan Simpan & lanjut."}</UiText></p>
             </aside>
             <div className="editorial-main">
               <section className="panel editorial-section">
@@ -430,7 +543,7 @@ export function StudentAssignment({
                   {question.options.map((o, i) => (
                     <label
                       key={o.id}
-                      className={selected === o.id ? "selected" : ""}
+                      className={`quiz-option ${selected === o.id ? "selected" : ""}`}
                     >
                       <input
                         type="radio"
@@ -438,6 +551,7 @@ export function StudentAssignment({
                         value={o.id}
                         checked={selected === o.id}
                         onChange={() => setSelected(o.id)}
+                        aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}, ${o.label}`}
                       />
                       <span className="quiz-option-key">
                         {String.fromCharCode(65 + i)}
