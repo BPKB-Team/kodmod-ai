@@ -4363,3 +4363,115 @@
   margin: 0;
   max-width: 50ch;
 }
+
+/* Activity Page Kicker & 4-Grid */
+.activity-status-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 0.4rem;
+}
+
+.admin-insight-grid-4 {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 1.15rem !important;
+  margin-bottom: 1.75rem !important;
+}
+@media (max-width: 1100px) {
+  .admin-insight-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (max-width: 600px) {
+  .admin-insight-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.admin-insight-card {
+  border: 1px solid #dce7f4 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(16, 42, 85, 0.04) !important;
+  padding: 1.25rem 1.35rem !important;
+}
+.admin-insight-card:hover {
+  transform: translateY(-2px);
+  border-color: #bfdbfe !important;
+  box-shadow: 0 8px 24px rgba(16, 42, 85, 0.08) !important;
+}
+.admin-insight-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.admin-insight-icon.blue { background: #eff6ff; color: #2563eb; }
+.admin-insight-icon.green { background: #ecfdf5; color: #059669; }
+.admin-insight-icon.purple { background: #f5f3ff; color: #7c3aed; }
+.admin-insight-icon.amber { background: #fffbeb; color: #d97706; }
+
+/* Interactive Legend Button */
+.role-legend-card.active-legend {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12) !important;
+}
+.role-legend-card {
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.role-legend-card:hover {
+  transform: translateY(-1.5px);
+  border-color: #bfdbfe !important;
+  box-shadow: 0 4px 12px rgba(16, 42, 85, 0.06);
+}
+
+/* Activity Category Badges */
+.activity-category-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+}
+.activity-category-badge.category-auth {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.activity-category-badge.category-learning {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+.activity-category-badge.category-classroom {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+.activity-category-badge.category-quiz {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+.activity-category-badge.category-account,
+.activity-category-badge.category-invitation,
+.activity-category-badge.category-admin {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
