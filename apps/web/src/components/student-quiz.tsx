@@ -7,7 +7,7 @@ import { UiText, useI18n } from "@/components/language-provider";
 
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { CheckCircle2, Lightbulb, LoaderCircle, RefreshCw, Send, Sparkles, XCircle } from "lucide-react";
+import { CheckCircle2, Lightbulb, LineChart, LoaderCircle, RefreshCw, Send, Sparkles, XCircle } from "lucide-react";
 import { confirmAction, notifyResult } from "@/lib/dialogs";
 import type { QuizQuestion, QuizStartResponse, QuizSubmitRequest, QuizRecoveryResponse, QuizInteractionView, QuizActionRequest } from "@/lib/quiz-types";
 import type { StudentMaterial } from "@/lib/class-types";
@@ -369,9 +369,22 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                 {phase === "complete" ? (
                   <div className="quiz-complete-summary">
                     <strong>{summary || <UiText>{"Latihan selesai."}</UiText>}</strong>
-                    <Link className="button secondary" href="/siswa/progres"><UiText>{"Lihat Progres"}</UiText></Link>
-                    {embedded ? <button type="button" className="button primary" onClick={onReturn}><UiText>{"Kembali belajar"}</UiText></button> : <button type="button" className="button primary" onClick={() => void startQuiz()}>
-                      <RefreshCw size={17} aria-hidden="true" /><UiText>{"Coba lagi"}</UiText></button>}
+                    <div className="quiz-complete-actions">
+                      <Link className="button secondary" href="/siswa/progres">
+                        <LineChart size={18} aria-hidden="true" />
+                        <UiText>{"Lihat Progres"}</UiText>
+                      </Link>
+                      {embedded ? (
+                        <button type="button" className="button primary" onClick={onReturn}>
+                          <UiText>{"Kembali belajar"}</UiText>
+                        </button>
+                      ) : (
+                        <button type="button" className="button primary" onClick={() => void startQuiz()}>
+                          <RefreshCw size={18} aria-hidden="true" />
+                          <UiText>{"Coba lagi"}</UiText>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ) : v2 ? renderActions() : (
                   <button type="button" className="button primary" onClick={continueQuiz}>

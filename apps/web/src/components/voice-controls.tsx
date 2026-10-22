@@ -116,9 +116,11 @@ export function VoiceControls({ text, onTranscript, autoPlayKey, language: conte
       <button type="button" className="button secondary" onClick={stop} disabled={!active && capture === "idle"}><Square size={16} aria-hidden="true" />{t("Hentikan suara")}</button>
       <button type="button" className="button secondary" onClick={() => void play()} disabled={!text.trim() || busy || capture === "recording" || state === "loading"}><RotateCcw size={16} aria-hidden="true" />{t("Ulangi")}</button>
     </div>
-    <p className={`voice-status ${state === "error" || state === "blocked" ? "voice-status-error" : ""}`} role="status">
-      {!busy && state !== "loading" && t(output.owner === owner && output.message ? output.message : message || (state === "playing" ? "Sedang membacakan." : state === "paused" ? "Pembacaan dijeda." : ""))}
-    </p>
+    {!busy && state !== "loading" && (output.owner === owner && output.message ? output.message : message || (state === "paused" ? "Pembacaan dijeda." : "")) ? (
+      <p className={`voice-status ${state === "error" || state === "blocked" ? "voice-status-error" : ""}`} role="status">
+        {t(output.owner === owner && output.message ? output.message : message || (state === "paused" ? "Pembacaan dijeda." : ""))}
+      </p>
+    ) : null}
     {transcript && <div className="voice-transcript"><strong>{t("Hasil rekaman")}</strong><p>{transcript}</p><small>{t("Periksa kembali hasil ini sebelum digunakan sebagai jawaban.")}</small></div>}
   </section>;
 }
