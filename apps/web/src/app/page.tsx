@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, AudioLines, BookOpen, Check, ChevronDown, Keyboard, MessageCircle, ListChecks, TrendingUp, BarChart3, Users, GraduationCap, LogIn, Sparkles } from "lucide-react";
+import { ArrowRight, AudioLines, BookOpen, Check, ChevronDown, Keyboard, MessageCircle, ListChecks, TrendingUp, BarChart3, Users, GraduationCap, LogIn, Sparkles, HelpCircle } from "lucide-react";
 import LandingMenu from "@/components/LandingMenu";
 import { ExperienceToolbar } from "@/components/experience-toolbar";
+import { VoiceControls } from "@/components/voice-controls";
 import { getServerI18n } from "@/lib/server-language";
 import "../styles/landing.css";
 import "../styles/public-learning.css";
@@ -67,12 +68,10 @@ export default async function HomePage() {
             <h1 data-voice-menu="hero-title">{t("Pahami pelajaran,")}<br />{t("selangkah demi selangkah.")}</h1>
             <p data-voice-menu="hero-subtitle">{t("Belajar dari materi guru, tanyakan yang belum kamu pahami, dan berlatih bersama Tutor AI. Pilih teks atau suara yang nyaman untukmu.")}</p>
             <div className="lp-actions">
-              <Link href="/daftar" className="lp-btn lp-btn-blue" data-voice-menu="cta-start">{t("Mulai belajar")}<ArrowRight size={18} aria-hidden="true" /></Link>
-              <a href="#cara-belajar" className="lp-text-link" data-voice-menu="cta-how">{t("Lihat cara kerjanya")}<ChevronDown size={17} aria-hidden="true" /></a>
-            </div>
-            <div className="lp-access-chips">
-              <span data-voice-menu="chip-text-voice" tabIndex={0}><AudioLines size={16} aria-hidden="true" />{t("Teks & suara")}</span>
-              <span data-voice-menu="chip-keyboard" tabIndex={0}><Keyboard size={16} aria-hidden="true" />{t("Navigasi keyboard")}</span>
+              <Link href="/daftar" className="lp-btn lp-btn-blue lp-hero-cta" data-voice-menu="cta-start">
+                <span>{t("Mulai belajar")}</span>
+                <ArrowRight size={19} aria-hidden="true" />
+              </Link>
             </div>
           </div>
           <div className="lp-hero-visual">
@@ -122,11 +121,20 @@ export default async function HomePage() {
       <section className="lp-pillars-section" id="pilar-solusi">
         <div className="lp-container">
           <div className="lp-pillars-header">
-            <div className="lp-sdg-badge" data-voice-menu="sdg-badge" tabIndex={0} title="UN SDG 4 - Quality Education">
-              <span className="lp-sdg-num">4</span>
-              <div className="lp-sdg-text">
-                <strong>QUALITY EDUCATION</strong>
-                <small>THE GLOBAL GOALS</small>
+            <div className="lp-sdg-showcase" data-voice-menu="sdg-badge" tabIndex={0} aria-label={t("Target PBB SDG 4: Pendidikan Berkualitas")}>
+              <div className="lp-sdg-logo-box">
+                <Image
+                  src="/images/landing/sdgs.png"
+                  alt="UN Sustainable Development Goals - 4 Quality Education"
+                  width={200}
+                  height={100}
+                  className="lp-sdg-img"
+                  priority
+                />
+              </div>
+              <div className="lp-sdg-meta">
+                <span className="lp-sdg-kicker">{t("KOMITMEN GLOBAL")}</span>
+                <strong className="lp-sdg-headline">{t("Target SDG 4: Pendidikan Berkualitas")}</strong>
               </div>
             </div>
             <div className="lp-pillars-title-wrap">
@@ -226,15 +234,154 @@ export default async function HomePage() {
           [AudioLines, "Kendali suara di tanganmu", "Atur pembaca menu dan suara Tutor secara terpisah.", "access-3"],
         ].map(([Icon, title, copy, accessKey]) => { const AccessIcon = Icon as typeof Keyboard; return <div key={title as string} data-voice-menu={accessKey as string} tabIndex={0}><AccessIcon aria-hidden="true" /><h3>{t(title as string)}</h3><p>{t(copy as string)}</p></div>; })}</div>
       </div></section>
-      <section id="faq" className="lp-faq-section"><div className="lp-container lp-section lp-faq"><div><h2>{t("Pertanyaan umum")}</h2><p>{t("Hal yang perlu kamu tahu sebelum mulai.")}</p></div><div className="lp-faq-list">
-        {[
-          ["Bagaimana cara membuat akun?", "Pilih Daftar, isi nama, username dan kata sandi, lalu pilih peran siswa atau guru. Tidak perlu kode undangan.", "faq-1"],
-          ["Apakah saya harus menggunakan suara?", "Kamu bisa menggunakan teks. Pembaca menu dan suara Tutor dapat diatur terpisah dari tombol pengaturan suara.", "faq-2"],
-          ["Bisa menggunakan suara dari HP?", "Bisa. Pilih Suara perangkat dalam pengaturan. Ketersediaan suara bergantung pada perangkat dan browsermu.", "faq-3"],
-          ["Bagaimana Tutor menggunakan materi?", "Pilih materi kelas di ruang Tutor agar penjelasan mengacu pada materi yang kamu pelajari.", "faq-4"],
-          ["Apakah tersedia Bahasa Inggris?", "Pilih EN dari menu bahasa. Tampilan dan jawaban Tutor mengikuti bahasa pilihanmu. Materi guru tetap menggunakan bahasa aslinya.", "faq-5"],
-        ].map(([question, answer, faqKey]) => <details key={question} data-voice-menu={faqKey}><summary>{t(question)}<ChevronDown size={19} aria-hidden="true" /></summary><p>{t(answer)}</p></details>)}
-      </div></div></section>
+      <section id="faq" className="lp-faq-section">
+        <div className="lp-faq-bg-pattern" aria-hidden="true" />
+        <div className="lp-faq-glow lp-faq-glow-1" aria-hidden="true" />
+        <div className="lp-faq-glow lp-faq-glow-2" aria-hidden="true" />
+
+        {/* Pernak-pernik aksen edukatif */}
+        <div className="lp-faq-decor-badge lp-faq-badge-left" aria-hidden="true">
+          <span className="lp-faq-decor-icon bg-blue"><Sparkles size={16} /></span>
+          <div>
+            <strong>{t("Tutor AI 24/7")}</strong>
+            <small>{t("Interaktif & ramah")}</small>
+          </div>
+        </div>
+
+        <div className="lp-faq-decor-badge lp-faq-badge-right" aria-hidden="true">
+          <span className="lp-faq-decor-icon bg-emerald"><GraduationCap size={16} /></span>
+          <div>
+            <strong>{t("Ramah Tunanetra")}</strong>
+            <small>{t("Audio & keyboard")}</small>
+          </div>
+        </div>
+
+        <div className="lp-container lp-faq-container">
+          <div className="lp-faq-header">
+            <div className="lp-faq-badge-pill" data-voice-menu="faq-badge" tabIndex={0}>
+              <HelpCircle size={14} className="lp-faq-badge-icon" aria-hidden="true" />
+              <span>{t("BANTUAN & FAQ")}</span>
+            </div>
+            <h2>{t("Pertanyaan umum")}</h2>
+            <p>{t("Hal yang perlu kamu tahu sebelum mulai.")}</p>
+          </div>
+
+          <div className="lp-faq-list">
+            {[
+              ["Bagaimana cara membuat akun?", "Pilih Daftar, isi nama, username dan kata sandi, lalu pilih peran siswa atau guru. Tidak perlu kode undangan.", "faq-1"],
+              ["Apakah saya harus menggunakan suara?", "Kamu bisa menggunakan teks. Pembaca menu dan suara Tutor dapat diatur terpisah dari tombol pengaturan suara.", "faq-2"],
+              ["Bisa menggunakan suara dari HP?", "Bisa. Pilih Suara perangkat dalam pengaturan. Ketersediaan suara bergantung pada perangkat dan browsermu.", "faq-3"],
+              ["Bagaimana Tutor menggunakan materi?", "Pilih materi kelas di ruang Tutor agar penjelasan mengacu pada materi yang kamu pelajari.", "faq-4"],
+              ["Apakah tersedia Bahasa Inggris?", "Pilih EN dari menu bahasa. Tampilan dan jawaban Tutor mengikuti bahasa pilihanmu. Materi guru tetap menggunakan bahasa aslinya.", "faq-5"],
+            ].map(([question, answer, faqKey]) => (
+              <details key={question} data-voice-menu={faqKey} className="lp-faq-item">
+                <summary>
+                  <span className="lp-faq-q-text">{t(question)}</span>
+                  <ChevronDown size={19} className="lp-faq-chevron" aria-hidden="true" />
+                </summary>
+                <div className="lp-faq-body">
+                  <p>{t(answer)}</p>
+                  <div className="lp-faq-voice-wrap">
+                    <VoiceControls text={`${t(question)}. ${t(answer)}`} />
+                  </div>
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Dedicated Sponsor & Ecosystem Section */}
+      <section className="lp-sponsors-section" id="sponsor">
+        <div className="lp-sponsors-bg-glow" aria-hidden="true" />
+        <div className="lp-container">
+          <div className="lp-sponsors-header">
+            <div className="lp-sponsors-badge" data-voice-menu="sponsor-badge" tabIndex={0}>
+              <Sparkles size={14} className="lp-sponsors-badge-icon" aria-hidden="true" />
+              <span>{t("SPONSOR & KOLABORASI")}</span>
+            </div>
+            <h2 className="lp-sponsors-title" data-voice-menu="sponsor-title" tabIndex={0}>
+              {t("Didukung oleh Ekosistem Digital Terdepan")}
+            </h2>
+            <p className="lp-sponsors-desc" data-voice-menu="sponsor-desc" tabIndex={0}>
+              {t("Kolaborasi strategis menghadirkan pembelajaran inklusif berstandar tinggi bagi seluruh siswa di Indonesia.")}
+            </p>
+          </div>
+
+          <div className="lp-sponsors-grid">
+            {/* Tier 1: Main Sponsor (Telkom Indonesia) */}
+            <div className="lp-sponsor-card lp-sponsor-card-lead" data-voice-menu="sponsor-telkom" tabIndex={0}>
+              <div className="lp-sponsor-tier-badge lead">
+                <span className="lp-tier-dot" aria-hidden="true" />
+                <span>{t("Sponsor Utama")}</span>
+              </div>
+              <div className="lp-sponsor-logo-box lead">
+                <Image
+                  src="/images/landing/Sponsor/telkom-indonesia.png"
+                  alt="Telkom Indonesia - the world in your hand"
+                  width={340}
+                  height={190}
+                  className="lp-sponsor-logo lead"
+                />
+              </div>
+              <div className="lp-sponsor-content">
+                <h3 className="lp-sponsor-name">{t("PT Telkom Indonesia (Persero) Tbk")}</h3>
+                <p className="lp-sponsor-copy">
+                  {t("Mendukung penuh inovasi teknologi inklusif dan kecerdasan buatan untuk masa depan pendidikan Indonesia.")}
+                </p>
+              </div>
+            </div>
+
+            {/* Tier 2: Subgrid for Telin & Telkom University */}
+            <div className="lp-sponsors-subgrid">
+              {/* Co-Sponsor: Telin */}
+              <div className="lp-sponsor-card lp-sponsor-card-sub" data-voice-menu="sponsor-telin" tabIndex={0}>
+                <div className="lp-sponsor-tier-badge telin">
+                  <span>{t("Mitra Global Connectivity")}</span>
+                </div>
+                <div className="lp-sponsor-logo-box">
+                  <Image
+                    src="/images/landing/Sponsor/telin.png"
+                    alt="Telin by Telkom Indonesia"
+                    width={220}
+                    height={110}
+                    className="lp-sponsor-logo"
+                  />
+                </div>
+                <div className="lp-sponsor-content">
+                  <h3 className="lp-sponsor-name">{t("PT Telekomunikasi Indonesia International (Telin)")}</h3>
+                  <p className="lp-sponsor-copy">
+                    {t("Menghubungkan ekosistem digital KODMOD dengan infrastruktur telekomunikasi global yang handal.")}
+                  </p>
+                </div>
+              </div>
+
+              {/* Academic Partner: Telkom University */}
+              <div className="lp-sponsor-card lp-sponsor-card-sub" data-voice-menu="sponsor-telu" tabIndex={0}>
+                <div className="lp-sponsor-tier-badge telu">
+                  <span>{t("Mitra Akademik & Riset")}</span>
+                </div>
+                <div className="lp-sponsor-logo-box">
+                  <Image
+                    src="/images/landing/Sponsor/telkom-university.png"
+                    alt="Telkom University"
+                    width={180}
+                    height={110}
+                    className="lp-sponsor-logo telu"
+                  />
+                </div>
+                <div className="lp-sponsor-content">
+                  <h3 className="lp-sponsor-name">{t("Telkom University")}</h3>
+                  <p className="lp-sponsor-copy">
+                    {t("Kolaborasi riset pendidikan, validasi materi ajar, dan pendampingan implementasi kurikulum inklusif.")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="lp-cta-refined" id="mulai-belajar">
         <div className="lp-cta-bg-glow" aria-hidden="true" />
         <div className="lp-container">

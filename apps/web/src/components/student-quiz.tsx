@@ -336,7 +336,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                           checked={answer === option}
                           onChange={() => changeAnswer(option)}
                           disabled={answerLocked}
-                          aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}: ${option}`}
+                          aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}, ${option}`}
                         />
                         <span className="quiz-option-key">{String.fromCharCode(65 + index)}</span>
                         <span>{option}</span>

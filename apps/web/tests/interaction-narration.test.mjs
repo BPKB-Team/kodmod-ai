@@ -28,9 +28,23 @@ test("a selected answer is read even while the tutor is speaking", async () => {
   try {
     f.document.querySelector("input").click();
     await f.settle();
-    assert.match(f.queued.at(-1)?.text ?? "", /Fotosintesis.*dipilih/i);
+    assert.equal(f.queued.at(-1)?.text, "Pilihan A, Fotosintesis dipilih.");
     assert.equal(f.queued.at(-1)?.interrupt, true);
     assert.doesNotMatch(f.queued.at(-1)?.text ?? "", /private-id/);
+  } finally { f.cleanup(); }
+});
+
+test("quiz card option narrates with option letter, short pause and text when selected", async () => {
+  const f = view('<fieldset class="quiz-options"><label class="quiz-option"><input type="radio" name="answer-q1" value="opt-1" aria-label="Pilihan A, Bukti"><span class="quiz-option-key">A</span><span>Bukti</span></label><label class="quiz-option"><input type="radio" name="answer-q1" value="opt-2"><span class="quiz-option-key">B</span><span>Klaim</span></label></fieldset>');
+  try {
+    f.document.querySelector('input[value="opt-1"]').click();
+    await f.settle();
+    assert.equal(f.queued.at(-1)?.text, "Pilihan A, Bukti dipilih.");
+    assert.equal(f.queued.at(-1)?.interrupt, true);
+
+    f.document.querySelector('input[value="opt-2"]').click();
+    await f.settle();
+    assert.equal(f.queued.at(-1)?.text, "Pilihan B, Klaim dipilih.");
   } finally { f.cleanup(); }
 });
 

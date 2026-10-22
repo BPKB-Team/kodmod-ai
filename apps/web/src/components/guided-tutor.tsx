@@ -319,8 +319,23 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
 
           <div className="guided-materials-section">
             <div className="guided-materials-section-head">
-              <h3><BookOpen size={19} aria-hidden="true" /><UiText>{"Daftar Materi Kelasmu"}</UiText></h3>
-              <span className="materials-count">{materials.length} <UiText>{"materi tersedia"}</UiText></span>
+              <div className="guided-materials-head-left">
+                <div className="guided-materials-icon-wrap" aria-hidden="true">
+                  <BookOpen size={22} />
+                </div>
+                <div>
+                  <h3><UiText>{"Daftar Materi Kelasmu"}</UiText></h3>
+                  <p className="guided-materials-subtitle">
+                    <UiText>{"Koleksi bahan ajar aktif yang siap dipelajari bersama Tutor AI"}</UiText>
+                  </p>
+                </div>
+              </div>
+              <div className="guided-materials-head-right">
+                <span className="materials-count-badge">
+                  <span className="materials-count-dot" aria-hidden="true" />
+                  <strong>{materials.length}</strong> <UiText>{"materi tersedia"}</UiText>
+                </span>
+              </div>
             </div>
 
             {!materials.length ? (

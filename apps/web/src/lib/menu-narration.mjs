@@ -17,11 +17,50 @@ function referencedText(element, attribute, document) {
   return clean((element.getAttribute?.(attribute) ?? "").split(/\s+/).map(id => visibleText(document.getElementById?.(id))).join(" "));
 }
 function controlText(element, document, language) {
-  const label = referencedText(element, "aria-labelledby", document) || element.getAttribute?.("aria-label")
+  const en = language === "en";
+  const role = element.getAttribute?.("role"), type = element.getAttribute?.("type");
+  const isRadio = type === "radio" || role === "radio";
+  const rawAria = element.getAttribute?.("aria-label");
+  const rawLabel = referencedText(element, "aria-labelledby", document) || rawAria
     || Array.from(element.labels ?? []).map(label => visibleText(label, true)).filter(Boolean).join(" ")
     || visibleText(element) || element.getAttribute?.("title") || element.getAttribute?.("placeholder");
-  const en = language === "en", parts = [clean(label)];
-  const role = element.getAttribute?.("role"), type = element.getAttribute?.("type");
+
+  const checked = element.getAttribute?.("aria-checked") ?? (["radio", "checkbox"].includes(type) ? String(element.checked) : null);
+
+  if (isRadio && checked !== null && checked !== undefined) {
+    const quizOption = element.closest?.(".quiz-option, .quiz-options");
+    const keyEl = quizOption?.querySelector?.(".quiz-option-key");
+    const key = keyEl ? clean(keyEl.textContent) : null;
+    let letter = key;
+    let optionBody = "";
+
+    const ariaMatch = (rawAria || "").match(/^(?:Pilihan|Option)\s+([A-Za-z0-9])(?:[:,]|\s+)(.*)$/i);
+    const textMatch = clean(rawLabel).match(/^([A-Za-z0-9])[\.\)]\s+(.*)$/);
+
+    if (ariaMatch) {
+      letter = ariaMatch[1].toUpperCase();
+      optionBody = clean(ariaMatch[2]);
+    } else if (textMatch) {
+      letter = textMatch[1].toUpperCase();
+      optionBody = clean(textMatch[2]);
+    } else if (key) {
+      letter = key.toUpperCase();
+      const bodyRegex = new RegExp(`^${key}\\s+`, "i");
+      optionBody = clean(clean(rawLabel).replace(bodyRegex, ""));
+    }
+
+    if (letter && optionBody) {
+      optionBody = optionBody.replace(/[.,;:]+$/, "").trim();
+      const prefix = en ? `Option ${letter}` : `Pilihan ${letter}`;
+      if (checked === "true") {
+        return `${prefix}, ${optionBody} ${en ? "selected" : "dipilih"}.`;
+      } else {
+        return `${prefix}, ${optionBody}. ${en ? "Not selected" : "Belum dipilih"}.`;
+      }
+    }
+  }
+
+  const parts = [clean(rawLabel)];
   if (element.matches?.("select")) {
     const option = visibleText(element.options?.[element.selectedIndex]);
     if (option) parts.push(`${en ? "Current selection" : "Pilihan saat ini"}: ${option}`);
@@ -29,7 +68,6 @@ function controlText(element, document, language) {
     const option = visibleText(element.querySelector?.(".kodmod-select-value"));
     if (option) parts.push(`${en ? "Current selection" : "Pilihan saat ini"}: ${option}`);
   }
-  const checked = element.getAttribute?.("aria-checked") ?? (["radio", "checkbox"].includes(type) ? String(element.checked) : null);
   if (checked !== null && checked !== undefined) {
     if (checked === "mixed") parts.push(en ? "Partially checked" : "Dicentang sebagian");
     else if (role === "switch") parts.push(checked === "true" ? (en ? "On" : "Aktif") : (en ? "Off" : "Mati"));

@@ -51,6 +51,9 @@ export function LandingFooter() {
             <li>
               <a href="#faq" data-voice-menu="footer-nav-faq">{t("Pertanyaan umum")}</a>
             </li>
+            <li>
+              <a href="#sponsor" data-voice-menu="footer-nav-sponsor">{t("Sponsor")}</a>
+            </li>
           </ul>
         </div>
 
