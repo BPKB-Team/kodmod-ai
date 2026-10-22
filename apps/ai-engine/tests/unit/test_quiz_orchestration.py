@@ -239,6 +239,10 @@ async def test_websocket_conversational_quiz_uses_same_persisted_factory(scoped_
         }
 
     monkeypatch.setattr(chat_stream, "run_turn", stream)
+    async def active_session(_websocket, _user_id):
+        return workspace.student
+
+    monkeypatch.setattr(chat_stream, "revalidate_ws_session", active_session)
     frames = []
 
     class Socket:

@@ -4,6 +4,7 @@ export class BackendError extends Error {
   constructor(
     public status: number,
     message: string,
+    public detail?: unknown,
   ) {
     super(message);
   }
@@ -38,6 +39,12 @@ export async function backend<T>(
     );
   }
   if (!response.ok) {
+    let detail: unknown;
+    try {
+      detail = (await response.json())?.detail;
+    } catch {
+      // Keep the stable, user-safe message below when the response has no JSON.
+    }
     const messages: Record<number, string> = {
       400: "Permintaan belum dapat diproses. Periksa kembali data yang diisi.",
       401: "Sesi berakhir. Silakan masuk kembali.",
@@ -51,6 +58,7 @@ export async function backend<T>(
       response.status,
       messages[response.status] ||
         "Layanan mengalami kendala. Coba lagi beberapa saat.",
+      detail,
     );
   }
   if (response.status === 204) return undefined as T;

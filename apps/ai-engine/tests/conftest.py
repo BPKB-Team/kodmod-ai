@@ -306,7 +306,13 @@ def fastapi_app():  # type: ignore[no-untyped-def]
 # --------------------------------------------------------------------------- #
 # Auth helpers.
 # --------------------------------------------------------------------------- #
-def _make_token(sub: uuid.UUID | str, role: str, *, ttl_s: int = 3600) -> str:
+def _make_token(
+    sub: uuid.UUID | str,
+    role: str,
+    *,
+    ttl_s: int = 3600,
+    session_id: uuid.UUID | str | None = None,
+) -> str:
     import time
 
     import jwt as pyjwt
@@ -314,8 +320,11 @@ def _make_token(sub: uuid.UUID | str, role: str, *, ttl_s: int = 3600) -> str:
     from config.settings import settings
 
     now = int(time.time())
+    claims = {"sub": str(sub), "role": role, "iat": now, "exp": now + ttl_s}
+    if session_id is not None:
+        claims["sid"] = str(session_id)
     return pyjwt.encode(
-        {"sub": str(sub), "role": role, "iat": now, "exp": now + ttl_s},
+        claims,
         settings.JWT_SECRET,
         algorithm=settings.JWT_ALG,
     )
@@ -346,6 +355,8 @@ async def user_factory(db_session):  # type: ignore[no-untyped-def]
     """
 
     async def _make(role: str = "student", **overrides):  # type: ignore[no-untyped-def]
+        from datetime import UTC, datetime, timedelta
+
         from api.security import hash_password
         from database.models import User
 
@@ -356,12 +367,14 @@ async def user_factory(db_session):  # type: ignore[no-untyped-def]
             "password_hash": hash_password(TEST_PASSWORD),
             "role": role,
             "full_name": overrides.pop("full_name", _DEFAULT_NAMES.get(role, "Pengguna Uji")),
+            "active_auth_session_id": uuid.uuid4(),
+            "active_auth_session_expires_at": datetime.now(UTC) + timedelta(hours=1),
         }
         data.update(overrides)
         user = User(**data)
         db_session.add(user)
         await db_session.flush()
-        return user, _make_token(user.id, role)
+        return user, _make_token(user.id, role, session_id=user.active_auth_session_id)
 
     return _make
 

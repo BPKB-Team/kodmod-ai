@@ -41,7 +41,7 @@ from api.chat_service import (
     sources,
     update_session_mode,
 )
-from api.dependencies import authenticate_ws
+from api.dependencies import authenticate_ws, revalidate_ws_session
 from api.routes.chat import ChatMessageRequest, _clear_transient_quiz_checkpoint
 from database.session import async_session
 from graphs.main_graph import run_turn
@@ -86,6 +86,7 @@ async def chat_ws(websocket: WebSocket) -> None:
 
     try:
         while True:
+            student = await revalidate_ws_session(websocket, student.id)
             frame = await websocket.receive_json()
 
             if frame.get("type") == "ping":
@@ -176,8 +177,13 @@ async def _run_one_turn(
     # Accumulate each node's partial return rather than trusting one root
     # event: node names are ours, the root chain's name is LangGraph's to change.
     final: dict = {}
+    last_session_check = 0.0
     try:
         async for event in run_turn(graph, state, config):
+            now = time.monotonic()
+            if now - last_session_check >= 1.0:
+                await revalidate_ws_session(websocket, student.id)
+                last_session_check = now
             kind = event.get("event")
             name = event.get("name")
             if kind == "on_chat_model_stream":
@@ -190,6 +196,8 @@ async def _run_one_turn(
                 output = event.get("data", {}).get("output")
                 if isinstance(output, dict) and (name in _GRAPH_NODES or name == "LangGraph"):
                     final.update(output)
+    except WebSocketDisconnect:
+        raise
     except Exception:
         log.exception("Turn failed for session %s", resolved_id)
         await websocket.send_json(
@@ -199,6 +207,8 @@ async def _run_one_turn(
             }
         )
         return
+
+    await revalidate_ws_session(websocket, student.id)
 
     quiz_session_id = None
     if final.get("quiz_questions") and not final.get("assessment_managed"):

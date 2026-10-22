@@ -39,14 +39,19 @@ def _require_stack(api_base_url):  # type: ignore[no-untyped-def]
         pytest.skip(f"api container not reachable at {api_base_url}: {exc}")
 
 
-def _token(sub, role: str, *, ttl_s: int = 3600, secret: str | None = None) -> str:
+def _token(
+    sub, role: str, *, ttl_s: int = 3600, secret: str | None = None, session_id=None
+) -> str:
     import jwt as pyjwt
 
     from config.settings import settings
 
     now = int(time.time())
+    claims = {"sub": str(sub), "role": role, "iat": now, "exp": now + ttl_s}
+    if session_id is not None:
+        claims["sid"] = str(session_id)
     return pyjwt.encode(
-        {"sub": str(sub), "role": role, "iat": now, "exp": now + ttl_s},
+        claims,
         secret or settings.JWT_SECRET,
         algorithm=settings.JWT_ALG,
     )
@@ -78,6 +83,8 @@ async def db_cleanup():  # type: ignore[no-untyped-def]
 
 @pytest.fixture
 async def user_factory(db_cleanup):  # type: ignore[no-untyped-def]
+    from datetime import UTC, datetime, timedelta
+
     from api.security import hash_password
     from database.models import User
     from database.session import async_session
@@ -93,6 +100,8 @@ async def user_factory(db_cleanup):  # type: ignore[no-untyped-def]
             full_name=over.pop("full_name", f"{role.title()} WS"),
             accessibility_profile="blind",
             preferred_language=over.pop("preferred_language", "id"),
+            active_auth_session_id=uuid.uuid4(),
+            active_auth_session_expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
         data.update(over)
         async with async_session() as s:
@@ -101,7 +110,7 @@ async def user_factory(db_cleanup):  # type: ignore[no-untyped-def]
             await s.flush()
             s.expunge(row)
         db_cleanup.append(("users", str(uid)))
-        return row, _token(uid, role)
+        return row, _token(uid, role, session_id=row.active_auth_session_id)
 
     return _make
 

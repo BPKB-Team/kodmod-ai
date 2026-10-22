@@ -97,4 +97,5 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Default command - use --workers 1 inside k8s and scale via replicas.
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", \
-     "--workers", "1", "--log-config", "/app/config/log_conf.json"]
+     "--workers", "1", "--ws-max-size", "192000", \
+     "--log-config", "/app/config/log_conf.json"]

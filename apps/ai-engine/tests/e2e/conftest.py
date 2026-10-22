@@ -31,14 +31,14 @@ async def client(api_base_url):  # type: ignore[no-untyped-def]
         yield c
 
 
-def _token(sub, role: str) -> str:
+def _token(sub, role: str, *, session_id) -> str:
     import jwt as pyjwt
 
     from config.settings import settings
 
     now = int(time.time())
     return pyjwt.encode(
-        {"sub": str(sub), "role": role, "iat": now, "exp": now + 3600},
+        {"sub": str(sub), "role": role, "sid": str(session_id), "iat": now, "exp": now + 3600},
         settings.JWT_SECRET,
         algorithm=settings.JWT_ALG,
     )
@@ -100,6 +100,8 @@ async def db_cleanup():  # type: ignore[no-untyped-def]
 @pytest.fixture
 async def user_factory(db_cleanup):  # type: ignore[no-untyped-def]
     """Commit a `users` row and return (id, token). E2E works with ids, not rows."""
+    from datetime import UTC, datetime, timedelta
+
     from api.security import hash_password
     from database.models import User
     from database.session import async_session
@@ -117,10 +119,12 @@ async def user_factory(db_cleanup):  # type: ignore[no-untyped-def]
                     full_name=over.pop("full_name", f"{role.title()} E2E"),
                     accessibility_profile="blind",
                     preferred_language=over.pop("preferred_language", "id"),
+                    active_auth_session_id=(session_id := uuid.uuid4()),
+                    active_auth_session_expires_at=datetime.now(UTC) + timedelta(hours=1),
                 )
             )
         db_cleanup.append(("users", str(uid)))
-        return uid, _token(uid, role)
+        return uid, _token(uid, role, session_id=session_id)
 
     return _make
 

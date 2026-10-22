@@ -365,7 +365,7 @@ async def test_voice_socket_rechecks_material_scope_before_running_graph(scoped_
 
     collected = False
 
-    async def transcript(ws, stt):
+    async def transcript(ws, stt, _expected_user_id):
         nonlocal collected
         if collected:
             raise WebSocketDisconnect()
@@ -377,6 +377,10 @@ async def test_voice_socket_rechecks_material_scope_before_running_graph(scoped_
         yield
 
     monkeypatch.setattr(voice_stream, "authenticate_ws", actor)
+    async def active_session(_websocket, _user_id):
+        return workspace.student
+
+    monkeypatch.setattr(voice_stream, "revalidate_ws_session", active_session)
     monkeypatch.setattr(voice_stream, "StreamingSTT", lambda **kwargs: None)
     monkeypatch.setattr(voice_stream, "_collect_utterance", transcript)
     monkeypatch.setattr(voice_stream, "async_session", workspace.isolated_session, raising=False)

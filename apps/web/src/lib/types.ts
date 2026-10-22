@@ -19,7 +19,17 @@ export type Invitation = {
   is_active: boolean;
   created_at: string;
 };
-export type ActionState = { error?: string; success?: string; redirectUrl?: string };
+export type ActionState = {
+  error?: string;
+  success?: string;
+  redirectUrl?: string;
+  activeSession?: {
+    sessionId: string;
+    username: string;
+    changed?: boolean;
+    challengeVersion: string;
+  };
+};
 export const roleLabel: Record<Role, string> = {
   admin: "Admin",
   teacher: "Guru",

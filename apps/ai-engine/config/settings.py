@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     # Comma-separated. Credentials are allowed on the CORS middleware, so "*"
     # is not a valid value - list the frontend origin(s) explicitly.
     CORS_ALLOW_ORIGINS: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
-    JWT_SECRET: str = "change-me-in-production"  # noqa: S105 - development sentinel, rejected in production
+    JWT_SECRET: str = "change-me-in-production"  # noqa: S105 - development-only sentinel
     JWT_ALG: str = "HS256"
     JWT_EXPIRE_MIN: int = 60 * 24  # 24h
 
@@ -240,6 +240,22 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return [s.strip() for s in v.split(",") if s.strip()]
         return v
+
+    @field_validator("JWT_SECRET")
+    @classmethod
+    def _require_production_jwt_secret(cls, value: str, info) -> str:
+        if info.data.get("ENV") in {"staging", "prod"}:
+            placeholders = {
+                "change-me-in-production",
+                "change-me-to-a-32+-byte-secret",
+                "secret",
+            }
+            if value.strip().lower() in placeholders or len(value.encode("utf-8")) < 32:
+                raise ValueError(
+                    "JWT_SECRET must be a deployment-specific value of at least 32 bytes "
+                    "in staging and production"
+                )
+        return value
 
     @field_validator("AUDIO_DIR", "UPLOAD_DIR", mode="after")
     @classmethod

@@ -104,9 +104,9 @@ class StreamingSTT:
         self._buffer: deque[bytes] = deque()
         self._buffered_bytes = 0
         self._max_buffer_bytes = sample_rate * 2 * 6  # 6 s of 16-bit mono
+        self.max_frame_bytes = self._max_buffer_bytes
         self._lock = asyncio.Lock()
         self._closed = False
-        self._final_segments: list[str] = []
         self._model = None
         self._init_lock = asyncio.Lock()
 
@@ -150,7 +150,22 @@ class StreamingSTT:
         """
         if self._closed:
             return {"partial": None, "final": None, "is_speaking": False}
+        if len(chunk) > self.max_frame_bytes:
+            raise ValueError("Audio frame exceeds the maximum allowed size")
         async with self._lock:
+            # Trim the oldest bytes before accepting a new frame so the
+            # rolling window stays within its hard memory bound.
+            excess = max(0, self._buffered_bytes + len(chunk) - self._max_buffer_bytes)
+            while self._buffer and excess > 0:
+                head = self._buffer[0]
+                if len(head) <= excess:
+                    excess -= len(head)
+                    self._buffered_bytes -= len(head)
+                    self._buffer.popleft()
+                else:
+                    self._buffer[0] = head[excess:]
+                    self._buffered_bytes -= excess
+                    excess = 0
             self._buffer.append(chunk)
             self._buffered_bytes += len(chunk)
 
@@ -161,21 +176,6 @@ class StreamingSTT:
             audio_bytes = b"".join(self._buffer)
             # Don't drain yet - we re-transcribe the rolling window for
             # better partial accuracy. We only drain on `flush_segment()`.
-            if self._buffered_bytes > self._max_buffer_bytes:
-                # drop the oldest second to keep memory bounded
-                drop = self.sample_rate * 2
-                while self._buffer and drop > 0:
-                    head = self._buffer[0]
-                    if len(head) <= drop:
-                        drop -= len(head)
-                        self._buffered_bytes -= len(head)
-                        self._buffer.popleft()
-                    else:
-                        self._buffer[0] = head[drop:]
-                        self._buffered_bytes -= drop
-                        drop = 0
-                audio_bytes = b"".join(self._buffer)
-
         partial = await self._transcribe(audio_bytes, partial=True)
         return {"partial": partial, "final": None, "is_speaking": True}
 
@@ -193,8 +193,6 @@ class StreamingSTT:
             self._buffered_bytes = 0
 
         text = await self._transcribe(audio_bytes, partial=False)
-        if text:
-            self._final_segments.append(text)
         return text
 
     async def close(self) -> str | None:
