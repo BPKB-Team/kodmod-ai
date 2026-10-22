@@ -212,17 +212,23 @@
   background: none;
 }
 .admin-shell {
+  --sidebar-width: 245px;
   display: grid;
-  grid-template-columns: 245px minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   min-height: 100dvh;
   background:
-    radial-gradient(ellipse at 95% 0, #e4eeff, transparent 45%), #f3f7fc;
+    linear-gradient(to right, #061329 var(--sidebar-width), transparent var(--sidebar-width)),
+    radial-gradient(ellipse at 95% 0, #e4eeff, transparent 45%),
+    #f3f7fc;
 }
 /* This theme is loaded after product.css, so it must preserve the mobile shell. */
 .learning-nav-toggle { display: none; }
 @media (max-width: 800px) {
   .admin-shell {
     display: block;
+    background:
+      radial-gradient(ellipse at 95% 0, #e4eeff, transparent 45%),
+      #f3f7fc;
   }
   .admin-shell > .sidebar {
     position: static;
@@ -297,6 +303,7 @@
   top: 0;
   height: 100dvh;
   max-height: 100dvh;
+  align-self: start;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;

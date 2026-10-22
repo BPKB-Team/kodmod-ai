@@ -961,13 +961,21 @@ input[readonly] {
   color: #216044;
 }
 .admin-shell {
+  --sidebar-width: 245px;
   display: grid;
-  grid-template-columns: 235px minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   min-height: 100dvh;
 }
 .sidebar {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  align-self: start;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 2rem 1.125rem;
-  background: #fff;
+  background: #061329;
   border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
@@ -1446,7 +1454,8 @@ td small {
     font-size: 2.7rem;
   }
   .admin-shell {
-    grid-template-columns: 205px minmax(0, 1fr);
+    --sidebar-width: 205px;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
   }
   .workspace-main {
     padding: 2rem;
@@ -1537,6 +1546,9 @@ td small {
     display: block;
   }
   .sidebar {
+    position: static;
+    height: auto;
+    max-height: none;
     border-right: 0;
     border-bottom: 1px solid var(--line);
     padding: 1rem 1.25rem;

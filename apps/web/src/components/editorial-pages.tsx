@@ -185,8 +185,6 @@ export async function TeacherQuizIndex({
           <UiText>{"Kuis Anda"}</UiText>
           <span className="count">{rows.length}</span>
         </h2>
-        <Link className="learning-back" href="/guru/review-kuis"><UiText>{"Antrean review"}</UiText><ArrowUpRight size={16} aria-hidden="true" />
-        </Link>
       </div>
       {rows.length ? (
         <div className="editorial-card-grid">
