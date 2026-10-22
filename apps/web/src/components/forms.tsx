@@ -5,7 +5,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { UiText } from "@/components/language-provider";
 
 
-import { useRef, useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "./ui/button";
@@ -93,7 +93,7 @@ export function Password({
   );
 }
 export function LoginForm() {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
   const [staleChallengeVersion, setStaleChallengeVersion] = useState<string>();
   const [confirmedChallengeVersion, setConfirmedChallengeVersion] = useState<string>();
@@ -107,41 +107,44 @@ export function LoginForm() {
     state.activeSession.challengeVersion !== staleChallengeVersion
     ? state.activeSession
     : undefined;
+  const activeSessionId = activeSession?.sessionId;
+  const activeChallengeVersion = activeSession?.challengeVersion;
+  const activeSessionChanged = activeSession?.changed;
   const replacementConfirmed =
-    activeSession?.challengeVersion === confirmedChallengeVersion;
+    activeChallengeVersion === confirmedChallengeVersion;
 
   const staleCredentials = () => {
     if (activeSession) setStaleChallengeVersion(activeSession.challengeVersion);
     setConfirmedChallengeVersion(undefined);
   };
 
-  const confirmReplacement = () => {
-    if (!activeSession || pending) return;
+  const confirmReplacement = useCallback(() => {
+    if (!activeSessionId || !activeChallengeVersion || pending) return;
     const replaceInput = formRef.current?.querySelector<HTMLInputElement>(
       'input[name="replace_session_id"]'
     );
     if (replaceInput) {
-      replaceInput.value = activeSession.sessionId;
+      replaceInput.value = activeSessionId;
     }
-    setConfirmedChallengeVersion(activeSession.challengeVersion);
+    setConfirmedChallengeVersion(activeChallengeVersion);
     requestAnimationFrame(() => formRef.current?.requestSubmit());
-  };
+  }, [activeChallengeVersion, activeSessionId, pending]);
 
   useEffect(() => {
-    if (!activeSession || replacementConfirmed) return;
+    if (!activeChallengeVersion || replacementConfirmed) return;
 
     let active = true;
-    const title = activeSession.changed
+    const title = activeSessionChanged
       ? "Sesi akun berubah"
       : "Akun aktif di perangkat lain";
-    const text = activeSession.changed
+    const text = activeSessionChanged
       ? t("Sesi akun ini berubah sejak konfirmasi. Periksa kembali sebelum melanjutkan.")
       : `${t("Akun ini sedang aktif di perangkat lain. Jika masuk di sini, sesi pada perangkat tersebut akan diakhiri.")} ${t("Jika ini bukan Anda, batalkan dan hubungi administrator.")}`;
 
     void speechOutput.play({
       owner: "action-feedback",
       text: `${t(title)}. ${text}`,
-      language: "id",
+      language,
       engine: "app",
     });
 
@@ -155,7 +158,7 @@ export function LoginForm() {
       if (confirmed) {
         confirmReplacement();
       } else {
-        setStaleChallengeVersion(activeSession.challengeVersion);
+        setStaleChallengeVersion(activeChallengeVersion);
         setConfirmedChallengeVersion(undefined);
       }
     });
@@ -163,7 +166,7 @@ export function LoginForm() {
     return () => {
       active = false;
     };
-  }, [activeSession?.challengeVersion, replacementConfirmed]);
+  }, [activeChallengeVersion, activeSessionChanged, confirmReplacement, language, replacementConfirmed, t]);
 
   return (
     <form

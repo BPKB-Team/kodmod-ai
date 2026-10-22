@@ -26,4 +26,3 @@ export async function InnerFooter({ className }: { className?: string } = {}) {
     </footer>
   );
 }
-
