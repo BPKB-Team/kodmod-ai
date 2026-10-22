@@ -32,7 +32,7 @@ export function Heading({
   className,
 }: {
   title: ReactNode;
-  description: ReactNode;
+  description?: ReactNode;
   kicker?: ReactNode;
   children?: ReactNode;
   className?: string;
@@ -42,7 +42,7 @@ export function Heading({
       <div>
         {kicker && <div className="heading-kicker-wrap">{kicker}</div>}
         <h1>{title}</h1>
-        <p>{description}</p>
+        {description && <p>{description}</p>}
       </div>
       {children && <div className="heading-actions">{children}</div>}
     </div>

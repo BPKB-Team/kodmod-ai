@@ -5,7 +5,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { UiText } from "@/components/language-provider";
 
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "./ui/button";
@@ -20,6 +20,8 @@ import {
 } from "./action-feedback";
 import { roleLabel, type User } from "@/lib/types";
 import { useI18n } from "./language-provider";
+import { confirmAction } from "@/lib/dialogs";
+import { speechOutput } from "@/lib/browser-speech";
 
 function Submit({
   pending,
@@ -115,9 +117,53 @@ export function LoginForm() {
 
   const confirmReplacement = () => {
     if (!activeSession || pending) return;
+    const replaceInput = formRef.current?.querySelector<HTMLInputElement>(
+      'input[name="replace_session_id"]'
+    );
+    if (replaceInput) {
+      replaceInput.value = activeSession.sessionId;
+    }
     setConfirmedChallengeVersion(activeSession.challengeVersion);
     requestAnimationFrame(() => formRef.current?.requestSubmit());
   };
+
+  useEffect(() => {
+    if (!activeSession || replacementConfirmed) return;
+
+    let active = true;
+    const title = activeSession.changed
+      ? "Sesi akun berubah"
+      : "Akun aktif di perangkat lain";
+    const text = activeSession.changed
+      ? t("Sesi akun ini berubah sejak konfirmasi. Periksa kembali sebelum melanjutkan.")
+      : `${t("Akun ini sedang aktif di perangkat lain. Jika masuk di sini, sesi pada perangkat tersebut akan diakhiri.")} ${t("Jika ini bukan Anda, batalkan dan hubungi administrator.")}`;
+
+    void speechOutput.play({
+      owner: "action-feedback",
+      text: `${t(title)}. ${text}`,
+      language: "id",
+      engine: "app",
+    });
+
+    void confirmAction({
+      title,
+      text,
+      confirmText: t("Keluar dari perangkat lain dan masuk di sini"),
+      destructive: true,
+    }).then((confirmed) => {
+      if (!active) return;
+      if (confirmed) {
+        confirmReplacement();
+      } else {
+        setStaleChallengeVersion(activeSession.challengeVersion);
+        setConfirmedChallengeVersion(undefined);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [activeSession?.challengeVersion, replacementConfirmed]);
 
   return (
     <form
@@ -154,36 +200,9 @@ export function LoginForm() {
         value={replacementConfirmed && activeSession ? activeSession.sessionId : ""}
       />
       <Feedback state={state} />
-      {activeSession ? (
-        <div className="alert error-message" role="alert" aria-live="assertive">
-          <p>
-            {activeSession.changed
-              ? t("Sesi akun ini berubah sejak konfirmasi. Periksa kembali sebelum melanjutkan.")
-              : t("Akun ini sedang aktif di perangkat lain. Jika masuk di sini, sesi pada perangkat tersebut akan diakhiri.")}
-          </p>
-          <p>{t("Jika ini bukan Anda, batalkan dan hubungi administrator.")}</p>
-          <div className="guided-actions">
-            <Button type="button" onClick={confirmReplacement} loading={pending}>
-              {t("Keluar dari perangkat lain dan masuk di sini")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={pending}
-              onClick={() => {
-                setStaleChallengeVersion(activeSession.challengeVersion);
-                setConfirmedChallengeVersion(undefined);
-              }}
-            >
-              {t("Batal")}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <Submit pending={pending}>
-          {t("Masuk")} <ArrowRight size={18} aria-hidden="true" />
-        </Submit>
-      )}
+      <Submit pending={pending}>
+        {t("Masuk")} <ArrowRight size={18} aria-hidden="true" />
+      </Submit>
       <p className="form-help">
         {t("Belum punya akun?")}{" "}
         <Link className="text-link" href="/daftar" data-voice-menu="register">
