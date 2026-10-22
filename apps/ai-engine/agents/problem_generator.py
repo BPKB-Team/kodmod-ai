@@ -267,6 +267,17 @@ async def generate_grounded_questions(
             "insufficient_learning_content", "No substantive approved learning source is available."
         )
 
+    # Old indexes can have matching version counters while lacking block provenance.
+    # Reject them before paid generation, using the same gate as quiz persistence.
+    from rag.source_bundle import material_evidence_matches
+
+    if bundle.scope.material_id and any(
+        not material_evidence_matches(source, bundle.scope) for source in bundle.sources
+    ):
+        raise QuestionQualityError(
+            "source_index_outdated", "Material evidence needs to be reindexed."
+        )
+
     prompt_version, prompt_hash, prompt_text = load_quiz_prompt()
     approved_ids = sorted(
         {

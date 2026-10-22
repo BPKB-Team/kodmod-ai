@@ -1,6 +1,8 @@
 // Interface copy only. Lesson text, quiz questions, and conversation turns keep
 // their original language. New interface strings belong here or in i18n.mjs.
 export const englishUi = {
+  "Indeks materi ini perlu diproses ulang oleh guru. Setelah pemrosesan selesai, coba mulai latihan kembali.": "This material's index needs to be rebuilt by your teacher. Try starting the exercise again after processing is complete.",
+  "Materi belum dapat digunakan untuk memulai sesi. Minta guru memeriksa kesiapan dan indeks materi, lalu coba lagi.": "This material is not ready to start a session. Ask your teacher to check the material and its index, then try again.",
   "Insight belajarmu": "Your learning insights",
   "Rencanamu mengikuti bukti belajar yang tersedia.": "Your plan follows the available learning evidence.",
   "Rencana belajar singkat": "Short study plan",

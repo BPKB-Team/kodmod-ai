@@ -226,7 +226,9 @@ async def start_assessment(
             409,
             {
                 "code": error.code,
-                "message": "Soal belum lolos pemeriksaan sumber. Pilih bagian lain, kurangi jumlah soal, atau minta guru meninjau isi materi.",
+                "message": "Indeks materi perlu diproses ulang oleh guru sebelum membuat soal."
+                if error.code == "source_index_outdated"
+                else "Soal belum lolos pemeriksaan sumber. Pilih bagian lain, kurangi jumlah soal, atau minta guru meninjau isi materi.",
             },
         ) from None
     generated_questions = final.get("quiz_questions", [])

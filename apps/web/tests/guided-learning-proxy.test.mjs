@@ -4,7 +4,7 @@ import { registerHooks } from "node:module";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 
-const boundary = { current: null, calls: [], status: 200 };
+const boundary = { current: null, calls: [], status: 200, detail: null };
 globalThis.kodmodGuidedBoundary = boundary;
 const stubs = new Map([
   ["server-only", "export {};"],
@@ -37,7 +37,7 @@ const request = body => new Request("http://localhost:3100/api/learning/start", 
 const student = language => ({ token: "fixture-only-token", user: { role: "student", preferred_language: language } });
 globalThis.fetch = async (url, options) => {
   boundary.calls.push({ url, options });
-  return Response.json(boundary.status === 200 ? { ok: true } : { detail: "Private upstream error" }, { status: boundary.status });
+  return Response.json(boundary.status === 200 ? { ok: true } : { detail: boundary.detail ?? "Private upstream error" }, { status: boundary.status });
 };
 
 test("guided learning proxy admits only students and known routes", async () => {
@@ -82,6 +82,29 @@ test("an outdated learning revision offers session recovery without leaking prov
   assert.match(body.message, /Muat ulang sesi/);
   assert.ok(!body.message.includes("Private upstream error"));
   boundary.status = 200;
+});
+
+test("starting with an outdated RAG index reports material recovery instead of a broken login session", async () => {
+  boundary.current = student("id");
+  boundary.status = 409;
+  boundary.detail = { code: "source_index_outdated", message: "Private upstream diagnostics" };
+  try {
+    for (const response of [
+      await quiz.POST(request({ class_id: id, material_id: id, n_questions: 3 })),
+      await learning.POST(request({ class_id: id, material_id: id }), context("start")),
+    ]) {
+      assert.equal(response.status, 409);
+      const body = await response.json();
+      assert.match(body.message, /Indeks materi.*diproses ulang/);
+      assert.doesNotMatch(body.message, /Sesi telah berubah|Private upstream/);
+    }
+    boundary.detail = "Private upstream error";
+    const response = await quiz.POST(request({ class_id: id, material_id: id }));
+    assert.match((await response.json()).message, /kesiapan dan indeks materi/);
+  } finally {
+    boundary.status = 200;
+    boundary.detail = null;
+  }
 });
 
 

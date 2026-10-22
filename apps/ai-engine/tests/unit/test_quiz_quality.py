@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import json
 import uuid
+from dataclasses import replace
 from types import SimpleNamespace
 
 import pytest
@@ -166,6 +167,29 @@ def _evidence_bundle(text: str) -> QuestionSourceBundle:
     )
 
 
+async def test_legacy_material_evidence_is_rejected_before_paid_generation(monkeypatch):
+    bundle = _evidence_bundle("Pecahan senilai memiliki nilai sama walaupun bentuknya berbeda.")
+    scope = MaterialScope(
+        student_id=uuid.uuid4(),
+        class_id=uuid.uuid4(),
+        material_id=uuid.uuid4(),
+        content_version=1,
+        mapping_version=0,
+    )
+    source = replace(
+        bundle.sources[0], material_id=scope.material_id, content_version=1, mapping_version=0
+    )
+    bundle = replace(bundle, scope=scope, sources=(source,))
+    monkeypatch.setattr(
+        generator, "get_quiz_llm", lambda: pytest.fail("Stale index must not call the provider")
+    )
+    with pytest.raises(question_quality.QuestionQualityError) as error:
+        await generator.generate_grounded_questions(
+            bundle, count=3, difficulty="easy", language="id"
+        )
+    assert error.value.code == "source_index_outdated"
+
+
 def _valid_candidate() -> dict:
     return {
         "text": "Apa arti pecahan senilai?",
@@ -178,6 +202,46 @@ def _valid_candidate() -> dict:
         "objective": "Menjelaskan pecahan senilai.",
         "cognitive_level": "understanding",
     }
+
+
+async def test_rebuilt_material_with_mapping_zero_can_generate_questions(monkeypatch):
+    bundle = _evidence_bundle("Pecahan senilai memiliki nilai sama walaupun bentuknya berbeda.")
+    scope = MaterialScope(
+        student_id=uuid.uuid4(),
+        class_id=uuid.uuid4(),
+        material_id=uuid.uuid4(),
+        content_version=1,
+        mapping_version=0,
+    )
+    source = replace(
+        bundle.sources[0],
+        material_id=scope.material_id,
+        content_version=1,
+        mapping_version=0,
+        document_hash="a" * 64,
+        spans=({"block_id": "block-1"},),
+    )
+    bundle = replace(bundle, scope=scope, sources=(source,))
+
+    class LLM:
+        async def ainvoke(self, messages):
+            return SimpleNamespace(content=json.dumps({"questions": [_valid_candidate()]}))
+
+    async def accept(questions, source_bundle):
+        from models.grounded_question import QuestionQualityDecision
+
+        return [QuestionQualityDecision(accepted=True, reasons=[])]
+
+    monkeypatch.setattr(generator, "get_quiz_llm", lambda: LLM())
+    monkeypatch.setattr(generator, "verify_question_batch", accept)
+    batch = await generator.generate_grounded_questions(
+        bundle,
+        count=1,
+        difficulty="easy",
+        language="id",
+    )
+    assert len(batch.questions) == 1
+    assert batch.questions[0].evidence_refs == [source.id]
 
 
 async def test_generator_loads_active_prompt_and_serializes_injection_as_untrusted_data(

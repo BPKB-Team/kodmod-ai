@@ -7,13 +7,18 @@ function apiOrigin() {
   return (process.env.API_ORIGIN ?? "http://127.0.0.1:8109").replace(/\/$/, "");
 }
 
-function messageFor(status: number, code?: unknown) {
+function messageFor(status: number, code?: unknown, path?: string) {
+  if (status === 409 && code === "source_index_outdated") {
+    return "Indeks materi ini perlu diproses ulang oleh guru. Setelah pemrosesan selesai, coba mulai latihan kembali.";
+  }
   if (status === 409 && (code === "insufficient_learning_content" || code === "source_quality_failed")) {
     return "Soal belum lolos pemeriksaan sumber. Lanjutkan ke bagian lain, kurangi jumlah soal, atau minta guru meninjau isi materi.";
   }
   if (status === 401 || status === 403) return "Sesi berakhir. Silakan masuk kembali.";
   if (status === 404) return "Latihan tidak ditemukan. Mulai sesi baru.";
-  if (status === 409) return "Sesi telah berubah atau tindakan belum tersedia. Muat ulang sesi untuk melanjutkan.";
+  if (status === 409) return path === "/quiz/start" || path === "/learning/start"
+    ? "Materi belum dapat digunakan untuk memulai sesi. Minta guru memeriksa kesiapan dan indeks materi, lalu coba lagi."
+    : "Sesi telah berubah atau tindakan belum tersedia. Muat ulang sesi untuk melanjutkan.";
   if (status === 422) return "Isian latihan belum sesuai. Periksa jawabanmu.";
   if (status === 429) return "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.";
   if (status === 503) return "Layanan latihan belum dapat dihubungi. Coba lagi beberapa saat.";
@@ -66,7 +71,7 @@ export async function forwardQuiz(path: string, init: RequestInit = {}) {
   if (!upstream.ok) {
     const error = await upstream.json().catch(() => null);
     return NextResponse.json(
-      { message: messageFor(upstream.status, error?.detail?.code) },
+      { message: messageFor(upstream.status, error?.detail?.code, path) },
       { status: upstream.status },
     );
   }

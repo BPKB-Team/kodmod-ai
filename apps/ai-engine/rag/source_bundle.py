@@ -68,6 +68,19 @@ class QuestionSourceBundle:
         return bool(self.sources)
 
 
+def material_evidence_matches(source: SourceEvidence, scope: MaterialScope) -> bool:
+    """Check the provenance required to persist a classroom-backed question."""
+    return bool(
+        source.material_id == scope.material_id
+        and source.content_version == scope.content_version
+        and source.mapping_version == scope.mapping_version
+        and source.document_hash
+        and source.block_ids
+        and source.spans
+        and all(span.get("block_id") in source.block_ids for span in source.spans)
+    )
+
+
 def bundle_from_docs(
     query: str, scope: MaterialScope, documents: list[dict]
 ) -> QuestionSourceBundle:

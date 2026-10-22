@@ -14,7 +14,7 @@ from api.material_service import resolve_tutoring_context
 from database.models import ClassMaterial, Concept, LearningSession, QuizQuestion, QuizSession, User
 from models.grounded_question import GroundedQuestion, GroundedQuestionBatch
 from models.quiz import QuizStartResponse
-from rag.source_bundle import MaterialScope, QuestionSourceBundle
+from rag.source_bundle import MaterialScope, QuestionSourceBundle, material_evidence_matches
 
 
 def grounded_batch_from_state(
@@ -185,17 +185,13 @@ async def create_quiz_session_from_questions(
             raise HTTPException(409, "Materi berubah saat kuis disiapkan. Buka ulang materi.")
         approved = context.get("approved_material_concepts", []) if context else []
         approved_ids = {str(item["id"]) for item in approved}
-        if any(
-            source.material_id != material.id
-            or source.content_version != material.content_version
-            or source.mapping_version != material.mapping_version
-            or not source.document_hash
-            or not source.block_ids
-            or not source.spans
-            for source in source_bundle.sources
-        ):
+        if any(not material_evidence_matches(source, scope) for source in source_bundle.sources):
             raise HTTPException(
-                409, "Jejak halaman atau versi sumber sudah berubah. Buka ulang materi."
+                409,
+                {
+                    "code": "source_index_outdated",
+                    "message": "Indeks materi perlu diproses ulang oleh guru sebelum membuat soal.",
+                },
             )
     else:
         approved_ids = set()
