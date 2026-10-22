@@ -1678,6 +1678,15 @@
 .segment-admin {
   background: linear-gradient(90deg, #f59e0b, #d97706);
 }
+.segment-needs-help {
+  background: linear-gradient(90deg, #f43f5e, #e11d48);
+}
+.segment-developing {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+.segment-mastering {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
 .role-legend-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1707,6 +1716,9 @@
 }
 .legend-indicator.amber {
   background: #f59e0b;
+}
+.legend-indicator.rose {
+  background: #f43f5e;
 }
 .role-legend-card div {
   display: flex;
