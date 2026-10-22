@@ -718,6 +718,43 @@ export function MaterialForm({
         </section>
       )}
 
+      {/* Top Stepper Navigation */}
+      <nav className="material-form-stepper" aria-label={t("Langkah pembuatan materi")}>
+        <div className={`stepper-step ${effectiveClassId ? "is-completed" : "is-active"}`}>
+          <div className="stepper-circle">
+            <span className="stepper-num">1</span>
+          </div>
+          <div className="stepper-text">
+            <span className="stepper-label"><UiText>{"01 · Sumber & Kelas"}</UiText></span>
+            <span className="stepper-desc"><UiText>{"Pilih kelas dan unggah dokumen"}</UiText></span>
+          </div>
+        </div>
+
+        <div className="stepper-connector" aria-hidden="true" />
+
+        <div className={`stepper-step ${content.trim() ? "is-completed" : effectiveClassId ? "is-active" : ""}`}>
+          <div className="stepper-circle">
+            <span className="stepper-num">2</span>
+          </div>
+          <div className="stepper-text">
+            <span className="stepper-label"><UiText>{"02 · Tinjau & Edit Teks"}</UiText></span>
+            <span className="stepper-desc"><UiText>{"Periksa dan rapikan konten materi"}</UiText></span>
+          </div>
+        </div>
+
+        <div className="stepper-connector" aria-hidden="true" />
+
+        <div className={`stepper-step ${title.trim() && content.trim() ? "is-completed" : ""}`}>
+          <div className="stepper-circle">
+            <span className="stepper-num">3</span>
+          </div>
+          <div className="stepper-text">
+            <span className="stepper-label"><UiText>{"03 · Judul & Publikasi"}</UiText></span>
+            <span className="stepper-desc"><UiText>{"Atur visibilitas dan simpan materi"}</UiText></span>
+          </div>
+        </div>
+      </nav>
+
       {/* Step 1: Sumber Dokumen & Kelas Tujuan */}
       <div className="form-step-container">
         <div className="form-step-header">
@@ -745,10 +782,13 @@ export function MaterialForm({
                     onClick={() => setSelectedClassId(cls.id)}
                   >
                     <div className="target-class-top">
-                      <span className="class-subject-badge"><BookOpen size={13} aria-hidden="true" style={{ marginRight: 5, verticalAlign: -1 }} />{cls.subject}</span>
+                      <span className="class-subject-badge">
+                        <BookOpenCheck size={13} aria-hidden="true" />
+                        <span>{cls.subject}</span>
+                      </span>
                       {isSelected && <CheckCircle2 size={16} className="class-check-icon" aria-hidden="true" />}
                     </div>
-                    <strong>{cls.name}</strong>
+                    <strong className="target-class-name">{cls.name}</strong>
                   </button>
                 );
               })}
