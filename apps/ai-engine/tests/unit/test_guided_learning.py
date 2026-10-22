@@ -276,6 +276,76 @@ async def test_teach_question_continue_repeat_restore_and_retry(learning_http):
     assert (await client.get("/learning/active")).json() == []
 
 
+async def test_short_intro_keeps_navigation_without_offering_an_unsupported_quiz(learning_http):
+    client, factory, _, material, _, _ = learning_http
+    async with factory() as session:
+        stored = await session.get(models.ClassMaterial, material.id)
+        stored.document = None
+        stored.content = (
+            "# Pengantar\n\nMengenal pecahan.\n\n"
+            "# Pecahan senilai\n\nPecahan senilai mempunyai nilai yang sama meskipun "
+            "pembilang dan penyebut berbeda. Satu per dua senilai dengan dua per empat."
+        )
+        await session.commit()
+    state = await open_lesson(client, material)
+    path = f"/learning/sessions/{state['session_id']}"
+    assert "continue" in state["available_actions"]
+    assert not {"check", "quiz"}.intersection(state["available_actions"])
+    for action in ("check", "quiz"):
+        response = await client.post(path + "/actions", json=action_body(state, action))
+        assert response.status_code == 409
+        assert response.json()["detail"]["code"] == "insufficient_learning_content"
+    recovered = (await client.get(path)).json()
+    assert recovered["revision"] == state["revision"]
+    async with factory() as session:
+        assert await session.scalar(select(func.count()).select_from(models.QuizSession)) == 0
+        assert (
+            await session.scalar(select(func.count()).select_from(models.LearningActionReceipt))
+            == 0
+        )
+    continued = await client.post(path + "/actions", json=action_body(state, "continue"))
+    assert continued.status_code == 200
+    state = continued.json()
+    assert {"check", "quiz"}.issubset(state["available_actions"])
+    started = await client.post(path + "/actions", json=action_body(state, "check"))
+    assert started.status_code == 200
+    assert started.json()["phase"] == "quiz"
+
+
+@pytest.mark.parametrize("code", ["insufficient_learning_content", "source_quality_failed"])
+async def test_quiz_quality_rejection_preserves_lesson_and_same_request_can_retry(
+    learning_http, monkeypatch, code
+):
+    from agents.question_quality import QuestionQualityError
+
+    client, factory, _, material, _, _ = learning_http
+    state = await open_lesson(client, material)
+    path = f"/learning/sessions/{state['session_id']}"
+    body = action_body(state, "check")
+    runtime = client._transport.app.state
+    original = runtime.graph
+
+    class RejectGraph:
+        async def ainvoke(self, *args, **kwargs):
+            raise QuestionQualityError(code, "The approved source could not support this batch.")
+
+    monkeypatch.setattr(runtime, "graph", RejectGraph())
+    response = await client.post(path + "/actions", json=body)
+    assert response.status_code == 409
+    assert response.json()["detail"]["code"] == code
+    assert (await client.get(path)).json() == state
+    async with factory() as session:
+        assert await session.scalar(select(func.count()).select_from(models.QuizSession)) == 0
+        assert (
+            await session.get(models.LearningActionReceipt, uuid.UUID(body["request_id"])) is None
+        )
+    monkeypatch.setattr(runtime, "graph", original)
+    retry = await client.post(path + "/actions", json=body)
+    assert retry.status_code == 200
+    assert retry.json()["phase"] == "quiz"
+    assert retry.json()["revision"] == state["revision"] + 1
+
+
 async def test_mini_quiz_holds_learning_and_survives_restart(learning_http):
     client, factory, _, material, _, _ = learning_http
     state = await open_lesson(client, material)

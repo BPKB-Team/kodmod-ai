@@ -474,10 +474,9 @@ def _optional_uuid(value: Any) -> UUID | None:
 
 
 def _source_has_content(text: str) -> bool:
-    from agents.question_quality import _MATH_SOURCE
-    from api.learning_content import is_learning_text
+    from agents.question_quality import has_learning_evidence
 
-    return is_learning_text(text) or bool(_MATH_SOURCE.search(text))
+    return has_learning_evidence(text)
 
 
 def _decision_with_reason(decision, reason):
