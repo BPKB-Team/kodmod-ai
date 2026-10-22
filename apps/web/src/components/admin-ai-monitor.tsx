@@ -5,7 +5,7 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Dialog } from "@/components/ui/dialog";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Activity,
   ArrowUpRight,
@@ -28,14 +28,33 @@ import { UiText, UiDate, useI18n } from "./language-provider";
 import type { AdminAiUsage, AdminAiRequestLog, AdminLearningTraces } from "@/lib/admin-insights-types";
 import { notifyResult } from "@/lib/dialogs";
 
+const AI_USAGE_CACHE_KEY = "kodmod_admin_ai_usage_cache";
+
 export function AdminAiMonitor({
   initialData,
 }: {
-  initialData: AdminAiUsage;
+  initialData?: AdminAiUsage | null;
 }) {
   const { t, locale } = useI18n();
-  const [data, setData] = useState<AdminAiUsage>(initialData);
+  const [data, setData] = useState<AdminAiUsage | null>(() => {
+    if (initialData) return initialData;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = window.sessionStorage?.getItem(AI_USAGE_CACHE_KEY) || window.localStorage?.getItem(AI_USAGE_CACHE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw) as AdminAiUsage;
+          if (parsed && parsed.elevenlabs && parsed.openai) {
+            return parsed;
+          }
+        }
+      } catch {
+        // ignore cache parse error
+      }
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(false);
+  const [isRevalidating, setIsRevalidating] = useState(false);
   const [filterProvider, setFilterProvider] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -45,6 +64,50 @@ export function AdminAiMonitor({
   const [selectedRequest, setSelectedRequest] = useState<AdminAiRequestLog | null>(null);
   const [copiedId, setCopiedId] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  // Background SWR revalidation
+  useEffect(() => {
+    let active = true;
+    const hasCached = Boolean(data);
+    if (hasCached) {
+      setIsRevalidating(true);
+    } else {
+      setLoading(true);
+    }
+
+    const query = new URLSearchParams({ days: "7", page: "1", limit: "20" });
+    fetch(`/api/admin/insights/ai-usage?${query}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Gagal memuat status penggunaan AI.");
+        return res.json();
+      })
+      .then((fresh: AdminAiUsage) => {
+        if (!active) return;
+        setData(fresh);
+        try {
+          const serialized = JSON.stringify(fresh);
+          window.sessionStorage?.setItem(AI_USAGE_CACHE_KEY, serialized);
+          window.localStorage?.setItem(AI_USAGE_CACHE_KEY, serialized);
+        } catch {
+          // ignore storage error
+        }
+      })
+      .catch((err) => {
+        if (!hasCached && active) {
+          notifyResult(err instanceof Error ? err.message : "Gagal memuat data.", true);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+          setIsRevalidating(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function handleOpenTrace(req: AdminAiRequestLog) {
     setSelectedRequest(req);
@@ -67,7 +130,6 @@ export function AdminAiMonitor({
     }).catch(() => {});
   }
 
-
   async function handleRefresh(page = 1, provider = filterProvider, status = filterStatus) {
     setLoading(true);
     try {
@@ -78,6 +140,13 @@ export function AdminAiMonitor({
       if (!res.ok) throw new Error("Gagal memuat status penggunaan AI.");
       const updated = (await res.json()) as AdminAiUsage;
       setData(updated);
+      try {
+        const serialized = JSON.stringify(updated);
+        window.sessionStorage?.setItem(AI_USAGE_CACHE_KEY, serialized);
+        window.localStorage?.setItem(AI_USAGE_CACHE_KEY, serialized);
+      } catch {
+        // ignore
+      }
       setFilterProvider(provider); setFilterStatus(status);
     } catch (err) {
       await notifyResult(err instanceof Error ? err.message : "Gagal memperbarui data.", true);
@@ -103,12 +172,13 @@ export function AdminAiMonitor({
     }
   }
 
-  const { elevenlabs, openai } = data;
-  const actualCosts = data.openai_costs;
+  const elevenlabs = data?.elevenlabs;
+  const openai = data?.openai;
+  const actualCosts = data?.openai_costs;
 
   // ElevenLabs Calculations
-  const elUsed = elevenlabs.character_count ?? 0;
-  const elLimit = elevenlabs.character_limit ?? 0;
+  const elUsed = elevenlabs?.character_count ?? 0;
+  const elLimit = elevenlabs?.character_limit ?? 0;
   const elRemaining = Math.max(0, elLimit - elUsed);
   const elPct = elLimit > 0 ? Math.min(100, Math.round((elUsed / elLimit) * 100)) : 0;
   const metric = (value: number | null | undefined) => value === null || value === undefined ? t("Belum tersedia") : value.toLocaleString(locale);
@@ -117,12 +187,12 @@ export function AdminAiMonitor({
   const displayRate = (value: number | null | undefined) => value == null ? t("Belum tersedia") : value.toLocaleString(locale, { maximumFractionDigits: 2 });
 
   // Filter requests
-  const filteredRequests = data.recent_requests || [];
+  const filteredRequests = data?.recent_requests || [];
   const serviceLabels: Record<string, string> = { tutor: "Pengajaran", quiz: "Pembuatan soal", router: "Pemilihan alur", scoring: "Penilaian", recommendation: "Rekomendasi", reflection: "Review jawaban", embedding: "Pencarian materi", tts: "Pembacaan suara", stt: "Transkripsi suara" };
 
   return (
     <div className="admin-ai-monitor-layout">
-      <LoadingStatus active={loading} label="Memuat penggunaan layanan AI…" />
+      <LoadingStatus active={loading && !data} label="Memuat penggunaan layanan AI…" />
       {/* Top Header Controls */}
       <div className="admin-activity-page-header">
         <div className="page-heading-main">
@@ -135,17 +205,23 @@ export function AdminAiMonitor({
           </div>
         </div>
         <div className="heading-actions">
+          {isRevalidating && (
+            <span className="revalidating-pill" aria-live="polite">
+              <span className="revalidating-dot" aria-hidden="true" />
+              <UiText>{"Memperbarui data…"}</UiText>
+            </span>
+          )}
           <Link href="/admin/pemantauan-ai/jejak" className="button secondary refresh-btn trace-nav-btn">
             <Activity size={15} aria-hidden="true" />
             <UiText>{"Jejak Alur Belajar"}</UiText>
           </Link>
           <button
             type="button"
-            onClick={() => void handleRefresh(data.pagination?.page || 1)}
+            onClick={() => void handleRefresh(data?.pagination?.page || 1)}
             disabled={loading}
             className="button secondary refresh-btn"
           >
-            <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
+            <RefreshCw size={16} className={(loading || isRevalidating) ? "spin" : undefined} aria-hidden="true" />
             <UiText>{"Perbarui Data"}</UiText>
           </button>
         </div>
@@ -157,7 +233,11 @@ export function AdminAiMonitor({
             <span>{t("Panggilan layanan")}</span>
             <span className="ai-stat-icon-wrap blue"><Zap size={16} aria-hidden="true" /></span>
           </div>
-          <strong>{metric(data.summary?.provider_calls)}</strong>
+          {data ? (
+            <strong>{metric(data.summary?.provider_calls)}</strong>
+          ) : (
+            <div className="kodmod-skeleton" style={{ height: "1.75rem", width: "55%", margin: "4px 0" }} />
+          )}
           <small>{t("Total request 7 hari")}</small>
         </div>
         <div className="ai-stat-card">
@@ -165,7 +245,11 @@ export function AdminAiMonitor({
             <span>{t("Audio dari cache")}</span>
             <span className="ai-stat-icon-wrap indigo"><Volume2 size={16} aria-hidden="true" /></span>
           </div>
-          <strong>{metric(data.summary?.cache_hits)}</strong>
+          {data ? (
+            <strong>{metric(data.summary?.cache_hits)}</strong>
+          ) : (
+            <div className="kodmod-skeleton" style={{ height: "1.75rem", width: "55%", margin: "4px 0" }} />
+          )}
           <small>{t("Efisiensi kuota audio")}</small>
         </div>
         <div className="ai-stat-card">
@@ -173,7 +257,11 @@ export function AdminAiMonitor({
             <span>{t("Permintaan gagal")}</span>
             <span className="ai-stat-icon-wrap red"><CircleAlert size={16} aria-hidden="true" /></span>
           </div>
-          <strong>{metric(data.summary?.errors)}</strong>
+          {data ? (
+            <strong>{metric(data.summary?.errors)}</strong>
+          ) : (
+            <div className="kodmod-skeleton" style={{ height: "1.75rem", width: "55%", margin: "4px 0" }} />
+          )}
           <small>{t("Error atau fallback")}</small>
         </div>
         <div className="ai-stat-card">
@@ -181,7 +269,11 @@ export function AdminAiMonitor({
             <span>{t("Estimasi biaya (USD)")}</span>
             <span className="ai-stat-icon-wrap amber"><Sparkles size={16} aria-hidden="true" /></span>
           </div>
-          <strong>{cost(data.summary?.estimated_cost_usd)}</strong>
+          {data ? (
+            <strong>{cost(data.summary?.estimated_cost_usd)}</strong>
+          ) : (
+            <div className="kodmod-skeleton" style={{ height: "1.75rem", width: "55%", margin: "4px 0" }} />
+          )}
           <small>{t("Berdasarkan token & audio")}</small>
         </div>
       </div>
@@ -209,22 +301,42 @@ export function AdminAiMonitor({
               <span><UiText>{"USD aktual"}</UiText></span>
               <span className="ai-cost-icon-wrap emerald"><CircleDollarSign size={16} aria-hidden="true" /></span>
             </div>
-            <strong>{cost(actualCosts.total_usd)}</strong>
-            <small>{actualCosts.available ? t("Akumulasi biaya 30 hari") : t("Kunci admin diperlukan")}</small>
+            {actualCosts ? (
+              <>
+                <strong>{cost(actualCosts.total_usd)}</strong>
+                <small>{actualCosts.available ? t("Akumulasi biaya 30 hari") : t("Kunci admin diperlukan")}</small>
+              </>
+            ) : (
+              <>
+                <div className="kodmod-skeleton" style={{ height: "1.85rem", width: "65%", margin: "6px 0" }} />
+                <div className="kodmod-skeleton" style={{ height: "0.85rem", width: "45%" }} />
+              </>
+            )}
           </div>
           <div className="ai-cost-val-box">
             <div className="ai-cost-val-header">
               <span><UiText>{"Konversi rupiah"}</UiText></span>
               <span className="ai-cost-icon-wrap indigo"><Zap size={16} aria-hidden="true" /></span>
             </div>
-            <strong>{rupiah(actualCosts.total_idr)}</strong>
-            <small>{actualCosts.exchange_rate ? `1 USD ≈ ${displayRate(actualCosts.exchange_rate)} IDR` : t("Estimasi nilai rupiah")}</small>
+            {actualCosts ? (
+              <>
+                <strong>{rupiah(actualCosts.total_idr)}</strong>
+                <small>{actualCosts.exchange_rate ? `1 USD ≈ ${displayRate(actualCosts.exchange_rate)} IDR` : t("Estimasi nilai rupiah")}</small>
+              </>
+            ) : (
+              <>
+                <div className="kodmod-skeleton" style={{ height: "1.85rem", width: "65%", margin: "6px 0" }} />
+                <div className="kodmod-skeleton" style={{ height: "0.85rem", width: "45%" }} />
+              </>
+            )}
           </div>
         </div>
         <div className="ai-cost-actual-note">
           <CircleAlert size={15} aria-hidden="true" className="ai-cost-note-icon" />
           <p>
-            {actualCosts.exchange_rate !== null && actualCosts.exchange_rate_date ? (
+            {!actualCosts ? (
+              <span className="kodmod-skeleton" style={{ display: "inline-block", width: "240px", height: "0.85rem" }} />
+            ) : actualCosts.exchange_rate !== null && actualCosts.exchange_rate_date ? (
               <>
                 <UiText>{"Kurs referensi"}</UiText>: 1 USD = {displayRate(actualCosts.exchange_rate)} IDR · <UiText>{"Data kurs"}</UiText> {actualCosts.exchange_rate_date}.{" "}
                 <UiText>{"Konversi rupiah hanya referensi dan bukan nilai tagihan OpenAI."}</UiText>
@@ -254,19 +366,23 @@ export function AdminAiMonitor({
                 <small><UiText>{"Layanan Text-to-Speech untuk audio siswa tunanetra"}</UiText></small>
               </div>
             </div>
-            <span className={`ai-status-tag ${elevenlabs.configured ? "ready" : "fallback"}`}>
-              {elevenlabs.configured ? (
-                <>
-                  <CheckCircle2 size={14} aria-hidden="true" />
-                  <UiText>{"Terkonfigurasi"}</UiText>
-                </>
-              ) : (
-                <>
-                  <CircleAlert size={14} aria-hidden="true" />
-                  <UiText>{"Belum Ada Key"}</UiText>
-                </>
-              )}
-            </span>
+            {elevenlabs ? (
+              <span className={`ai-status-tag ${elevenlabs.configured ? "ready" : "fallback"}`}>
+                {elevenlabs.configured ? (
+                  <>
+                    <CheckCircle2 size={14} aria-hidden="true" />
+                    <UiText>{"Terkonfigurasi"}</UiText>
+                  </>
+                ) : (
+                  <>
+                    <CircleAlert size={14} aria-hidden="true" />
+                    <UiText>{"Belum Ada Key"}</UiText>
+                  </>
+                )}
+              </span>
+            ) : (
+              <div className="kodmod-skeleton" style={{ height: "24px", width: "100px", borderRadius: "999px" }} />
+            )}
           </div>
 
           {/* Quota Progress */}
@@ -274,7 +390,11 @@ export function AdminAiMonitor({
             <div className="quota-meter-header">
               <span><UiText>{"Karakter Terpakai"}</UiText></span>
               <strong>
-                {elevenlabs.available ? <>{elUsed.toLocaleString()} / {elLimit.toLocaleString()} <span className="quota-pct">({elPct}%)</span></> : <UiText>{"Kuota belum dapat dimuat"}</UiText>}
+                {elevenlabs ? (
+                  elevenlabs.available ? <>{elUsed.toLocaleString()} / {elLimit.toLocaleString()} <span className="quota-pct">({elPct}%)</span></> : <UiText>{"Kuota belum dapat dimuat"}</UiText>
+                ) : (
+                  <div className="kodmod-skeleton" style={{ height: "1rem", width: "120px", display: "inline-block" }} />
+                )}
               </strong>
             </div>
             <div className="quota-progress-track">
@@ -286,9 +406,9 @@ export function AdminAiMonitor({
             <div className="quota-meter-footer">
               <small>
                 <UiText>{"Sisa kuota: "}</UiText>
-                <strong>{elevenlabs.available ? elRemaining.toLocaleString() : t("Belum tersedia")}</strong> <UiText>{"karakter"}</UiText>
+                <strong>{elevenlabs?.available ? elRemaining.toLocaleString() : t("Belum tersedia")}</strong> <UiText>{"karakter"}</UiText>
               </small>
-              {elevenlabs.next_reset_unix && (
+              {elevenlabs?.next_reset_unix && (
                 <small>
                   <UiText>{"Reset: "}</UiText>
                   <strong><UiDate value={new Date(elevenlabs.next_reset_unix * 1000).toISOString()} /></strong>
@@ -301,15 +421,15 @@ export function AdminAiMonitor({
           <div className="ai-specs-grid">
             <div className="spec-item">
               <span><UiText>{"Paket / Tier"}</UiText></span>
-              <strong>{elevenlabs.tier?.toUpperCase() ?? t("Belum tersedia")}</strong>
+              <strong>{elevenlabs ? (elevenlabs.tier?.toUpperCase() ?? t("Belum tersedia")) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "60px", height: "1rem" }} />}</strong>
             </div>
             <div className="spec-item">
               <span><UiText>{"Model Suara"}</UiText></span>
-              <strong>{elevenlabs.tts_model}</strong>
+              <strong>{elevenlabs ? elevenlabs.tts_model : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "80px", height: "1rem" }} />}</strong>
             </div>
             <div className="spec-item">
               <span><UiText>{"Speech to Text"}</UiText></span>
-              <strong>{elevenlabs.stt_backend}</strong>
+              <strong>{elevenlabs ? elevenlabs.stt_backend : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
           </div>
         </article>
@@ -326,36 +446,44 @@ export function AdminAiMonitor({
                 <small><UiText>{"Mesin penalaran Tutor AI, penyusunan kuis, dan embeddings"}</UiText></small>
               </div>
             </div>
-            <span className={`ai-status-tag ${openai.configured ? "ready" : "fallback"}`}>
-              {openai.configured ? (
-                <>
-                  <CheckCircle2 size={14} aria-hidden="true" />
-                  <UiText>{"Terkonfigurasi"}</UiText>
-                </>
-              ) : (
-                <>
-                  <CircleAlert size={14} aria-hidden="true" />
-                  <UiText>{"Belum Ada Key"}</UiText>
-                </>
-              )}
-            </span>
+            {openai ? (
+              <span className={`ai-status-tag ${openai.configured ? "ready" : "fallback"}`}>
+                {openai.configured ? (
+                  <>
+                    <CheckCircle2 size={14} aria-hidden="true" />
+                    <UiText>{"Terkonfigurasi"}</UiText>
+                  </>
+                ) : (
+                  <>
+                    <CircleAlert size={14} aria-hidden="true" />
+                    <UiText>{"Belum Ada Key"}</UiText>
+                  </>
+                )}
+              </span>
+            ) : (
+              <div className="kodmod-skeleton" style={{ height: "24px", width: "100px", borderRadius: "999px" }} />
+            )}
           </div>
 
           {/* Token Usage Summary */}
           <div className="ai-token-stats">
             <div className="token-total-box">
               <span><UiText>{"Token terukur"}</UiText></span>
-              <strong>{metric(openai.total_tokens)}</strong>
+              {openai ? (
+                <strong>{metric(openai.total_tokens)}</strong>
+              ) : (
+                <div className="kodmod-skeleton" style={{ height: "1.75rem", width: "50%", margin: "6px 0" }} />
+              )}
               <small><UiText>{"Jumlah token dari respons penyedia selama 7 hari terakhir."}</UiText></small>
             </div>
             <div className="token-breakdown-row">
               <div className="breakdown-sub">
                 <small><UiText>{"Input (Prompt)"}</UiText></small>
-                <strong>{metric(openai.prompt_tokens)}</strong>
+                <strong>{openai ? metric(openai.prompt_tokens) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "50px", height: "1rem" }} />}</strong>
               </div>
               <div className="breakdown-sub">
                 <small><UiText>{"Output (Jawaban)"}</UiText></small>
-                <strong>{metric(openai.completion_tokens)}</strong>
+                <strong>{openai ? metric(openai.completion_tokens) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "50px", height: "1rem" }} />}</strong>
               </div>
             </div>
           </div>
@@ -364,15 +492,15 @@ export function AdminAiMonitor({
           <div className="ai-specs-grid">
             <div className="spec-item">
               <span><UiText>{"Model Tutor"}</UiText></span>
-              <strong>{openai.models.tutor}</strong>
+              <strong>{openai ? openai.models.tutor : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
             <div className="spec-item">
               <span><UiText>{"Model Kuis"}</UiText></span>
-              <strong>{openai.models.quiz}</strong>
+              <strong>{openai ? openai.models.quiz : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
             <div className="spec-item">
               <span><UiText>{"Embeddings"}</UiText></span>
-              <strong>{openai.models.embedding}</strong>
+              <strong>{openai ? openai.models.embedding : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
           </div>
         </article>
@@ -464,7 +592,38 @@ export function AdminAiMonitor({
         </div>
 
         {/* Tabel Request Log */}
-        {filteredRequests.length > 0 ? (
+        {!data ? (
+          <div className="table-responsive">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead><UiText>{"Waktu"}</UiText></TableHead>
+                  <TableHead><UiText>{"Provider & Layanan"}</UiText></TableHead>
+                  <TableHead><UiText>{"Model / Voice"}</UiText></TableHead>
+                  <TableHead><UiText>{"Siswa / Target"}</UiText></TableHead>
+                  <TableHead><UiText>{"Volume"}</UiText></TableHead>
+                  <TableHead><UiText>{"Latensi"}</UiText></TableHead>
+                  <TableHead><UiText>{"Status"}</UiText></TableHead>
+                  <TableHead><UiText>{"Estimasi biaya (USD)"}</UiText></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(6)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "85px" }} /></TableCell>
+                    <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "130px" }} /></TableCell>
+                    <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "100px" }} /></TableCell>
+                    <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "110px" }} /></TableCell>
+                    <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "70px" }} /></TableCell>
+                    <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "55px" }} /></TableCell>
+                    <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "65px" }} /></TableCell>
+                    <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "60px" }} /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        ) : filteredRequests.length > 0 ? (
           <div className="table-responsive">
             <Table>
               <TableHeader>
@@ -559,7 +718,7 @@ export function AdminAiMonitor({
           </div>
         )}
       </section>
-      {data.pagination && <nav className="ai-log-pagination" aria-label={t("Halaman riwayat AI")}>
+      {data?.pagination && <nav className="ai-log-pagination" aria-label={t("Halaman riwayat AI")}>
         <button className="button secondary" disabled={loading || data.pagination.page <= 1} onClick={() => void handleRefresh((data.pagination?.page || 1) - 1)}>{t("Sebelumnya")}</button>
         <span>{t("Halaman {page}", { page: data.pagination.page })} · {metric(data.pagination.total)} {t("permintaan")}</span>
         <button className="button secondary" disabled={loading || !data.pagination.has_next} onClick={() => void handleRefresh((data.pagination?.page || 1) + 1)}>{t("Berikutnya")}</button>

@@ -2179,6 +2179,26 @@
 .refresh-btn {
   height: 44px;
 }
+.revalidating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+}
+.revalidating-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2563eb;
+  animation: pulse 1.5s infinite;
+}
 .ai-usage-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
