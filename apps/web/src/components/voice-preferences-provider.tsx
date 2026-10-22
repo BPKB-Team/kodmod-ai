@@ -91,7 +91,6 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
   const pendingLanguage = useRef<Language | null>(null);
   const lastPathname = useRef(pathname);
   const opened = ready && (!saved || settingsOpen);
-  const output = useSyncExternalStore(speechOutput.subscribe, speechOutput.getState, speechOutput.getState);
 
   const openVoicePreferences = useCallback(() => {
     returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -253,8 +252,6 @@ export function VoicePreferencesProvider({ children, initialDisplay = parseDispl
   return <VoicePreferencesContext.Provider value={value}>
     {children}
     {warning && !opened && <div className="global-voice-notice" role="status" data-voice-ignore="true">{t(warning)}</div>}
-    {!opened && output.owner === "menu" && ["error", "blocked"].includes(output.status) &&
-      <div className="global-voice-notice" role="status" aria-live="polite" data-voice-ignore="true">{t(output.message)}</div>}
     <Dialog ref={dialog} className="voice-preferences-dialog" aria-labelledby="voice-preferences-title"
       data-voice-dialog-managed="true"
       onCancel={event => { event.preventDefault(); if (!saved) save(); else closeSettings(); }}>
