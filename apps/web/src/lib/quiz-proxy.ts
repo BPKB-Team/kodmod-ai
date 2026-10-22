@@ -7,7 +7,10 @@ function apiOrigin() {
   return (process.env.API_ORIGIN ?? "http://127.0.0.1:8109").replace(/\/$/, "");
 }
 
-function messageFor(status: number) {
+function messageFor(status: number, code?: unknown) {
+  if (status === 409 && (code === "insufficient_learning_content" || code === "source_quality_failed")) {
+    return "Soal belum lolos pemeriksaan sumber. Lanjutkan ke bagian lain, kurangi jumlah soal, atau minta guru meninjau isi materi.";
+  }
   if (status === 401 || status === 403) return "Sesi berakhir. Silakan masuk kembali.";
   if (status === 404) return "Latihan tidak ditemukan. Mulai sesi baru.";
   if (status === 409) return "Sesi telah berubah atau tindakan belum tersedia. Muat ulang sesi untuk melanjutkan.";
@@ -50,15 +53,20 @@ export async function forwardQuiz(path: string, init: RequestInit = {}) {
       ...init,
       headers,
       cache: "no-store",
-      signal: AbortSignal.timeout(45_000),
+      signal: AbortSignal.timeout(
+        path === "/quiz/start" || (path.startsWith("/learning/") && init.method === "POST")
+          ? 180_000
+          : 45_000,
+      ),
     });
   } catch {
     return NextResponse.json({ message: messageFor(503) }, { status: 503 });
   }
 
   if (!upstream.ok) {
+    const error = await upstream.json().catch(() => null);
     return NextResponse.json(
-      { message: messageFor(upstream.status) },
+      { message: messageFor(upstream.status, error?.detail?.code) },
       { status: upstream.status },
     );
   }

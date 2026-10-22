@@ -137,6 +137,12 @@ class User(Base):
         DateTime(timezone=True), default=_now, onupdate=_now
     )
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Exactly one server-authoritative browser/API session may be active at once.
+    # Existing JWTs without this identifier are rejected after the migration.
+    active_auth_session_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    active_auth_session_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
 
     sessions = relationship(
         "LearningSession", back_populates="student", cascade="all, delete-orphan"

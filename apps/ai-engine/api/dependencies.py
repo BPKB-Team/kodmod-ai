@@ -19,9 +19,10 @@ from __future__ import annotations
 import logging
 import uuid
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 
 import jwt
-from fastapi import Depends, Header, HTTPException, WebSocket, status
+from fastapi import Depends, Header, HTTPException, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.settings import settings
@@ -69,6 +70,22 @@ async def _load_user(session: AsyncSession, token: str) -> User:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Account no longer exists")
     if not user.is_active:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Account is disabled")
+    token_session_id = payload.get("sid")
+    try:
+        token_session_id = uuid.UUID(str(token_session_id))
+    except (ValueError, TypeError, AttributeError) as e:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session is no longer active") from e
+    if (
+        user.active_auth_session_id is None
+        or user.active_auth_session_id != token_session_id
+        or user.active_auth_session_expires_at is None
+    ):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session is no longer active")
+    expires_at = user.active_auth_session_expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=UTC)
+    if expires_at <= datetime.now(UTC):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session is no longer active")
     # The role lives on the row, not the token, so an admin demoting someone
     # takes effect immediately instead of when their token expires.
     if payload.get("role") != user.role:
@@ -137,6 +154,36 @@ async def authenticate_ws(websocket: WebSocket) -> User:
     except HTTPException:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         raise
+    from tools.provider_usage import set_usage_actor
+
+    set_usage_actor(user.id)
+    return user
+
+
+async def revalidate_ws_session(websocket: WebSocket, expected_user_id: uuid.UUID) -> User:
+    """Recheck the active session before accepting each WebSocket operation."""
+    token = websocket.query_params.get("token")
+    if not token:
+        auth = websocket.headers.get("authorization")
+        if auth and auth.lower().startswith("bearer "):
+            token = auth.split(" ", 1)[1].strip()
+    if not token:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Missing token")
+
+    from database.session import async_session
+
+    try:
+        async with async_session() as session:
+            user = await _load_user(session, token)
+        if user.id != expected_user_id or user.role != "student":
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session is no longer active")
+    except HTTPException:
+        try:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        except RuntimeError:
+            pass
+        raise WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION) from None
     from tools.provider_usage import set_usage_actor
 
     set_usage_actor(user.id)

@@ -70,6 +70,8 @@ async def editorial_http(request):
             ("student", "student"),
             ("outsider", "student"),
         ]:
+            auth_session_id = uuid.uuid4()
+            auth_session_expires_at = datetime.now(UTC) + timedelta(hours=1)
             actors[name] = db.User(
                 id=uuid.uuid4(),
                 username=name,
@@ -77,6 +79,8 @@ async def editorial_http(request):
                 password_hash="fixture",
                 role=role,
                 is_active=True,
+                active_auth_session_id=auth_session_id,
+                active_auth_session_expires_at=auth_session_expires_at,
             )
             session.add(actors[name])
         subject = db.Subject(id=uuid.uuid4(), name="Matematika")
@@ -109,7 +113,12 @@ async def editorial_http(request):
             user = actors[name]
             return {
                 "Authorization": "Bearer "
-                + create_access_token(subject=str(user.id), role=user.role)
+                + create_access_token(
+                    subject=str(user.id),
+                    role=user.role,
+                    session_id=str(user.active_auth_session_id),
+                    expires_at=user.active_auth_session_expires_at,
+                )
             }
 
         yield client, factory, actors, subject, classroom, headers

@@ -18,6 +18,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from agents.question_quality import QuestionQualityError
 from analytics.student_model import StudentModel
 from api.material_service import resolve_tutoring_context
 from database.models import (
@@ -218,7 +219,16 @@ async def start_assessment(
             c["id"] for c in state["approved_material_concepts"]
         }:
             raise HTTPException(422, "Konsep harus sudah disetujui untuk materi ini.")
-    final = await invoke(graph, dict(state), sid)
+    try:
+        final = await invoke(graph, dict(state), sid)
+    except QuestionQualityError as error:
+        raise HTTPException(
+            409,
+            {
+                "code": error.code,
+                "message": "Soal belum lolos pemeriksaan sumber. Pilih bagian lain, kurangi jumlah soal, atau minta guru meninjau isi materi.",
+            },
+        ) from None
     generated_questions = final.get("quiz_questions", [])
     if len(generated_questions) != body.n_questions:
         raise ValueError("Graph did not generate a valid quiz")

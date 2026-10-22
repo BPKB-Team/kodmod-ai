@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -21,15 +22,37 @@ export async function login(
 ): Promise<ActionState> {
   const username = text(data, "username").toLowerCase();
   const password = String(data.get("password") ?? "");
+  const replace_session_id = text(data, "replace_session_id") || undefined;
   if (!username || !password)
     return { error: "Isi username dan kata sandi terlebih dahulu." };
   let result: { access_token: string; expires_in: number; user: User };
   try {
     result = await backend("/auth/login", undefined, {
       method: "POST",
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, replace_session_id }),
     });
   } catch (error) {
+    if (error instanceof BackendError && error.status === 409) {
+      const detail = error.detail as
+        | { code?: unknown; session_id?: unknown }
+        | undefined;
+      const sessionId = detail?.session_id;
+      if (
+        (detail?.code === "active_session" ||
+          detail?.code === "active_session_changed") &&
+        typeof sessionId === "string" &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionId)
+      ) {
+        return {
+          activeSession: {
+            sessionId,
+            username,
+            changed: detail.code === "active_session_changed",
+            challengeVersion: randomUUID(),
+          },
+        };
+      }
+    }
     return error instanceof BackendError && error.status === 401
       ? { error: "Username atau kata sandi tidak sesuai." }
       : problem(error);
@@ -54,7 +77,16 @@ export async function login(
   redirect(`${homeFor(result.user.role)}?success=signed-in`);
 }
 export async function logout() {
-  (await cookies()).delete(SESSION_COOKIE);
+  const jar = await cookies();
+  const token = jar.get(SESSION_COOKIE)?.value;
+  if (token) {
+    try {
+      await backend("/auth/logout", token, { method: "POST" });
+    } catch {
+      // Always remove this browser's cookie, even if server revocation fails.
+    }
+  }
+  jar.delete(SESSION_COOKIE);
   redirect("/masuk?success=signed-out");
 }
 export async function register(

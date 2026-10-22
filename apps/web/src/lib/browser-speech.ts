@@ -1,7 +1,7 @@
 "use client";
 import { createSpeechCoordinator, type SpeechRequest } from "./speech-output.mjs";
 import { getSpeechAudio } from "./speech-audio-cache";
-import { normalizeSpeechText } from "./speech-text-normalizer";
+import { normalizeSpeechText } from "./speech-text-normalizer.mjs";
 
 export const speechOutput = createSpeechCoordinator({
   loadAudio: async (request, signal) => {

@@ -5,7 +5,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { UiText } from "@/components/language-provider";
 
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Button } from "./ui/button";
@@ -45,10 +45,12 @@ export function Password({
   label,
   autoComplete,
   minLength,
+  onPasswordChange,
 }: {
   label: string;
   autoComplete: string;
   minLength?: number;
+  onPasswordChange?: () => void;
 }) {
   const { t } = useI18n();
   const [visible, setVisible] = useState(false);
@@ -61,7 +63,10 @@ export function Password({
           id="password"
           name="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            onPasswordChange?.();
+          }}
           type={visible ? "text" : "password"}
           required
           minLength={minLength}
@@ -87,14 +92,36 @@ export function Password({
 }
 export function LoginForm() {
   const { t } = useI18n();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [staleChallengeVersion, setStaleChallengeVersion] = useState<string>();
+  const [confirmedChallengeVersion, setConfirmedChallengeVersion] = useState<string>();
   const [state, action, pending] = useConfirmedAction(login, {
     title: "Masuk ke KODMOD?",
     text: "Lanjutkan masuk menggunakan akun yang telah Anda isi.",
     confirmText: "Ya, masuk",
-  });
+  }, undefined, (data) => Boolean(data.get("replace_session_id")));
   const [username, setUsername] = useState("");
+  const activeSession = state.activeSession &&
+    state.activeSession.challengeVersion !== staleChallengeVersion
+    ? state.activeSession
+    : undefined;
+  const replacementConfirmed =
+    activeSession?.challengeVersion === confirmedChallengeVersion;
+
+  const staleCredentials = () => {
+    if (activeSession) setStaleChallengeVersion(activeSession.challengeVersion);
+    setConfirmedChallengeVersion(undefined);
+  };
+
+  const confirmReplacement = () => {
+    if (!activeSession || pending) return;
+    setConfirmedChallengeVersion(activeSession.challengeVersion);
+    requestAnimationFrame(() => formRef.current?.requestSubmit());
+  };
+
   return (
     <form
+      ref={formRef}
       onReset={(event) => event.preventDefault()}
       action={action}
       className="form-stack"
@@ -105,7 +132,10 @@ export function LoginForm() {
           id="username"
           name="username"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            staleCredentials();
+          }}
           required
           autoComplete="username"
           autoCapitalize="none"
@@ -113,11 +143,47 @@ export function LoginForm() {
           placeholder={t("Username")}
         />
       </div>
-      <Password label="Kata sandi" autoComplete="current-password" />
+      <Password
+        label="Kata sandi"
+        autoComplete="current-password"
+        onPasswordChange={staleCredentials}
+      />
+      <input
+        type="hidden"
+        name="replace_session_id"
+        value={replacementConfirmed && activeSession ? activeSession.sessionId : ""}
+      />
       <Feedback state={state} />
-      <Submit pending={pending}>
-        {t("Masuk")} <ArrowRight size={18} aria-hidden="true" />
-      </Submit>
+      {activeSession ? (
+        <div className="alert error-message" role="alert" aria-live="assertive">
+          <p>
+            {activeSession.changed
+              ? t("Sesi akun ini berubah sejak konfirmasi. Periksa kembali sebelum melanjutkan.")
+              : t("Akun ini sedang aktif di perangkat lain. Jika masuk di sini, sesi pada perangkat tersebut akan diakhiri.")}
+          </p>
+          <p>{t("Jika ini bukan Anda, batalkan dan hubungi administrator.")}</p>
+          <div className="guided-actions">
+            <Button type="button" onClick={confirmReplacement} loading={pending}>
+              {t("Keluar dari perangkat lain dan masuk di sini")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              onClick={() => {
+                setStaleChallengeVersion(activeSession.challengeVersion);
+                setConfirmedChallengeVersion(undefined);
+              }}
+            >
+              {t("Batal")}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Submit pending={pending}>
+          {t("Masuk")} <ArrowRight size={18} aria-hidden="true" />
+        </Submit>
+      )}
       <p className="form-help">
         {t("Belum punya akun?")}{" "}
         <Link className="text-link" href="/daftar" data-voice-menu="register">

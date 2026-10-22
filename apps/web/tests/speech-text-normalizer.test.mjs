@@ -66,3 +66,24 @@ test("translates numbered list items in quiz completion response into spoken ord
   assert.ok(spoken.includes("Kedua, Saat menghitung"));
 });
 
+test("cleans generated markdown and LaTeX into natural Indonesian speech", () => {
+  const generated = "# Ringkasan **pecahan**\n\n1. Gunakan `3/4` dari 24 benda.\n2. Hasilnya 18, atau 75%.\n\nRumus: $\\frac{1}{2} \\times 8 = 4$.";
+  const spoken = normalizeSpeechText(generated, "id");
+
+  assert.equal(
+    spoken,
+    "Ringkasan pecahan Pertama, Gunakan 3 per 4 dari 24 benda. Kedua, Hasilnya 18, atau 75 persen. Rumus: 1 per 2 kali 8 sama dengan 4.",
+  );
+  assert.equal(normalizeSpeechText(spoken, "id"), spoken, "normalization must stay safe when the request crosses two app layers");
+});
+
+test("expands common Indonesian chat abbreviations and reads decimal digits clearly", () => {
+  assert.equal(
+    normalizeSpeechText("Pakai 3,14; yg lain dijelaskan dgn baik, dll.", "id"),
+    "Pakai 3 koma 1 4; yang lain dijelaskan dengan baik, dan lain-lain.",
+  );
+  assert.equal(
+    normalizeSpeechText("Use 3.14 and e.g. a fraction.", "en"),
+    "Use 3 point 1 4 and for example a fraction.",
+  );
+});

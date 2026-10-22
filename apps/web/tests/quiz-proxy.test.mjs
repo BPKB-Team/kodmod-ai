@@ -34,6 +34,26 @@ test("quiz proxy forwards the same ID and replays a result after a lost response
   assert.ok(!("student_id" in recorded.requests[0]));
 });
 
+test("student can finish a quiz through the authenticated proxy and receive a final result", { skip: !enabled }, async () => {
+  const started = await request("/api/quiz/start", { n_questions: 1, difficulty: "easy" });
+  assert.equal(started.status, 200);
+  const quiz = await started.json();
+  assert.equal(quiz.total_questions, 1);
+
+  const completed = await request("/api/quiz/submit", {
+    quiz_session_id: quiz.quiz_session_id,
+    question_id: quiz.first_question.question_id,
+    submission_id: randomUUID(),
+    student_answer: "A",
+    response_latency_ms: 900,
+  });
+  assert.equal(completed.status, 200);
+  const result = await completed.json();
+  assert.equal(result.quiz_complete, true);
+  assert.equal(result.is_correct, true);
+  assert.match(result.final_summary, /Skor kamu/);
+});
+
 test("quiz proxy rejects invalid evidence before forwarding it", { skip: !enabled }, async () => {
   await fetch(`${api}/__fixture/quiz`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
   const response = await request("/api/quiz/submit", { quiz_session_id: randomUUID(), question_id: randomUUID(), student_answer: "A" });

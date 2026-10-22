@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import secrets
 import string
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 import bcrypt
 import jwt
@@ -48,14 +48,17 @@ def verify_password(plain: str, hashed: str) -> bool:
         return False
 
 
-def create_access_token(*, subject: str, role: str) -> str:
-    """Mint a signed JWT carrying the user id and role."""
+def create_access_token(
+    *, subject: str, role: str, session_id: str, expires_at: datetime
+) -> str:
+    """Mint a signed JWT bound to the user's one active server-side session."""
     now = datetime.now(UTC)
     payload = {
         "sub": str(subject),
         "role": role,
+        "sid": str(session_id),
         "iat": now,
-        "exp": now + timedelta(minutes=settings.JWT_EXPIRE_MIN),
+        "exp": expires_at,
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALG)
 

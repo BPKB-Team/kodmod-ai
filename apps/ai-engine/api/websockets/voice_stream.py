@@ -26,12 +26,14 @@ from __future__ import annotations
 
 import json
 import logging
+import time
+import uuid
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, status
 from pydantic import ValidationError
 
 from api.chat_service import log_turn, prepare_chat_turn, reply_text, sources, update_session_mode
-from api.dependencies import authenticate_ws
+from api.dependencies import authenticate_ws, revalidate_ws_session
 from api.routes.chat import ChatMessageRequest
 from api.websockets.chat_stream import _GRAPH_NODES
 from database.session import async_session
@@ -76,9 +78,10 @@ async def voice_ws(websocket: WebSocket):
     try:
         while True:
             # ---- Phase 1: collect audio chunks until end-of-utterance -----
-            transcript = await _collect_utterance(websocket, stt)
+            transcript = await _collect_utterance(websocket, stt, student.id)
             if not transcript:
                 continue  # client sent metadata or empty frame
+            student = await revalidate_ws_session(websocket, student.id)
             log.info("Final transcript: %s", transcript[:80])
 
             # ---- Phase 2: drive LangGraph for one turn -------------------
@@ -104,7 +107,12 @@ async def voice_ws(websocket: WebSocket):
             config = {"configurable": {"thread_id": str(session_id)}}
 
             final = {}
+            last_session_check = 0.0
             async for event in run_turn(graph, state, config):
+                now = time.monotonic()
+                if now - last_session_check >= 1.0:
+                    student = await revalidate_ws_session(websocket, student.id)
+                    last_session_check = now
                 kind = event["event"]
                 if kind == "on_chain_end" and event.get("name") in _GRAPH_NODES | {"LangGraph"}:
                     output = event.get("data", {}).get("output")
@@ -130,6 +138,7 @@ async def voice_ws(websocket: WebSocket):
                     async for frame in stream_tts(final_text):
                         await websocket.send_bytes(frame)
 
+            student = await revalidate_ws_session(websocket, student.id)
             answer = reply_text(final)
             await log_turn(session_id, role="student", text=transcript, intent=final.get("intent"))
             await log_turn(
@@ -162,18 +171,36 @@ async def voice_ws(websocket: WebSocket):
 # ---------------------------------------------------------------------------
 
 
-async def _collect_utterance(ws: WebSocket, stt: StreamingSTT) -> str | None:
+async def _collect_utterance(
+    ws: WebSocket, stt: StreamingSTT, expected_user_id: uuid.UUID
+) -> str | None:
     """
     Receive audio frames until VAD says the user stopped talking, then return
     the final transcript. Sends partial transcripts back to the client.
     """
     transcript = ""
+    last_session_check = 0.0
     while True:
         msg = await ws.receive()
+        now = time.monotonic()
+        if now - last_session_check >= 1.0:
+            await revalidate_ws_session(ws, expected_user_id)
+            last_session_check = now
         if msg.get("type") == "websocket.disconnect":
             raise WebSocketDisconnect(code=msg.get("code", 1000))
         if msg.get("bytes"):
-            result = await stt.feed(msg["bytes"])
+            audio_frame = msg["bytes"]
+            if len(audio_frame) > stt.max_frame_bytes:
+                await ws.send_json(
+                    {
+                        "type": "error",
+                        "status": 413,
+                        "message": "Ukuran potongan audio terlalu besar.",
+                    }
+                )
+                await ws.close(code=1009)
+                raise WebSocketDisconnect(code=1009)
+            result = await stt.feed(audio_frame)
             partial = result.get("partial")
             if partial:
                 transcript = partial

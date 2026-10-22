@@ -12,10 +12,11 @@ export function useConfirmedAction(
   action: (state: ActionState, data: FormData) => Promise<ActionState>,
   confirmation: Confirmation,
   processSpeech?: string,
+  skipConfirmationWhen?: (data: FormData) => boolean,
 ) {
   return useActionState(async (state: ActionState, data: FormData) => {
     const trigger = document.activeElement;
-    if (!(await confirmAction(confirmation))) {
+    if (!skipConfirmationWhen?.(data) && !(await confirmAction(confirmation))) {
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           if (trigger instanceof HTMLElement && trigger.isConnected)

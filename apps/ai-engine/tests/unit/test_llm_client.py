@@ -93,7 +93,8 @@ def test_generation_getter_disables_hidden_provider_retries(recording_openai) ->
     llm_client.get_quiz_llm()
 
     assert recording_openai.last_kwargs["max_retries"] == 0
-    assert recording_openai.last_kwargs["timeout"] == 15
+    assert recording_openai.last_kwargs["timeout"] == llm_client.QUIZ_GENERATION_TIMEOUT_SECONDS
+    assert recording_openai.last_kwargs["max_tokens"] >= 4096
 
 
 def test_gpt6_chat_completions_disable_reasoning_for_tool_calls(

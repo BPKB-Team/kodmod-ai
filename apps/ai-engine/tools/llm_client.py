@@ -26,6 +26,8 @@ from typing import Any
 
 from config.settings import MODEL_UNSET, settings
 
+QUIZ_GENERATION_TIMEOUT_SECONDS = 30
+
 
 class ModelNotConfiguredError(RuntimeError):
     """Raised when a role's model id was never supplied via the environment."""
@@ -118,11 +120,11 @@ def get_quiz_llm():
     return _chat(
         _resolve("LLM_QUIZ_MODEL"),
         temperature=0.3,
-        max_tokens=2048,
+        max_tokens=8192,
         streaming=False,
         usage_role="quiz",
         max_retries=0,
-        timeout=15,
+        timeout=QUIZ_GENERATION_TIMEOUT_SECONDS,
     )
 
 

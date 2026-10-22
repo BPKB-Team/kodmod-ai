@@ -37,6 +37,14 @@ async def test_km_api_010_valid_token_is_accepted(client, student_factory) -> No
     assert body["role"] == "student"
 
 
+async def test_km_api_010a_legacy_token_without_session_id_is_rejected(
+    client, student_factory, make_token
+) -> None:  # type: ignore[no-untyped-def]
+    student, _ = await student_factory()
+    legacy = make_token(student.id, "student")
+    assert (await client.get(ME, headers=_bearer(legacy))).status_code == 401
+
+
 async def test_km_api_011_response_never_carries_the_hash(client, student_factory) -> None:  # type: ignore[no-untyped-def]
     _student, token = await student_factory()
     r = await client.get(ME, headers=_bearer(token))
@@ -151,6 +159,7 @@ async def test_km_api_024_disabled_account_is_locked_out(client, student_factory
 async def test_km_api_025_register_then_login(client) -> None:
     from sqlalchemy import text
 
+    from database.models import User
     from database.session import async_session
 
     username = f"pendaftar-{uuid.uuid4().hex[:8]}"
@@ -161,8 +170,34 @@ async def test_km_api_025_register_then_login(client) -> None:
         assert registered.status_code == 201, registered.text
         assert registered.json()["user"]["role"] == "student"
         assert (await client.post("/auth/register", json=payload)).status_code == 409
-        ok = await client.post("/auth/login", json={"username": username, "password": password})
+        first_token = registered.json()["access_token"]
+        challenge = await client.post(
+            "/auth/login", json={"username": username, "password": password}
+        )
+        assert challenge.status_code == 409
+        challenge_data = challenge.json()["detail"]
+        assert challenge_data["code"] == "active_session"
+        assert (await client.get(ME, headers=_bearer(first_token))).status_code == 200
+
+        ok = await client.post(
+            "/auth/login",
+            json={
+                "username": username,
+                "password": password,
+                "replace_session_id": challenge_data["session_id"],
+            },
+        )
         assert ok.status_code == 200
+        replacement_token = ok.json()["access_token"]
+        assert (await client.get(ME, headers=_bearer(first_token))).status_code == 401
+        assert (await client.get(ME, headers=_bearer(replacement_token))).status_code == 200
+
+        logout = await client.post("/auth/logout", headers=_bearer(replacement_token))
+        assert logout.status_code == 204
+        async with async_session() as session:
+            stored_user = await session.get(User, uuid.UUID(registered.json()["user"]["id"]))
+            assert stored_user is not None and stored_user.active_auth_session_id is None
+        assert (await client.get(ME, headers=_bearer(replacement_token))).status_code == 401
         bad = await client.post(
             "/auth/login", json={"username": username, "password": "wrong-password"}
         )

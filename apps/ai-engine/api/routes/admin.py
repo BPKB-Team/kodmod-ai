@@ -135,6 +135,12 @@ async def update_user(
         except ValueError as e:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
 
+    # Credentials and authorization changes revoke every token issued before
+    # this update, including a session that would otherwise remain in a browser.
+    if new_password is not None or "role" in changes or changes.get("is_active") is False:
+        user.active_auth_session_id = None
+        user.active_auth_session_expires_at = None
+
     for field, value in changes.items():
         if value is not None:
             setattr(user, field, value)

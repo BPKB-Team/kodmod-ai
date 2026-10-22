@@ -43,6 +43,12 @@ class QuestionQualityError(ValueError):
         self.code = code
 
 
+def has_learning_evidence(text: str) -> bool:
+    """Use the same source-content gate before offering or generating a quiz."""
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S).strip()
+    return is_learning_text(text) or bool(_MATH_SOURCE.search(text))
+
+
 def generic_question_reasons(text: str) -> list[QuestionQualityReason]:
     if any(pattern.search(text) for pattern in _GENERIC_TITLE_PATTERNS):
         return [QuestionQualityReason.GENERIC_TITLE]
@@ -205,11 +211,7 @@ def _source_payload(source: SourceEvidence) -> dict[str, Any]:
 
 
 def _has_learning_content(sources: list[SourceEvidence] | tuple[SourceEvidence, ...]) -> bool:
-    for source in sources:
-        text = re.sub(r"<!--.*?-->", "", source.text, flags=re.S).strip()
-        if is_learning_text(text) or _MATH_SOURCE.search(text):
-            return True
-    return False
+    return any(has_learning_evidence(source.text) for source in sources)
 
 
 def _has_depth_capacity(bundle: QuestionSourceBundle) -> bool:

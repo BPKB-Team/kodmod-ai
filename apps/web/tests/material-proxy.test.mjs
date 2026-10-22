@@ -39,7 +39,7 @@ test("chat proxy carries material context and returns persisted citations", asyn
   assert.equal(incomplete.status, 400);
 });
 
-test("material links open the guided tutor with the selected material and assessment navigation", async () => {
+test("material links open the guided tutor with the selected material", async () => {
   const tutorPath = `/siswa/tutor?class_id=${classId}&material_id=${materialId}`;
   const reader = await fetch(`${origin}/siswa/kelas/${classId}/materi/${materialId}`, { headers: headers(), redirect: "manual" });
   const readerHtml = await reader.text();
@@ -58,8 +58,7 @@ test("material links open the guided tutor with the selected material and assess
   const html = await tutor.text();
   assert.match(html, /Pelajari materi bersama Tutor/);
   assert.match(html, /Memahami pecahan dalam keseharian/);
-  assert.match(html, /Asesmen mandiri/);
-  assert.match(html, /href="\/siswa\/tugas"/);
+  assert.ok(html.includes(`initialMaterialId\\":\\"${materialId}`), "The selected material must be passed to the tutor UI.");
   assert.ok(!html.includes("fixture-test-student"));
   const invalid = await fetch(`${origin}/siswa/tutor?class_id=${classId}&material_id=other`, { headers: headers() });
   assert.match(await invalid.text(), /Halaman tidak ditemukan/);

@@ -45,7 +45,7 @@ from rag.source_bundle import (
     QuestionSourceBundle,
     bundle_from_docs,
 )
-from tools.llm_client import get_quiz_llm, language_instruction
+from tools.llm_client import QUIZ_GENERATION_TIMEOUT_SECONDS, get_quiz_llm, language_instruction
 from tools.rag_tool import RAGTool
 
 log = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ log = logging.getLogger(__name__)
 
 QUIZ_PROMPT_PATH = Path(__file__).resolve().parents[1] / "prompts" / "quiz_generator.md"
 MAX_GENERATION_CALLS = 3
-GENERATION_TIMEOUT_SECONDS = 15
+GENERATION_TIMEOUT_SECONDS = QUIZ_GENERATION_TIMEOUT_SECONDS
 
 
 async def problem_generator_node(state: KODMODState) -> dict[str, Any]:
@@ -474,10 +474,9 @@ def _optional_uuid(value: Any) -> UUID | None:
 
 
 def _source_has_content(text: str) -> bool:
-    from agents.question_quality import _MATH_SOURCE
-    from api.learning_content import is_learning_text
+    from agents.question_quality import has_learning_evidence
 
-    return is_learning_text(text) or bool(_MATH_SOURCE.search(text))
+    return has_learning_evidence(text)
 
 
 def _decision_with_reason(decision, reason):

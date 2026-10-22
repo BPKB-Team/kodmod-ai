@@ -7,7 +7,10 @@ function apiOrigin() {
   return (process.env.API_ORIGIN ?? "http://127.0.0.1:8109").replace(/\/$/, "");
 }
 
-function messageFor(status: number) {
+function messageFor(status: number, code?: unknown) {
+  if (status === 409 && (code === "insufficient_learning_content" || code === "source_quality_failed")) {
+    return "Soal belum lolos pemeriksaan sumber. Pilih bagian lain atau minta guru meninjau isi materi.";
+  }
   if (status === 401 || status === 403) return "Sesi berakhir. Silakan masuk kembali.";
   if (status === 404) return "Percakapan atau materi tidak tersedia. Periksa kembali akses kelasmu.";
   if (status === 409) return "Materi belum siap untuk Tutor atau pilihan materi berbeda dari sesi ini. Perbarui halaman atau mulai percakapan baru.";
@@ -40,7 +43,8 @@ export async function forwardChat(path: string, init: RequestInit = {}) {
       ...init,
       headers,
       cache: "no-store",
-      signal: AbortSignal.timeout(30_000),
+      // Generation can include three bounded model calls and source verification.
+      signal: AbortSignal.timeout(path === "/chat/message" ? 180_000 : 30_000),
     });
   } catch {
     return NextResponse.json({ message: messageFor(503) }, { status: 503 });
@@ -50,8 +54,10 @@ export async function forwardChat(path: string, init: RequestInit = {}) {
 
   const raw = await upstream.text();
   if (!upstream.ok) {
+    let code: unknown;
+    try { code = JSON.parse(raw)?.detail?.code; } catch { /* Keep the safe status message. */ }
     return NextResponse.json(
-      { message: messageFor(upstream.status) },
+      { message: messageFor(upstream.status, code) },
       { status: upstream.status },
     );
   }

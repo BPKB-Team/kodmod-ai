@@ -69,3 +69,23 @@ def test_settings_dsn_properties(tmp_path) -> None:  # KM-STATIC-015
     assert db_url.startswith("postgresql+asyncpg://")
     assert lg_uri.startswith("postgresql://")
     assert "+asyncpg" not in lg_uri
+
+
+def test_production_rejects_placeholder_jwt_secret(tmp_path) -> None:
+    proc = _run_py(
+        "from config.settings import Settings; Settings(ENV='prod', "
+        "JWT_SECRET='change-me-in-production')",
+        tmp_path,
+    )
+    assert proc.returncode != 0
+    assert "JWT_SECRET must be a deployment-specific value" in (proc.stderr or "")
+
+
+def test_production_accepts_long_deployment_jwt_secret(tmp_path) -> None:
+    proc = _run_py(
+        "from config.settings import Settings; "
+        "Settings(ENV='prod', JWT_SECRET='x' * 48); print('ok')",
+        tmp_path,
+    )
+    assert proc.returncode == 0, out(proc)
+    assert proc.stdout.strip().splitlines()[-1] == "ok"

@@ -13,6 +13,7 @@ from itertools import pairwise
 from fastapi import HTTPException
 from sqlalchemy import select
 
+from agents.question_quality import has_learning_evidence
 from api.assessment_service import recover_assessment, start_assessment
 from api.learning_content import material_learning_units
 from api.learning_progress import (
@@ -107,7 +108,9 @@ async def lesson_out(session, row, student, material=None):
         phase = "learning"
     actions = []
     if phase == "learning":
-        actions = ["question", "repeat", "check", "quiz"]
+        actions = ["question", "repeat"]
+        if has_learning_evidence(unit_source(row, material, state)["text"]):
+            actions.extend(["check", "quiz"])
         if state["unit_index"] + 1 < len(state["units"]):
             actions.append("continue")
         else:
@@ -301,6 +304,18 @@ async def apply_learning_action(session, assessment_graph, student, sid, body: L
         )
     current = await lesson_out(session, row, student, material)
     if body.action not in current.available_actions:
+        if (
+            body.action in ("quiz", "check")
+            and current.phase == "learning"
+            and not has_learning_evidence(unit_source(row, material, state)["text"])
+        ):
+            raise HTTPException(
+                409,
+                {
+                    "code": "insufficient_learning_content",
+                    "message": "Bagian ini belum cukup untuk membuat soal. Lanjutkan ke bagian berikutnya atau minta guru meninjau isi materi.",
+                },
+            )
         raise HTTPException(409, "Selesaikan mini kuis terlebih dahulu atau muat ulang sesi.")
     state["language"], state["phase"] = body.language, "learning"
     if body.action in ("continue", "finish"):
