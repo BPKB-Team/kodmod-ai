@@ -1,5 +1,5 @@
 "use client";
-import { quizPointsLabel, materialLearningLabel } from "@/lib/quiz-points-display";
+import { quizPointsLabel } from "@/lib/quiz-points-display";
 import { Textarea } from "@/components/ui/textarea";
 
 
@@ -287,7 +287,6 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
 
   return <><LoadingStatus active={busy} label={busyLabel} /><div className="guided-workspace">
     <div className="guided-main" aria-busy={busy}>
-      {lesson?.learning_progress && <p className="info-note" role="status">{materialLearningLabel(lesson.learning_progress, language)}</p>}
       {error && <div className="alert error-message" role="alert"><p>{t(error)}</p>{uncertain && <Button type="button" variant="outline" disabled={busy} onClick={() => void act("repeat", true)}><UiText>{"Coba kirim kembali"}</UiText></Button>}</div>}
       {!lesson ? (
         <div className="guided-selection-container">
