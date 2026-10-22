@@ -254,7 +254,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
 
   return (
     <div className="quiz-shell">
-      <LoadingStatus active={phase === "starting" || phase === "submitting" || actionBusy} label={phase === "starting" ? "Menyiapkan soal dari materi…" : "Memeriksa jawabanmu…"} />
+      <LoadingStatus active={phase === "submitting" || actionBusy} label="Memeriksa jawabanmu…" />
       {(phase === "idle" || phase === "starting") && (
         <section className="panel quiz-start-card">
           <div className="quiz-start-icon" aria-hidden="true">
