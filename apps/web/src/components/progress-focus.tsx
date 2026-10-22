@@ -2,7 +2,7 @@
 import {useCallback,useEffect,useRef,useState,useSyncExternalStore} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
-import {ArrowRight,BookOpenCheck,RefreshCw} from "lucide-react";
+import {ArrowRight,BookOpenCheck,Headphones,Lightbulb,RefreshCw,Target,TrendingUp} from "lucide-react";
 import {UiText,useI18n} from "./language-provider";
 import {VoiceControls} from "./voice-controls";
 import {ProgressInsights} from "./progress-insights";
@@ -14,7 +14,7 @@ import "@/styles/progress-guidance.css";
 function subscribeTimezone(listener:()=>void){globalThis.window.addEventListener("focus",listener);return()=>globalThis.window.removeEventListener("focus",listener);}
 const browserTimezone=()=>Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-export function ProgressFocus({initial}:{initial:GuidanceResponse}){
+export function ProgressFocus({initial, analyticsSpoken}:{initial:GuidanceResponse; analyticsSpoken?: string}){
   const {t}=useI18n();
   const router=useRouter();
   const [data,setData]=useState(initial);
@@ -64,24 +64,104 @@ export function ProgressFocus({initial}:{initial:GuidanceResponse}){
   const locked=busy||Boolean(retry);
   const focus=data.focus;
   const completed=data.plan?.status==="completed";
-  const spoken=[focus?.title,focus?.body,focus?.reason_text,...data.insights.map(i=>`${i.title}. ${i.body}`)].filter(Boolean).join(". ");
+
+  const buildFullSpoken=()=>{
+    const parts:string[]=[];
+    if(analyticsSpoken?.trim()){
+      parts.push(analyticsSpoken.trim());
+    }
+    if(focus&&!completed){
+      const focusText=[
+        `${t("Target langkah berikutnya yang disarankan")}: ${focus.title}${focus.body?` — ${focus.body}`:""}.`,
+        focus.estimated_minutes?`${t("Perkiraan")} ${focus.estimated_minutes} ${t("menit")}.`:"",
+        focus.reason_text?`${t("Alasan rekomendasi ini")}: ${focus.reason_text}`:"",
+      ].filter(Boolean).join(" ");
+      parts.push(focusText);
+    }else if(completed){
+      parts.push(t("Aktivitas dalam rencana ini sudah selesai atau dilewati. Buat rencana berikutnya saat kamu siap."));
+    }
+    if(data.insights?.length){
+      parts.push(data.insights.map(i=>`${i.title}. ${i.body}`).join(" "));
+    }
+    return parts.filter(Boolean).join(" ");
+  };
+
+  const spoken=buildFullSpoken()||[focus?.title,focus?.body,focus?.reason_text,...data.insights.map(i=>`${i.title}. ${i.body}`)].filter(Boolean).join(". ");
+
   return <section className="progress-guidance" aria-label={t("Fokus dan rencana belajar")} aria-busy={busy}>
-    <div className="progress-guidance-toolbar"><p role="status">{data.updating?t("Rencana sedang disiapkan. Kamu tetap bisa melanjutkan aktivitas yang tersedia."):t("Saran berdasarkan aktivitas dan sumber yang tersedia.")}</p>
-      <button className="button secondary small" type="button" disabled={locked} onClick={()=>{if(data.updating)void load().catch(()=>setError(t("Rencana belum dapat diperbarui.")));else void perform(input("refresh"));}}><RefreshCw size={16} aria-hidden="true"/>{t(data.updating?"Periksa status":"Perbarui rencana")}</button>
-    </div>
-    {error&&<div className="alert error-message" role="alert"><p>{t(error)}</p>{retry&&<button type="button" className="button secondary" disabled={busy} onClick={()=>void perform(retry)}><UiText>{"Coba kirim kembali"}</UiText></button>}</div>}
-    <article className="panel progress-focus-card">
-      <span className="progress-focus-symbol" aria-hidden="true"><BookOpenCheck size={28}/></span>
-      <div className="progress-focus-copy"><h2>{completed?t("Rencana selesai"):focus?.title??t("Pilih bahan belajar pertamamu")}</h2>
-        <p>{completed?t("Aktivitas dalam rencana ini sudah selesai atau dilewati. Buat rencana berikutnya saat kamu siap."):focus?.body??t("Belum ada materi siap belajar yang bisa dijadikan target. Pilih kelas atau minta guru meninjau sumber materi.")}</p>
-        {focus&&!completed&&<><small>{t("Perkiraan")} {focus.estimated_minutes} {t("menit")}</small><details><summary><UiText>{"Mengapa saran ini?"}</UiText></summary><p>{focus.reason_text}</p></details></>}
+    <nav className="progress-section-nav" aria-label={t("Navigasi bagian progres belajar")}>
+      <a href="#ringkasan-audio" className="progress-nav-chip"><Headphones size={15} aria-hidden="true"/><span><UiText>{"Audio Ringkasan"}</UiText></span></a>
+      <a href="#target-belajar" className="progress-nav-chip"><Target size={15} aria-hidden="true"/><span><UiText>{"Target Belajar"}</UiText></span></a>
+      <a href="#rencana-belajar" className="progress-nav-chip"><BookOpenCheck size={15} aria-hidden="true"/><span><UiText>{"Rencana Belajar"}</UiText></span></a>
+      <a href="#statistik-progres" className="progress-nav-chip"><TrendingUp size={15} aria-hidden="true"/><span><UiText>{"Statistik Belajar"}</UiText></span></a>
+    </nav>
+
+    {spoken&&(
+      <section id="ringkasan-audio" className="panel progress-audio-card" aria-labelledby="heading-ringkasan-audio">
+        <div className="progress-audio-header">
+          <div className="progress-audio-title-group">
+            <span className="progress-audio-icon" aria-hidden="true"><Headphones size={22}/></span>
+            <div>
+              <h2 id="heading-ringkasan-audio"><UiText>{"Ringkasan Suara KODMOD"}</UiText></h2>
+              <p><UiText>{"Dengarkan evaluasi progres dan penjelasan alasan langkah belajarmu."}</UiText></p>
+            </div>
+          </div>
+        </div>
+        <div className="progress-audio-transcript" role="region" aria-label={t("Teks ringkasan audio")}>
+          <p>{spoken}</p>
+        </div>
+        <VoiceControls text={spoken}/>
+      </section>
+    )}
+
+    <section id="target-belajar" className="progress-focus-section" aria-labelledby="heading-target-belajar">
+      <div className="progress-guidance-toolbar">
+        <p role="status">{data.updating?t("Rencana sedang disiapkan. Kamu tetap bisa melanjutkan aktivitas yang tersedia."):t("Saran berdasarkan aktivitas dan sumber yang tersedia.")}</p>
+        <button className="button secondary small" type="button" disabled={locked} onClick={()=>{if(data.updating)void load().catch(()=>setError(t("Rencana belum dapat diperbarui.")));else void perform(input("refresh"));}}>
+          <RefreshCw size={16} aria-hidden="true"/>{t(data.updating?"Periksa status":"Perbarui rencana")}
+        </button>
       </div>
-      {completed?<button type="button" className="button primary" disabled={locked} onClick={()=>void perform(input("refresh"))}><UiText>{"Susun langkah berikutnya"}</UiText><ArrowRight size={18} aria-hidden="true"/></button>
-        :focus?<button type="button" className="button primary" disabled={locked||(data.updating&&!focus.id)} onClick={()=>void perform(input(focus.id?"start":"refresh",focus.id))}>{t(focus.id?(focus.status==="in_progress"?"Lanjutkan":"Mulai"):(data.updating?"Menyiapkan rencana…":"Siapkan rencana"))}<ArrowRight size={18} aria-hidden="true"/></button>
-        :<Link className="button primary" href="/siswa/kelas">{data.empty_action.label}<ArrowRight size={18} aria-hidden="true"/></Link>}
-    </article>
-    {spoken&&<VoiceControls text={spoken}/>}
-    <ProgressInsights insights={data.insights}/>
-    <ProgressLearningPlan plan={data.plan} disabled={locked} onStart={step=>void perform(input("start",step.id))} onSkip={step=>void perform(input("skip",step.id))}/>
+
+      {error&&<div className="alert error-message" role="alert"><p>{t(error)}</p>{retry&&<button type="button" className="button secondary" disabled={busy} onClick={()=>void perform(retry)}><UiText>{"Coba kirim kembali"}</UiText></button>}</div>}
+
+      <article className="panel progress-focus-card">
+        <span className="progress-focus-symbol" aria-hidden="true"><BookOpenCheck size={28}/></span>
+        <div className="progress-focus-copy">
+          <h2 id="heading-target-belajar">{completed?t("Rencana selesai"):focus?.title??t("Pilih bahan belajar pertamamu")}</h2>
+          <p>{completed?t("Aktivitas dalam rencana ini sudah selesai atau dilewati. Buat rencana berikutnya saat kamu siap."):focus?.body??t("Belum ada materi siap belajar yang bisa dijadikan target. Pilih kelas atau minta guru meninjau sumber materi.")}</p>
+          {focus&&!completed&&(
+            <>
+              <small>{t("Perkiraan")} {focus.estimated_minutes} {t("menit")}</small>
+              {focus.reason_text&&(
+                <div className="progress-focus-reason" role="note" aria-label={t("Alasan rekomendasi ini")}>
+                  <div className="progress-reason-header">
+                    <Lightbulb size={16} aria-hidden="true"/>
+                    <strong><UiText>{"Mengapa saran ini?"}</UiText></strong>
+                  </div>
+                  <p>{focus.reason_text}</p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        {completed?(
+          <button type="button" className="button primary" disabled={locked} onClick={()=>void perform(input("refresh"))}>
+            <UiText>{"Susun langkah berikutnya"}</UiText><ArrowRight size={18} aria-hidden="true"/>
+          </button>
+        ):focus?(
+          <button type="button" className="button primary" disabled={locked||(data.updating&&!focus.id)} onClick={()=>void perform(input(focus.id?"start":"refresh",focus.id))}>
+            {t(focus.id?(focus.status==="in_progress"?"Lanjutkan":"Mulai"):(data.updating?"Menyiapkan rencana…":"Siapkan rencana"))}
+            <ArrowRight size={18} aria-hidden="true"/>
+          </button>
+        ):(
+          <Link className="button primary" href="/siswa/kelas">{data.empty_action.label}<ArrowRight size={18} aria-hidden="true"/></Link>
+        )}
+      </article>
+    </section>
+
+    <section id="rencana-belajar" className="progress-plan-section" aria-label={t("Rencana dan insight belajar")}>
+      <ProgressInsights insights={data.insights}/>
+      <ProgressLearningPlan plan={data.plan} disabled={locked} onStart={step=>void perform(input("start",step.id))} onSkip={step=>void perform(input("skip",step.id))}/>
+    </section>
   </section>;
 }

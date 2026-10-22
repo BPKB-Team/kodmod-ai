@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRef, useState } from "react";
 import { LoadingStatus } from "./loading-feedback";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Headphones, Library, LoaderCircle, RotateCcw, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Headphones, Library, LoaderCircle, RotateCcw, Send, Sparkles } from "lucide-react";
 import type { StudentMaterial } from "@/lib/class-types";
 import type { LearningSession } from "@/lib/learning-types";
 import { createQuizSubmissionId } from "@/lib/quiz-submission.mjs";
@@ -410,7 +410,6 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
           {lastQuestion && <div className="guided-your-question"><strong><UiText>{"Pertanyaanmu"}</UiText></strong><p>{lastQuestion}</p></div>}
           <div className="guided-explanation" role="region" aria-label={t("Penjelasan Tutor")}>{formatLessonContent(lesson.text)}</div>
           <VoiceControls text={lesson.text} language={lesson.language} autoPlayKey={autoPlayKey} onTranscript={lesson.phase === "learning" && !busy && !uncertain ? setDraft : undefined} />
-          <p className="guided-source"><BookOpen size={16} aria-hidden="true" /><UiText>{"Sumber"}</UiText>{`: ${lesson.source_filename || lesson.material_title}`}</p>
           {lesson.quiz?.status === "completed" && <div className="guided-check-result" role="status"><CheckCircle2 size={20} aria-hidden="true" /><div><strong><UiText>{"Mini kuis selesai"}</UiText> · {lesson.quiz.score_summary ? quizPointsLabel(lesson.quiz.score_summary, language) : t("Hasil tersimpan")}</strong><p>{lesson.quiz.policy_version === 2 ? lesson.quiz.last_review : t("Hasil latihan tersimpan.")}</p></div></div>}
           {lesson.phase === "learning" ? <>
             <form onSubmit={(event) => { event.preventDefault(); void act(lesson.scope === "self_explain" ? "self_explain" : "question"); }} className="guided-question-form"><label className="field"><UiText>{lesson.scope === "self_explain" ? "Jelaskan pemahamanmu dengan kata-katamu sendiri" : "Ada yang belum jelas?"}</UiText><Textarea value={draft} maxLength={4000} rows={3} aria-label={t(lesson.scope === "self_explain" ? "Jelaskan pemahamanmu lewat teks atau suara." : "Tuliskan pertanyaan materi atau gunakan tombol suara.")} onChange={(event) => setDraft(event.target.value)} disabled={busy || uncertain} placeholder={t("Tuliskan pertanyaan atau gunakan tombol suara.")} /></label><Button type="submit" loading={busy && busyAction === "question"} loadingText={t("Menyiapkan jawaban…")} disabled={busy || uncertain || !draft.trim() || (lesson.scope === "self_explain" && draft.trim().length < 20)}><Send size={17} aria-hidden="true" /><UiText>{lesson.scope === "self_explain" ? "Kirim penjelasan" : "Tanyakan pada Tutor"}</UiText></Button></form>

@@ -51,9 +51,11 @@ function browserTimezone() { return Intl.DateTimeFormat().resolvedOptions().time
 export function StudentAnalytics({
   initial,
   initialSpoken,
+  hideVoiceCard = false,
 }: {
   initial: StudentAnalytics;
   initialSpoken: string;
+  hideVoiceCard?: boolean;
 }) {
   const { t, language } = useI18n();
   const [data, setData] = useState(initial);
@@ -117,8 +119,7 @@ export function StudentAnalytics({
   }
 
   return (
-    <details className="analytics-details"><summary><UiText>{"Detail statistik dan riwayat"}</UiText></summary>
-    <section className="analytics-workspace" aria-label={t("Progres belajar siswa")}>
+    <section className="analytics-workspace" id="statistik-progres" aria-label={t("Progres belajar siswa")}>
       <LoadingStatus active={loading} label="Memuat progres belajar…" />
       <div className="analytics-toolbar">
         <div>
@@ -148,16 +149,18 @@ export function StudentAnalytics({
 
       {error && <p className="alert error-message analytics-error" role="alert">{t(error)}</p>}
 
-      <article className="panel analytics-card analytics-voice-card">
-        <div className="analytics-card-heading">
-          <div>
-            <span className="analytics-kicker"><Headphones size={14} aria-hidden="true" /><UiText>{" RINGKASAN SUARA"}</UiText></span>
-            <h3><UiText>{"Dengarkan progresmu"}</UiText></h3>
+      {!hideVoiceCard && (
+        <article className="panel analytics-card analytics-voice-card">
+          <div className="analytics-card-heading">
+            <div>
+              <span className="analytics-kicker"><Headphones size={14} aria-hidden="true" /><UiText>{" RINGKASAN SUARA"}</UiText></span>
+              <h3><UiText>{"Dengarkan progresmu"}</UiText></h3>
+            </div>
           </div>
-        </div>
-        <p className="analytics-spoken">{spoken}</p>
-        <VoiceControls text={spoken} />
-      </article>
+          <p className="analytics-spoken">{spoken}</p>
+          <VoiceControls text={spoken} />
+        </article>
+      )}
 
       <div className="analytics-hero panel">
         <div className="analytics-hero-copy">
@@ -276,6 +279,6 @@ export function StudentAnalytics({
       </div>
 
 
-    </section></details>
+    </section>
   );
 }

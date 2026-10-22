@@ -21,8 +21,17 @@ export default async function StudentProgressPage() {
         title={<UiText>{"Progres belajar"}</UiText>}
         description={<UiText>{"Lihat pola belajar, kekuatan, dan langkah berikutnya yang paling membantu untukmu."}</UiText>}
       />
-      <ProgressFocus key={`guidance:${user.preferred_language}`} initial={guidance} />
-      <StudentAnalytics key={user.preferred_language} initial={spokenPayload.summary} initialSpoken={spokenPayload.spoken} />
+      <ProgressFocus
+        key={`guidance:${user.preferred_language}`}
+        initial={guidance}
+        analyticsSpoken={spokenPayload.spoken}
+      />
+      <StudentAnalytics
+        key={user.preferred_language}
+        initial={spokenPayload.summary}
+        initialSpoken={spokenPayload.spoken}
+        hideVoiceCard={true}
+      />
     </>
   );
 }
