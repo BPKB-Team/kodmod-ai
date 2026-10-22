@@ -27,7 +27,9 @@ export function LandingFooter() {
           </p>
         </div>
 
-        {/* Kolom Kanan: Navigasi Ringkas */}
+        <div className="lp-footer-divider" aria-hidden="true" />
+
+        {/* Navigasi Ringkas Ditengahkan */}
         <div className="lp-footer-nav-col">
           <div className="lp-footer-nav-group">
             <h4 className="lp-footer-col-title">{t("Navigasi")}</h4>
