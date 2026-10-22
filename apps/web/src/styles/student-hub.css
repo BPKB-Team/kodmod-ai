@@ -247,21 +247,28 @@ html[data-high-contrast="true"] .student-bg-decoration {
 
 .student-main-content > .student-back-bar {
   grid-column: 1;
+  grid-row: 2;
   order: 2;
   margin-bottom: 1.25rem;
-  margin-right: 10px;
+  margin-right: 12px;
   display: inline-flex;
+  align-self: center;
+  width: max-content;
 }
 
 .student-main-content > .learning-back {
   grid-column: 2;
+  grid-row: 2;
   order: 2;
   margin-bottom: 1.25rem;
   display: inline-flex;
+  align-self: center;
+  width: max-content;
 }
 
 .student-main-content > *:not(.page-heading):not(.student-back-bar):not(.learning-back) {
   grid-column: 1 / -1;
+  grid-row: 3;
   order: 3;
 }
 

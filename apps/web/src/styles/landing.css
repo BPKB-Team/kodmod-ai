@@ -2274,11 +2274,12 @@ html[data-reduced-motion="true"] .spin-pulse {
 
 /* Tier 1: Lead Sponsor (Telkom Indonesia) */
 .lp-sponsor-card-lead {
-  padding: 34px 44px;
-  display: grid;
-  grid-template-columns: 310px 1fr;
+  padding: 42px 36px 30px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 36px;
+  justify-content: center;
+  text-align: center;
   border-color: #cbd5e1;
   border-bottom: 4px solid #94a3b8;
   background: linear-gradient(135deg, #ffffff 0%, #fafcff 100%);
@@ -2287,25 +2288,32 @@ html[data-reduced-motion="true"] .spin-pulse {
 .lp-sponsor-card-lead:hover {
   border-color: #ef4444;
   border-bottom-color: #dc2626;
-  box-shadow: 0 14px 36px rgba(239, 68, 68, 0.12);
+  box-shadow: 0 16px 40px rgba(239, 68, 68, 0.12);
 }
 
 .lp-sponsor-logo-box.lead {
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 24px 28px;
+  border-radius: 20px;
+  padding: 30px 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.02);
-  min-height: 150px;
+  min-height: 180px;
+  width: 100%;
+  max-width: 580px;
 }
 
 .lp-sponsor-logo.lead {
-  max-height: 100px;
+  max-height: 125px;
   width: auto;
   object-fit: contain;
+  transition: transform 0.25s ease;
+}
+
+.lp-sponsor-card-lead:hover .lp-sponsor-logo.lead {
+  transform: scale(1.04);
 }
 
 .lp-sponsor-tier-badge {
@@ -2315,7 +2323,7 @@ html[data-reduced-motion="true"] .spin-pulse {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 800;
@@ -2355,19 +2363,17 @@ html[data-reduced-motion="true"] .spin-pulse {
   border: 1.5px solid #e9d5ff;
 }
 
-.lp-sponsor-name {
-  font-size: 1.35rem;
-  font-weight: 850;
-  color: #0f172a;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.02em;
+.lp-sponsor-meta {
+  margin-top: 16px;
+  text-align: center;
 }
 
-.lp-sponsor-copy {
-  font-size: 0.95rem;
-  color: #475569;
-  line-height: 1.65;
+.lp-sponsor-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 /* Tier 2: Subgrid (Telin & Telkom University) */
@@ -2378,39 +2384,45 @@ html[data-reduced-motion="true"] .spin-pulse {
 }
 
 .lp-sponsor-card-sub {
-  padding: 30px 28px;
+  padding: 38px 28px 24px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .lp-sponsor-card-sub:hover {
   border-color: #3b82f6;
   border-bottom-color: #2563eb;
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.1);
 }
 
 .lp-sponsor-card-sub .lp-sponsor-logo-box {
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
-  border-radius: 14px;
-  padding: 16px 20px;
+  border-radius: 16px;
+  padding: 22px 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 100px;
+  min-height: 140px;
 }
 
 .lp-sponsor-logo {
-  max-height: 64px;
+  max-height: 85px;
   width: auto;
   object-fit: contain;
+  transition: transform 0.25s ease;
 }
 
 .lp-sponsor-logo.telu {
-  max-height: 72px;
+  max-height: 95px;
+}
+
+.lp-sponsor-card-sub:hover .lp-sponsor-logo {
+  transform: scale(1.05);
 }
 
 .lp-sponsor-card-sub .lp-sponsor-name {

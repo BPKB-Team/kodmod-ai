@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, AudioLines, BookOpen, Check, ChevronDown, Keyboard, MessageCircle, ListChecks, TrendingUp, BarChart3, Users, GraduationCap, LogIn, Sparkles, HelpCircle } from "lucide-react";
+import { ArrowRight, AudioLines, BookOpen, Check, Keyboard, MessageCircle, ListChecks, TrendingUp, BarChart3, Users, GraduationCap, LogIn, Sparkles, HelpCircle } from "lucide-react";
 import LandingMenu from "@/components/LandingMenu";
 import { ExperienceToolbar } from "@/components/experience-toolbar";
-import { VoiceControls } from "@/components/voice-controls";
+import { LandingFaqList } from "@/components/landing-faq";
 import { getServerI18n } from "@/lib/server-language";
 import "../styles/landing.css";
 import "../styles/public-learning.css";
@@ -266,28 +266,15 @@ export default async function HomePage() {
             <p>{t("Hal yang perlu kamu tahu sebelum mulai.")}</p>
           </div>
 
-          <div className="lp-faq-list">
-            {[
-              ["Bagaimana cara membuat akun?", "Pilih Daftar, isi nama, username dan kata sandi, lalu pilih peran siswa atau guru. Tidak perlu kode undangan.", "faq-1"],
-              ["Apakah saya harus menggunakan suara?", "Kamu bisa menggunakan teks. Pembaca menu dan suara Tutor dapat diatur terpisah dari tombol pengaturan suara.", "faq-2"],
-              ["Bisa menggunakan suara dari HP?", "Bisa. Pilih Suara perangkat dalam pengaturan. Ketersediaan suara bergantung pada perangkat dan browsermu.", "faq-3"],
-              ["Bagaimana Tutor menggunakan materi?", "Pilih materi kelas di ruang Tutor agar penjelasan mengacu pada materi yang kamu pelajari.", "faq-4"],
-              ["Apakah tersedia Bahasa Inggris?", "Pilih EN dari menu bahasa. Tampilan dan jawaban Tutor mengikuti bahasa pilihanmu. Materi guru tetap menggunakan bahasa aslinya.", "faq-5"],
-            ].map(([question, answer, faqKey]) => (
-              <details key={question} data-voice-menu={faqKey} className="lp-faq-item">
-                <summary>
-                  <span className="lp-faq-q-text">{t(question)}</span>
-                  <ChevronDown size={19} className="lp-faq-chevron" aria-hidden="true" />
-                </summary>
-                <div className="lp-faq-body">
-                  <p>{t(answer)}</p>
-                  <div className="lp-faq-voice-wrap">
-                    <VoiceControls text={`${t(question)}. ${t(answer)}`} />
-                  </div>
-                </div>
-              </details>
-            ))}
-          </div>
+          <LandingFaqList
+            items={[
+              { question: "Bagaimana cara membuat akun?", answer: "Pilih Daftar, isi nama, username dan kata sandi, lalu pilih peran siswa atau guru. Tidak perlu kode undangan.", key: "faq-1" },
+              { question: "Apakah saya harus menggunakan suara?", answer: "Kamu bisa menggunakan teks. Pembaca menu dan suara Tutor dapat diatur terpisah dari tombol pengaturan suara.", key: "faq-2" },
+              { question: "Bisa menggunakan suara dari HP?", answer: "Bisa. Pilih Suara perangkat dalam pengaturan. Ketersediaan suara bergantung pada perangkat dan browsermu.", key: "faq-3" },
+              { question: "Bagaimana Tutor menggunakan materi?", answer: "Pilih materi kelas di ruang Tutor agar penjelasan mengacu pada materi yang kamu pelajari.", key: "faq-4" },
+              { question: "Apakah tersedia Bahasa Inggris?", answer: "Pilih EN dari menu bahasa. Tampilan dan jawaban Tutor mengikuti bahasa pilihanmu. Materi guru tetap menggunakan bahasa aslinya.", key: "faq-5" },
+            ]}
+          />
         </div>
       </section>
 
@@ -298,14 +285,11 @@ export default async function HomePage() {
           <div className="lp-sponsors-header">
             <div className="lp-sponsors-badge" data-voice-menu="sponsor-badge" tabIndex={0}>
               <Sparkles size={14} className="lp-sponsors-badge-icon" aria-hidden="true" />
-              <span>{t("SPONSOR & KOLABORASI")}</span>
+              <span>{t("SPONSOR KAMI")}</span>
             </div>
             <h2 className="lp-sponsors-title" data-voice-menu="sponsor-title" tabIndex={0}>
-              {t("Didukung oleh Ekosistem Digital Terdepan")}
+              {t("Our Sponsors")}
             </h2>
-            <p className="lp-sponsors-desc" data-voice-menu="sponsor-desc" tabIndex={0}>
-              {t("Kolaborasi strategis menghadirkan pembelajaran inklusif berstandar tinggi bagi seluruh siswa di Indonesia.")}
-            </p>
           </div>
 
           <div className="lp-sponsors-grid">
@@ -319,16 +303,14 @@ export default async function HomePage() {
                 <Image
                   src="/images/landing/Sponsor/telkom-indonesia.png"
                   alt="Telkom Indonesia - the world in your hand"
-                  width={340}
-                  height={190}
+                  width={420}
+                  height={220}
                   className="lp-sponsor-logo lead"
+                  priority
                 />
               </div>
-              <div className="lp-sponsor-content">
+              <div className="lp-sponsor-meta">
                 <h3 className="lp-sponsor-name">{t("PT Telkom Indonesia (Persero) Tbk")}</h3>
-                <p className="lp-sponsor-copy">
-                  {t("Mendukung penuh inovasi teknologi inklusif dan kecerdasan buatan untuk masa depan pendidikan Indonesia.")}
-                </p>
               </div>
             </div>
 
@@ -343,16 +325,13 @@ export default async function HomePage() {
                   <Image
                     src="/images/landing/Sponsor/telin.png"
                     alt="Telin by Telkom Indonesia"
-                    width={220}
-                    height={110}
-                    className="lp-sponsor-logo"
+                    width={320}
+                    height={160}
+                    className="lp-sponsor-logo telin"
                   />
                 </div>
-                <div className="lp-sponsor-content">
+                <div className="lp-sponsor-meta">
                   <h3 className="lp-sponsor-name">{t("PT Telekomunikasi Indonesia International (Telin)")}</h3>
-                  <p className="lp-sponsor-copy">
-                    {t("Menghubungkan ekosistem digital KODMOD dengan infrastruktur telekomunikasi global yang handal.")}
-                  </p>
                 </div>
               </div>
 
@@ -365,16 +344,13 @@ export default async function HomePage() {
                   <Image
                     src="/images/landing/Sponsor/telkom-university.png"
                     alt="Telkom University"
-                    width={180}
-                    height={110}
+                    width={260}
+                    height={160}
                     className="lp-sponsor-logo telu"
                   />
                 </div>
-                <div className="lp-sponsor-content">
+                <div className="lp-sponsor-meta">
                   <h3 className="lp-sponsor-name">{t("Telkom University")}</h3>
-                  <p className="lp-sponsor-copy">
-                    {t("Kolaborasi riset pendidikan, validasi materi ajar, dan pendampingan implementasi kurikulum inklusif.")}
-                  </p>
                 </div>
               </div>
             </div>
