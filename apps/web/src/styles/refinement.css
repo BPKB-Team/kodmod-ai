@@ -963,6 +963,7 @@
 .lp-agentic-subtitle,
 .lp-agentic-badge,
 .lp-sdg-badge,
+.lp-sdg-showcase,
 .lp-pillars-tag,
 .lp-pillars-headline,
 .lp-dual-val-col,
@@ -986,7 +987,9 @@
 }
 
 .lp-sdg-badge:hover,
-.lp-sdg-badge:focus-visible {
+.lp-sdg-badge:focus-visible,
+.lp-sdg-showcase:hover,
+.lp-sdg-showcase:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
   border-color: #3b82f6;
@@ -1461,13 +1464,7 @@
     max-width: 100%;
   }
   .landing-refined .lp-hero-visual {
-    width: 100%;
-    max-width: 340px;
-    margin-inline: auto;
-  }
-  .landing-refined .lp-hero-art {
-    max-height: 250px;
-    object-fit: contain;
+    display: none !important;
   }
   .landing-refined .lp-student-art {
     max-height: 220px;
