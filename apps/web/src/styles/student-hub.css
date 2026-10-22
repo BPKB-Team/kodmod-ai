@@ -516,9 +516,9 @@ html[data-high-contrast="true"] .student-bg-decoration {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  justify-content: space-between;
-  min-height: 250px;
-  padding: 1.5rem 1.25rem 1.35rem;
+  justify-content: flex-start;
+  min-height: 205px;
+  padding: 1.5rem 1.25rem 1.5rem;
   border-radius: 24px;
   background: #ffffff;
   border: 2px solid #cbd5e1;
@@ -601,7 +601,7 @@ html[data-high-contrast="true"] .student-bg-decoration {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0.25rem auto 0.85rem;
+  margin: 0.25rem auto 0.75rem;
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.85);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               background 0.2s ease,
@@ -624,7 +624,7 @@ html[data-high-contrast="true"] .student-bg-decoration {
 
 .game-pad-info {
   width: 100%;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -647,39 +647,7 @@ html[data-high-contrast="true"] .student-bg-decoration {
   max-width: 250px;
 }
 
-.game-pad-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin-top: auto;
-  padding-top: 0;
-  border-top: none;
-}
 
-.game-pad-enter-text {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 7px 20px;
-  border-radius: 999px;
-  font-size: 0.84rem;
-  font-weight: 800;
-  color: #1d4ed8;
-  background: #eff6ff;
-  border: 1.5px solid #bfdbfe;
-  box-shadow: 0 2.5px 0 #93c5fd;
-  transition: all 0.15s ease;
-}
-
-.game-pad-card:hover .game-pad-enter-text {
-  background: #2563eb;
-  color: #ffffff;
-  border-color: #1d4ed8;
-  box-shadow: 0 3px 0 #1e3a8a;
-  gap: 9px;
-}
 
 /* ==========================================================================
    Classes Section
@@ -1075,8 +1043,8 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
     gap: 12px;
   }
   .game-pad-card {
-    padding: 16px 12px 14px;
-    min-height: 185px;
+    padding: 14px 10px 14px;
+    min-height: 160px;
     border-radius: 18px;
     border: 2px solid #cbd5e1;
     border-bottom: 4px solid #94a3b8;
@@ -1120,15 +1088,7 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
     overflow: hidden;
     max-width: 100%;
   }
-  .game-pad-footer {
-    margin-top: auto;
-    padding-top: 6px;
-    border-top: none;
-  }
-  .game-pad-enter-text {
-    padding: 5px 14px;
-    font-size: 0.78rem;
-  }
+
 
   /* Classes Row */
   .student-classes-row {
