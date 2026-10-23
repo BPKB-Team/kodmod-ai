@@ -1,3 +1,22 @@
+/* Dedicated Progress Workspace Layout */
+.student-progress-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+  width: 100%;
+}
+
+.student-progress-workspace > .progress-guidance {
+  margin-block: 0;
+}
+
+#audio-summary,
+#learning-target,
+#learning-plan,
+#progress-stats {
+  scroll-margin-top: 5.5rem;
+}
+
 .progress-guidance { display: grid; gap: 1.75rem; margin-block: 1rem 2.5rem; }
 
 /* Quick Jump Navigation for Accessibility & Component-by-Component Browsing */

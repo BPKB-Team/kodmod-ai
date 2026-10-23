@@ -120,7 +120,7 @@ export function StudentAnalytics({
   }
 
   return (
-    <section className="analytics-workspace" id="statistik-progres" aria-label={t("Progres belajar siswa")}>
+    <section className="analytics-workspace" id="progress-stats" aria-label={t("Progres belajar siswa")}>
       <LoadingStatus active={loading} label="Memuat progres belajar…" />
       <div className="analytics-toolbar">
         <div>

@@ -90,14 +90,16 @@ export function ProgressFocus({initial, analyticsSpoken}:{initial:GuidanceRespon
 
   return <section className="progress-guidance" aria-label={t("Fokus dan rencana belajar")} aria-busy={busy}>
     <nav className="progress-section-nav" aria-label={t("Navigasi bagian progres belajar")}>
-      <a href="#ringkasan-audio" className="progress-nav-chip"><Headphones size={15} aria-hidden="true"/><span><UiText>{"Audio Ringkasan"}</UiText></span></a>
-      <a href="#target-belajar" className="progress-nav-chip"><Target size={15} aria-hidden="true"/><span><UiText>{"Target Belajar"}</UiText></span></a>
-      <a href="#rencana-belajar" className="progress-nav-chip"><BookOpenCheck size={15} aria-hidden="true"/><span><UiText>{"Rencana Belajar"}</UiText></span></a>
-      <a href="#statistik-progres" className="progress-nav-chip"><TrendingUp size={15} aria-hidden="true"/><span><UiText>{"Statistik Belajar"}</UiText></span></a>
+      {spoken && (
+        <a href="#audio-summary" className="progress-nav-chip"><Headphones size={15} aria-hidden="true"/><span><UiText>{"Audio Ringkasan"}</UiText></span></a>
+      )}
+      <a href="#learning-target" className="progress-nav-chip"><Target size={15} aria-hidden="true"/><span><UiText>{"Target Belajar"}</UiText></span></a>
+      <a href="#learning-plan" className="progress-nav-chip"><BookOpenCheck size={15} aria-hidden="true"/><span><UiText>{"Rencana Belajar"}</UiText></span></a>
+      <a href="#progress-stats" className="progress-nav-chip"><TrendingUp size={15} aria-hidden="true"/><span><UiText>{"Statistik Belajar"}</UiText></span></a>
     </nav>
 
     {spoken&&(
-      <section id="ringkasan-audio" className="panel progress-audio-card" aria-labelledby="heading-ringkasan-audio">
+      <section id="audio-summary" className="panel progress-audio-card" aria-labelledby="heading-ringkasan-audio">
         <div className="progress-audio-header">
           <div className="progress-audio-title-group">
             <span className="progress-audio-icon" aria-hidden="true"><Headphones size={22}/></span>
@@ -114,7 +116,7 @@ export function ProgressFocus({initial, analyticsSpoken}:{initial:GuidanceRespon
       </section>
     )}
 
-    <section id="target-belajar" className="progress-focus-section" aria-labelledby="heading-target-belajar">
+    <section id="learning-target" className="progress-focus-section" aria-labelledby="heading-target-belajar">
       <div className="progress-guidance-toolbar">
         <p role="status">{data.updating?t("Rencana sedang disiapkan. Kamu tetap bisa melanjutkan aktivitas yang tersedia."):t("Saran berdasarkan aktivitas dan sumber yang tersedia.")}</p>
         <button className="button secondary small" type="button" disabled={locked} onClick={()=>{if(data.updating)void load().catch(()=>setError(t("Rencana belum dapat diperbarui.")));else void perform(input("refresh"));}}>
@@ -159,7 +161,7 @@ export function ProgressFocus({initial, analyticsSpoken}:{initial:GuidanceRespon
       </article>
     </section>
 
-    <section id="rencana-belajar" className="progress-plan-section" aria-label={t("Rencana dan insight belajar")}>
+    <section id="learning-plan" className="progress-plan-section" aria-label={t("Rencana dan insight belajar")}>
       <ProgressInsights insights={data.insights}/>
       <ProgressLearningPlan plan={data.plan} disabled={locked} onStart={step=>void perform(input("start",step.id))} onSkip={step=>void perform(input("skip",step.id))}/>
     </section>

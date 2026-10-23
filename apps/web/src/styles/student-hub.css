@@ -211,7 +211,7 @@ html[data-high-contrast="true"] .student-bg-decoration {
   box-sizing: border-box;
   display: grid;
   grid-template-columns: auto auto 1fr;
-  align-items: center;
+  align-items: start;
   overflow-x: hidden;
 }
 
@@ -257,8 +257,10 @@ html[data-high-contrast="true"] .student-bg-decoration {
 
 .student-main-content > *:not(.page-heading):not(.student-back-bar):not(.learning-back) {
   grid-column: 1 / -1;
-  grid-row: 3;
+  grid-row: auto;
   order: 3;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
@@ -1594,7 +1596,8 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   margin-bottom: 0.5rem;
 }
 
-.student-main-content .analytics-voice-card .voice-panel {
+.student-main-content .analytics-voice-card .voice-panel,
+.student-main-content .progress-audio-card .voice-panel {
   background: #ffffff;
   border: 1.5px solid #bfdbfe;
   box-shadow: 0 4px 0 #93c5fd;
@@ -1603,7 +1606,8 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   margin-top: 0.75rem;
 }
 
-.student-main-content .analytics-voice-card .voice-panel-heading {
+.student-main-content .analytics-voice-card .voice-panel-heading,
+.student-main-content .progress-audio-card .voice-panel-heading {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1612,11 +1616,13 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   font-size: 0.95rem;
 }
 
-.student-main-content .analytics-voice-card .voice-panel-heading strong {
+.student-main-content .analytics-voice-card .voice-panel-heading strong,
+.student-main-content .progress-audio-card .voice-panel-heading strong {
   font-weight: 700;
 }
 
-.student-main-content .analytics-voice-card .voice-actions {
+.student-main-content .analytics-voice-card .voice-actions,
+.student-main-content .progress-audio-card .voice-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   align-items: center;
@@ -1624,7 +1630,8 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   width: 100%;
 }
 
-.student-main-content .analytics-voice-card .voice-actions .button {
+.student-main-content .analytics-voice-card .voice-actions .button,
+.student-main-content .progress-audio-card .voice-actions .button {
   width: 100%;
   min-height: 46px;
   padding: 8px 16px;
@@ -1638,7 +1645,8 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   box-sizing: border-box;
 }
 
-.student-main-content .analytics-voice-card .voice-actions .button.primary {
+.student-main-content .analytics-voice-card .voice-actions .button.primary,
+.student-main-content .progress-audio-card .voice-actions .button.primary {
   background: #2563eb;
   border: 1.5px solid #3b82f6;
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);
@@ -1646,18 +1654,21 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.student-main-content .analytics-voice-card .voice-actions .button.primary:hover {
+.student-main-content .analytics-voice-card .voice-actions .button.primary:hover,
+.student-main-content .progress-audio-card .voice-actions .button.primary:hover {
   background: #1d4ed8;
   border-color: #2563eb;
   transform: translateY(-1.5px);
   box-shadow: 0 6px 18px rgba(37, 99, 235, 0.32);
 }
 
-.student-main-content .analytics-voice-card .voice-actions .button.primary:active {
+.student-main-content .analytics-voice-card .voice-actions .button.primary:active,
+.student-main-content .progress-audio-card .voice-actions .button.primary:active {
   transform: translateY(0);
 }
 
-.student-main-content .analytics-voice-card .voice-actions .button.secondary {
+.student-main-content .analytics-voice-card .voice-actions .button.secondary,
+.student-main-content .progress-audio-card .voice-actions .button.secondary {
   background: #ffffff;
   border: 1.5px solid #cbd5e1;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
@@ -1665,7 +1676,8 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.student-main-content .analytics-voice-card .voice-actions .button.secondary:hover {
+.student-main-content .analytics-voice-card .voice-actions .button.secondary:hover,
+.student-main-content .progress-audio-card .voice-actions .button.secondary:hover {
   background: #f0f7ff;
   border-color: #3b82f6;
   color: #1d4ed8;
@@ -1673,11 +1685,13 @@ html[data-high-contrast="true"] .inner-footer-badge svg {
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
 }
 
-.student-main-content .analytics-voice-card .voice-actions .button.secondary:active {
+.student-main-content .analytics-voice-card .voice-actions .button.secondary:active,
+.student-main-content .progress-audio-card .voice-actions .button.secondary:active {
   transform: translateY(0);
 }
 
-.student-main-content .analytics-voice-card .voice-status {
+.student-main-content .analytics-voice-card .voice-status,
+.student-main-content .progress-audio-card .voice-status {
   margin-top: 0.5rem;
   font-size: 0.85rem;
   font-weight: 600;
