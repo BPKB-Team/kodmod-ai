@@ -360,7 +360,7 @@ async def apply_quiz_action(
         return QuizInteractionView.model_validate(receipt.response_payload)
     await authorize(session, owned, student)
     state = copy.deepcopy(owned.assessment_state or {})
-    if state.get("quiz_policy_version", 1) != 2 or owned.status != "in_progress":
+    if owned.status != "in_progress":
         raise HTTPException(409, "Sesi tidak menerima aksi ini.")
     index = state.get("current_question_index", 0)
     questions = state["quiz_questions"]

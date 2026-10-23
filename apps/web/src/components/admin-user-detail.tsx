@@ -1,7 +1,4 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/native-select";
-
 
 import { useState } from "react";
 import Link from "next/link";
@@ -19,10 +16,17 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
+  Copy,
+  Check,
+  GraduationCap,
+  BookOpen,
+  Lock,
+  UserCog,
 } from "lucide-react";
 import { saveUser, toggleUser, deleteUser } from "@/app/actions";
 import { ActionFeedback, useConfirmedAction } from "./action-feedback";
-import { Badge } from "./ui";
+import { Heading } from "./ui";
+import { Input } from "./ui/input";
 import { UiText, UiDate, useI18n } from "./language-provider";
 import { roleLabel, type User } from "@/lib/types";
 
@@ -64,38 +68,75 @@ export function AdminUserDetail({
   const [role, setRole] = useState(user.role);
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-function getInitials(name: string) {
-  const cleaned = name.replace(/^\[[^\]]+\]\s*/, "").trim();
-  return (cleaned.slice(0, 1) || name.slice(0, 1) || "?").toUpperCase();
-}
+  function getInitials(name: string) {
+    const cleaned = name.replace(/^\[[^\]]+\]\s*/, "").trim();
+    return (cleaned.slice(0, 1) || name.slice(0, 1) || "?").toUpperCase();
+  }
+
+  function handleCopyId() {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(user.id);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }
+
+  const roleOptions = [
+    {
+      key: "student" as const,
+      label: "Siswa",
+      desc: "Akses materi audio, kuis, dan interaksi dengan Tutor AI.",
+      Icon: GraduationCap,
+    },
+    {
+      key: "teacher" as const,
+      label: "Guru",
+      desc: "Kelola kelas, materi audio, kuis, dan evaluasi belajar.",
+      Icon: BookOpen,
+    },
+    {
+      key: "admin" as const,
+      label: "Admin",
+      desc: "Manajemen penuh sistem, pengguna, dan analitik operasional.",
+      Icon: Shield,
+    },
+  ];
 
   return (
     <div className="admin-user-detail-container">
-      <div className="admin-detail-topbar">
-        <Link href="/admin/pengguna" className="learning-back">
+      <Heading
+        icon={<UserCog size={24} aria-hidden="true" />}
+        title={user.full_name}
+        description={<UiText>{"Detail akun dan konfigurasi hak akses pengguna."}</UiText>}
+      >
+        <Link href="/admin/pengguna" className="button secondary">
           <ArrowLeft size={16} aria-hidden="true" />
           <UiText>{"Kembali ke daftar pengguna"}</UiText>
         </Link>
-      </div>
+      </Heading>
 
       <div className="admin-user-grid">
         {/* Kolom Kiri: Profil, Info Status, dan Zona Bahaya */}
         <aside className="admin-user-sidebar">
           <div className="panel admin-user-profile-card">
             <div className="admin-profile-avatar-wrap">
-              <span className="admin-profile-avatar" aria-hidden="true">
+              <span className={`admin-profile-avatar role-${user.role}`} aria-hidden="true">
                 {getInitials(user.full_name)}
               </span>
             </div>
             <h2 className="admin-profile-name">{user.full_name}</h2>
             <p className="admin-profile-username">@{user.username}</p>
             <div className="admin-profile-badges">
-              <Badge active={user.is_active}>
-                {user.is_active ? <UiText>{"Aktif"}</UiText> : <UiText>{"Nonaktif"}</UiText>}
-              </Badge>
-              <span className="role-chip">
-                <Shield size={13} aria-hidden="true" />
+              <span className={`status-pill ${user.is_active ? "is-active" : "is-inactive"}`}>
+                <span className="status-dot" aria-hidden="true" />
+                <UiText>{user.is_active ? "Aktif" : "Nonaktif"}</UiText>
+              </span>
+              <span className={`role-chip role-${user.role}`}>
+                {user.role === "student" && <GraduationCap size={13} aria-hidden="true" />}
+                {user.role === "teacher" && <BookOpen size={13} aria-hidden="true" />}
+                {user.role === "admin" && <Shield size={13} aria-hidden="true" />}
                 <UiText>{roleLabel[user.role]}</UiText>
               </span>
             </div>
@@ -121,20 +162,49 @@ function getInitials(name: string) {
                   </strong>
                 </div>
               </div>
-              <div className="admin-meta-row">
+              <div className="admin-meta-row admin-id-row">
                 <KeyRound size={15} aria-hidden="true" />
-                <div>
+                <div className="admin-id-meta-content">
                   <small><UiText>{"ID Akun"}</UiText></small>
-                  <code className="admin-id-code">{user.id}</code>
+                  <div className="admin-id-badge-container">
+                    <code className="admin-id-code" title={user.id}>{user.id}</code>
+                    <button
+                      type="button"
+                      onClick={handleCopyId}
+                      className={`admin-id-copy-btn ${copied ? "is-copied" : ""}`}
+                      aria-label={copied ? t("ID tersalin") : t("Salin ID")}
+                      title={copied ? t("ID tersalin") : t("Salin ID")}
+                    >
+                      {copied ? (
+                        <>
+                          <Check size={13} aria-hidden="true" className="text-success" />
+                          <span className="copy-label"><UiText>{"ID tersalin"}</UiText></span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={13} aria-hidden="true" />
+                          <span className="copy-label"><UiText>{"Salin ID"}</UiText></span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Card Akses & Status */}
-          <div className="panel admin-status-action-card">
+          <div className={`panel admin-status-action-card ${user.is_active ? "status-active-card" : "status-inactive-card"}`}>
             <div className="panel-heading-sm">
-              <h3><UiText>{"Status Akses"}</UiText></h3>
+              <div className="status-title-wrap">
+                <span className="status-indicator-icon">
+                  {user.is_active ? <UserCheck size={18} aria-hidden="true" /> : <UserX size={18} aria-hidden="true" />}
+                </span>
+                <h3><UiText>{"Status Akses"}</UiText></h3>
+              </div>
+              <span className={`badge-subtle ${user.is_active ? "badge-success" : "badge-muted"}`}>
+                <UiText>{user.is_active ? "Akses Aktif" : "Akses Nonaktif"}</UiText>
+              </span>
             </div>
             <p className="muted-text">
               {self ? (
@@ -152,7 +222,7 @@ function getInitials(name: string) {
                 <button
                   type="submit"
                   disabled={togglePending}
-                  className={`button w-full ${user.is_active ? "secondary" : "primary"}`}
+                  className={`button w-full ${user.is_active ? "secondary status-toggle-btn" : "primary"}`}
                 >
                   {togglePending ? (
                     <LoaderCircle className="spin" size={17} aria-hidden="true" />
@@ -205,7 +275,7 @@ function getInitials(name: string) {
         {/* Kolom Kanan: Form Edit Data Akun */}
         <main className="admin-user-main">
           <form action={saveAction} className="panel admin-user-edit-card">
-            <div className="panel-heading">
+            <div className="panel-heading edit-card-header">
               <div>
                 <h2><UiText>{"Edit Informasi Akun"}</UiText></h2>
                 <p><UiText>{"Perbarui nama lengkap, hak akses peran, atau setel ulang kata sandi pengguna."}</UiText></p>
@@ -213,63 +283,104 @@ function getInitials(name: string) {
             </div>
 
             <input type="hidden" name="id" value={user.id} />
+            <input type="hidden" name="role" value={role} />
 
-            <div className="form-grid-stacked">
-              <div className="field">
-                <label htmlFor="full_name"><UiText>{"Nama lengkap"}</UiText></label>
-                <Input
-                  id="full_name"
-                  name="full_name"
-                  required
-                  maxLength={200}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  autoComplete="name"
-                  placeholder="Contoh: Budi Santoso"
-                />
+            {/* Section 1: Informasi Dasar */}
+            <div className="form-section">
+              <div className="form-section-header">
+                <span className="section-step-num">1</span>
+                <div>
+                  <h3><UiText>{"Informasi Dasar"}</UiText></h3>
+                </div>
               </div>
+              <div className="form-grid-2">
+                <div className="field">
+                  <label htmlFor="full_name"><UiText>{"Nama lengkap"}</UiText></label>
+                  <Input
+                    id="full_name"
+                    name="full_name"
+                    required
+                    maxLength={200}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    autoComplete="name"
+                    placeholder="Contoh: Budi Santoso"
+                  />
+                </div>
 
-              <div className="field">
-                <label htmlFor="username"><UiText>{"Username"}</UiText></label>
-                <Input
-                  id="username"
-                  name="username"
-                  value={user.username}
-                  readOnly
-                  aria-describedby="username-note"
-                />
-                <small id="username-note" className="text-hint">
-                  <UiText>{"Username bersifat unik dan tidak dapat diubah setelah dibuat."}</UiText>
-                </small>
-              </div>
-
-              <div className="field">
-                <label htmlFor="role"><UiText>{"Peran pengguna"}</UiText></label>
-                <NativeSelect
-                  id="role"
-                  name="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as User["role"])}
-                  disabled={self}
-                >
-                  {Object.entries(roleLabel).map(([val, lbl]) => (
-                    <option value={val} key={val}>
-                      {t(lbl)}
-                    </option>
-                  ))}
-                </NativeSelect>
-                {self ? (
-                  <>
-                    <input type="hidden" name="role" value="admin" />
-                    <small className="text-hint">
-                      <UiText>{"Peran administrator akun Anda sendiri tidak dapat diubah."}</UiText>
-                    </small>
-                  </>
-                ) : (
-                  <small className="text-hint">
-                    <UiText>{"Peran menentukan hak akses ruang dan fitur belajar di KODMOD."}</UiText>
+                <div className="field">
+                  <div className="field-label-row">
+                    <label htmlFor="username"><UiText>{"Username"}</UiText></label>
+                    <span className="badge-locked"><Lock size={11} aria-hidden="true" /></span>
+                  </div>
+                  <Input
+                    id="username"
+                    name="username"
+                    value={user.username}
+                    readOnly
+                    aria-describedby="username-note"
+                    className="input-readonly"
+                  />
+                  <small id="username-note" className="text-hint">
+                    <UiText>{"Username bersifat unik dan tidak dapat diubah setelah dibuat."}</UiText>
                   </small>
-                )}
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Hak Akses & Peran */}
+            <div className="form-section">
+              <div className="form-section-header">
+                <span className="section-step-num">2</span>
+                <div>
+                  <h3><UiText>{"Hak Akses & Peran"}</UiText></h3>
+                  <p className="section-desc"><UiText>{"Peran menentukan hak akses ruang dan fitur belajar di KODMOD."}</UiText></p>
+                </div>
+              </div>
+
+              <div className="role-selector-grid" role="radiogroup" aria-label={t("Peran pengguna")}>
+                {roleOptions.map((item) => {
+                  const isSelected = role === item.key;
+                  const isDisabled = self && item.key !== "admin";
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      role="radio"
+                      disabled={isDisabled}
+                      onClick={() => setRole(item.key)}
+                      className={`role-select-card ${isSelected ? "is-selected" : ""} ${isDisabled ? "is-disabled" : ""}`}
+                      aria-checked={isSelected}
+                    >
+                      <div className="role-card-top">
+                        <span className={`role-card-icon role-${item.key}`}>
+                          <item.Icon size={18} aria-hidden="true" />
+                        </span>
+                        <span className="role-card-radio" aria-hidden="true">
+                          {isSelected && <span className="radio-inner" />}
+                        </span>
+                      </div>
+                      <strong className="role-card-label"><UiText>{item.label}</UiText></strong>
+                      <span className="role-card-desc"><UiText>{item.desc}</UiText></span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {self && (
+                <small className="text-hint role-self-hint">
+                  <UiText>{"Peran administrator akun Anda sendiri tidak dapat diubah."}</UiText>
+                </small>
+              )}
+            </div>
+
+            {/* Section 3: Keamanan & Kata Sandi */}
+            <div className="form-section">
+              <div className="form-section-header">
+                <span className="section-step-num">3</span>
+                <div>
+                  <h3><UiText>{"Keamanan & Kata Sandi"}</UiText></h3>
+                </div>
               </div>
 
               <div className="field password-field">
@@ -277,7 +388,7 @@ function getInitials(name: string) {
                   <UiText>{"Reset kata sandi baru (opsional)"}</UiText>
                 </label>
                 <div className="password-input-wrap">
-                  <input
+                  <Input
                     id="new_password"
                     name="new_password"
                     type={showPassword ? "text" : "password"}
@@ -297,9 +408,16 @@ function getInitials(name: string) {
                     {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                   </button>
                 </div>
-                <small className="text-hint">
-                  <UiText>{"Minimal 8 karakter jika diisi. Biarkan kosong jika tidak diubah."}</UiText>
-                </small>
+                <div className="password-hints">
+                  <small className="text-hint">
+                    <UiText>{"Minimal 8 karakter jika diisi. Biarkan kosong jika tidak diubah."}</UiText>
+                  </small>
+                  {newPassword.length > 0 && (
+                    <small className="text-hint password-warning">
+                      <UiText>{"Mengubah kata sandi akan meminta pengguna untuk masuk ulang di seluruh perangkat."}</UiText>
+                    </small>
+                  )}
+                </div>
               </div>
             </div>
 

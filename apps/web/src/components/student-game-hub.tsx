@@ -11,7 +11,6 @@ import {
   ClipboardList,
   LineChart,
   ArrowRight,
-  ArrowUpRight,
   Volume2,
 } from "lucide-react";
 import { UiText, useI18n } from "./language-provider";
@@ -249,18 +248,12 @@ export function StudentGameHub({
                 </div>
 
                 <div className="game-pad-icon-wrap" aria-hidden="true">
-                  <Icon size={34} strokeWidth={2.2} />
+                  <Icon size={40} strokeWidth={2.3} className="game-pad-svg-icon" />
                 </div>
 
                 <div className="game-pad-info">
                   <h2 className="game-pad-title">{t(pad.title)}</h2>
                   <p className="game-pad-desc">{t(pad.desc)}</p>
-                </div>
-
-                <div className="game-pad-footer">
-                  <span className="game-pad-enter-text">
-                    {t("Buka")} <ArrowUpRight size={18} aria-hidden="true" />
-                  </span>
                 </div>
               </Link>
             );

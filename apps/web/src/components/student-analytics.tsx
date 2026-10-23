@@ -22,6 +22,7 @@ import type {
   StudentAnalyticsSpoken,
 } from "@/lib/analytics-types";
 import { VoiceControls } from "./voice-controls";
+import { GameProgress } from "./ui/game-progress";
 
 const windows: Array<{ value: AnalyticsWindow; label: string }> = [
   { value: "today", label: "Hari ini" },
@@ -166,7 +167,15 @@ export function StudentAnalytics({
         <div className="analytics-hero-copy">
           <h3>{data.student_name}</h3>
           <p>{hasConceptMastery ? masteryLabel(data.overall_mastery, language) : <UiText>{"Penguasaan konsep belum tersedia"}</UiText>} · {data.n_sessions}<UiText>{" sesi belajar pada periode ini."}</UiText></p>
-          {hasConceptMastery && <progress max={1} value={data.overall_mastery} aria-label={t("Penguasaan materi {value}", { value: percent(data.overall_mastery) })} />}
+          {hasConceptMastery && (
+            <GameProgress
+              max={1}
+              value={data.overall_mastery}
+              aria-label={t("Penguasaan materi {value}", { value: percent(data.overall_mastery) })}
+              variant="cyan"
+              showPercentage={false}
+            />
+          )}
           <div className="analytics-progress-meta">
             <strong>{hasConceptMastery ? percent(data.overall_mastery) : "—"}</strong>
             <span><UiText>{hasConceptMastery ? "penguasaan materi" : "belum ada data konsep"}</UiText></span>
@@ -213,8 +222,12 @@ export function StudentAnalytics({
 
       {data.learning_materials && <article className="panel analytics-card">
         <h3><UiText>{"Progres bersama Tutor"}</UiText></h3>
-        <p>{data.materials_completed ?? 0} <UiText>{"materi selesai"}</UiText> · {data.completed_units ?? 0} / {data.total_units ?? 0} <UiText>{"bagian selesai"}</UiText></p>
-        <progress value={data.completed_units ?? 0} max={data.total_units || 1} aria-label={t("Bagian materi selesai")} />
+        <GameProgress
+          value={data.completed_units ?? 0}
+          max={data.total_units || 1}
+          aria-label={t("Bagian materi selesai")}
+          variant="emerald"
+        />
         <p>{data.assessed_concepts ?? 0} <UiText>{"konsep memiliki bukti latihan"}</UiText>. {data.mapped_concepts ?? 0} <UiText>{"konsep terpetakan pada materi saat ini"}</UiText>.</p>
         <p className="muted"><UiText>{"Selesai belajar dan penanda baca tidak menambah penguasaan konsep secara otomatis."}</UiText></p>
         {data.last_activity_at && <p><UiText>{"Aktivitas terakhir tercatat"}</UiText>: <time dateTime={data.last_activity_at}>{new Intl.DateTimeFormat(language === "en" ? "en" : "id", {dateStyle:"medium",timeStyle:"short",timeZone:data.timezone??"UTC"}).format(new Date(data.last_activity_at))}</time></p>}
@@ -235,9 +248,16 @@ export function StudentAnalytics({
                 <div className="analytics-concept" key={concept.concept_id}>
                   <div className="analytics-concept-top">
                     <strong>{concept.concept_name}</strong>
-                    <span>{percent(concept.mastery)}</span>
+                    <span className="game-progress-hud-badge sm"><span className="game-hud-num">{percent(concept.mastery)}</span></span>
                   </div>
-                  <progress max={1} value={concept.mastery} aria-label={`${concept.concept_name} ${percent(concept.mastery)}`} />
+                  <GameProgress
+                    max={1}
+                    value={concept.mastery}
+                    size="sm"
+                    showPercentage={false}
+                    aria-label={`${concept.concept_name} ${percent(concept.mastery)}`}
+                    variant="amber"
+                  />
                   <small>{concept.n_attempts}<UiText>{" latihan · coba satu langkah lagi hari ini"}</UiText></small>
                 </div>
               ))}
@@ -263,9 +283,16 @@ export function StudentAnalytics({
                 <div className="analytics-concept" key={concept.concept_id}>
                   <div className="analytics-concept-top">
                     <strong>{concept.concept_name}</strong>
-                    <span>{percent(concept.mastery)}</span>
+                    <span className="game-progress-hud-badge sm"><span className="game-hud-num">{percent(concept.mastery)}</span></span>
                   </div>
-                  <progress max={1} value={concept.mastery} aria-label={`${concept.concept_name} ${percent(concept.mastery)}`} />
+                  <GameProgress
+                    max={1}
+                    value={concept.mastery}
+                    size="sm"
+                    showPercentage={false}
+                    aria-label={`${concept.concept_name} ${percent(concept.mastery)}`}
+                    variant="emerald"
+                  />
                   <small>{concept.n_attempts}<UiText>{" latihan · pertahankan dengan menjelaskan ulang"}</UiText></small>
                 </div>
               ))}

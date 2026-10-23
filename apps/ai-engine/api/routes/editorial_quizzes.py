@@ -451,8 +451,8 @@ async def publish(
     """Publish the approved current quiz revision."""
     draft, version = await service.draft_for(session, draft_id, actor, owner=True, lock=True)
     service.check_version(draft, version, body)
-    if version.state != "approved":
-        service.conflict("Review harus disetujui sebelum publikasi.")
+    if version.state not in ("draft", "approved"):
+        service.conflict("Kuis tidak dapat diterbitkan pada status ini.")
     version.state, version.published_at = "published", service.now()
     version.review_revision += 1
     service.event(session, version, actor, "published")

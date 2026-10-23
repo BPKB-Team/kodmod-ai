@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, AudioLines, BookOpen, Check, ChevronDown, Keyboard, MessageCircle, ListChecks, TrendingUp, BarChart3, Users, GraduationCap, LogIn, Sparkles, HelpCircle } from "lucide-react";
+import { ArrowRight, AudioLines, BookOpen, Check, Keyboard, MessageCircle, ListChecks, TrendingUp, BarChart3, Users, GraduationCap, LogIn, Sparkles, HelpCircle } from "lucide-react";
 import LandingMenu from "@/components/LandingMenu";
 import { ExperienceToolbar } from "@/components/experience-toolbar";
-import { VoiceControls } from "@/components/voice-controls";
+import { LandingFaqList } from "@/components/landing-faq";
 import { getServerI18n } from "@/lib/server-language";
 import "../styles/landing.css";
 import "../styles/public-learning.css";
@@ -266,28 +266,15 @@ export default async function HomePage() {
             <p>{t("Hal yang perlu kamu tahu sebelum mulai.")}</p>
           </div>
 
-          <div className="lp-faq-list">
-            {[
-              ["Bagaimana cara membuat akun?", "Pilih Daftar, isi nama, username dan kata sandi, lalu pilih peran siswa atau guru. Tidak perlu kode undangan.", "faq-1"],
-              ["Apakah saya harus menggunakan suara?", "Kamu bisa menggunakan teks. Pembaca menu dan suara Tutor dapat diatur terpisah dari tombol pengaturan suara.", "faq-2"],
-              ["Bisa menggunakan suara dari HP?", "Bisa. Pilih Suara perangkat dalam pengaturan. Ketersediaan suara bergantung pada perangkat dan browsermu.", "faq-3"],
-              ["Bagaimana Tutor menggunakan materi?", "Pilih materi kelas di ruang Tutor agar penjelasan mengacu pada materi yang kamu pelajari.", "faq-4"],
-              ["Apakah tersedia Bahasa Inggris?", "Pilih EN dari menu bahasa. Tampilan dan jawaban Tutor mengikuti bahasa pilihanmu. Materi guru tetap menggunakan bahasa aslinya.", "faq-5"],
-            ].map(([question, answer, faqKey]) => (
-              <details key={question} data-voice-menu={faqKey} className="lp-faq-item">
-                <summary>
-                  <span className="lp-faq-q-text">{t(question)}</span>
-                  <ChevronDown size={19} className="lp-faq-chevron" aria-hidden="true" />
-                </summary>
-                <div className="lp-faq-body">
-                  <p>{t(answer)}</p>
-                  <div className="lp-faq-voice-wrap">
-                    <VoiceControls text={`${t(question)}. ${t(answer)}`} />
-                  </div>
-                </div>
-              </details>
-            ))}
-          </div>
+          <LandingFaqList
+            items={[
+              { question: "Bagaimana cara membuat akun?", answer: "Pilih Daftar, isi nama, username dan kata sandi, lalu pilih peran siswa atau guru. Tidak perlu kode undangan.", key: "faq-1" },
+              { question: "Apakah saya harus menggunakan suara?", answer: "Kamu bisa menggunakan teks. Pembaca menu dan suara Tutor dapat diatur terpisah dari tombol pengaturan suara.", key: "faq-2" },
+              { question: "Bisa menggunakan suara dari HP?", answer: "Bisa. Pilih Suara perangkat dalam pengaturan. Ketersediaan suara bergantung pada perangkat dan browsermu.", key: "faq-3" },
+              { question: "Bagaimana Tutor menggunakan materi?", answer: "Pilih materi kelas di ruang Tutor agar penjelasan mengacu pada materi yang kamu pelajari.", key: "faq-4" },
+              { question: "Apakah tersedia Bahasa Inggris?", answer: "Pilih EN dari menu bahasa. Tampilan dan jawaban Tutor mengikuti bahasa pilihanmu. Materi guru tetap menggunakan bahasa aslinya.", key: "faq-5" },
+            ]}
+          />
         </div>
       </section>
 

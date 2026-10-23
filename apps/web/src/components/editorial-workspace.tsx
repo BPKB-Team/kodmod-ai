@@ -13,15 +13,19 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpRight,
+  CalendarClock,
   Check,
   CheckCircle2,
+  Clock,
   FileCheck2,
+  HelpCircle,
   Sparkles,
   Plus,
   Save,
   Send,
   Trash2,
 } from "lucide-react";
+import { QuizRichEditor } from "./quiz-rich-editor";
 import type { Classroom, TeacherMaterial } from "@/lib/class-types";
 import { editorialRequest } from "@/lib/editorial-client";
 import { createQuizSubmissionId } from "@/lib/quiz-submission.mjs";
@@ -99,8 +103,7 @@ export function QuizWorkspace({
   const [subjectId, setSubjectId] = useState(
     initial?.version.subject_id ?? subjects[0]?.id ?? "",
   );
-  const [subjectRows, setSubjectRows] = useState(subjects);
-  const [newSubject, setNewSubject] = useState("");
+  const subjectRows = subjects;
   const [items, setItems] = useState<EditableQuestion[]>(
     initial ? editable(initial) : [blankQuestion(1)],
   );
@@ -112,8 +115,16 @@ export function QuizWorkspace({
   const [classId, setClassId] = useState(
     classes.find((c) => !c.is_archived)?.id ?? "",
   );
-  const [opens, setOpens] = useState("");
-  const [due, setDue] = useState("");
+  const [opens, setOpens] = useState(
+    initial?.assignments?.[0]?.opens_at
+      ? new Date(initial.assignments[0].opens_at).toISOString().slice(0, 16)
+      : "",
+  );
+  const [due, setDue] = useState(
+    initial?.assignments?.[0]?.due_at
+      ? new Date(initial.assignments[0].due_at).toISOString().slice(0, 16)
+      : "",
+  );
   const [dirty, setDirty] = useState(!initial);
   const [proposalMaterial, setProposalMaterial] = useState("");
   const [proposalCount, setProposalCount] = useState("5");
@@ -216,7 +227,7 @@ export function QuizWorkspace({
         accept(next);
         if (!draft) router.replace(`/guru/kuis/${next.id}`);
       },
-      "Revisi disimpan. Pilih reviewer, lalu ajukan untuk review.",
+      "Draft kuis tersimpan. Anda dapat langsung menerbitkan kuis untuk dibagikan ke kelas.",
       "save",
     );
   }
@@ -389,47 +400,63 @@ export function QuizWorkspace({
                       disabled={busy}
                     >
                       <option value="after_submission"><UiText>{"Setelah jawaban dikirim"}</UiText></option>
-                      <option value="after_due"><UiText>{"Setelah batas pengumpulan"}</UiText></option>
+                      <option value="after_due"><UiText>{"Setelah batas pengumpulan (Deadline)"}</UiText></option>
                     </NativeSelect>
                   </label>
                 </div>
-                <details className="editorial-details">
-                  <summary><UiText>{"Tambah mata pelajaran"}</UiText></summary>
-                  <label className="field"><UiText>{"Nama mata pelajaran baru"}</UiText><Input
-                      value={newSubject}
-                      onChange={(e) => setNewSubject(e.target.value)}
-                      maxLength={120}
-                      disabled={busy}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    className="button secondary small"
-                    disabled={busy || !newSubject.trim()}
-                    onClick={() =>
-                      void run(
-                        "Tambah mata pelajaran?",
-                        "Mata pelajaran ini akan tersedia dalam katalog pembelajaran.",
-                        async () => {
-                          const row = await editorialRequest<Subject>(
-                            "/subjects",
-                            "POST",
-                            { name: newSubject.trim() },
-                          );
-                          setSubjectRows((rows) => [...rows, row]);
-                          setSubjectId(row.id);
-                          setItems((qs) =>
-                            qs.map((q) => ({ ...q, concept_id: null })),
-                          );
-                          setNewSubject("");
+
+                <div className="editorial-deadline-box">
+                  <div className="editorial-deadline-header">
+                    <div className="editorial-deadline-icon">
+                      <CalendarClock size={20} aria-hidden="true" />
+                    </div>
+                    <div>
+                      <h4 className="editorial-deadline-title">
+                        <UiText>{"Batas Waktu Pengumpulan (Deadline)"}</UiText>
+                      </h4>
+                      <p className="editorial-deadline-subtitle">
+                        {release === "after_due" ? (
+                          <UiText>{"Wajib diatur. Pembahasan dan kunci jawaban otomatis terbuka untuk siswa setelah melewati tenggat waktu ini."}</UiText>
+                        ) : (
+                          <UiText>{"Tentukan batas akhir pengerjaan kuis bagi siswa. Kosongkan jika kuis terbuka tanpa batas waktu."}</UiText>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="editorial-deadline-inputs">
+                    <label className="field">
+                      <span className="editorial-field-label">
+                        <UiText>{"Tenggat waktu pengumpulan (waktu perangkat)"}</UiText>
+                        {release === "after_due" && <span className="field-required">*</span>}
+                      </span>
+                      <Input
+                        type="datetime-local"
+                        value={due}
+                        onChange={(e) => {
+                          setDue(e.target.value);
                           setDirty(true);
-                        },
-                        "Mata pelajaran ditambahkan.",
-                        "subject",
-                      )
-                    }
-                  >{busy && busyAction === "subject" && <Spinner />}<UiText>{"Tambah mata pelajaran"}</UiText></button>
-                </details>
+                        }}
+                        required={release === "after_due"}
+                        disabled={busy}
+                        className="editorial-deadline-input"
+                      />
+                    </label>
+                  </div>
+                  {due && (
+                    <div className="editorial-deadline-badge">
+                      <Clock size={14} aria-hidden="true" />
+                      <span>
+                        <UiText>{"Tenggat: "}</UiText>
+                        <strong>
+                          {new Date(due).toLocaleString(language === "en" ? "en-US" : "id-ID", {
+                            dateStyle: "full",
+                            timeStyle: "short",
+                          })}
+                        </strong>
+                      </span>
+                    </div>
+                  )}
+                </div>
               </section>
               <section className="panel editorial-section">
                 <div className="editorial-section-title">
@@ -440,67 +467,90 @@ export function QuizWorkspace({
                   </div>
                 </div>
                 {items.map((q, index) => (
-                  <fieldset className="editorial-question" key={index}>
-                    <legend><UiText>{"Soal "}</UiText>{index + 1}</legend>
-                    <div className="editorial-question-tools">
-                      <button
-                        type="button"
-                        className="editorial-icon-button"
-                        aria-label={t("Naikkan soal {number}", { number: index + 1 })}
-                        disabled={busy || index === 0}
-                        onClick={() => move(index, -1)}
-                      >
-                        <ArrowUp size={16} aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        className="editorial-icon-button"
-                        aria-label={t("Turunkan soal {number}", { number: index + 1 })}
-                        disabled={busy || index === items.length - 1}
-                        onClick={() => move(index, 1)}
-                      >
-                        <ArrowDown size={16} aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        className="editorial-icon-button editorial-delete"
-                        aria-label={t("Hapus soal {number}", { number: index + 1 })}
-                        disabled={busy || items.length === 1}
-                        onClick={async () => {
-                          if (
-                            await confirmAction({
-                              title: t("Hapus soal {number}?", { number: index + 1 }),
-                              text: "Perubahan ini diterapkan pada revisi yang sedang Anda edit.",
-                              destructive: true,
-                            })
-                          ) {
-                            setItems((rows) =>
-                              rows
-                                .filter((_, i) => i !== index)
-                                .map((item, i) => ({
-                                  ...item,
-                                  order_index: i + 1,
-                                })),
-                            );
-                            setDirty(true);
-                          }
-                        }}
-                      >
-                        <Trash2 size={16} aria-hidden="true" />
-                      </button>
+                  <div className="editorial-question" key={index}>
+                    <div className="editorial-question-header">
+                      <div className="editorial-question-badge-group">
+                        <span className="editorial-question-badge">
+                          <UiText>{"Soal "}</UiText>{index + 1}
+                        </span>
+                        <span className={`editorial-difficulty-badge is-${q.difficulty}`}>
+                          {q.difficulty === "easy" ? (
+                            <UiText>{"Mudah"}</UiText>
+                          ) : q.difficulty === "hard" ? (
+                            <UiText>{"Sulit"}</UiText>
+                          ) : (
+                            <UiText>{"Sedang"}</UiText>
+                          )}
+                        </span>
+                      </div>
+                      <div className="editorial-question-tools">
+                        <button
+                          type="button"
+                          className="editorial-icon-button"
+                          title={t("Naikkan urutan soal")}
+                          aria-label={t("Naikkan soal {number}", { number: index + 1 })}
+                          disabled={busy || index === 0}
+                          onClick={() => move(index, -1)}
+                        >
+                          <ArrowUp size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="editorial-icon-button"
+                          title={t("Turunkan urutan soal")}
+                          aria-label={t("Turunkan soal {number}", { number: index + 1 })}
+                          disabled={busy || index === items.length - 1}
+                          onClick={() => move(index, 1)}
+                        >
+                          <ArrowDown size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="editorial-icon-button editorial-delete"
+                          title={t("Hapus soal ini")}
+                          aria-label={t("Hapus soal {number}", { number: index + 1 })}
+                          disabled={busy || items.length === 1}
+                          onClick={async () => {
+                            if (
+                              await confirmAction({
+                                title: t("Hapus soal {number}?", { number: index + 1 }),
+                                text: "Perubahan ini diterapkan pada revisi yang sedang Anda edit.",
+                                destructive: true,
+                              })
+                            ) {
+                              setItems((rows) =>
+                                rows
+                                  .filter((_, i) => i !== index)
+                                  .map((item, i) => ({
+                                    ...item,
+                                    order_index: i + 1,
+                                  })),
+                              );
+                              setDirty(true);
+                            }
+                          }}
+                        >
+                          <Trash2 size={16} aria-hidden="true" />
+                        </button>
+                      </div>
                     </div>
-                    <label className="field"><UiText>{"Pertanyaan"}</UiText><Textarea
-                        rows={3}
-                        value={q.prompt}
-                        onChange={(e) =>
-                          change(index, { prompt: e.target.value })
-                        }
-                        required
-                        maxLength={4000}
-                        disabled={busy}
-                      />
-                    </label>
-                    <div className="editorial-option-help"><UiText>{"Pilih satu kunci jawaban. Kunci hanya terlihat oleh guru dan reviewer sebelum pembahasan dirilis."}</UiText></div>
+
+                    <QuizRichEditor
+                      id={`prompt-${index}`}
+                      label={<UiText>{"Pertanyaan"}</UiText>}
+                      value={q.prompt}
+                      onChange={(next) => change(index, { prompt: next })}
+                      required
+                      maxLength={4000}
+                      disabled={busy}
+                      placeholder={t("Tuliskan pertanyaan soal... Gunakan toolbar untuk rumus dan notasi ilmiah.")}
+                    />
+
+                    <div className="editorial-option-help">
+                      <HelpCircle size={16} aria-hidden="true" />
+                      <span><UiText>{"Pilih satu kunci jawaban. Kunci hanya terlihat oleh guru dan reviewer sebelum pembahasan dirilis."}</UiText></span>
+                    </div>
+
                     <fieldset className="editorial-options">
                       <legend><UiText>{"Kunci dan pilihan soal "}</UiText>{index + 1}</legend>
                       {q.options.map((option, oi) => {
@@ -589,18 +639,19 @@ export function QuizWorkspace({
                         })
                       }
                     >
-                      <Plus size={15} aria-hidden="true" /><UiText>{"Tambah pilihan"}</UiText></button>
-                    <label className="field"><UiText>{"Pembahasan"}</UiText><Textarea
-                        rows={3}
-                        maxLength={4000}
-                        value={q.explanation}
-                        onChange={(e) =>
-                          change(index, { explanation: e.target.value })
-                        }
-                        disabled={busy}
-                        placeholder={t("Jelaskan alasan jawaban benar dengan bahasa sederhana.")}
-                      />
-                    </label>
+                      <Plus size={15} aria-hidden="true" /><UiText>{"Tambah pilihan"}</UiText>
+                    </button>
+
+                    <QuizRichEditor
+                      id={`explanation-${index}`}
+                      label={<UiText>{"Pembahasan"}</UiText>}
+                      value={q.explanation}
+                      onChange={(next) => change(index, { explanation: next })}
+                      maxLength={4000}
+                      disabled={busy}
+                      placeholder={t("Jelaskan alasan jawaban benar dengan bahasa sederhana. Gunakan toolbar untuk rumus.")}
+                    />
+
                     <div className="editorial-two-fields">
                       <label className="field"><UiText>{"Tingkat kesulitan"}</UiText><NativeSelect
                           value={q.difficulty}
@@ -633,7 +684,7 @@ export function QuizWorkspace({
                         />
                       </label>
                     </details>
-                  </fieldset>
+                  </div>
                 ))}
                 <button
                   type="button"
@@ -811,7 +862,7 @@ export function QuizWorkspace({
                   )}
                 </form>
               ) : (
-                <p className="info-note"><UiText>{"Penugasan tersedia setelah revisi ini disetujui dan diterbitkan."}</UiText></p>
+                <p className="info-note"><UiText>{"Penugasan tersedia setelah kuis ini diterbitkan."}</UiText></p>
               )}
               <div className="editorial-assignment-list">
                 {draft.assignments.map((a) => (
@@ -839,112 +890,75 @@ export function QuizWorkspace({
         <aside className="editorial-aside">
           <section className="panel editorial-section editorial-lifecycle">
             <h2><UiText>{"Langkah publikasi"}</UiText></h2>
-            <ol>
+            <ol className="editorial-lifecycle-stepper">
               {[
                 "Tulis & simpan draft",
-                "Review oleh guru lain / admin",
-                "Terbitkan revisi disetujui",
+                "Terbitkan kuis",
                 "Tugaskan ke kelas",
-              ].map((label, index) => (
-                <li
-                  key={label}
-                  className={
-                    index <
-                    (state === "published"
-                      ? 3
-                      : state === "approved"
-                        ? 2
-                        : state === "in_review"
-                          ? 1
-                          : 0)
-                      ? "done"
-                      : ""
-                  }
-                >
-                  <span>{index + 1}</span>
-                  {label}
-                </li>
-              ))}
+              ].map((label, index) => {
+                const isDraftSaved = Boolean(draft && !dirty);
+                const isPublished = state === "published";
+                const isAssigned = Boolean(draft?.assignments && draft.assignments.length > 0);
+                const isDone =
+                  index === 0 ? isDraftSaved :
+                  index === 1 ? isPublished :
+                  isAssigned;
+                const isCurrent =
+                  index === 0 ? !isDraftSaved :
+                  index === 1 ? (isDraftSaved && !isPublished) :
+                  (isPublished && !isAssigned);
+                return (
+                  <li
+                    key={label}
+                    className={`editorial-step-item ${isDone ? "is-done" : ""} ${isCurrent ? "is-current" : ""}`}
+                  >
+                    <span className="editorial-step-circle">
+                      {isDone ? <Check size={14} aria-hidden="true" /> : index + 1}
+                    </span>
+                    <span className="editorial-step-text"><UiText>{label}</UiText></span>
+                  </li>
+                );
+              })}
             </ol>
             {owner ? (
               <div className="editorial-lifecycle-actions">
-                <label className="field"><UiText>{"Reviewer"}</UiText><NativeSelect
-                    value={reviewer}
-                    onChange={(e) => setReviewer(e.target.value)}
-                    disabled={busy || dirty || state !== "draft"}
-                  >
-                    <option value=""><UiText>{"Antrean admin"}</UiText></option>
-                    {reviewers
-                      .filter((r) => r.id !== draft?.teacher_id)
-                      .map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.full_name}
-                        </option>
-                      ))}
-                  </NativeSelect>
-                </label>
-                {draft && state === "draft" && (
+                {!draft && (
+                  <p className="editorial-help">
+                    <UiText>{"Simpan draft kuis terlebih dahulu untuk menerbitkan."}</UiText>
+                  </p>
+                )}
+                {draft && state !== "published" && (
                   <>
                     <button
-                      className="button secondary"
+                      className="button primary editorial-publish-btn"
                       type="button"
-                      disabled={
-                        busy ||
-                        dirty ||
-                        (draft.version.reviewer_id ?? "") === reviewer
-                      }
+                      disabled={busy || dirty}
                       onClick={() =>
                         void transition(
-                          "reviewer",
-                          "Simpan pilihan reviewer?",
-                          "Guru reviewer hanya dapat menilai isi kuis, tanpa melihat data siswa.",
-                          { reviewer_id: reviewer || null },
-                        )
-                      }
-                    >{busy && busyAction === "reviewer" && <Spinner />}<UiText>{"Simpan reviewer"}</UiText></button>
-                    <button
-                      className="button primary"
-                      type="button"
-                      disabled={
-                        busy ||
-                        dirty ||
-                        (draft.version.reviewer_id ?? "") !== reviewer
-                      }
-                      onClick={() =>
-                        void transition(
-                          "submit-review",
-                          "Ajukan revisi untuk review?",
-                          "Reviewer akan memeriksa revisi yang saat ini tersimpan.",
+                          "publish",
+                          "Terbitkan kuis?",
+                          "Kuis yang diterbitkan siap dibagikan sebagai penugasan ke kelas siswa.",
                         )
                       }
                     >
-                      {busy && busyAction === "submit-review" ? <Spinner /> : <Send size={16} aria-hidden="true" />}<UiText>{"Ajukan review"}</UiText></button>
+                      {busy && busyAction === "publish" ? <Spinner /> : <CheckCircle2 size={17} aria-hidden="true" />}
+                      <UiText>{"Terbitkan kuis"}</UiText>
+                    </button>
+                    {dirty && (
+                      <p className="editorial-help">
+                        <UiText>{"Simpan perubahan isi sebelum menerbitkan kuis."}</UiText>
+                      </p>
+                    )}
                   </>
                 )}
-                {draft && state === "approved" && (
-                  <button
-                    className="button primary"
-                    type="button"
-                    disabled={busy || dirty}
-                    onClick={() =>
-                      void transition(
-                        "publish",
-                        "Terbitkan kuis?",
-                        "Revisi yang disetujui siap dibagikan sebagai penugasan kelas.",
-                      )
-                    }
-                  >
-                    {busy && busyAction === "publish" ? <Spinner /> : <CheckCircle2 size={17} aria-hidden="true" />}<UiText>{"Terbitkan kuis"}</UiText></button>
-                )}
-                {!draft && (
-                  <p className="editorial-help"><UiText>{"Simpan draft pertama untuk mulai review."}</UiText></p>
-                )}
-                {["in_review", "rejected"].includes(state) && (
-                  <p className="editorial-help">
-                    {state === "in_review"
-                      ? <UiText>{"Sedang menunggu keputusan reviewer. Perubahan isi akan menjadi revisi baru."}</UiText>
-                      : <UiText>{"Periksa catatan di bawah, perbaiki isi, lalu simpan dan ajukan revisi baru."}</UiText>}
-                  </p>
+                {draft && state === "published" && (
+                  <div className="editorial-published-box">
+                    <CheckCircle2 size={18} className="text-success" aria-hidden="true" />
+                    <div>
+                      <strong><UiText>{"Kuis telah diterbitkan"}</UiText></strong>
+                      <p><UiText>{"Kuis ini aktif dan dapat ditugaskan ke kelas di bawah."}</UiText></p>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (

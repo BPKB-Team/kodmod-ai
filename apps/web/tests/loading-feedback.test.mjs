@@ -7,6 +7,7 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 import ts from "typescript";
 import { translate } from "../src/lib/i18n.mjs";
+import { formatHtmlMath } from "../src/lib/format-math.mjs";
 
 const require = createRequire(import.meta.url);
 const components = fileURLToPath(new URL("../src/components/", import.meta.url));
@@ -19,6 +20,7 @@ function loadComponents(language = "id", overrides = {}) {
     "./language-provider": i18n,
     "@/components/language-provider": i18n,
     "@/lib/utils": { cn: (...parts) => parts.filter(Boolean).join(" ") },
+    "@/lib/format-math.mjs": { formatHtmlMath },
     "@/lib/dialogs": { confirmAction: async () => true, notifyResult: async () => {} },
     "@/lib/browser-speech": { speechOutput: { play: async () => {}, stop: () => {}, getState: () => ({ status: "idle" }), subscribe: () => () => {} } },
     ...overrides,

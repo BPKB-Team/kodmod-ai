@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, LayoutDashboard, Users, ChevronRight, FileCheck2, Bot, BookOpen } from "lucide-react";
+import { Activity, LayoutDashboard, Users, ChevronRight, FileCheck2, Bot, BookOpen, GraduationCap } from "lucide-react";
 import { speechOutput } from "@/lib/browser-speech";
 import { useI18n } from "./language-provider";
 import { LogoutButton } from "./logout-button";
 const links = [
   { href: "/admin", label: "Ringkasan", Icon: LayoutDashboard },
   { href: "/admin/pengguna", label: "Pengguna", Icon: Users },
+  { href: "/admin/akademik", label: "Kelas & Mapel", Icon: GraduationCap },
   { href: "/admin/materi", label: "Materi", Icon: BookOpen },
   { href: "/admin/review-kuis", label: "Review kuis", Icon: FileCheck2 },
   { href: "/admin/aktivitas", label: "Aktivitas", Icon: Activity },
@@ -31,7 +32,7 @@ export function AdminNav() {
             key={href}
             href={href}
             onClick={handleNavClick}
-            data-voice-menu={{ "/admin": "dashboard", "/admin/pengguna": "users", "/admin/materi": "materials", "/admin/review-kuis": "review", "/admin/aktivitas": "activity", "/admin/pemantauan-ai": "ai-monitor" }[href]}
+            data-voice-menu={{ "/admin": "dashboard", "/admin/pengguna": "users", "/admin/akademik": "academic", "/admin/materi": "materials", "/admin/review-kuis": "review", "/admin/aktivitas": "activity", "/admin/pemantauan-ai": "ai-monitor" }[href]}
             aria-current={active ? "page" : undefined}
           >
             <Icon size={20} aria-hidden="true" />

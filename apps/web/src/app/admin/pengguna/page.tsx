@@ -70,12 +70,7 @@ export default async function UsersPage({
   return (
     <>
       <Heading
-        kicker={
-          <span className="analytics-kicker">
-            <Users size={14} aria-hidden="true" />
-            <UiText>{"MANAJEMEN PENGGUNA"}</UiText>
-          </span>
-        }
+        icon={<Users size={24} aria-hidden="true" />}
         title={<UiText>{"Pengguna"}</UiText>}
         description={<UiText>{"Orang-orang di balik setiap perjalanan belajar."}</UiText>}
       >

@@ -28,21 +28,26 @@ export function Heading({
   title,
   description,
   kicker,
+  icon,
   children,
   className,
 }: {
   title: ReactNode;
   description?: ReactNode;
   kicker?: ReactNode;
+  icon?: ReactNode;
   children?: ReactNode;
   className?: string;
 }) {
   return (
     <div className={`page-heading${className ? ` ${className}` : ""}`}>
-      <div>
-        {kicker && <div className="heading-kicker-wrap">{kicker}</div>}
-        <h1>{title}</h1>
-        {description && <p>{description}</p>}
+      <div className="page-heading-main">
+        {icon && <div className="heading-icon-badge" aria-hidden="true">{icon}</div>}
+        <div className="page-heading-text">
+          {kicker && <div className="heading-kicker-wrap">{kicker}</div>}
+          <h1>{title}</h1>
+          {description && <p>{description}</p>}
+        </div>
       </div>
       {children && <div className="heading-actions">{children}</div>}
     </div>

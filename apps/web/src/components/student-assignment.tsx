@@ -7,13 +7,18 @@ import { useRef, useState, useSyncExternalStore } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  AudioLines,
   Check,
   CheckCircle2,
   Lightbulb,
+  ListChecks,
+  RotateCcw,
   Save,
   Send,
+  Volume2,
   X,
 } from "lucide-react";
+import { speechOutput } from "@/lib/browser-speech";
 import { RefreshButton } from "./refresh-button";
 import { confirmAction, notifyResult } from "@/lib/dialogs";
 import { EditorialError, editorialRequest } from "@/lib/editorial-client";
@@ -33,6 +38,7 @@ import {
 import { VoiceControls } from "./voice-controls";
 import { useQuizExitGuard } from "./use-quiz-exit-guard";
 import { Badge } from "./ui";
+import { GameProgress } from "./ui/game-progress";
 import { LoadingStatus } from "./loading-feedback";
 import { Spinner } from "./ui/spinner";
 import "@/styles/editorial.css";
@@ -59,6 +65,12 @@ function readPending(id?: string): string | null {
     return pendingMemory.get(id) ?? null;
   }
 }
+function cleanOptionText(text: string): string {
+  if (!text) return "";
+  const cleaned = text.replace(/^(?:[A-Za-z]|\d+)[\.\)\:\-]\s+/, "").trim();
+  return cleaned || text;
+}
+
 function writePending(id: string, intent: FinalIntent | null) {
   const raw = intent ? JSON.stringify(intent) : null;
   pendingMemory.set(id, raw);
@@ -98,6 +110,17 @@ export function StudentAssignment({
   const [attempt, setAttempt] = useState(initialAttempt);
   const [result, setResult] = useState(initialResult);
   const [index, setIndex] = useState(0);
+  const [activeRule, setActiveRule] = useState<number | null>(null);
+
+  function playRule(idx: number, text: string) {
+    setActiveRule(idx);
+    void speechOutput.play({
+      owner: `quiz-rule-${idx}`,
+      text,
+      engine: "app",
+      language,
+    });
+  }
   const [selected, setSelected] = useState(
     initialAttempt
       ? (initialAttempt.answers[initialAttempt.questions[0].id] ?? "")
@@ -470,17 +493,99 @@ export function StudentAssignment({
             {assignment.description ||
               <UiText>{"Kerjakan sesuai ritmemu. Simpan setiap pilihan untuk melanjutkan dari progres yang sama."}</UiText>}
           </p>
-          <ul>
-            <li>
-              {assignment.total_questions}<UiText>{" soal pilihan ganda, satu percobaan."}</UiText></li>
-            <li><UiText>{"Jawaban dapat ditinjau kembali sebelum dikirim."}</UiText></li>
-            <li><UiText>{"Tersedia pembacaan soal dan pilihan melalui kontrol suara."}</UiText></li>
-          </ul>
+
+          <div className="editorial-rules-grid" role="region" aria-label={t("Persyaratan dan petunjuk kuis")}>
+            <div
+              className={`editorial-rule-card ${activeRule === 0 ? "active" : ""}`}
+              tabIndex={0}
+              role="button"
+              data-voice-menu="quiz-rule-1"
+              aria-label={`${t("Aturan kuis 1")}: ${assignment.total_questions} ${t("soal pilihan ganda, satu percobaan.")}`}
+              onClick={() => playRule(0, `${t("Aturan kuis 1")}: ${assignment.total_questions} ${t("soal pilihan ganda, satu percobaan.")}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  playRule(0, `${t("Aturan kuis 1")}: ${assignment.total_questions} ${t("soal pilihan ganda, satu percobaan.")}`);
+                }
+              }}
+            >
+              <div className="editorial-rule-icon questions" aria-hidden="true">
+                <ListChecks size={22} />
+              </div>
+              <div className="editorial-rule-content">
+                <strong className="editorial-rule-title"><UiText>{"Format & Percobaan"}</UiText></strong>
+                <p className="editorial-rule-desc">
+                  {assignment.total_questions}{" "}<UiText>{"soal pilihan ganda, satu percobaan."}</UiText>
+                </p>
+              </div>
+              <span className="editorial-rule-badge" aria-hidden="true">
+                <Volume2 size={13} /> <UiText>{"Dengarkan"}</UiText>
+              </span>
+            </div>
+
+            <div
+              className={`editorial-rule-card ${activeRule === 1 ? "active" : ""}`}
+              tabIndex={0}
+              role="button"
+              data-voice-menu="quiz-rule-2"
+              aria-label={`${t("Aturan kuis 2")}: ${t("Jawaban dapat ditinjau kembali sebelum dikirim.")}`}
+              onClick={() => playRule(1, `${t("Aturan kuis 2")}: ${t("Jawaban dapat ditinjau kembali sebelum dikirim.")}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  playRule(1, `${t("Aturan kuis 2")}: ${t("Jawaban dapat ditinjau kembali sebelum dikirim.")}`);
+                }
+              }}
+            >
+              <div className="editorial-rule-icon review" aria-hidden="true">
+                <RotateCcw size={22} />
+              </div>
+              <div className="editorial-rule-content">
+                <strong className="editorial-rule-title"><UiText>{"Tinjau & Simpan"}</UiText></strong>
+                <p className="editorial-rule-desc">
+                  <UiText>{"Jawaban dapat ditinjau kembali sebelum dikirim."}</UiText>
+                </p>
+              </div>
+              <span className="editorial-rule-badge" aria-hidden="true">
+                <Volume2 size={13} /> <UiText>{"Dengarkan"}</UiText>
+              </span>
+            </div>
+
+            <div
+              className={`editorial-rule-card ${activeRule === 2 ? "active" : ""}`}
+              tabIndex={0}
+              role="button"
+              data-voice-menu="quiz-rule-3"
+              aria-label={`${t("Aturan kuis 3")}: ${t("Tersedia pembacaan soal dan pilihan melalui kontrol suara.")}`}
+              onClick={() => playRule(2, `${t("Aturan kuis 3")}: ${t("Tersedia pembacaan soal dan pilihan melalui kontrol suara.")}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  playRule(2, `${t("Aturan kuis 3")}: ${t("Tersedia pembacaan soal dan pilihan melalui kontrol suara.")}`);
+                }
+              }}
+            >
+              <div className="editorial-rule-icon voice" aria-hidden="true">
+                <AudioLines size={22} />
+              </div>
+              <div className="editorial-rule-content">
+                <strong className="editorial-rule-title"><UiText>{"Bantuan Audio"}</UiText></strong>
+                <p className="editorial-rule-desc">
+                  <UiText>{"Tersedia pembacaan soal dan pilihan melalui kontrol suara."}</UiText>
+                </p>
+              </div>
+              <span className="editorial-rule-badge" aria-hidden="true">
+                <Volume2 size={13} /> <UiText>{"Dengarkan"}</UiText>
+              </span>
+            </div>
+          </div>
+
           <button
             type="button"
-            className="button primary"
+            className="button primary editorial-start-button"
             onClick={() => void start()}
             disabled={busy || availability !== "open"}
+            data-voice-menu="start-assignment"
           >
             {busy ? <UiText>{"Menyiapkan…"}</UiText> : <UiText>{"Mulai tugas"}</UiText>}
             {busy ? <Spinner /> : <ArrowRight size={17} aria-hidden="true" />}
@@ -517,12 +622,12 @@ export function StudentAssignment({
                   ))}
                 </nav>
               </div>
-              <progress
+              <GameProgress
                 value={answeredCount}
                 max={attempt.questions.length}
                 aria-label={t("{count} dari {total} jawaban tersimpan", { count: answeredCount, total: attempt.questions.length })}
+                subtitle={<UiText>{"Jawaban tersimpan saat kamu menekan Simpan & lanjut."}</UiText>}
               />
-              <p className="editorial-progress-hint"><UiText>{"Jawaban tersimpan saat kamu menekan Simpan & lanjut."}</UiText></p>
             </aside>
             <div className="editorial-main">
               <section className="panel editorial-section">
@@ -551,12 +656,12 @@ export function StudentAssignment({
                         value={o.id}
                         checked={selected === o.id}
                         onChange={() => setSelected(o.id)}
-                        aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}, ${o.label}`}
+                        aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}, ${cleanOptionText(o.label)}`}
                       />
                       <span className="quiz-option-key">
                         {String.fromCharCode(65 + i)}
                       </span>
-                      <span>{o.label}</span>
+                      <span>{cleanOptionText(o.label)}</span>
                     </label>
                   ))}
                 </fieldset>
@@ -589,7 +694,7 @@ export function StudentAssignment({
               <VoiceControls
                 key={question.id}
                 autoPlayKey={question.id}
-                text={`${t("Soal {number}", { number: question.order_index })}. ${question.narration || question.prompt}. ${question.options.map((o, i) => `${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}: ${o.label}`).join(". ")}`}
+                text={`${t("Soal {number}", { number: question.order_index })}. ${question.narration || question.prompt}. ${question.options.map((o, i) => `${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}: ${cleanOptionText(o.label)}`).join(". ")}`}
               />
               <section className="panel editorial-section editorial-final-submit">
                 <div>

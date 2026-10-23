@@ -116,18 +116,17 @@ export function AdminLearningTraceExplorer({
 
   return (
     <div className="trace-explorer-page">
-      <Link href="/admin/pemantauan-ai" className="learning-back">
-        <ArrowLeft size={16} aria-hidden="true" />
-        <UiText>{"Kembali ke Pantau AI"}</UiText>
-      </Link>
+      <div className="trace-breadcrumb-nav">
+        <Link href="/admin/pemantauan-ai" className="trace-back-btn">
+          <ArrowLeft size={15} aria-hidden="true" />
+          <span><UiText>{"Kembali ke Pantau AI"}</UiText></span>
+        </Link>
+        <span className="trace-crumb-divider" aria-hidden="true">/</span>
+        <span className="trace-crumb-current"><UiText>{"Jejak Diagnostik AI"}</UiText></span>
+      </div>
 
       <Heading
-        kicker={
-          <span className="analytics-kicker">
-            <Activity size={14} aria-hidden="true" />
-            <UiText>{"DIAGNOSTIK ALUR BELAJAR"}</UiText>
-          </span>
-        }
+        icon={<Activity size={24} aria-hidden="true" />}
         title={<UiText>{"Jejak Diagnostik AI"}</UiText>}
         description={
           <UiText>
@@ -219,20 +218,32 @@ export function AdminLearningTraceExplorer({
               </div>
               <div className="trace-overview-stats">
                 <div className="trace-stat-item">
-                  <span className="muted"><UiText>{"Tahapan"}</UiText></span>
+                  <span className="trace-stat-label">
+                    <Layers size={13} aria-hidden="true" />
+                    <UiText>{"Tahapan"}</UiText>
+                  </span>
                   <strong>{totalStages}</strong>
                 </div>
                 <div className="trace-stat-item">
-                  <span className="muted"><UiText>{"Latensi akumulasi"}</UiText></span>
+                  <span className="trace-stat-label">
+                    <Clock size={13} aria-hidden="true" />
+                    <UiText>{"Latensi akumulasi"}</UiText>
+                  </span>
                   <strong>{metric(totalLatencyMs)} ms</strong>
                 </div>
                 <div className="trace-stat-item">
-                  <span className="muted"><UiText>{"Panggilan provider"}</UiText></span>
+                  <span className="trace-stat-label">
+                    <Zap size={13} aria-hidden="true" />
+                    <UiText>{"Panggilan provider"}</UiText>
+                  </span>
                   <strong>{totalCalls}</strong>
                 </div>
                 {totalCostUsd > 0 && (
                   <div className="trace-stat-item">
-                    <span className="muted"><UiText>{"Estimasi biaya"}</UiText></span>
+                    <span className="trace-stat-label">
+                      <Sparkles size={13} aria-hidden="true" />
+                      <UiText>{"Estimasi biaya"}</UiText>
+                    </span>
                     <strong>{cost(totalCostUsd)}</strong>
                   </div>
                 )}
