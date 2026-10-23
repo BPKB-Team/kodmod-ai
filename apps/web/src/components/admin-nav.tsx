@@ -10,7 +10,7 @@ const links = [
   { href: "/admin/pengguna", label: "Pengguna", Icon: Users },
   { href: "/admin/akademik", label: "Kelas & Mapel", Icon: GraduationCap },
   { href: "/admin/materi", label: "Materi", Icon: BookOpen },
-  { href: "/admin/review-kuis", label: "Review kuis", Icon: FileCheck2 },
+  { href: "/admin/review-kuis", label: "Peninjauan kuis", Icon: FileCheck2 },
   { href: "/admin/aktivitas", label: "Aktivitas", Icon: Activity },
   { href: "/admin/pemantauan-ai", label: "Pantau AI", Icon: Bot },
 ];

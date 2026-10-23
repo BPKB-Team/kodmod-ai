@@ -130,7 +130,7 @@ export function AdminLearningTraceExplorer({
         title={<UiText>{"Jejak Diagnostik AI"}</UiText>}
         description={
           <UiText>
-            {"Inspeksi tahapan inferensi LangGraph, retrieval materi RAG, generasi kuis, dan audit provider secara mendalam."}
+            {"Periksa alur LangGraph, pencarian materi, pembuatan kuis, dan penggunaan layanan AI secara terperinci."}
           </UiText>
         }
       >
@@ -155,8 +155,8 @@ export function AdminLearningTraceExplorer({
               className="trace-search-input"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={t("Cari berdasarkan Request ID…")}
-              aria-label={t("Request ID")}
+              placeholder={t("Cari berdasarkan nomor permintaan…")}
+              aria-label={t("Nomor permintaan")}
               maxLength={64}
             />
             {searchInput && (
@@ -188,20 +188,20 @@ export function AdminLearningTraceExplorer({
         </form>
       </section>
 
-      {/* When filtering by specific Request ID */}
+      {/* When filtering by specific Nomor permintaan */}
       {activeRequestId ? (
         <section className="trace-detail-section">
           {/* Request Overview Banner */}
           <div className="panel trace-overview-card">
             <div className="trace-overview-top">
               <div className="trace-reqid-display">
-                <span className="trace-meta-label"><UiText>{"Request ID"}</UiText></span>
+                <span className="trace-meta-label"><UiText>{"Nomor permintaan"}</UiText></span>
                 <code>{activeRequestId}</code>
                 <button
                   type="button"
                   className="trace-copy-btn"
                   onClick={() => handleCopy(activeRequestId)}
-                  title={t("Salin Request ID")}
+                  title={t("Salin nomor permintaan")}
                 >
                   {copiedId ? (
                     <>
@@ -229,12 +229,12 @@ export function AdminLearningTraceExplorer({
                     <Clock size={13} aria-hidden="true" />
                     <UiText>{"Latensi akumulasi"}</UiText>
                   </span>
-                  <strong>{metric(totalLatencyMs)} ms</strong>
+                  <strong>{metric(totalLatencyMs)} <UiText>{"milidetik"}</UiText></strong>
                 </div>
                 <div className="trace-stat-item">
                   <span className="trace-stat-label">
                     <Zap size={13} aria-hidden="true" />
-                    <UiText>{"Panggilan provider"}</UiText>
+                    <UiText>{"Panggilan layanan AI"}</UiText>
                   </span>
                   <strong>{totalCalls}</strong>
                 </div>
@@ -287,7 +287,7 @@ export function AdminLearningTraceExplorer({
                             {stage.latency_ms != null && (
                               <span className="trace-latency-tag">
                                 <Zap size={13} aria-hidden="true" />
-                                {stage.latency_ms} ms
+                                {stage.latency_ms} <UiText>{"milidetik"}</UiText>
                               </span>
                             )}
                             {stage.occurred_at && (
@@ -330,17 +330,17 @@ export function AdminLearningTraceExplorer({
 
                           {stage.fallback_reason && (
                             <div className="trace-attr-item">
-                              <span className="trace-attr-label"><UiText>{"Fallback"}</UiText></span>
+                              <span className="trace-attr-label"><UiText>{"Layanan cadangan"}</UiText></span>
                               <span className="trace-fallback-chip">{stage.fallback_reason}</span>
                             </div>
                           )}
 
                           {stage.provider_usage && stage.provider_usage.calls > 0 && (
                             <div className="trace-attr-item">
-                              <span className="trace-attr-label"><UiText>{"Panggilan provider"}</UiText></span>
+                              <span className="trace-attr-label"><UiText>{"Panggilan layanan AI"}</UiText></span>
                               <span>
-                                {stage.provider_usage.calls} call{stage.provider_usage.calls > 1 ? "s" : ""}
-                                {stage.provider_usage.failures > 0 ? ` (${stage.provider_usage.failures} gagal)` : ""}
+                                {stage.provider_usage.calls} <UiText>{"panggilan"}</UiText>
+                                {stage.provider_usage.failures > 0 && <> ({stage.provider_usage.failures} <UiText>{"gagal"}</UiText>)</>}
                                 {stage.provider_usage.estimated_cost_usd > 0
                                   ? ` · ${cost(stage.provider_usage.estimated_cost_usd)}`
                                   : ""}
@@ -379,11 +379,11 @@ export function AdminLearningTraceExplorer({
                 <Volume2 size={32} aria-hidden="true" />
               </div>
               <div className="trace-direct-info">
-                <h3><UiText>{"Panggilan Langsung ke Provider"}</UiText></h3>
+                <h3><UiText>{"Panggilan langsung ke layanan AI"}</UiText></h3>
                 <p>
                   <UiText>
                     {
-                      "Panggilan pembacaan suara (Text-to-Speech) dijalankan langsung ke API penyedia tanpa melalui tahapan orkestrasi inferensi multi-langkah LangGraph. Metrik latensi, volume suara, dan biaya telah tercatat lengkap pada rincian di atas."
+                      "Panggilan teks menjadi suara dijalankan langsung melalui layanan AI, tanpa melewati alur inferensi LangGraph. Waktu respons, durasi audio, dan biaya tercatat pada rincian di atas."
                     }
                   </UiText>
                 </p>
@@ -408,7 +408,7 @@ export function AdminLearningTraceExplorer({
               </h2>
               <p>
                 <UiText>
-                  {"Telusuri retrieval, generasi soal, review, sesi, dan pemakaian provider memakai request ID."}
+                  {"Telusuri pencarian materi, pembuatan soal, peninjauan, sesi, dan penggunaan layanan AI berdasarkan nomor permintaan."}
                 </UiText>
               </p>
             </div>
@@ -421,7 +421,7 @@ export function AdminLearningTraceExplorer({
                   <TableHead><UiText>{"Waktu"}</UiText></TableHead>
                   <TableHead><UiText>{"Tahapan"}</UiText></TableHead>
                   <TableHead><UiText>{"Node"}</UiText></TableHead>
-                  <TableHead><UiText>{"Request ID"}</UiText></TableHead>
+                  <TableHead><UiText>{"Nomor permintaan"}</UiText></TableHead>
                   <TableHead><UiText>{"Kandidat / diterima / hasil"}</UiText></TableHead>
                   <TableHead><UiText>{"Latensi"}</UiText></TableHead>
                   <TableHead><UiText>{"Tindakan"}</UiText></TableHead>
@@ -447,7 +447,7 @@ export function AdminLearningTraceExplorer({
                             type="button"
                             className="trace-mini-copy"
                             onClick={() => handleCopy(it.request_id!)}
-                            title={t("Salin Request ID")}
+                            title={t("Salin nomor permintaan")}
                           >
                             <Copy size={11} aria-hidden="true" />
                           </button>
@@ -462,7 +462,7 @@ export function AdminLearningTraceExplorer({
                         : "—"}
                     </TableCell>
                     <TableCell>
-                      {it.latency_ms != null ? `${it.latency_ms} ms` : "—"}
+                      {it.latency_ms != null ? <>{it.latency_ms} <UiText>{"milidetik"}</UiText></> : "—"}
                     </TableCell>
                     <TableCell>
                       {it.request_id && (

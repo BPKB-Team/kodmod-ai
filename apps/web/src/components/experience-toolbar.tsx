@@ -21,7 +21,7 @@ export function ExperienceToolbar() {
       aria-pressed={menuEnabled} aria-label={t(menuEnabled ? "Suara menu aktif" : "Suara menu mati")}
       title={t(menuEnabled ? "Suara menu aktif" : "Suara menu mati")}>
       {menuEnabled ? <Volume2 size={18} aria-hidden="true" /> : <VolumeX size={18} aria-hidden="true" />}
-      <span>{menuEnabled ? "ON" : "OFF"}</span>
+      <span>{t(menuEnabled ? "Nyala" : "Mati")}</span>
     </button>
     <button className="experience-button" type="button" disabled={!active || output.status === "loading"} data-voice-ignore="true"
       aria-busy={output.status === "loading"} aria-label={t(output.status === "loading" ? "Menyiapkan suara…" : output.status === "paused" ? "Putar lagi" : "Jeda")} onClick={() => void speechOutput.togglePause()}

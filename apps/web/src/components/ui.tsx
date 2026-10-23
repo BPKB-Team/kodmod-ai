@@ -16,7 +16,7 @@ export function Brand({ href = "/" }: { href?: string } = {}) {
     >
       <Image
         src="/brand/logo.png"
-        alt="KODMOD"
+        alt={t("Logo KODMOD")}
         width={1564}
         height={452}
         priority

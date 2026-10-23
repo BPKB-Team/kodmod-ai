@@ -34,27 +34,29 @@ import { StudentReader } from "./student-reader";
 import { StudentOverview } from "./student-overview";
 import { readingSettings } from "@/lib/reading-settings";
 import { readingDefaults } from "@/lib/reading-preferences";
+import { getServerI18n } from "@/lib/server-language";
 import { backend } from "@/lib/server-api";
 import type { CurriculumConcept, CurriculumSubject, MaterialMapping } from "@/lib/concept-types";
 import { ClassSubjectForm, MaterialConceptsForm } from "./material-concepts-form";
 
 const baseFor = (role: LearningRole) =>
   role === "teacher" ? "/guru" : "/siswa";
-export function BackToClasses({ role }: { role: LearningRole }) {
+export async function BackToClasses({ role }: { role: LearningRole }) {
+  const { t } = await getServerI18n();
   const isStudent = role === "student";
   return (
     <Link
       className={`learning-back ${isStudent ? "student-back-link" : ""}`}
       href={`${baseFor(role)}/kelas`}
       data-voice-menu={isStudent ? "classes" : undefined}
-      aria-label={isStudent ? "Kembali ke semua kelas saya" : undefined}
+      aria-label={isStudent ? t("Kembali ke semua kelas saya") : undefined}
     >
       <ArrowLeft size={16} aria-hidden="true" />
       <UiText>{"Semua kelas"}</UiText>
     </Link>
   );
 }
-function ClassCards({ rows, role }: { rows: Classroom[]; role: LearningRole }) {
+function ClassCards({ rows, role, t }: { rows: Classroom[]; role: LearningRole; t: (text: string, values?: Record<string, string | number>) => string }) {
   const isStudent = role === "student";
   return rows.length ? (
     <div className={`class-grid ${isStudent ? "student-class-grid" : ""}`}>
@@ -65,7 +67,12 @@ function ClassCards({ rows, role }: { rows: Classroom[]; role: LearningRole }) {
           key={row.id}
           aria-label={
             isStudent
-              ? `${row.name}. Mata pelajaran ${row.subject}. ${row.material_count} materi, ${row.member_count} siswa.`
+              ? t("Kelas {name}. Mata pelajaran {subject}. {materials} materi, {students} siswa.", {
+                  name: row.name,
+                  subject: row.subject,
+                  materials: row.material_count,
+                  students: row.member_count,
+                })
               : undefined
           }
         >
@@ -134,6 +141,7 @@ export async function ClassIndex({
   search?: string;
   status?: string;
 }) {
+  const { t } = await getServerI18n();
   const teacher = role === "teacher";
   const search = (rawSearch ?? "").trim().slice(0, 120);
   const status = (rawStatus ?? "").trim();
@@ -266,7 +274,7 @@ export async function ClassIndex({
                 id="search"
                 defaultValue={search}
                 maxLength={120}
-                placeholder="Cari nama kelas, mapel, atau deskripsi..."
+                placeholder={t("Cari nama kelas, mata pelajaran, atau deskripsi…")}
                 type="search"
                 className="search-input-field"
               />
@@ -292,7 +300,7 @@ export async function ClassIndex({
           {hasActiveFilters && (
             <Link href="/guru/kelas" className="filter-reset-btn">
               <RotateCcw size={14} aria-hidden="true" />
-              <UiText>{"Reset filter"}</UiText>
+              <UiText>{"Bersihkan filter"}</UiText>
             </Link>
           )}
         </form>
@@ -303,7 +311,7 @@ export async function ClassIndex({
         <span>{rows.length}<UiText>{" kelas"}</UiText></span>
       </div>
       {rows.length ? (
-        <ClassCards rows={dashboard ? rows.slice(0, 6) : rows} role={role} />
+        <ClassCards rows={dashboard ? rows.slice(0, 6) : rows} role={role} t={t} />
       ) : hasActiveFilters ? (
         <section className="panel">
           <Empty title={<UiText>{"Kelas tidak ditemukan"}</UiText>}>
@@ -317,7 +325,7 @@ export async function ClassIndex({
           </Empty>
         </section>
       ) : (
-        <ClassCards rows={[]} role={role} />
+        <ClassCards rows={[]} role={role} t={t} />
       )}
       {dashboard && rows.length > 6 && (
         <Link className="learning-back" href={`${baseFor(role)}/kelas`}><UiText>{"Lihat semua kelas"}</UiText><ArrowUpRight size={16} aria-hidden="true" />
@@ -333,6 +341,7 @@ export async function ClassRoom({
   role: LearningRole;
   id: string;
 }) {
+  const { t } = await getServerI18n();
   const row = await classroomData<ClassDetail>(
     role,
     `/${encodeURIComponent(id)}`,
@@ -388,7 +397,7 @@ export async function ClassRoom({
                 className="button primary"
                 href={`/guru/kelas/${id}/materi/baru`}
               >
-                <Plus size={16} aria-hidden="true" /><UiText>{"Upload materi"}</UiText></Link>
+                <Plus size={16} aria-hidden="true" /><UiText>{"Unggah materi"}</UiText></Link>
             )}
           </div>
           {row.materials.length ? (
@@ -401,7 +410,10 @@ export async function ClassRoom({
                   aria-label={
                     teacher
                       ? undefined
-                      : `${material.title}. Materi ${index + 1}. Klik untuk mulai belajar bersama Tutor AI.`
+                      : t("Materi {title}, nomor {number}. Buka untuk belajar bersama Tutor AI.", {
+                          title: material.title,
+                          number: index + 1,
+                        })
                   }
                 >
                   <span className="material-number">
@@ -412,7 +424,7 @@ export async function ClassRoom({
                     <small>
                       {<UiDate value={material.created_at} />}
                       {teacher
-                        ? ` · ${material.published ? "Terbit" : "Draft"}`
+                        ? <> · <UiText>{material.published ? "Terbit" : "Draf"}</UiText></>
                         : <UiText>{" · Buka di Tutor AI"}</UiText>}
                     </small>
                   </span>
@@ -423,7 +435,7 @@ export async function ClassRoom({
           ) : (
             <Empty title={<UiText>{"Belum ada materi"}</UiText>}>
               {teacher
-                ? <UiText>{"Mulai dengan satu penjelasan sederhana. Simpan draft atau langsung terbitkan untuk siswa."}</UiText>
+                ? <UiText>{"Mulai dengan satu penjelasan sederhana. Simpan draf atau langsung terbitkan untuk siswa."}</UiText>
                 : <UiText>{"Guru belum menerbitkan materi untuk kelas ini. Silakan tanyakan kepada gurumu."}</UiText>}
             </Empty>
           )}
@@ -473,6 +485,7 @@ export async function MaterialPage({
   id: string;
   materialId: string;
 }) {
+  const { t } = await getServerI18n();
   const [row, material, preferences] = await Promise.all([
     classroomData<ClassDetail>(role, `/${encodeURIComponent(id)}`),
     classroomData<Material>(
@@ -516,7 +529,7 @@ export async function MaterialPage({
           preferences={preferences}
         />
       ) : (
-        <article className="panel material-reader" aria-label="Isi materi">
+        <article className="panel material-reader" aria-label={t("Isi materi")}>
           <MaterialRenderer document={material.document??legacyMaterialDocument(material.content??"")} classId={id}/>
         </article>
       )}

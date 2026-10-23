@@ -125,7 +125,7 @@ export default async function HomePage() {
               <div className="lp-sdg-logo-box">
                 <Image
                   src="/images/landing/sdgs.png"
-                  alt="UN Sustainable Development Goals - 4 Quality Education"
+                  alt={t("Tujuan Pembangunan Berkelanjutan PBB nomor 4: Pendidikan Berkualitas")}
                   width={200}
                   height={100}
                   className="lp-sdg-img"
@@ -146,27 +146,27 @@ export default async function HomePage() {
           <div className="lp-pillars-grid">
             <div className="lp-pillar-card" data-voice-menu="pillar-audio" tabIndex={0}>
               <div className="lp-pillar-icon wave"><AudioLines size={24} aria-hidden="true" /></div>
-              <h3>{t("Audio-First Learning")}</h3>
+              <h3>{t("Belajar dengan Suara")}</h3>
               <p>{t("Arsitektur multisensori yang memprioritaskan narasi suara jernih, navigasi keyboard tanpa mouse, dan interaksi yang ramah pembaca layar.")}</p>
             </div>
             <div className="lp-pillar-card" data-voice-menu="pillar-practice" tabIndex={0}>
               <div className="lp-pillar-icon pencil"><ListChecks size={24} aria-hidden="true" /></div>
-              <h3>{t("Practice & Assess")}</h3>
+              <h3>{t("Latihan dan Asesmen")}</h3>
               <p>{t("Latihan interaktif dan kuis terstruktur dengan opsi ramah aksesibilitas untuk menguji pemahaman konsep secara bertahap.")}</p>
             </div>
             <div className="lp-pillar-card" data-voice-menu="pillar-feedback" tabIndex={0}>
               <div className="lp-pillar-icon chat"><MessageCircle size={24} aria-hidden="true" /></div>
-              <h3>{t("Cognitive Feedback")}</h3>
+              <h3>{t("Umpan Balik Kognitif")}</h3>
               <p>{t("Tutor AI memberikan analogi konkret dan panduan berpikir selangkah demi selangkah yang disesuaikan untuk siswa disabilitas netra.")}</p>
             </div>
             <div className="lp-pillar-card" data-voice-menu="pillar-adaptive" tabIndex={0}>
               <div className="lp-pillar-icon trend"><TrendingUp size={24} aria-hidden="true" /></div>
-              <h3>{t("Adaptive Learning")}</h3>
+              <h3>{t("Pembelajaran Adaptif")}</h3>
               <p>{t("Ritme belajar adaptif yang mengikuti pemahaman dan respon siswa, memudahkan mereka mengulang atau mendalami topik.")}</p>
             </div>
             <div className="lp-pillar-card" data-voice-menu="pillar-analytics" tabIndex={0}>
               <div className="lp-pillar-icon chart"><BarChart3 size={24} aria-hidden="true" /></div>
-              <h3>{t("Analytics & Reporting")}</h3>
+              <h3>{t("Analitik dan Pelaporan")}</h3>
               <p>{t("Laporan progres dan penguasaan konsep yang transparan bagi guru dan pendidik untuk mendampingi intervensi belajar tepat sasaran.")}</p>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default async function HomePage() {
               <span className="lp-dual-icon teacher"><GraduationCap size={22} aria-hidden="true" /></span>
               <div>
                 <strong>{t("Untuk Pendidik")}</strong>
-                <p>{t("Mengajar lebih cerdas")}: {t("Distribusi materi cepat, review kuis otomatis, dan pemantauan menyeluruh.")}</p>
+                <p>{t("Mengajar lebih cerdas")}: {t("Distribusi materi cepat, peninjauan kuis otomatis, dan pemantauan menyeluruh.")}</p>
               </div>
             </div>
           </div>
@@ -193,7 +193,7 @@ export default async function HomePage() {
       </section>
       <section id="tentang" className="lp-about-section">
         <div className="lp-container lp-section">
-          <div className="lp-section-heading" data-voice-menu="heading-about"><h2>{t("Semua kebutuhan belajar,")}<br />{t("lebih mudah dijangkau.")}</h2><p>{t("Dirancang untuk siswa tunanetra dan low vision, dengan pendampingan guru.")}</p></div>
+          <div className="lp-section-heading" data-voice-menu="heading-about"><h2>{t("Semua kebutuhan belajar,")}<br />{t("lebih mudah dijangkau.")}</h2><p>{t("Dirancang untuk siswa tunanetra dan siswa dengan penglihatan terbatas, dengan pendampingan guru.")}</p></div>
           <div className="lp-capability-grid">
             {[
               [BookOpen, "Materi belajar", "Buka materi dari kelasmu dan lanjutkan bacaan dari bagian terakhir.", "feature-materials"],
@@ -218,11 +218,11 @@ export default async function HomePage() {
       <section id="untuk-guru" className="lp-teacher-section"><div className="lp-container lp-section lp-teacher"><div>
         <div data-voice-menu="section-teacher">
           <h2>{t("Siapkan pembelajaran.")}<br />{t("Dampingi setiap siswa.")}</h2>
-          <p>{t("Kelola kelas, bagikan materi, dan siapkan kuis dengan review sebelum dipublikasikan. Pantau hasil siswa untuk menentukan langkah belajar berikutnya.")}</p>
+          <p>{t("Kelola kelas, bagikan materi, dan siapkan kuis dengan peninjauan sebelum dipublikasikan. Pantau hasil siswa untuk menentukan langkah belajar berikutnya.")}</p>
         </div>
         <ul className="lp-checks">{[
           ["Unggah materi dan atur publikasinya", "teacher-check-material"],
-          ["Review kuis, lalu tugaskan ke kelas", "teacher-check-quiz"],
+          ["Tinjau kuis, lalu tugaskan ke kelas", "teacher-check-quiz"],
           ["Pantau hasil dan progres siswa", "teacher-check-progress"],
         ].map(([copy, voiceKey]) => <li key={copy} tabIndex={0} data-voice-menu={voiceKey}><Check size={18} aria-hidden="true" /><span>{t(copy)}</span></li>)}</ul>
         <Link href="/daftar" className="lp-btn lp-btn-outline" data-voice-menu="register">{t("Daftar sebagai guru")}<ArrowRight size={18} aria-hidden="true" /></Link>
@@ -305,7 +305,7 @@ export default async function HomePage() {
               <div className="lp-sponsor-logo-box lead">
                 <Image
                   src="/images/landing/Sponsor/telkom-indonesia.png"
-                  alt="Telkom Indonesia - the world in your hand"
+                  alt="Telkom Indonesia"
                   width={340}
                   height={190}
                   className="lp-sponsor-logo lead"
@@ -329,7 +329,7 @@ export default async function HomePage() {
                 <div className="lp-sponsor-logo-box">
                   <Image
                     src="/images/landing/Sponsor/telin.png"
-                    alt="Telin by Telkom Indonesia"
+                    alt="Telin"
                     width={220}
                     height={110}
                     className="lp-sponsor-logo"
@@ -414,7 +414,7 @@ export default async function HomePage() {
               </Link>
             </div>
 
-            <div className="lp-cta-perks-row" aria-label="Keunggulan KODMOD">
+            <div className="lp-cta-perks-row" aria-label={t("Keunggulan KODMOD")}>
               <span className="lp-cta-perk-item">
                 <Check size={16} strokeWidth={3} className="lp-perk-check" aria-hidden="true" />
                 <span>{t("100% Ramah Pembaca Layar")}</span>

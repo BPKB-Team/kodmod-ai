@@ -277,7 +277,7 @@ export function AdminUserDetail({
           <form action={saveAction} className="panel admin-user-edit-card">
             <div className="panel-heading edit-card-header">
               <div>
-                <h2><UiText>{"Edit Informasi Akun"}</UiText></h2>
+                <h2><UiText>{"Ubah informasi akun"}</UiText></h2>
                 <p><UiText>{"Perbarui nama lengkap, hak akses peran, atau setel ulang kata sandi pengguna."}</UiText></p>
               </div>
             </div>
@@ -304,7 +304,7 @@ export function AdminUserDetail({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     autoComplete="name"
-                    placeholder="Contoh: Budi Santoso"
+                    placeholder={t("Contoh: Budi Santoso")}
                   />
                 </div>
 
@@ -396,7 +396,7 @@ export function AdminUserDetail({
                     maxLength={72}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Kosongkan jika tidak ingin mengubah sandi"
+                    placeholder={t("Kosongkan jika tidak ingin mengubah kata sandi")}
                     autoComplete="new-password"
                   />
                   <button

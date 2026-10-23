@@ -111,18 +111,18 @@ export type TeacherResults = {
 export type FinalIntent = { key: string; expected_revision: number };
 
 export const quizState: Record<string, string> = {
-  draft: "Draft",
-  in_review: "Menunggu review",
+  draft: "Draf",
+  in_review: "Menunggu peninjauan",
   approved: "Disetujui",
   rejected: "Perlu revisi",
   published: "Terbit",
 };
 export const eventLabel: Record<string, string> = {
   revision_created: "Revisi disimpan",
-  reviewer_nominated: "Reviewer dipilih",
-  reviewer_reassigned: "Reviewer diganti oleh admin",
-  submitted: "Diajukan untuk review",
-  approved: "Review disetujui",
+  reviewer_nominated: "Peninjau dipilih",
+  reviewer_reassigned: "Peninjau diganti oleh admin",
+  submitted: "Diajukan untuk peninjauan",
+  approved: "Peninjauan disetujui",
   rejected: "Diminta revisi",
   published: "Kuis diterbitkan",
 };
@@ -133,9 +133,9 @@ export const availabilityLabel = {
   closed: "Ditutup",
   submitted: "Selesai",
 };
-export function scheduleLabel(value: string | null) {
+export function scheduleLabel(value: string | null, locale: "id-ID" | "en-US" = "id-ID") {
   return value
-    ? new Intl.DateTimeFormat("id-ID", {
+    ? new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeStyle: "short",
         timeZone: "Asia/Jakarta",

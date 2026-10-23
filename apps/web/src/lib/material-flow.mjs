@@ -6,7 +6,7 @@ export function canChangeMaterialTarget({ importing, hasBook, sourceImportId, pe
 }
 
 export function materialTutorStatus(material) {
-  if (!material.published) return { heading: "Materi masih berupa draft", description: "Terbitkan materi setelah meninjau isinya. Setelah itu, materi akan disiapkan untuk Tutor.", actionLabel: null };
+  if (!material.published) return { heading: "Materi masih berupa draf", description: "Terbitkan materi setelah meninjau isinya. Setelah itu, materi akan disiapkan untuk Tutor.", actionLabel: null };
   const current = material.indexed_version === material.content_version && (material.indexed_mapping_version ?? 0) === (material.mapping_version ?? 0) && material.n_chunks > 0;
   if (material.rag_status === "ready" && current) return { heading: "Materi siap digunakan Tutor", description: "Tutor dapat menjawab berdasarkan isi materi yang terakhir disimpan.", actionLabel: null };
   if (material.rag_status === "processing") return { heading: "Menyiapkan materi untuk Tutor", description: "Materi tetap dapat dibaca. Perbarui status setelah proses selesai. Jika proses terhenti, Anda dapat menyiapkan ulang.", actionLabel: "Siapkan ulang jika terhenti" };

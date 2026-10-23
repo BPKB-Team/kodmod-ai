@@ -19,6 +19,8 @@ test("converts multiplication, division, and equality signs in math equations", 
   assert.equal(normalizeSpeechText("9 = 3²"), "9 sama dengan 3 pangkat 2");
   assert.equal(normalizeSpeechText("3⁴ × 3⁴ = 3⁸"), "3 pangkat 4 kali 3 pangkat 4 sama dengan 3 pangkat 8");
   assert.equal(normalizeSpeechText("12 ÷ 4 = 3"), "12 dibagi 4 sama dengan 3");
+  assert.equal(normalizeSpeechText("3 + 4 = 7"), "3 ditambah 4 sama dengan 7");
+  assert.equal(normalizeSpeechText("9 - 4 = 5"), "9 dikurangi 4 sama dengan 5");
 });
 
 test("normalizes exact text from user lesson screenshot without 34/92 mispronunciation", () => {
@@ -43,7 +45,7 @@ test("normalizes exact text from user lesson screenshot without 34/92 mispronunc
 
 test("converts subscripts, fractions, roots, and percent", () => {
   assert.equal(normalizeSpeechText("H₂O"), "H 2 O");
-  assert.equal(normalizeSpeechText("x₁ + x₂"), "x 1 + x 2");
+  assert.equal(normalizeSpeechText("x₁ + x₂"), "x 1 ditambah x 2");
   assert.equal(normalizeSpeechText("½ dan ¾"), "satu per dua dan tiga per empat");
   assert.equal(normalizeSpeechText("3/4 dari siswa"), "3 per 4 dari siswa");
   assert.equal(normalizeSpeechText("√16 = 4"), "akar 16 sama dengan 4");
@@ -86,4 +88,14 @@ test("expands common Indonesian chat abbreviations and reads decimal digits clea
     normalizeSpeechText("Use 3.14 and e.g. a fraction.", "en"),
     "Use 3 point 1 4 and for example a fraction.",
   );
+  assert.equal(normalizeSpeechText("Nilainya 1.250,75 dari 2.000 siswa.", "id"), "Nilainya 1250 koma 7 5 dari 2000 siswa.");
+  assert.equal(normalizeSpeechText("Nilainya 3.14.", "id"), "Nilainya 3 koma 1 4.");
+});
+
+test("speaks Indonesian product and file abbreviations as clear words", () => {
+  const text = "Tutor AI KODMOD membaca berkas PDF dan DOCX melalui API.";
+  const spoken = normalizeSpeechText(text, "id");
+  assert.equal(spoken, "Tutor kecerdasan buatan Kodmod membaca berkas pe de ef dan dokumen Word melalui a pe i.");
+  assert.equal(normalizeSpeechText(spoken, "id"), spoken);
+  assert.equal(normalizeSpeechText("Biaya 1.250 USD, waktu 250 ms.", "id"), "Biaya 1250 dolar Amerika, waktu 250 milidetik.");
 });

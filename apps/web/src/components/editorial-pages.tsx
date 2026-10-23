@@ -19,6 +19,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { editorialBackend, editorialData } from "@/lib/editorial-server";
 import { backend } from "@/lib/server-api";
 import { requireSession } from "@/lib/session";
+import { getServerI18n } from "@/lib/server-language";
 import type { Classroom, TeacherMaterial } from "@/lib/class-types";
 import {
   availabilityLabel,
@@ -50,13 +51,15 @@ function Pagination({
   page,
   next,
   path,
+  label,
 }: {
   page: number;
   next: boolean;
   path: string;
+  label: string;
 }) {
   return (
-    <nav className="editorial-pagination" aria-label="Halaman daftar">
+    <nav className="editorial-pagination" aria-label={label}>
       {page > 0 && (
         <Link
           className="button secondary small"
@@ -85,6 +88,7 @@ export async function TeacherQuizIndex({
   search?: string;
   status?: string;
 }) {
+  const { t } = await getServerI18n();
   const page = pageNumber(raw);
   const search = (rawSearch ?? "").trim().slice(0, 120);
   const status = (rawStatus ?? "").trim();
@@ -123,11 +127,11 @@ export async function TeacherQuizIndex({
           <span className="editorial-kicker">
             <BookOpenCheck size={16} aria-hidden="true" /><UiText>{"RUANG UNTUK MEMAHAMI"}</UiText></span>
           <h2><UiText>{"Siapkan. Tinjau. Bagikan."}</UiText></h2>
-          <p><UiText>{"Tulis soal dengan pembahasan yang jelas, ajukan review, lalu bagikan ke kelas. Jawaban dan nilai siswa tersimpan dalam satu alur."}</UiText></p>
+          <p><UiText>{"Tulis soal dengan pembahasan yang jelas, ajukan peninjauan, lalu bagikan ke kelas. Jawaban dan nilai siswa tersimpan dalam satu alur."}</UiText></p>
         </div>
-        <div className="editorial-hero-steps" aria-label="Alur kuis">
-          <span><UiText>{"01 · Draft"}</UiText></span>
-          <span><UiText>{"02 · Review"}</UiText></span>
+        <div className="editorial-hero-steps" aria-label={t("Alur kuis")}>
+          <span><UiText>{"01 · Draf"}</UiText></span>
+          <span><UiText>{"02 · Peninjauan"}</UiText></span>
           <span><UiText>{"03 · Publikasi"}</UiText></span>
           <span><UiText>{"04 · Penugasan"}</UiText></span>
         </div>
@@ -146,7 +150,7 @@ export async function TeacherQuizIndex({
               id="search"
               defaultValue={search}
               maxLength={120}
-              placeholder="Cari judul kuis atau pembahasan..."
+              placeholder={t("Cari judul kuis atau pembahasan…")}
               type="search"
               className="search-input-field"
             />
@@ -159,8 +163,8 @@ export async function TeacherQuizIndex({
           </label>
           <NativeSelect id="status" name="status" defaultValue={status}>
             <option value=""><UiText>{"Semua status"}</UiText></option>
-            <option value="draft"><UiText>{"Draft"}</UiText></option>
-            <option value="in_review"><UiText>{"Dalam review"}</UiText></option>
+            <option value="draft"><UiText>{"Draf"}</UiText></option>
+            <option value="in_review"><UiText>{"Sedang ditinjau"}</UiText></option>
             <option value="approved"><UiText>{"Disetujui"}</UiText></option>
             <option value="published"><UiText>{"Dipublikasikan"}</UiText></option>
             <option value="rejected"><UiText>{"Ditolak"}</UiText></option>
@@ -175,7 +179,7 @@ export async function TeacherQuizIndex({
         {hasActiveFilters && (
           <Link href="/guru/kuis" className="filter-reset-btn">
             <RotateCcw size={14} aria-hidden="true" />
-            <UiText>{"Reset filter"}</UiText>
+            <UiText>{"Bersihkan filter"}</UiText>
           </Link>
         )}
       </form>
@@ -229,10 +233,10 @@ export async function TeacherQuizIndex({
         </section>
       ) : (
         <section className="panel">
-          <Empty title={<UiText>{"Mulai dari satu pertanyaan."}</UiText>}><UiText>{"Buat kuis pilihan ganda, lalu minta review sebelum membagikannya ke siswa."}</UiText></Empty>
+          <Empty title={<UiText>{"Mulai dari satu pertanyaan."}</UiText>}><UiText>{"Buat kuis pilihan ganda, lalu minta peninjauan sebelum membagikannya ke siswa."}</UiText></Empty>
         </section>
       )}
-      <Pagination page={page} next={rows.length === 25} path="/guru/kuis" />
+      <Pagination page={page} next={rows.length === 25} path="/guru/kuis" label={t("Halaman daftar")} />
     </>
   );
 }
@@ -255,7 +259,7 @@ export async function TeacherQuizEditor({ id }: { id?: string }) {
         <ArrowLeft size={16} aria-hidden="true" /><UiText>{"Semua kuis"}</UiText></Link>
       <Heading
         title={draft?.version.title || <UiText>{"Buat kuis baru"}</UiText>}
-        description={<UiText>{"Pertanyaan yang jelas. Review yang terarah. Pengalaman belajar yang nyaman."}</UiText>}
+        description={<UiText>{"Pertanyaan yang jelas. Peninjauan yang terarah. Pengalaman belajar yang nyaman."}</UiText>}
       />
       <QuizWorkspace
         key={
@@ -282,6 +286,7 @@ export async function QuizReviewIndex({
   page?: string;
   search?: string;
 }) {
+  const { t } = await getServerI18n();
   const page = pageNumber(raw),
     base = role === "admin" ? "/admin/review-kuis" : "/guru/review-kuis";
   const search = (rawSearch ?? "").trim().slice(0, 120);
@@ -306,7 +311,7 @@ export async function QuizReviewIndex({
     <>
       <Heading
         icon={<FileCheck2 size={24} aria-hidden="true" />}
-        title={<UiText>{"Review kuis"}</UiText>}
+        title={<UiText>{"Peninjauan kuis"}</UiText>}
         description={
           role === "admin"
             ? <UiText>{"Pastikan pertanyaan dan pembahasan siap membantu siswa belajar."}</UiText>
@@ -334,7 +339,7 @@ export async function QuizReviewIndex({
               id="search"
               defaultValue={search}
               maxLength={120}
-              placeholder="Cari judul kuis atau nama guru pengunggah..."
+              placeholder={t("Cari judul kuis atau nama guru pengunggah…")}
               type="search"
               className="search-input-field"
             />
@@ -349,14 +354,14 @@ export async function QuizReviewIndex({
         {hasActiveFilters && (
           <Link href={base} className="filter-reset-btn">
             <RotateCcw size={14} aria-hidden="true" />
-            <UiText>{"Reset filter"}</UiText>
+            <UiText>{"Bersihkan filter"}</UiText>
           </Link>
         )}
       </form>
 
       <div className="learning-section-heading">
         <h2>
-          <UiText>{"Antrean review"}</UiText>
+          <UiText>{"Antrean peninjauan"}</UiText>
           <span className="count">{rows.length}</span>
         </h2>
       </div>
@@ -371,7 +376,7 @@ export async function QuizReviewIndex({
             >
               <div className="editorial-card-top">
                 <FileCheck2 size={23} aria-hidden="true" />
-                <Badge><UiText>{"Menunggu review"}</UiText></Badge>
+                <Badge><UiText>{"Menunggu peninjauan"}</UiText></Badge>
               </div>
               <h2>{q.title}</h2>
               <p><UiText>{"Disiapkan oleh "}</UiText>{q.owner_name}</p>
@@ -387,7 +392,7 @@ export async function QuizReviewIndex({
         <section className="panel">
           <Empty title={<UiText>{"Kuis tidak ditemukan"}</UiText>}>
             <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
-              <UiText>{"Tidak ada kuis dalam antrean review yang cocok dengan pencarian."}</UiText>
+              <UiText>{"Tidak ada kuis dalam antrean peninjauan yang cocok dengan pencarian."}</UiText>
               <Link href={base} className="button secondary">
                 <RotateCcw size={15} aria-hidden="true" />
                 <UiText>{"Hapus filter"}</UiText>
@@ -397,10 +402,10 @@ export async function QuizReviewIndex({
         </section>
       ) : (
         <section className="panel">
-          <Empty title={<UiText>{"Antrean review sudah bersih."}</UiText>}><UiText>{"Kuis yang menunggu penilaian akan muncul di sini."}</UiText></Empty>
+          <Empty title={<UiText>{"Antrean peninjauan sudah bersih."}</UiText>}><UiText>{"Kuis yang menunggu penilaian akan muncul di sini."}</UiText></Empty>
         </section>
       )}
-      <Pagination page={page} next={rows.length === 25} path={base} />
+      <Pagination page={page} next={rows.length === 25} path={base} label={t("Halaman daftar")} />
     </>
   );
 }
@@ -425,7 +430,7 @@ export async function QuizReviewDetail({
         className="learning-back"
         href={role === "admin" ? "/admin/review-kuis" : "/guru/review-kuis"}
       >
-        <ArrowLeft size={16} aria-hidden="true" /><UiText>{"Antrean review"}</UiText></Link>
+        <ArrowLeft size={16} aria-hidden="true" /><UiText>{"Antrean peninjauan"}</UiText></Link>
       <Heading
         title={draft.version.title}
         description={<UiText>{"Keputusan Anda berlaku untuk revisi yang sedang ditampilkan."}</UiText>}
@@ -442,6 +447,7 @@ export async function QuizReviewDetail({
 }
 
 export async function StudentAssignmentIndex({ page: raw }: { page?: string }) {
+  const { t, language } = await getServerI18n();
   const page = pageNumber(raw);
   const rows = await editorialData<Assignment[]>(
     `/student/assignments?limit=25&offset=${page * 25}`,
@@ -468,7 +474,15 @@ export async function StudentAssignmentIndex({ page: raw }: { page?: string }) {
                 key={a.id}
                 href={`/siswa/tugas/${a.id}`}
                 className="panel editorial-card student-tactile-card"
-                aria-label={`${a.title}. Kelas ${a.class_name}. ${a.total_questions} soal. Status: ${availabilityLabel[availability]}. ${a.due_at ? `Tenggat ${scheduleLabel(a.due_at)}` : "Tanpa batas pengumpulan"}.`}
+                aria-label={t("Tugas {title}. Kelas {className}. {count} soal. Status: {status}. {deadline}.", {
+                  title: a.title,
+                  className: a.class_name,
+                  count: a.total_questions,
+                  status: t(availabilityLabel[availability]),
+                  deadline: a.due_at
+                    ? `${t("Tenggat:")} ${scheduleLabel(a.due_at, language === "en" ? "en-US" : "id-ID")}`
+                    : t("Tanpa batas pengumpulan"),
+                })}
               >
                 <div className="editorial-card-top">
                   <span className="class-symbol">
@@ -489,7 +503,7 @@ export async function StudentAssignmentIndex({ page: raw }: { page?: string }) {
                   <CalendarClock size={15} aria-hidden="true" />
                   <span>
                     {a.due_at
-                      ? "Tenggat: " + scheduleLabel(a.due_at)
+                      ? t("Tenggat: {date}", { date: scheduleLabel(a.due_at, language === "en" ? "en-US" : "id-ID") })
                       : <UiText>{"Tanpa batas pengumpulan"}</UiText>}
                   </span>
                 </div>
@@ -517,12 +531,13 @@ export async function StudentAssignmentIndex({ page: raw }: { page?: string }) {
           <Empty title={<UiText>{"Tugasmu akan muncul di sini."}</UiText>}><UiText>{"Guru akan membagikan kuis setelah kamu terdaftar di kelas."}</UiText></Empty>
         </section>
       )}
-      <Pagination page={page} next={rows.length === 25} path="/siswa/tugas" />
+      <Pagination page={page} next={rows.length === 25} path="/siswa/tugas" label={t("Halaman daftar")} />
     </>
   );
 }
 
 export async function StudentAssignmentPage({ id }: { id: string }) {
+  const { t } = await getServerI18n();
   const assignment = await editorialData<Assignment>(
     `/student/assignments/${id}`,
     "student",
@@ -547,14 +562,18 @@ export async function StudentAssignmentPage({ id }: { id: string }) {
         className="learning-back student-back-link"
         href="/siswa/tugas"
         data-voice-menu="assignments"
-        aria-label="Kembali ke semua tugas dari guru"
+        aria-label={t("Kembali ke semua tugas dari guru")}
       >
         <ArrowLeft size={16} aria-hidden="true" />
         <UiText>{"Semua tugas"}</UiText>
       </Link>
       <Heading
         title={assignment.title}
-        description={`${assignment.class_name} · ${assignment.total_questions} soal · Revisi ${assignment.version}`}
+        description={t("{className}. {count} soal. Revisi {version}.", {
+          className: assignment.class_name,
+          count: assignment.total_questions,
+          version: assignment.version,
+        })}
       />
       <StudentAssignment
         key={JSON.stringify([

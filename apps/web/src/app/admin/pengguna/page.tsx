@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus, Search, ArrowUpRight, ArrowLeft, ArrowRight, RotateCcw, Users } from "lucide-react";
 import { backend } from "@/lib/server-api";
 import { requireSession } from "@/lib/session";
+import { getServerI18n } from "@/lib/server-language";
 import { roleLabel, type User } from "@/lib/types";
 import { Heading, Badge, Empty } from "@/components/ui";
 
@@ -20,6 +21,7 @@ export default async function UsersPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { token } = await requireSession("admin");
+  const { t } = await getServerI18n();
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.slice(0, 100) : "";
   const role =
@@ -98,7 +100,7 @@ export default async function UsersPage({
               name="q"
               id="q"
               defaultValue={q}
-              placeholder="Cari berdasarkan nama atau username…"
+              placeholder={t("Cari berdasarkan nama atau nama pengguna…")}
               maxLength={100}
               className="search-input-field"
             />
@@ -130,7 +132,7 @@ export default async function UsersPage({
         {hasActiveFilters && (
           <Link href="/admin/pengguna" className="filter-reset-btn">
             <RotateCcw size={14} aria-hidden="true" />
-            <UiText>{"Reset filter"}</UiText>
+            <UiText>{"Bersihkan filter"}</UiText>
           </Link>
         )}
       </form>
@@ -177,7 +179,7 @@ export default async function UsersPage({
                     <Link
                       className="text-link"
                       href={`/admin/pengguna/${u.id}`}
-                      aria-label={`Kelola ${u.full_name}`}
+                      aria-label={t("Kelola {name}", { name: u.full_name })}
                     >
                       <UiText>{"Kelola"}</UiText>
                       <ArrowUpRight size={16} aria-hidden="true" />

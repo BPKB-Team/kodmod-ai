@@ -5,6 +5,7 @@ import { Badge, Empty, Heading } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { requireSession } from "@/lib/session";
+import { getServerI18n } from "@/lib/server-language";
 import { backend } from "@/lib/server-api";
 import type { Classroom, TeacherMaterial } from "@/lib/class-types";
 import "@/styles/admin-materials.css";
@@ -15,6 +16,7 @@ export default async function Page({
   searchParams: Promise<{ search?: string; classId?: string; status?: string }>;
 }) {
   const { token } = await requireSession("teacher");
+  const { t } = await getServerI18n();
   const query = await searchParams;
   const search = (query.search ?? "").trim().slice(0, 120);
   const classId = (query.classId ?? "").trim();
@@ -57,12 +59,12 @@ export default async function Page({
       <Heading
         icon={<BookOpen size={24} aria-hidden="true" />}
         title={<UiText>{"Materi saya"}</UiText>}
-        description={<UiText>{"Upload dokumen, tinjau isinya, lalu terbitkan untuk belajar bersama Tutor."}</UiText>}
+        description={<UiText>{"Unggah dokumen, tinjau isinya, lalu terbitkan untuk belajar bersama Tutor."}</UiText>}
       >
         {activeClasses.length > 0 && (
           <Link className="button primary" href="/guru/materi/baru">
             <Plus size={18} aria-hidden="true" />
-            <UiText>{"Upload materi"}</UiText>
+            <UiText>{"Unggah materi"}</UiText>
           </Link>
         )}
       </Heading>
@@ -87,7 +89,7 @@ export default async function Page({
               id="search"
               defaultValue={search}
               maxLength={120}
-              placeholder="Cari judul materi, mapel, atau kelas..."
+              placeholder={t("Cari judul materi, mapel, atau kelas…")}
               type="search"
               className="search-input-field"
             />
@@ -117,7 +119,7 @@ export default async function Page({
           <NativeSelect id="status" name="status" defaultValue={status}>
             <option value=""><UiText>{"Semua status"}</UiText></option>
             <option value="published"><UiText>{"Terbit"}</UiText></option>
-            <option value="draft"><UiText>{"Draft"}</UiText></option>
+            <option value="draft"><UiText>{"Draf"}</UiText></option>
           </NativeSelect>
         </div>
 
@@ -129,7 +131,7 @@ export default async function Page({
         {hasActiveFilters && (
           <Link href="/guru/materi" className="filter-reset-btn">
             <RotateCcw size={14} aria-hidden="true" />
-            <UiText>{"Reset filter"}</UiText>
+            <UiText>{"Bersihkan filter"}</UiText>
           </Link>
         )}
       </form>
@@ -148,7 +150,7 @@ export default async function Page({
               <header>
                 <BookOpen size={22} aria-hidden="true" />
                 <Badge active={material.published}>
-                  {material.published ? <UiText>{"Terbit"}</UiText> : <UiText>{"Draft"}</UiText>}
+                  {material.published ? <UiText>{"Terbit"}</UiText> : <UiText>{"Draf"}</UiText>}
                 </Badge>
               </header>
               <h2>{material.title}</h2>
@@ -198,11 +200,11 @@ export default async function Page({
         <section className="panel">
           <Empty title={<UiText>{"Materi pertama Anda"}</UiText>}>
             <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
-              <UiText>{"Klik tombol Upload materi di atas untuk mengunggah PDF, dokumen, atau menulis materi sendiri."}</UiText>
+              <UiText>{"Klik tombol Unggah materi di atas untuk mengunggah PDF, dokumen, atau menulis materi sendiri."}</UiText>
               {activeClasses.length > 0 && (
                 <Link className="button primary" href="/guru/materi/baru">
                   <Plus size={16} aria-hidden="true" />
-                  <UiText>{"Upload materi"}</UiText>
+                  <UiText>{"Unggah materi"}</UiText>
                 </Link>
               )}
             </div>

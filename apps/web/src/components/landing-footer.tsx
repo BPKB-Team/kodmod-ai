@@ -14,7 +14,7 @@ export function LandingFooter() {
       <div className="lp-container lp-master-footer-inner">
         {/* Kolom Kiri: Brand & Misi Singkat */}
         <div className="lp-footer-brand-col">
-          <Link href="/" className="lp-brand" aria-label="KODMOD" data-voice-menu="footer-brand">
+          <Link href="/" className="lp-brand" aria-label={t("KODMOD, halaman utama")} data-voice-menu="footer-brand">
             <Image src="/brand/symbol.png" alt="" width={38} height={40} />
             <span>KODMOD<span className="lp-brand-dot">.</span></span>
           </Link>

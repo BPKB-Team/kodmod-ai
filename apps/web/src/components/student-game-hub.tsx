@@ -236,9 +236,12 @@ export function StudentGameHub({
                 }}
                 className="game-pad-card"
                 data-voice-menu={pad.voiceKey}
-                aria-label={`Menu ${pad.num}: ${t(pad.title)}. ${t(
-                  pad.desc
-                )}. ${pad.stat}. ${t("Tekan angka")} ${pad.num}.`}
+                aria-label={t("Menu {number}: {title}. {description}. {stat}. Tekan angka {number}.", {
+                  number: pad.num,
+                  title: t(pad.title),
+                  description: t(pad.desc),
+                  stat: pad.stat,
+                })}
               >
                 <div className="game-pad-top">
                   <span className="game-pad-key" aria-hidden="true">
@@ -289,7 +292,11 @@ export function StudentGameHub({
                 href={`/siswa/kelas/${cls.id}`}
                 className="student-class-mini-card"
                 data-voice-menu="classes"
-                aria-label={`${cls.name}. ${cls.subject}. ${cls.material_count} materi.`}
+                aria-label={t("Kelas {name}. Mata pelajaran {subject}. {count} materi.", {
+                  name: cls.name,
+                  subject: cls.subject,
+                  count: cls.material_count,
+                })}
               >
                 <div className="mini-card-top">
                   <span className="mini-card-badge">{cls.subject}</span>

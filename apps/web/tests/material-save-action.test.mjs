@@ -37,7 +37,7 @@ test("stale material save reports the conflict while retaining the structured dr
   form.set("published", "yes");
   boundary.request = null;
   const result = await saveMaterial(classId, materialId, {}, form);
-  assert.match(result.error, /Draft Anda tetap ada/);
+  assert.match(result.error, /Draf Anda tetap ada/);
   assert.equal(boundary.request.path, `/classes/${classId}/materials/${materialId}`);
   assert.equal(boundary.request.token, "teacher-token");
   assert.equal(boundary.request.init.method, "PUT");

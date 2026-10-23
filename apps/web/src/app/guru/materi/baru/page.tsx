@@ -19,7 +19,7 @@ export default async function Page() {
         <UiText>{"Kembali ke materi saya"}</UiText>
       </Link>
       <Heading
-        title={<UiText>{"Upload Materi Baru"}</UiText>}
+        title={<UiText>{"Unggah Materi Baru"}</UiText>}
         description={<UiText>{"Unggah dokumen pembelajaran, tinjau teks hasil bacaan, dan pilih kelas tujuannya."}</UiText>}
       />
       {!active.length ? (

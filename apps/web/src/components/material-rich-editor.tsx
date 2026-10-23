@@ -148,7 +148,7 @@ export function MaterialRichEditor({
       {/* DOCX-style Ribbon Toolbar */}
       <div className="material-editor-toolbar" role="group" aria-label={t("Format materi")}>
         {/* Undo / Redo Group */}
-        <div className="editor-tool-group" role="group" aria-label="Riwayat edit">
+        <div className="editor-tool-group" role="group" aria-label={t("Riwayat suntingan")}>
           <button
             type="button"
             className="editor-tool-btn"
@@ -176,7 +176,7 @@ export function MaterialRichEditor({
         <div className="editor-tool-divider" aria-hidden="true" />
 
         {/* Structure Group: Paragraf, Judul */}
-        <div className="editor-tool-group" role="group" aria-label="Format paragraf">
+        <div className="editor-tool-group" role="group" aria-label={t("Format paragraf")}>
           <button
             type="button"
             className={`editor-tool-btn ${editor?.isActive("paragraph") ? "is-active" : ""}`}
@@ -206,7 +206,7 @@ export function MaterialRichEditor({
         <div className="editor-tool-divider" aria-hidden="true" />
 
         {/* Inline Formatting: Tebal, Miring, Subscript, Superscript */}
-        <div className="editor-tool-group" role="group" aria-label="Format karakter">
+        <div className="editor-tool-group" role="group" aria-label={t("Format karakter")}>
           <button
             type="button"
             className={`editor-tool-btn icon-only ${editor?.isActive("bold") ? "is-active" : ""}`}
@@ -256,7 +256,7 @@ export function MaterialRichEditor({
         <div className="editor-tool-divider" aria-hidden="true" />
 
         {/* Lists Group: Bullet, Numbered */}
-        <div className="editor-tool-group" role="group" aria-label="Daftar list">
+        <div className="editor-tool-group" role="group" aria-label={t("Daftar butir dan nomor")}>
           <button
             type="button"
             className={`editor-tool-btn icon-only ${editor?.isActive("bulletList") ? "is-active" : ""}`}
@@ -284,7 +284,7 @@ export function MaterialRichEditor({
         <div className="editor-tool-divider" aria-hidden="true" />
 
         {/* Tables Group: Insert, Add Row, Add Column */}
-        <div className="editor-tool-group" role="group" aria-label="Tabel">
+        <div className="editor-tool-group" role="group" aria-label={t("Tabel")}>
           <button
             type="button"
             className={`editor-tool-btn ${isTableActive ? "is-active" : ""}`}
@@ -374,7 +374,7 @@ export function MaterialRichEditor({
               onChange={(e) => setAlt(e.target.value)}
               disabled={locked}
               maxLength={4000}
-              placeholder="Contoh: Diagram orbit planet mengelilingi matahari"
+              placeholder={t("Contoh: Diagram orbit planet mengelilingi matahari")}
             />
           </label>
           <label className="field">

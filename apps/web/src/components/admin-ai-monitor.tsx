@@ -183,7 +183,7 @@ export function AdminAiMonitor({
 
   // Filter requests
   const filteredRequests = data?.recent_requests || [];
-  const serviceLabels: Record<string, string> = { tutor: "Pengajaran", quiz: "Pembuatan soal", router: "Pemilihan alur", scoring: "Penilaian", recommendation: "Rekomendasi", reflection: "Review jawaban", embedding: "Pencarian materi", tts: "Pembacaan suara", stt: "Transkripsi suara" };
+  const serviceLabels: Record<string, string> = { tutor: "Pengajaran", quiz: "Pembuatan soal", router: "Pemilihan alur", scoring: "Penilaian", recommendation: "Rekomendasi", reflection: "Peninjauan jawaban", embedding: "Pencarian materi", tts: "Pembacaan suara", stt: "Transkripsi suara" };
 
   return (
     <div className="admin-ai-monitor-layout">
@@ -257,7 +257,7 @@ export function AdminAiMonitor({
           ) : (
             <div className="kodmod-skeleton" style={{ height: "1.75rem", width: "55%", margin: "4px 0" }} />
           )}
-          <small>{t("Error atau fallback")}</small>
+          <small>{t("Kesalahan atau cadangan")}</small>
         </div>
         <div className="ai-stat-card">
           <div className="ai-stat-header">
@@ -333,7 +333,7 @@ export function AdminAiMonitor({
               <span className="kodmod-skeleton" style={{ display: "inline-block", width: "240px", height: "0.85rem" }} />
             ) : actualCosts.exchange_rate !== null && actualCosts.exchange_rate_date ? (
               <>
-                <UiText>{"Kurs referensi"}</UiText>: 1 USD = {displayRate(actualCosts.exchange_rate)} IDR · <UiText>{"Data kurs"}</UiText> {actualCosts.exchange_rate_date}.{" "}
+                <UiText>{"Kurs acuan: 1 dolar AS setara dengan"}</UiText> {displayRate(actualCosts.exchange_rate)} <UiText>{"rupiah"}</UiText> · <UiText>{"Data kurs"}</UiText> {actualCosts.exchange_rate_date}.{" "}
                 <UiText>{"Konversi rupiah hanya referensi dan bukan nilai tagihan OpenAI."}</UiText>
               </>
             ) : actualCosts.error_code === "admin_key_missing" ? (
@@ -358,7 +358,7 @@ export function AdminAiMonitor({
               </span>
               <div>
                 <h3><UiText>{"ElevenLabs Speech Synthesis"}</UiText></h3>
-                <small><UiText>{"Layanan Text-to-Speech untuk audio siswa tunanetra"}</UiText></small>
+                <small><UiText>{"Layanan teks menjadi suara untuk materi audio siswa tunanetra"}</UiText></small>
               </div>
             </div>
             {elevenlabs ? (
@@ -419,7 +419,7 @@ export function AdminAiMonitor({
               {elevenlabs?.next_reset_unix && (
                 <span className="quota-reset-badge">
                   <Clock size={12} aria-hidden="true" />
-                  <UiText>{"Reset: "}</UiText>
+                  <UiText>{"Diatur ulang: "}</UiText>
                   <strong><UiDate value={new Date(elevenlabs.next_reset_unix * 1000).toISOString()} /></strong>
                 </span>
               )}
@@ -429,7 +429,7 @@ export function AdminAiMonitor({
           {/* Specs List */}
           <div className="ai-specs-grid">
             <div className="spec-item">
-              <span className="spec-label"><UiText>{"Paket / Tier"}</UiText></span>
+              <span className="spec-label"><UiText>{"Paket / Tingkat"}</UiText></span>
               <strong className="spec-value tier-badge">
                 {elevenlabs ? (elevenlabs.tier?.toUpperCase() ?? t("Belum tersedia")) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "60px", height: "1rem" }} />}
               </strong>
@@ -441,7 +441,7 @@ export function AdminAiMonitor({
               </strong>
             </div>
             <div className="spec-item">
-              <span className="spec-label"><UiText>{"Speech to Text"}</UiText></span>
+              <span className="spec-label"><UiText>{"Suara menjadi teks"}</UiText></span>
               <strong className="spec-value">
                 {elevenlabs ? elevenlabs.stt_backend : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}
               </strong>
@@ -457,8 +457,8 @@ export function AdminAiMonitor({
                 <Sparkles size={22} aria-hidden="true" />
               </span>
               <div>
-                <h3><UiText>{"OpenAI GPT Intelligence"}</UiText></h3>
-                <small><UiText>{"Mesin penalaran Tutor AI, penyusunan kuis, dan embeddings"}</UiText></small>
+                <h3><UiText>{"Penalaran OpenAI GPT"}</UiText></h3>
+                <small><UiText>{"Mesin penalaran Tutor AI, penyusunan kuis, dan representasi vektor teks"}</UiText></small>
               </div>
             </div>
             {openai ? (
@@ -512,7 +512,7 @@ export function AdminAiMonitor({
                 <div
                   className="token-segment prompt"
                   style={{ width: `${openai && openai.total_tokens ? Math.max(8, Math.round(((openai.prompt_tokens || 0) / openai.total_tokens) * 100)) : 50}%` }}
-                  title={`Prompt: ${openai?.prompt_tokens?.toLocaleString(locale) ?? 0}`}
+                  title={`Perintah: ${openai?.prompt_tokens?.toLocaleString(locale) ?? 0}`}
                 />
                 <div
                   className="token-segment completion"
@@ -526,7 +526,7 @@ export function AdminAiMonitor({
               <div className="breakdown-sub prompt-sub">
                 <div className="breakdown-label">
                   <span className="breakdown-dot prompt-dot" aria-hidden="true" />
-                  <small><UiText>{"Input (Prompt)"}</UiText></small>
+                  <small><UiText>{"Masukan (perintah)"}</UiText></small>
                 </div>
                 <strong>{openai ? metric(openai.prompt_tokens) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "50px", height: "1rem" }} />}</strong>
                 {openai && openai.total_tokens ? (
@@ -538,7 +538,7 @@ export function AdminAiMonitor({
               <div className="breakdown-sub completion-sub">
                 <div className="breakdown-label">
                   <span className="breakdown-dot completion-dot" aria-hidden="true" />
-                  <small><UiText>{"Output (Jawaban)"}</UiText></small>
+                  <small><UiText>{"Keluaran (jawaban)"}</UiText></small>
                 </div>
                 <strong>{openai ? metric(openai.completion_tokens) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "50px", height: "1rem" }} />}</strong>
                 {openai && openai.total_tokens ? (
@@ -561,7 +561,7 @@ export function AdminAiMonitor({
               <strong className="spec-value">{openai ? openai.models.quiz : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
             <div className="spec-item">
-              <span className="spec-label"><UiText>{"Embeddings"}</UiText></span>
+              <span className="spec-label"><UiText>{"Representasi vektor teks"}</UiText></span>
               <strong className="spec-value">{openai ? openai.models.embedding : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
           </div>
@@ -579,7 +579,7 @@ export function AdminAiMonitor({
 
         {/* Filter bar untuk log */}
         <div className="ai-log-filter-bar">
-          <div className="ai-filter-group" role="tablist" aria-label={t("Filter provider")}>
+          <div className="ai-filter-group" role="tablist" aria-label={t("Filter layanan AI")}>
             <button
               type="button"
               role="tab"
@@ -588,7 +588,7 @@ export function AdminAiMonitor({
               aria-selected={filterProvider === "all"}
               onClick={() => void handleRefresh(1, "all")}
             >
-              <UiText>{"Semua Provider"}</UiText>
+              <UiText>{"Semua layanan AI"}</UiText>
             </button>
             <button
               type="button"
@@ -660,8 +660,8 @@ export function AdminAiMonitor({
               <TableHeader>
                 <TableRow>
                   <TableHead><UiText>{"Waktu"}</UiText></TableHead>
-                  <TableHead><UiText>{"Provider & Layanan"}</UiText></TableHead>
-                  <TableHead><UiText>{"Model / Voice"}</UiText></TableHead>
+                  <TableHead><UiText>{"Layanan AI dan fitur"}</UiText></TableHead>
+                  <TableHead><UiText>{"Model / Suara"}</UiText></TableHead>
                   <TableHead><UiText>{"Siswa / Target"}</UiText></TableHead>
                   <TableHead><UiText>{"Volume"}</UiText></TableHead>
                   <TableHead><UiText>{"Latensi"}</UiText></TableHead>
@@ -693,8 +693,8 @@ export function AdminAiMonitor({
               <TableHeader>
                 <TableRow>
                   <TableHead><UiText>{"Waktu"}</UiText></TableHead>
-                  <TableHead><UiText>{"Provider & Layanan"}</UiText></TableHead>
-                  <TableHead><UiText>{"Model / Voice"}</UiText></TableHead>
+                  <TableHead><UiText>{"Layanan AI dan fitur"}</UiText></TableHead>
+                  <TableHead><UiText>{"Model / Suara"}</UiText></TableHead>
                   <TableHead><UiText>{"Siswa / Target"}</UiText></TableHead>
                   <TableHead><UiText>{"Volume"}</UiText></TableHead>
                   <TableHead><UiText>{"Latensi"}</UiText></TableHead>
@@ -735,7 +735,7 @@ export function AdminAiMonitor({
                     <TableCell>
                       <span className="log-latency">
                         <Zap size={13} aria-hidden="true" />
-                        {metric(req.latency_ms)} ms
+                        {metric(req.latency_ms)} <UiText>{"milidetik"}</UiText>
                       </span>
                     </TableCell>
                     <TableCell>
@@ -844,7 +844,7 @@ export function AdminAiMonitor({
               </span>
               <span className="log-latency">
                 <Zap size={13} aria-hidden="true" />
-                {metric(selectedRequest.latency_ms)} ms
+                {metric(selectedRequest.latency_ms)} <UiText>{"milidetik"}</UiText>
               </span>
               <span className="log-time">
                 <Clock size={13} aria-hidden="true" />
@@ -861,7 +861,7 @@ export function AdminAiMonitor({
               </div>
 
               <div className="ai-trace-item">
-                <span className="ai-trace-item-label">{t("Model / Voice")}</span>
+                <span className="ai-trace-item-label">{t("Model / Suara")}</span>
                 <code className="model-code">{selectedRequest.model}</code>
               </div>
 
@@ -878,7 +878,7 @@ export function AdminAiMonitor({
                 </strong>
                 {selectedRequest.input_tokens != null && selectedRequest.output_tokens != null && (
                   <small className="muted">
-                    {metric(selectedRequest.input_tokens)} in / {metric(selectedRequest.output_tokens)} out
+                    {t("Masukan: {input} token. Keluaran: {output} token.", { input: metric(selectedRequest.input_tokens), output: metric(selectedRequest.output_tokens) })}
                   </small>
                 )}
               </div>
@@ -894,10 +894,10 @@ export function AdminAiMonitor({
               </div>
             </div>
 
-            {/* Request ID bar with Copy button */}
+            {/* Nomor permintaan bar with Copy button */}
             <div className="ai-trace-reqid-box">
               <div className="ai-trace-reqid-text">
-                <span className="ai-trace-reqid-label"><UiText>{"Request ID"}</UiText></span>
+                <span className="ai-trace-reqid-label"><UiText>{"Nomor permintaan"}</UiText></span>
                 <code>{selectedRequest.request_id}</code>
               </div>
               <button
@@ -922,14 +922,14 @@ export function AdminAiMonitor({
             {selectedRequest.error_code && (
               <div className="alert error-message ai-trace-error">
                 <CircleAlert size={16} aria-hidden="true" />
-                <span><UiText>{"Kode error:"}</UiText>{" "}<strong>{selectedRequest.error_code}</strong></span>
+                <span><UiText>{"Kode kesalahan:"}</UiText>{" "}<strong>{selectedRequest.error_code}</strong></span>
               </div>
             )}
 
             {/* Learning Flow Diagnostic Trace section */}
             <div className="ai-trace-stages-section">
               <div className="ai-trace-stages-header">
-                <h3><UiText>{"Tahapan Alur Belajar (Diagnostics)"}</UiText></h3>
+                <h3><UiText>{"Tahapan alur belajar (pemeriksaan)"}</UiText></h3>
                 {traceLoading && <span className="ai-trace-loading-pill"><RefreshCw size={12} className="spin" /> <UiText>{"Memuat tahapan jejak alur belajar…"}</UiText></span>}
               </div>
 
@@ -961,7 +961,7 @@ export function AdminAiMonitor({
                         )}
                         {trace.prompt_version && (
                           <div>
-                            <span className="muted">{t("Prompt")}: </span>
+                            <span className="muted">{t("Perintah")}: </span>
                             <code>{trace.prompt_version}</code>
                           </div>
                         )}
@@ -986,7 +986,7 @@ export function AdminAiMonitor({
                         {trace.latency_ms != null && (
                           <div>
                             <span className="muted">{t("Latensi")}: </span>
-                            <span>{trace.latency_ms} ms</span>
+                            <span>{trace.latency_ms} <UiText>{"milidetik"}</UiText></span>
                           </div>
                         )}
                       </div>
@@ -1003,10 +1003,10 @@ export function AdminAiMonitor({
                     )}
                   </div>
                   <div>
-                    <h4><UiText>{"Panggilan Langsung ke Provider"}</UiText></h4>
+                    <h4><UiText>{"Panggilan langsung ke layanan AI"}</UiText></h4>
                     <p>
                       <UiText>
-                        {"Panggilan pembacaan suara (Text-to-Speech) dijalankan langsung ke API penyedia tanpa melalui tahapan orkestrasi inferensi multi-langkah LangGraph. Metrik latensi, volume suara, dan biaya telah tercatat lengkap pada rincian di atas."}
+                        {"Panggilan teks menjadi suara dijalankan langsung melalui layanan AI, tanpa melewati alur inferensi LangGraph. Waktu respons, durasi audio, dan biaya tercatat pada rincian di atas."}
                       </UiText>
                     </p>
                   </div>

@@ -147,7 +147,7 @@ export async function saveMaterial(
       },
     );
   } catch (error) {
-    if(error instanceof BackendError&&error.status===409)return {error:"Materi sudah berubah. Draft Anda tetap ada. Buka revisi terbaru sebelum menyimpan kembali."};
+    if(error instanceof BackendError&&error.status===409)return {error:"Materi sudah berubah. Draf Anda tetap ada. Buka revisi terbaru sebelum menyimpan kembali."};
     return failure(error);
   }
   refresh();

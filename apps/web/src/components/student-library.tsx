@@ -106,7 +106,7 @@ export function StudentLibrary({
               setStatus("all");
               setLimit(12);
             }}
-          ><UiText>{"Reset filter"}</UiText></button>
+          ><UiText>{"Bersihkan filter"}</UiText></button>
         </div>
       ) : (
         <div className="student-material-grid">
@@ -115,7 +115,12 @@ export function StudentLibrary({
               className="panel student-material-card student-tactile-card"
               href={`/siswa/tutor?class_id=${m.class_id}&material_id=${m.id}`}
               key={m.id}
-              aria-label={`${m.title}. Kelas ${m.class_name}. Mata pelajaran ${m.subject}. ${materialLearningLabel(m.learning_progress, language)}. Buka ruang belajar bersama Tutor AI.`}
+              aria-label={t("Materi {title}. Kelas {className}. Mata pelajaran {subject}. {progress}. Buka ruang belajar bersama Tutor AI.", {
+                title: m.title,
+                className: m.class_name,
+                subject: m.subject,
+                progress: t(materialLearningLabel(m.learning_progress, language)),
+              })}
             >
               <div className="student-material-top">
                 <span className="class-symbol">

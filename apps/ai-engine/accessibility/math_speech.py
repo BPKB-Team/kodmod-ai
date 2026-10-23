@@ -113,6 +113,42 @@ def normalize_math_speech(text: str, language: str = "id") -> str:
     is_en = language == "en"
     out = text
 
+    if not is_en:
+        # Indonesian punctuation uses periods for grouped thousands and commas
+        # for decimals. Expand it before the TTS provider applies its own rules.
+        def _grouped_number(match: re.Match) -> str:
+            whole, decimal = match.group(1), match.group(2)
+            whole = whole.replace(".", "")
+            if decimal is None:
+                return whole
+            return f"{whole} koma {' '.join(decimal)}"
+
+        out = re.sub(r"\b(\d{1,3}(?:\.\d{3})+)(?:,(\d+))?\b", _grouped_number, out)
+        out = re.sub(r"\b(\d+),(\d+)\b", lambda m: f"{m.group(1)} koma {' '.join(m.group(2))}", out)
+        out = re.sub(r"\b(\d+)\.(\d{1,2})\b(?!\.\d)", lambda m: f"{m.group(1)} koma {' '.join(m.group(2))}", out)
+
+        for acronym, spoken in (
+            (r"\bKODMOD\b", "Kodmod"),
+            (r"\bAI\b", "kecerdasan buatan"),
+            (r"\bTTS\b", "teks menjadi suara"),
+            (r"\bSTT\b", "suara menjadi teks"),
+            (r"\bAPI\b", "a pe i"),
+            (r"\bPDF\b", "pe de ef"),
+            (r"\bDOCX\b", "dokumen Word"),
+            (r"\bTXT\b", "teks biasa"),
+            (r"\bURL\b", "u er el"),
+            (r"\bUSD\b", "dolar Amerika"),
+            (r"\bIDR\b", "rupiah"),
+            (r"\bms\b", "milidetik"),
+        ):
+            out = re.sub(acronym, spoken, out, flags=re.IGNORECASE if "KODMOD" in acronym else 0)
+    else:
+        out = re.sub(
+            r"\b(\d+)\.(\d{1,2})\b(?!\.\d)",
+            lambda m: f"{m.group(1)} point {' '.join(m.group(2))}",
+            out,
+        )
+
     # 1. Vulgar fractions
     for char, (id_label, en_label) in VULGAR_FRACTIONS.items():
         if char in out:
@@ -188,6 +224,16 @@ def normalize_math_speech(text: str, language: str = "id") -> str:
     out = re.sub(
         r"(?<=[0-9a-zA-Z\)])\s*[⋅·]\s*(?=[0-9a-zA-Z\(])",
         " times " if is_en else " kali ",
+        out,
+    )
+    out = re.sub(
+        r"(?<=[0-9a-zA-Z\)])\s+\+\s+(?=[0-9a-zA-Z\(])",
+        " plus " if is_en else " ditambah ",
+        out,
+    )
+    out = re.sub(
+        r"(?<=[0-9a-zA-Z\)])\s+-\s+(?=[0-9a-zA-Z\(])",
+        " minus " if is_en else " dikurangi ",
         out,
     )
     out = re.sub(r"\s*÷\s*", " divided by " if is_en else " dibagi ", out)

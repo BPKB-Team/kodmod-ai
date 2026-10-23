@@ -86,7 +86,7 @@ export default async function Page({
               </UiText>
             </span>
             <Badge active={material.published}>
-              {material.published ? <UiText>{"Terbit"}</UiText> : <UiText>{"Draft"}</UiText>}
+              {material.published ? <UiText>{"Terbit"}</UiText> : <UiText>{"Draf"}</UiText>}
             </Badge>
           </div>
         </div>

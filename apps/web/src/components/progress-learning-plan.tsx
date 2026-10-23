@@ -17,7 +17,7 @@ export function ProgressLearningPlan({plan,disabled,onStart,onSkip}:{plan:StudyP
       </div>
       {["pending","in_progress"].includes(step.status)&&<div className="progress-step-actions">
         <button type="button" className="button secondary small" disabled={disabled} onClick={()=>onStart(step)}>{t(step.status==="in_progress"?"Lanjutkan":"Mulai")}</button>
-        <button type="button" className="button secondary small" disabled={disabled} onClick={()=>onSkip(step)} aria-label={`${t("Lewati")} ${step.title}`}>{t("Lewati")}</button>
+        <button type="button" className="button secondary small" disabled={disabled} onClick={()=>onSkip(step)} aria-label={t("Lewati langkah: {title}", { title: step.title })}>{t("Lewati")}</button>
       </div>}
     </li>)}</ol>
   </section>;

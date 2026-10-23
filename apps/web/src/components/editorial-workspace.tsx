@@ -72,8 +72,8 @@ const editable = (draft: QuizDraft): EditableQuestion[] =>
 
 const operationLabels: Record<string, string> = {
   propose: "Menyusun usulan soal…", save: "Menyimpan revisi kuis…", subject: "Menyimpan mata pelajaran…",
-  publish: "Menerbitkan kuis…", assign: "Menyiapkan penugasan…", reviewer: "Memperbarui reviewer…",
-  "submit-review": "Mengajukan kuis untuk review…", approve: "Menyimpan hasil review…", reject: "Menyimpan hasil review…",
+  publish: "Menerbitkan kuis…", assign: "Menyiapkan penugasan…", reviewer: "Memperbarui peninjau…",
+  "submit-review": "Mengajukan kuis untuk peninjauan…", approve: "Menyimpan hasil peninjauan…", reject: "Menyimpan hasil peninjauan…",
 };
 
 export function QuizWorkspace({
@@ -227,7 +227,7 @@ export function QuizWorkspace({
         accept(next);
         if (!draft) router.replace(`/guru/kuis/${next.id}`);
       },
-      "Draft kuis tersimpan. Anda dapat langsung menerbitkan kuis untuk dibagikan ke kelas.",
+      "Draf kuis tersimpan. Anda dapat langsung menerbitkan kuis untuk dibagikan ke kelas.",
       "save",
     );
   }
@@ -267,7 +267,7 @@ export function QuizWorkspace({
       </div>
       {error && (
         <p className="editorial-error" role="alert">
-          {error}{" "}
+          {t(error)}{" "}
           <RefreshButton label="Muat ulang halaman" size="sm" disabled={busy} />
         </p>
       )}
@@ -293,7 +293,7 @@ export function QuizWorkspace({
                     </div>
                     <div>
                       <h3><UiText>{"Usulkan soal dari materi"}</UiText></h3>
-                      <p><UiText>{"Soal yang dibuat tetap perlu Anda tinjau sebelum diajukan untuk review dan diterbitkan."}</UiText></p>
+                      <p><UiText>{"Soal yang dibuat tetap perlu Anda tinjau sebelum diajukan untuk peninjauan dan diterbitkan."}</UiText></p>
                     </div>
                   </div>
                   <div className="editorial-proposal-body">
@@ -548,7 +548,7 @@ export function QuizWorkspace({
 
                     <div className="editorial-option-help">
                       <HelpCircle size={16} aria-hidden="true" />
-                      <span><UiText>{"Pilih satu kunci jawaban. Kunci hanya terlihat oleh guru dan reviewer sebelum pembahasan dirilis."}</UiText></span>
+                      <span><UiText>{"Pilih satu kunci jawaban. Kunci hanya terlihat oleh guru dan peninjau sebelum pembahasan dirilis."}</UiText></span>
                     </div>
 
                     <fieldset className="editorial-options">
@@ -705,7 +705,7 @@ export function QuizWorkspace({
               <div className="editorial-save-bar">
                 <span>
                   {dirty
-                    ? <UiText>{"Simpan perubahan sebelum mengajukan review."}</UiText>
+                    ? <UiText>{"Simpan perubahan sebelum mengajukan peninjauan."}</UiText>
                     : <UiText>{"Anda dapat menyiapkan revisi berikutnya kapan saja."}</UiText>}
                 </span>
                 <button
@@ -717,7 +717,7 @@ export function QuizWorkspace({
                     ? <UiText>{"Menyimpan…"}</UiText>
                     : draft
                       ? <UiText>{"Simpan revisi baru"}</UiText>
-                      : <UiText>{"Simpan draft"}</UiText>}
+                      : <UiText>{"Simpan draf"}</UiText>}
                 </button>
               </div>
             </form>
@@ -892,7 +892,7 @@ export function QuizWorkspace({
             <h2><UiText>{"Langkah publikasi"}</UiText></h2>
             <ol className="editorial-lifecycle-stepper">
               {[
-                "Tulis & simpan draft",
+                "Tulis dan simpan draf",
                 "Terbitkan kuis",
                 "Tugaskan ke kelas",
               ].map((label, index) => {
@@ -924,7 +924,7 @@ export function QuizWorkspace({
               <div className="editorial-lifecycle-actions">
                 {!draft && (
                   <p className="editorial-help">
-                    <UiText>{"Simpan draft kuis terlebih dahulu untuk menerbitkan."}</UiText>
+                    <UiText>{"Simpan draf kuis terlebih dahulu untuk menerbitkan."}</UiText>
                   </p>
                 )}
                 {draft && state !== "published" && (
@@ -963,7 +963,7 @@ export function QuizWorkspace({
               </div>
             ) : (
               <div className="editorial-lifecycle-actions">
-                <label className="field"><UiText>{"Catatan review"}</UiText><Textarea
+                <label className="field"><UiText>{"Catatan peninjauan"}</UiText><Textarea
                     rows={4}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
@@ -1001,8 +1001,8 @@ export function QuizWorkspace({
                 >{busy && busyAction === "reject" && <Spinner />}<UiText>{"Minta perbaikan"}</UiText></button>
                 {admin && state === "in_review" && (
                   <details className="editorial-details">
-                    <summary><UiText>{"Ganti reviewer"}</UiText></summary>
-                    <label className="field"><UiText>{"Reviewer pengganti"}</UiText><NativeSelect
+                    <summary><UiText>{"Ganti peninjau"}</UiText></summary>
+                    <label className="field"><UiText>{"Peninjau pengganti"}</UiText><NativeSelect
                         value={reviewer}
                         onChange={(e) => setReviewer(e.target.value)}
                         disabled={busy}
@@ -1026,12 +1026,12 @@ export function QuizWorkspace({
                       onClick={() =>
                         void transition(
                           "reviewer",
-                          "Ganti reviewer revisi ini?",
-                          "Akses review guru sebelumnya berakhir. Keputusan dari tab lama akan ditolak.",
+                          "Ganti peninjau revisi ini?",
+                          "Akses guru yang meninjau sebelumnya berakhir. Keputusan dari tab lama akan ditolak.",
                           { reviewer_id: reviewer || null },
                         )
                       }
-                    >{busy && busyAction === "reviewer" && <Spinner />}<UiText>{"Ganti reviewer"}</UiText></button>
+                    >{busy && busyAction === "reviewer" && <Spinner />}<UiText>{"Ganti peninjau"}</UiText></button>
                   </details>
                 )}
               </div>

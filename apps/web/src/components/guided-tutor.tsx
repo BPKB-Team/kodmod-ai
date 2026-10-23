@@ -360,7 +360,12 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
                         type="button"
                         className="material-card-select"
                         aria-pressed={isSelected}
-                        aria-label={`${item.title}. ${item.subject}. Kelas ${item.class_name}. ${isReady ? "Siap dipelajari." : "Menyiapkan materi."}`}
+                        aria-label={t("Materi {title}. Mata pelajaran {subject}. Kelas {className}. {status}", {
+                          title: item.title,
+                          subject: item.subject,
+                          className: item.class_name,
+                          status: t(isReady ? "Siap dipelajari." : "Menyiapkan materi."),
+                        })}
                         disabled={busy || locked || uncertain}
                         onClick={() => setMaterialId(item.id)}
                       >

@@ -38,7 +38,7 @@ export function AdminMaterialEditor({ material }: { material: AdminMaterial }) {
         method: index ? "POST" : "PUT", headers: { "Content-Type": "application/json" },
         ...(!index ? { body: JSON.stringify({ title, document, expected_version:material.content_version, published, source_filename: material.source_filename ?? null, source_import_id: material.source_import_id ?? null }) } : {}),
       });
-      if (!response.ok) { const body = await response.json(); throw new Error(response.status===409?"Materi sudah berubah. Draft Anda tetap ada. Buka revisi terbaru sebelum menyimpan kembali.":body.message || "Materi belum dapat disimpan."); }
+      if (!response.ok) { const body = await response.json(); throw new Error(response.status===409?"Materi sudah berubah. Draf Anda tetap ada. Buka revisi terbaru sebelum menyimpan kembali.":body.message || "Materi belum dapat disimpan."); }
       await notifyResult(index ? "Materi sedang disiapkan ulang." : "Perubahan materi berhasil disimpan.");
       router.refresh();
     } catch (caught) { await notifyResult(caught instanceof Error ? caught.message : "Materi belum dapat disimpan.", true); }
@@ -63,7 +63,7 @@ export function AdminMaterialEditor({ material }: { material: AdminMaterial }) {
     <MaterialRichEditor value={document} onChange={setDocument} classId={material.class_id} disabled={busy||material.is_archived} onValidityChange={setEditorValid}/>
     <MaterialSourceReview document={document} onChange={next=>{try{setDocument(validateMaterialDocument(next));setEditorValid(true);}catch{void notifyResult("Periksa format rumus dan teks sebelum menyimpan.",true);}}} classId={material.class_id} disabled={busy||material.is_archived} originalUrl={material.source_import_id&&/\.pdf/i.test(material.source_filename??"")?`/api/admin/materials/${material.id}/original`:undefined}/>
 
-    <label className="admin-material-publish"><Switch checked={published} onCheckedChange={setPublished} disabled={busy || material.is_archived} aria-label="Terbitkan materi" /><span><strong><UiText>{"Terbitkan materi"}</UiText></strong><small><UiText>{"Siswa hanya dapat membuka materi yang terbit di kelasnya."}</UiText></small></span></label>
+    <label className="admin-material-publish"><Switch checked={published} onCheckedChange={setPublished} disabled={busy || material.is_archived} aria-label={t("Terbitkan materi")} /><span><strong><UiText>{"Terbitkan materi"}</UiText></strong><small><UiText>{"Siswa hanya dapat membuka materi yang terbit di kelasnya."}</UiText></small></span></label>
     <div className="guided-actions"><Button type="submit" loading={busy && !indexing} loadingText={t("Menyimpan materi…")} disabled={busy || material.is_archived || !title.trim() || !document.blocks.length||!editorValid}><Save size={17} aria-hidden="true" /><UiText>{"Simpan perubahan"}</UiText></Button><Button variant="outline" type="button" loading={busy && indexing} loadingText={t("Menyiapkan ulang materi…")} onClick={() => void update(true)} disabled={busy || material.is_archived || !material.published}><RotateCcw size={17} aria-hidden="true" /><UiText>{"Proses ulang"}</UiText></Button></div>
   </form>;
 }

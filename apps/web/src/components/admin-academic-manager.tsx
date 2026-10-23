@@ -303,7 +303,7 @@ export function AdminAcademicManager({
               style={{ padding: "0.5rem 0.85rem", fontSize: "0.85rem" }}
             >
               <RotateCcw size={14} aria-hidden="true" />
-              <span>{t("Reset")}</span>
+              <span>{t("Atur ulang")}</span>
             </button>
           )}
         </div>
@@ -339,7 +339,7 @@ export function AdminAcademicManager({
           {filteredClasses.length === 0 ? (
             <Empty title={<UiText>{"Tidak ada kelas ditemukan"}</UiText>}>
               {search
-                ? t("Coba ubah kata kunci pencarian atau reset filter.")
+                ? t("Coba ubah kata kunci pencarian atau bersihkan filter.")
                 : t("Belum ada kelas yang terdaftar. Tambahkan kelas baru.")}
             </Empty>
           ) : (
@@ -402,10 +402,10 @@ export function AdminAcademicManager({
                         className="academic-action-btn academic-btn-edit"
                         onClick={() => openEditClass(c)}
                         disabled={isPending}
-                        title={t("Edit kelas")}
+                        title={t("Ubah kelas")}
                       >
                         <Pencil size={14} aria-hidden="true" />
-                        <span>{t("Edit")}</span>
+                        <span>{t("Ubah")}</span>
                       </button>
                       <button
                         type="button"
@@ -432,7 +432,7 @@ export function AdminAcademicManager({
           {filteredSubjects.length === 0 ? (
             <Empty title={<UiText>{"Tidak ada mata pelajaran ditemukan"}</UiText>}>
               {search
-                ? t("Coba ubah kata kunci pencarian atau reset filter.")
+                ? t("Coba ubah kata kunci pencarian atau bersihkan filter.")
                 : t("Belum ada mata pelajaran. Tambahkan mata pelajaran baru.")}
             </Empty>
           ) : (
@@ -486,10 +486,10 @@ export function AdminAcademicManager({
                         className="academic-action-btn academic-btn-edit"
                         onClick={() => openEditSubject(s)}
                         disabled={isPending}
-                        title={t("Edit mata pelajaran")}
+                        title={t("Ubah mata pelajaran")}
                       >
                         <Pencil size={14} aria-hidden="true" />
-                        <span>{t("Edit")}</span>
+                        <span>{t("Ubah")}</span>
                       </button>
                       <button
                         type="button"
@@ -525,7 +525,7 @@ export function AdminAcademicManager({
             <div className="academic-modal-header">
               <h2 className="academic-modal-title">
                 <GraduationCap size={20} aria-hidden="true" />
-                <span>{editingClass ? t("Edit Kelas") : t("Tambah Kelas Baru")}</span>
+                <span>{editingClass ? t("Ubah Kelas") : t("Tambah Kelas Baru")}</span>
               </h2>
               <button
                 type="button"
@@ -547,7 +547,7 @@ export function AdminAcademicManager({
                     id="className"
                     required
                     maxLength={120}
-                    placeholder="Contoh: Kelas 10 RPL A"
+                    placeholder={t("Contoh: Kelas 10 RPL A")}
                     value={className}
                     onChange={(e) => setClassName(e.target.value)}
                   />
@@ -600,7 +600,7 @@ export function AdminAcademicManager({
                   <textarea
                     id="classDesc"
                     maxLength={2000}
-                    placeholder="Jelaskan ringkasan materi atau tujuan kelas ini..."
+                    placeholder={t("Jelaskan ringkasan materi atau tujuan kelas ini…")}
                     value={classDesc}
                     onChange={(e) => setClassDesc(e.target.value)}
                   />
@@ -665,7 +665,7 @@ export function AdminAcademicManager({
                 <BookOpen size={20} aria-hidden="true" />
                 <span>
                   {editingSubject
-                    ? t("Edit Mata Pelajaran")
+                    ? t("Ubah Mata Pelajaran")
                     : t("Tambah Mata Pelajaran Baru")}
                 </span>
               </h2>
@@ -689,7 +689,7 @@ export function AdminAcademicManager({
                     id="subjName"
                     required
                     maxLength={120}
-                    placeholder="Contoh: Matematika Peminatan"
+                    placeholder={t("Contoh: Matematika Peminatan")}
                     value={subjName}
                     onChange={(e) => setSubjName(e.target.value)}
                   />
@@ -702,7 +702,7 @@ export function AdminAcademicManager({
                   <textarea
                     id="subjDesc"
                     maxLength={2000}
-                    placeholder="Jelaskan cakupan kurikulum atau topik mata pelajaran..."
+                    placeholder={t("Jelaskan cakupan kurikulum atau topik mata pelajaran…")}
                     value={subjDesc}
                     onChange={(e) => setSubjDesc(e.target.value)}
                   />

@@ -207,7 +207,7 @@ export function QuizRichEditor({
           {preview ? (
             <>
               <EyeOff size={14} aria-hidden="true" />
-              <span><UiText>{"Mode Edit"}</UiText></span>
+              <span><UiText>{"Mode sunting"}</UiText></span>
             </>
           ) : (
             <>
@@ -326,7 +326,7 @@ export function QuizRichEditor({
                   setShowFormulaMenu(false);
                 }}
               >
-                <span>Pecahan:</span> <code>{"$\\frac{a}{b}$"}</code>
+                <span><UiText>{"Pecahan:"}</UiText></span> <code>{"$\\frac{a}{b}$"}</code>
               </button>
               <button
                 type="button"
@@ -336,7 +336,7 @@ export function QuizRichEditor({
                   setShowFormulaMenu(false);
                 }}
               >
-                <span>Akar:</span> <code>{"$\\sqrt{x}$"}</code>
+                <span><UiText>{"Akar:"}</UiText></span> <code>{"$\\sqrt{x}$"}</code>
               </button>
               <button
                 type="button"
@@ -346,7 +346,7 @@ export function QuizRichEditor({
                   setShowFormulaMenu(false);
                 }}
               >
-                <span>Pangkat:</span> <code>{"$x^{2}$"}</code>
+                <span><UiText>{"Pangkat:"}</UiText></span> <code>{"$x^{2}$"}</code>
               </button>
               <button
                 type="button"
@@ -356,7 +356,7 @@ export function QuizRichEditor({
                   setShowFormulaMenu(false);
                 }}
               >
-                <span>Indeks:</span> <code>{"$x_{1}$"}</code>
+                <span><UiText>{"Indeks:"}</UiText></span> <code>{"$x_{1}$"}</code>
               </button>
               <button
                 type="button"
@@ -366,7 +366,7 @@ export function QuizRichEditor({
                   setShowFormulaMenu(false);
                 }}
               >
-                <span>Rumus Inline:</span> <code>{"$rumus$"}</code>
+                <span><UiText>{"Rumus sebaris:"}</UiText></span> <code>{"$rumus$"}</code>
               </button>
             </div>
           </div>

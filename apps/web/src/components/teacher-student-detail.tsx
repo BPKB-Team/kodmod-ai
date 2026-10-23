@@ -1,7 +1,7 @@
 "use client";
 import { LoadingStatus } from "./loading-feedback";
 import { Skeleton } from "./ui/skeleton";
-import { UiText, UiDate } from "@/components/language-provider";
+import { UiText, UiDate, useI18n } from "@/components/language-provider";
 
 
 import Link from "next/link";
@@ -45,6 +45,7 @@ export function TeacherStudentDetailView({
   initial: TeacherStudentDetail;
   initialSessions: TeacherSession[];
 }) {
+  const { t } = useI18n();
   const [data, setData] = useState(initial);
   const [sessions, setSessions] = useState(initialSessions);
   const [window, setWindow] = useState<AnalyticsWindow>(initial.analytics.window);
@@ -87,9 +88,9 @@ export function TeacherStudentDetailView({
     setError("");
     try {
       const response = await fetch(`/api/teacher/sessions/${encodeURIComponent(id)}`, { cache: "no-store" });
-      setTranscript(await readJson<TeacherTranscript>(response, "Transcript belum dapat dimuat."));
+      setTranscript(await readJson<TeacherTranscript>(response, "Transkrip belum dapat dimuat."));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Transcript belum dapat dimuat.");
+      setError(caught instanceof Error ? caught.message : "Transkrip belum dapat dimuat.");
       setOpenSessionId(null);
     } finally {
       setLoadingTranscript(false);
@@ -98,7 +99,7 @@ export function TeacherStudentDetailView({
 
   const analytics = data.analytics;
   return (
-    <section className="teacher-detail-workspace" aria-label={`Detail siswa ${data.account.full_name}`}>
+    <section className="teacher-detail-workspace" aria-label={t("Detail siswa {name}", { name: data.account.full_name })}>
       <LoadingStatus active={loading} label="Memuat progres siswa…" />
       <LoadingStatus active={loadingTranscript} label="Membuka riwayat sesi…" />
       <Link className="learning-back" href="/guru/analitik"><ArrowLeft size={16} aria-hidden="true" /><UiText>{"Kembali ke analitik"}</UiText></Link>

@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, BookOpen, RotateCcw, Search } from "lucide-react
 import { UiText } from "@/components/language-provider";
 import { Badge, Empty, Heading } from "@/components/ui";
 import { requireSession } from "@/lib/session";
+import { getServerI18n } from "@/lib/server-language";
 import { backend } from "@/lib/server-api";
 import type { AdminMaterialCatalog } from "@/lib/admin-material-types";
 import "@/styles/admin-materials.css";
@@ -15,6 +16,7 @@ export default async function Page({
   searchParams: Promise<{ search?: string; page?: string; status?: string }>;
 }) {
   const { token } = await requireSession("admin");
+  const { t } = await getServerI18n();
   const query = await searchParams;
   const search = (query.search ?? "").slice(0, 120);
   const status =
@@ -60,7 +62,7 @@ export default async function Page({
               id="search"
               defaultValue={search}
               maxLength={120}
-              placeholder="Cari berdasarkan judul materi..."
+              placeholder={t("Cari berdasarkan judul materi…")}
               type="search"
               className="search-input-field"
             />
@@ -71,7 +73,7 @@ export default async function Page({
           <NativeSelect id="status" name="status" defaultValue={status}>
             <option value=""><UiText>{"Semua status"}</UiText></option>
             <option value="published"><UiText>{"Terbit"}</UiText></option>
-            <option value="draft"><UiText>{"Draft"}</UiText></option>
+            <option value="draft"><UiText>{"Draf"}</UiText></option>
           </NativeSelect>
         </div>
         <button className="button primary search-submit-btn" type="submit">
@@ -81,7 +83,7 @@ export default async function Page({
         {hasActiveFilters && (
           <Link href="/admin/materi" className="filter-reset-btn">
             <RotateCcw size={14} aria-hidden="true" />
-            <UiText>{"Reset filter"}</UiText>
+            <UiText>{"Bersihkan filter"}</UiText>
           </Link>
         )}
       </form>
@@ -109,7 +111,7 @@ export default async function Page({
                 <header>
                   <BookOpen size={22} aria-hidden="true" />
                   <Badge active={material.published}>
-                    {material.published ? <UiText>{"Terbit"}</UiText> : <UiText>{"Draft"}</UiText>}
+                    {material.published ? <UiText>{"Terbit"}</UiText> : <UiText>{"Draf"}</UiText>}
                   </Badge>
                 </header>
                 <h2>{material.title}</h2>

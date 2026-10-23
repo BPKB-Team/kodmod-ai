@@ -554,15 +554,15 @@ export function MaterialForm({
     {
       title: published
         ? "Terbitkan materi?"
-        : "Simpan sebagai draft?",
+        : "Simpan sebagai draf?",
       text: published
         ? "Semua siswa anggota kelas dapat mempelajari materi ini bersama Tutor AI."
         : "Materi ini hanya dapat dibaca guru. Siswa tidak akan melihatnya sampai diterbitkan.",
-      confirmText: published ? "Ya, terbitkan" : "Ya, simpan draft",
+      confirmText: published ? "Ya, terbitkan" : "Ya, simpan draf",
     },
     published
       ? "Sedang memproses dan menerbitkan materi pembelajaran, mohon tunggu sebentar..."
-      : "Sedang menyimpan draft materi pembelajaran, mohon tunggu sebentar...",
+      : "Sedang menyimpan draf materi pembelajaran, mohon tunggu sebentar...",
   );
   const canChangeTarget = canChangeMaterialTarget({ importing, hasBook: Boolean(book)||materialDocument.blocks.some(block=>block.type==="image"), sourceImportId, pending });
 
@@ -739,7 +739,7 @@ export function MaterialForm({
             <span className="stepper-num">2</span>
           </div>
           <div className="stepper-text">
-            <span className="stepper-label"><UiText>{"02 · Tinjau & Edit Teks"}</UiText></span>
+            <span className="stepper-label"><UiText>{"02 · Tinjau dan sunting teks"}</UiText></span>
             <span className="stepper-desc"><UiText>{"Periksa dan rapikan konten materi"}</UiText></span>
           </div>
         </div>
@@ -860,7 +860,7 @@ export function MaterialForm({
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <span className="form-step-num">2</span>
             <div>
-              <h3><UiText>{"Tinjau & Edit Isi Materi"}</UiText></h3>
+              <h3><UiText>{"Tinjau dan sunting isi materi"}</UiText></h3>
               <p className="muted"><UiText>{"Periksa isi teks sebelum disimpan. Anda dapat mengedit teks secara langsung."}</UiText></p>
             </div>
           </div>
@@ -879,7 +879,7 @@ export function MaterialForm({
               onClick={() => setViewMode("edit")}
             >
               <Edit3 size={16} aria-hidden="true" />
-              <UiText>{"Edit Teks"}</UiText>
+              <UiText>{"Sunting teks"}</UiText>
             </button>
           </div>
         </div>
@@ -924,7 +924,7 @@ export function MaterialForm({
               onClick={() => setPublished(false)}
             >
               <div className="visibility-card-top">
-                <strong><UiText>{"Draft"}</UiText></strong>
+                <strong><UiText>{"Draf"}</UiText></strong>
                 {!published && <CheckCircle2 size={16} aria-hidden="true" />}
               </div>
               <p><UiText>{"Hanya guru yang dapat melihat. Cocok untuk materi yang masih disiapkan."}</UiText></p>

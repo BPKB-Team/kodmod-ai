@@ -3,6 +3,7 @@
 import { useState } from "react";
 import SkipLink from "./components/SkipLink";
 import LiveRegion from "./components/LiveRegion";
+import { useI18n } from "./components/language-provider";
 
 /**
  * Kerangka aplikasi.
@@ -13,6 +14,7 @@ import LiveRegion from "./components/LiveRegion";
  * screen reader.
  */
 export default function App() {
+  const { t } = useI18n();
   const [srMode, setSrMode] = useState<"native" | "conversational">("native");
   const [pengumuman, setPengumuman] = useState("");
 
@@ -20,8 +22,8 @@ export default function App() {
     setSrMode(mode);
     setPengumuman(
       mode === "native"
-        ? "Mode pembaca layar aktif. Aplikasi tidak akan bersuara sendiri."
-        : "Mode percakapan aktif. Aplikasi akan bersuara. Matikan pembaca layar Anda.",
+        ? t("Mode pembaca layar aktif. Aplikasi tidak akan bersuara sendiri.")
+        : t("Mode percakapan aktif. Aplikasi akan bersuara. Matikan pembaca layar Anda."),
     );
   }
 
@@ -32,22 +34,21 @@ export default function App() {
 
       <header className="border-b border-black/10 px-6 py-4">
         <h1 className="text-2xl font-bold">KODMOD</h1>
-        <p className="text-sm opacity-70">Asisten belajar untuk siswa tunanetra</p>
+        <p className="text-sm opacity-70">{t("Asisten belajar untuk siswa tunanetra")}</p>
       </header>
 
-      <nav aria-label="Navigasi utama" className="border-b border-black/10 px-6 py-2">
+      <nav aria-label={t("Navigasi utama")} className="border-b border-black/10 px-6 py-2">
         {/* Diisi saat rute ditambahkan. */}
       </nav>
 
       <main id="konten-utama" tabIndex={-1} className="px-6 py-8">
-        <h2 className="text-xl font-semibold">Mode suara</h2>
+        <h2 className="text-xl font-semibold">{t("Mode suara")}</h2>
         <p className="mt-2 max-w-prose">
-          Pilih bagaimana KODMOD menyampaikan informasi. Ini menentukan apakah aplikasi
-          bersuara sendiri atau menyerahkannya ke pembaca layar Anda.
+          {t("Pilih bagaimana KODMOD menyampaikan informasi. Ini menentukan apakah aplikasi bersuara sendiri atau menyerahkannya ke pembaca layar Anda.")}
         </p>
 
         <fieldset className="mt-6 max-w-prose">
-          <legend className="font-medium">Cara mendengarkan</legend>
+          <legend className="font-medium">{t("Cara mendengarkan")}</legend>
 
           <label className="mt-3 flex items-center gap-3">
             <input
@@ -58,7 +59,7 @@ export default function App() {
               onChange={() => gantiMode("native")}
             />
             <span>
-              <strong>Pembaca layar saya</strong> - KODMOD diam, NVDA/JAWS/TalkBack yang membacakan.
+              <strong>{t("Pembaca layar saya")}</strong> — {t("KODMOD diam, pembaca layar yang membacakan.")}
             </span>
           </label>
 
@@ -71,15 +72,14 @@ export default function App() {
               onChange={() => gantiMode("conversational")}
             />
             <span>
-              <strong>Suara KODMOD</strong> - KODMOD berbicara dua arah. Matikan pembaca layar
-              agar tidak ada dua suara bersamaan.
+              <strong>{t("Suara KODMOD")}</strong> — {t("KODMOD berbicara dua arah. Matikan pembaca layar agar tidak ada dua suara bersamaan.")}
             </span>
           </label>
         </fieldset>
       </main>
 
       <footer className="border-t border-black/10 px-6 py-4 text-sm opacity-70">
-        <p>KODMOD - pendidikan inklusif untuk siswa disabilitas netra.</p>
+        <p><span>KODMOD</span> — {t("Pendidikan inklusif untuk siswa tunanetra.")}</p>
       </footer>
     </>
   );

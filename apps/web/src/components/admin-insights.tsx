@@ -210,7 +210,7 @@ export function AdminInsights({
           </button>
         </div>
       )}
-      {error && <p className="alert error-message" role="alert">{error}</p>}
+      {error && <p className="alert error-message" role="alert">{t(error)}</p>}
 
       <div className="admin-insight-grid admin-insight-grid-4">
         <article className="panel admin-insight-card">
@@ -244,7 +244,7 @@ export function AdminInsights({
           <span className="admin-insight-icon amber"><ShieldCheck size={22} aria-hidden="true" /></span>
           <div className="admin-insight-card-content">
             <span><UiText>{"Kesiapan suara"}</UiText></span>
-            <strong>{!provider.enabled ? <UiText>{"Fallback aktif"}</UiText> : provider.configured ? <UiText>{"Siap"}</UiText> : <UiText>{"Perlu setup"}</UiText>}</strong>
+            <strong>{!provider.enabled ? <UiText>{"Cadangan aktif"}</UiText> : provider.configured ? <UiText>{"Siap"}</UiText> : <UiText>{"Perlu disiapkan"}</UiText>}</strong>
             <small>{provider.tts_backend} · {provider.stt_backend}</small>
           </div>
         </article>
@@ -531,21 +531,21 @@ export function AdminInsights({
               </div>
               <p style={{ margin: "4px 0 0", fontSize: "0.82rem", color: "#475569" }}>
                 {!provider.enabled
-                  ? <UiText>{"Belum dipilih; fallback lokal tetap aktif"}</UiText>
+                  ? <UiText>{"Belum dipilih; layanan cadangan lokal tetap aktif"}</UiText>
                   : provider.configured
-                    ? <UiText>{"TTS dan STT siap digunakan"}</UiText>
-                    : <UiText>{"API key atau voice ID belum lengkap"}</UiText>}
+                    ? <UiText>{"Pembacaan dan transkripsi suara siap digunakan"}</UiText>
+                    : <UiText>{"Kunci API atau pilihan suara belum lengkap"}</UiText>}
               </p>
             </div>
           </div>
 
           <div className="admin-provider-spec-list">
             <div className="admin-provider-spec-row">
-              <span><UiText>{"Text to speech"}</UiText></span>
+              <span><UiText>{"Teks menjadi suara"}</UiText></span>
               <code>{provider.tts_backend}</code>
             </div>
             <div className="admin-provider-spec-row">
-              <span><UiText>{"Speech to text"}</UiText></span>
+              <span><UiText>{"Suara menjadi teks"}</UiText></span>
               <code>{provider.stt_backend}</code>
             </div>
           </div>
@@ -583,7 +583,7 @@ export function AdminInsights({
               <div className="security-check-row">
                 <ShieldCheck size={15} aria-hidden="true" />
                 <span><UiText>{"Proteksi Sesi Aktif"}</UiText></span>
-                <span className="security-check-tag">HttpOnly · SameSite</span>
+                <span className="security-check-tag"><UiText>{"Cookie sesi terlindungi dari akses skrip dan pengiriman lintas situs."}</UiText></span>
               </div>
               <div className="security-check-row">
                 <CheckCircle2 size={15} aria-hidden="true" />

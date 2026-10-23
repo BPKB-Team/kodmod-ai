@@ -163,12 +163,34 @@ function stripSpeechMarkup(text, isEn) {
     out = out.replace(/\b(yg|dgn|krn|tdk|utk|spt|dll|dsb|dst)\b\.?/gi, (match, key) =>
       `${abbreviations[key.toLowerCase()]}${match.endsWith(".") ? "." : ""}`,
     );
+    // Indonesian uses periods for thousands and commas for decimal marks.
+    // Expand grouped values before interpreting a remaining decimal point so
+    // speech engines do not read 1.250 as "one point two five zero".
+    out = out.replace(/\b(\d{1,3}(?:\.\d{3})+),(\d+)\b/g, (_match, whole, decimal) =>
+      `${whole.replaceAll(".", "")} koma ${decimal.split("").join(" ")}`,
+    );
+    out = out.replace(/\b\d{1,3}(?:\.\d{3})+\b/g, (whole) => whole.replaceAll(".", ""));
     out = out.replace(/\b(\d+),(\d+)\b/g, (_match, whole, decimal) =>
       `${whole} koma ${decimal.split("").join(" ")}`,
     );
     out = out.replace(/\b(\d+)\.(\d{1,2})\b(?!\.\d)/g, (_match, whole, decimal) =>
-      `${whole} titik ${decimal.split("").join(" ")}`,
+      `${whole} koma ${decimal.split("").join(" ")}`,
     );
+    // Expand abbreviations and product names that speech engines often read
+    // with English letter names. This changes narration only, never display.
+    out = out
+      .replace(/\bKODMOD\b/gi, "Kodmod")
+      .replace(/\bAI\b/g, "kecerdasan buatan")
+      .replace(/\bTTS\b/g, "teks menjadi suara")
+      .replace(/\bSTT\b/g, "suara menjadi teks")
+      .replace(/\bAPI\b/g, "a pe i")
+      .replace(/\bPDF\b/g, "pe de ef")
+      .replace(/\bDOCX\b/g, "dokumen Word")
+      .replace(/\bTXT\b/g, "teks biasa")
+      .replace(/\bURL\b/g, "u er el")
+      .replace(/\bUSD\b/g, "dolar Amerika")
+      .replace(/\bIDR\b/g, "rupiah")
+      .replace(/\bms\b/g, "milidetik");
   }
 
   return out;
@@ -232,6 +254,8 @@ export function normalizeSpeechText(text, language = "id") {
   // 7. Math Operators & Relations
   out = out.replace(/\s*×\s*/g, isEn ? " times " : " kali ");
   out = out.replace(/(?<=[0-9a-zA-Z\)])\s*[⋅·]\s*(?=[0-9a-zA-Z\(])/g, isEn ? " times " : " kali ");
+  out = out.replace(/(?<=[0-9a-zA-Z\)])\s+\+\s+(?=[0-9a-zA-Z\(])/g, isEn ? " plus " : " ditambah ");
+  out = out.replace(/(?<=[0-9a-zA-Z\)])\s+-\s+(?=[0-9a-zA-Z\(])/g, isEn ? " minus " : " dikurangi ");
   out = out.replace(/\s*÷\s*/g, isEn ? " divided by " : " dibagi ");
   out = out.replace(/\s*±\s*/g, isEn ? " plus or minus " : " plus minus ");
   out = out.replace(/\s*≠\s*/g, isEn ? " does not equal " : " tidak sama dengan ");

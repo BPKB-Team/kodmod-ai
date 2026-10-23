@@ -61,13 +61,13 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
     setError("");
     try {
       const response = await fetch(`/api/teacher/students?window=${next}`, { cache: "no-store" });
-      const payload = await readJson<TeacherCohort>(response, "Data cohort belum dapat dimuat.");
+      const payload = await readJson<TeacherCohort>(response, "Data kelompok siswa belum dapat dimuat.");
       setData(payload);
       setWindow(next);
       setCurrentPage(1);
       return true;
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Data cohort belum dapat dimuat.");
+      setError(caught instanceof Error ? caught.message : "Data kelompok siswa belum dapat dimuat.");
       return false;
     } finally {
       setLoading(false);
@@ -75,7 +75,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
   }
 
   async function refresh() {
-    if (await load(window)) await notifyResult("Data cohort sudah diperbarui.");
+    if (await load(window)) await notifyResult("Data kelompok siswa sudah diperbarui.");
   }
 
   // Visual breakdown stats for Chart 1: Kesiapan Belajar
@@ -160,7 +160,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
       <Heading
         icon={<BarChart3 size={24} aria-hidden="true" />}
         title={<UiText>{"Analitik siswa"}</UiText>}
-        description={<UiText>{"Pantau pola belajar cohort dan buka detail siswa untuk tindak lanjut yang lebih terarah."}</UiText>}
+        description={<UiText>{"Pantau pola belajar kelompok siswa dan buka detail siswa untuk tindak lanjut yang lebih terarah."}</UiText>}
       >
         <button type="button" className="button secondary" onClick={() => void refresh()} disabled={loading}>
           <RefreshCw size={16} className={loading ? "spin" : undefined} aria-hidden="true" />
@@ -168,7 +168,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
         </button>
       </Heading>
 
-      <div className="analytics-window-tabs" role="tablist" aria-label={t("Rentang waktu cohort")}>
+      <div className="analytics-window-tabs" role="tablist" aria-label={t("Rentang waktu kelompok siswa")}>
         {windows.map((item) => (
           <button
             key={item.value}
@@ -184,7 +184,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
         ))}
       </div>
 
-      {error && <p className="alert error-message analytics-error" role="alert">{error}</p>}
+      {error && <p className="alert error-message analytics-error" role="alert">{t(error)}</p>}
 
       {/* Top Level Summary Stat Cards */}
       <div className="analytics-stat-grid">
@@ -196,9 +196,9 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
         </article>
         <article className="panel analytics-stat-card">
           <span className="analytics-stat-icon purple"><BarChart3 size={19} aria-hidden="true" /></span>
-          <span className="analytics-stat-label"><UiText>{"Rata-rata mastery"}</UiText></span>
+          <span className="analytics-stat-label"><UiText>{"Rata-rata penguasaan"}</UiText></span>
           <strong>{percent(data.avg_mastery)}</strong>
-          <small><UiText>{"penguasaan konsep cohort"}</UiText></small>
+          <small><UiText>{"penguasaan konsep kelompok siswa"}</UiText></small>
         </article>
         <article className="panel analytics-stat-card">
           <span className="analytics-stat-icon green"><ArrowRight size={19} aria-hidden="true" /></span>
@@ -286,7 +286,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
                 <span><UiText>{"SEBARAN PEMAHAMAN KONSEP"}</UiText></span>
               </div>
               <h2><UiText>{"Distribusi Skor Penguasaan Materi"}</UiText></h2>
-              <p><UiText>{"Jumlah siswa pada tiap rentang penguasaan cohort."}</UiText></p>
+              <p><UiText>{"Jumlah siswa pada tiap rentang penguasaan dalam kelompok ini."}</UiText></p>
             </div>
             <span className="chart-active-pill">
               <BarChart3 size={13} aria-hidden="true" />
@@ -485,7 +485,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
                   setCurrentPage(1);
                 }}
               >
-                <UiText>{"Reset filter"}</UiText>
+                <UiText>{"Bersihkan filter"}</UiText>
               </button>
             </div>
           ) : (
@@ -517,7 +517,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
                     aria-label={`${concept.concept_name} ${percent(concept.avg_mastery)}`}
                     variant="amber"
                   />
-                  <small><UiText>{"Rata-rata mastery "}</UiText>{percent(concept.avg_mastery)}</small>
+                  <small><UiText>{"Rata-rata penguasaan "}</UiText>{percent(concept.avg_mastery)}</small>
                 </div>
               ))}
             </div>

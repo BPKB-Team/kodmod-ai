@@ -46,7 +46,7 @@ export async function AuthShell({
       <main id="konten-utama" tabIndex={-1} className="auth-main">
         <div className="auth-card">
           <div className="auth-card-brand">
-            <Link href="/" aria-label="KODMOD" data-voice-menu="home" className="auth-brand-logo">
+            <Link href="/" aria-label={t("KODMOD, halaman utama")} data-voice-menu="home" className="auth-brand-logo">
               <Image src="/brand/symbol.png" alt="" width={28} height={30} />
               <span>KODMOD<span className="auth-brand-dot">.</span></span>
             </Link>

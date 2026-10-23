@@ -3,7 +3,7 @@ import { LoadingStatus } from "./loading-feedback";
 import { Spinner } from "./ui/spinner";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 
-import { UiText, UiDate } from "@/components/language-provider";
+import { UiText, UiDate, useI18n } from "@/components/language-provider";
 
 import { useRef, useState } from "react";
 import { RefreshCw, LockKeyhole } from "lucide-react";
@@ -14,6 +14,7 @@ import { Badge, Empty } from "./ui";
 import "@/styles/editorial.css";
 
 export function AssignmentResults({ initial }: { initial: TeacherResults }) {
+  const { t } = useI18n();
   const [data, setData] = useState(initial);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -73,7 +74,7 @@ export function AssignmentResults({ initial }: { initial: TeacherResults }) {
       </div>
       {error && (
         <p role="alert" className="editorial-error">
-          {error}
+          {t(error)}
         </p>
       )}
       <div className="learning-stats editorial-result-stats">

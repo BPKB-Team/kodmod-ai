@@ -27,7 +27,7 @@ export function CreateSubjectForm() {
 
 export function ClassSubjectForm({ classId, subjectId, subjects }: { classId: string; subjectId?: string | null; subjects: CurriculumSubject[] }) {
   const [state, action, pending] = useConfirmedAction(chooseClassSubject.bind(null, classId), {
-    title: "Simpan mata pelajaran kelas?", text: "Perubahan mata pelajaran meminta review konsep materi kembali.", confirmText: "Simpan",
+    title: "Simpan mata pelajaran kelas?", text: "Perubahan mata pelajaran membuat konsep materi harus ditinjau kembali.", confirmText: "Simpan",
   });
   return <Card className="form-stack" style={{ marginBlock: "1rem" }}><CardHeader><CardTitle><UiText>{"Mata pelajaran kelas"}</UiText></CardTitle></CardHeader><CardContent>
     <form action={action} className="form-stack" onReset={event => event.preventDefault()}>

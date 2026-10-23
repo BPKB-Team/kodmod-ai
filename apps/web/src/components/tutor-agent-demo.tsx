@@ -190,7 +190,7 @@ export function TutorAgentDemo() {
             </div>
             <div>
               <div className="tutor-name-row">
-                <span className="tutor-name">Tutor AI Agent</span>
+                <span className="tutor-name">{t("Agen Tutor AI")}</span>
                 {phase === "thinking" && (
                   <span className="tutor-pill-live">
                     <span className="live-dot" />

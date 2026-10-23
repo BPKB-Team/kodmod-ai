@@ -61,7 +61,7 @@ export function MaterialImportHistory({ classId, refreshKey, onPreview }: {
     <p>{t("Hasil pembacaan tetap tersimpan. Buka dan tinjau sebelum digunakan sebagai materi.")}</p>
     <Button type="button" variant="outline" onClick={() => void refresh(undefined, true)} disabled={loading || Boolean(busy)} loading={loading} loadingText={t("Memuat riwayat dokumen…")}><RefreshCw size={16} aria-hidden="true" />{t("Perbarui status")}</Button>
     <LoadingStatus active={loading || Boolean(busy)} label={busy ? busyLabel : "Memuat riwayat dokumen…"} compact />
-    {error && <p role="alert">{error}</p>}
+    {error && <p role="alert">{t(error)}</p>}
     {loading && !records.length && <div aria-hidden="true"><Skeleton className="page-loading-field" /><Skeleton className="page-loading-field" /></div>}
     {!loading && !error && !records.length && <p>{t("Belum ada dokumen tersimpan.")}</p>}
     <ul className="import-records" aria-busy={loading}>{records.map(record => <li key={record.import_id}>

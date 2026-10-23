@@ -340,7 +340,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                 value={answeredQuestions}
                 max={totalQuestions || 1}
                 label={<UiText>{"Progres latihan"}</UiText>}
-                aria-label={`${answeredQuestions} dari ${totalQuestions} soal selesai`}
+                aria-label={t("{answered} dari {total} soal selesai", { answered: answeredQuestions, total: totalQuestions })}
               />
             </div>
             {!embedded && phase === "complete" && <button type="button" className="button secondary small quiz-progress-restart" onClick={() => void startQuiz()}>
