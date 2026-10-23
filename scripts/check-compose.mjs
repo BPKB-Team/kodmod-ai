@@ -38,6 +38,11 @@ if (mode === "prod" || mode === "prod-private") {
   }
   for (const name of ["ai-engine", "worker", "web", "redis"]) requireThat(services[name].read_only, `${name} must have a read-only root filesystem`);
   requireThat(Boolean(services.redis.environment?.REDIS_PASSWORD), "Redis authentication is required");
+  for (const name of ["ai-engine", "worker"]) {
+    const environment = services[name].environment || {};
+    requireThat(environment.DB_HOST === "postgres" && environment.DB_PASSWORD, `${name} must retain its PostgreSQL configuration`);
+    requireThat(environment.REDIS_HOST === "redis" && environment.REDIS_PASSWORD, `${name} must retain its Redis configuration`);
+  }
   if (services.qdrant) {
     const qdrant = services.qdrant;
     const qdrantEnv = qdrant.environment || {};
