@@ -13,7 +13,7 @@ import "@fontsource-variable/source-sans-3";
 import SkipLink from "@/components/SkipLink";
 import { LanguageProvider } from "@/components/language-provider";
 import { getServerI18n } from "@/lib/server-language";
-import { serverDisplaySettings } from "@/lib/server-display";
+import { serverDisplaySettings, serverVoiceSettings } from "@/lib/server-display";
 import "../styles/accessibility.css";
 import "../styles/loading.css";
 
@@ -25,12 +25,13 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const { language } = await getServerI18n();
   const display = await serverDisplaySettings();
+  const voice = await serverVoiceSettings();
   return (
     <html lang={language} data-text-size={display.fontScale} data-high-contrast={String(display.highContrast)} data-spacious={String(display.spacious)} data-reduced-motion={String(display.reducedMotion)}>
       <body>
         <LanguageProvider initialLanguage={language}>
         <SkipLink />
-        <VoicePreferencesProvider initialDisplay={display}>
+        <VoicePreferencesProvider initialDisplay={display} initialVoice={voice}>
           {children}
           <Suspense fallback={null}>
             <RedirectFeedback />

@@ -6,7 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
   useSyncExternalStore, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { Headphones, Smartphone, Volume2, VolumeX, X, Play, Check, ChevronRight, ArrowLeft, Settings2, Sliders, Type } from "lucide-react";
-import { DEFAULT_VOICE_SETTINGS, parseVoiceSettings, readVoiceSettingsSnapshot, writeVoiceSettings,
+import { DEFAULT_VOICE_SETTINGS, parseVoiceSettings, readVoiceSettingsSnapshot, writeVoiceSettings, syncVoiceSettingsCookies,
   parseDisplaySettings, type DisplaySettings, type VoiceSettings, type SpeechEngine } from "@/lib/speech-preferences.mjs";
 import { pruneExpiredSpeechAudioCache } from "@/lib/speech-audio-cache";
 import { speechOutput } from "@/lib/browser-speech";
@@ -45,8 +45,12 @@ const VoicePreferencesContext = createContext<Preferences | null>(null);
 const getServerSnapshot = () => null;
 const subscribe = (listener: () => void) => {
   window.addEventListener("storage", listener);
+  window.addEventListener("focus", listener);
+  window.addEventListener("pageshow", listener);
   window.addEventListener("kodmod:speech-engine-change", listener);
   return () => { window.removeEventListener("storage", listener);
+    window.removeEventListener("focus", listener);
+    window.removeEventListener("pageshow", listener);
     window.removeEventListener("kodmod:speech-engine-change", listener); };
 };
 const clientReady = () => true;
@@ -71,15 +75,20 @@ export function useVoicePreferences() {
   return value;
 }
 
-export function VoicePreferencesProvider({ children, initialDisplay = parseDisplaySettings() }: { children: ReactNode; initialDisplay?: DisplaySettings }) {
+export function VoicePreferencesProvider({ children, initialDisplay = parseDisplaySettings(), initialVoice = null }: { children: ReactNode; initialDisplay?: DisplaySettings; initialVoice?: VoiceSettings | null }) {
   const { language, t, changeLanguage } = useI18n();
   const pathname = usePathname();
   const ready = useSyncExternalStore(readiness, clientReady, serverReady);
   const snapshot = useSyncExternalStore(subscribe, readVoiceSettingsSnapshot, getServerSnapshot);
   const saved = useMemo(() => parseVoiceSettings(snapshot), [snapshot]);
-  const preferences = useMemo(() => saved ?? { ...DEFAULT_VOICE_SETTINGS, ...initialDisplay }, [saved, initialDisplay]);
+  useEffect(() => {
+    // Upgrade existing local/legacy choices before the next login or reload,
+    // so server-rendered controls start with the same settings as the browser.
+    if (saved) syncVoiceSettingsCookies(saved);
+  }, [saved]);
+  const preferences = useMemo(() => saved ?? initialVoice ?? { ...DEFAULT_VOICE_SETTINGS, ...initialDisplay }, [saved, initialVoice, initialDisplay]);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [draft, setDraft] = useState<VoiceSettings>({ ...DEFAULT_VOICE_SETTINGS, ...initialDisplay });
+  const [draft, setDraft] = useState<VoiceSettings>(initialVoice ?? { ...DEFAULT_VOICE_SETTINGS, ...initialDisplay });
   const [screen, setScreen] = useState<"voice" | "display">("voice");
   const [warning, setWarning] = useState("");
   const [languagePending, setLanguagePending] = useState(false);

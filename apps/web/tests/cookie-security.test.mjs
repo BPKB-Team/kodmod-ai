@@ -4,25 +4,27 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import ts from "typescript";
 
-const boundary = { writes: [] };
+const boundary = { writes: [], language: "id", payloads: [], revalidations: [] };
 globalThis.kodmodCookieTestBoundary = boundary;
 const stubs = new Map([
   ["server-only", "export {};"],
   ["next/headers", `export async function cookies() {
-    return { get() { return { value: "id" }; }, set(...args) { globalThis.kodmodCookieTestBoundary.writes.push(args); } };
+    return { get() { return { value: globalThis.kodmodCookieTestBoundary.language }; }, set(...args) { globalThis.kodmodCookieTestBoundary.writes.push(args); } };
   }`],
   ["next/navigation", `export function redirect(url) {
     const error = new Error(url); error.name = "TestRedirect"; throw error;
   }`],
-  ["next/cache", "export function revalidatePath() {}"],
+  ["next/cache", "export function revalidatePath(...args) { globalThis.kodmodCookieTestBoundary.revalidations.push(args); }"],
   ["@/lib/session", `export const SESSION_COOKIE = "kodmod_session";
     export async function requireSession() {
       return { token: "fixture-token", user: { id: "student-1", role: "student" } };
     }`],
   ["@/lib/server-api", `export class BackendError extends Error {}
-    export async function backend() {
+    export async function backend(path, token, options) {
+      const body = JSON.parse(options?.body || '{}');
+      globalThis.kodmodCookieTestBoundary.payloads.push(body);
       return { access_token: "fixture-token", expires_in: 3600,
-        user: { id: "student-1", role: "student", is_active: true, preferred_language: "en" } };
+        user: { id: "student-1", role: "student", is_active: true, preferred_language: body.preferred_language || "en" } };
     }`],
 ]);
 
@@ -99,7 +101,7 @@ async function invokeAction(name, action, form) {
   if (name !== "reading") {
     const [languageCookie, language, languageOptions] = boundary.writes[1];
     assert.equal(languageCookie, "kodmod_language");
-    assert.equal(language, "en", "Account language takes priority at sign-in.");
+    assert.equal(language, "id", "An explicit browser language survives sign-in.");
     assert.equal(languageOptions.secure, options.secure);
     assert.equal(languageOptions.sameSite, "lax");
   }
@@ -135,3 +137,16 @@ for (const [name, action] of [["login", login], ["register", register], ["readin
     assert.equal(options.secure, true);
   });
 }
+
+test("login carries a valid guest language atomically; missing/invalid choices preserve the account language", async t => {
+  t.after(() => { boundary.language = "id"; });
+  for (const choice of ["id", "en", undefined, "unsupported"]) {
+    boundary.language = choice;
+    boundary.writes = []; boundary.payloads = []; boundary.revalidations = [];
+    await assert.rejects(login({}, submittedForm()), { name: "TestRedirect" });
+    const valid = choice === "id" || choice === "en";
+    assert.equal(boundary.payloads[0].preferred_language, valid ? choice : undefined);
+    assert.equal(boundary.writes[1][1], valid ? choice : "en");
+    assert.deepEqual(boundary.revalidations, [["/", "layout"]]);
+  }
+});

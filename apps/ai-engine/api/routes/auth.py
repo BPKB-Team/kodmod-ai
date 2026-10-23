@@ -172,6 +172,10 @@ async def login(
             },
         )
 
+    # Apply an explicit browser choice only after authentication and any
+    # active-session confirmation succeed, in the same transaction as login.
+    if body.preferred_language is not None:
+        user.preferred_language = body.preferred_language
     user.active_auth_session_id = uuid.uuid4()
     user.active_auth_session_expires_at = now + timedelta(minutes=settings.JWT_EXPIRE_MIN)
     user.last_login_at = datetime.now(UTC)

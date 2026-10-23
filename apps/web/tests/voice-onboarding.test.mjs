@@ -47,8 +47,9 @@ test("first visit shows voice setup; saved users can enable optional swipe navig
   const { writeVoiceSettings, DEFAULT_VOICE_SETTINGS } = await import("../src/lib/speech-preferences.mjs");
   const root = createRoot(document.getElementById("root"));
   function Controls() {
-    const { openVoicePreferences } = useVoicePreferences();
-    return createElement("section", { id: "navigation" },
+    const { openVoicePreferences, engine, menuEnabled, tutorEnabled } = useVoicePreferences();
+    return createElement("section", { id: "navigation", "data-engine": engine,
+      "data-menu": String(menuEnabled), "data-tutor": String(tutorEnabled) },
       createElement("button", { id: "first", onClick: openVoicePreferences }, "Pengaturan suara"),
       createElement("button", { id: "second" }, "Materi"),
       createElement("input", { id: "answer", "aria-label": "Jawaban" }),
@@ -93,6 +94,18 @@ test("first visit shows voice setup; saved users can enable optional swipe navig
   } catch (error) {
     if (error instanceof AggregateError) throw new Error(error.errors.map(item => item.stack || item.message).join("\n"), { cause: error });
     throw error;
+    await act(async () => writeVoiceSettings({ ...DEFAULT_VOICE_SETTINGS,
+      engine: "device", menuEnabled: false, tutorEnabled: false, highContrast: true }));
+    document.cookie = "kodmod_voice=; Max-Age=0; Path=/";
+    for (const key of ["after-login", "after-logout"]) {
+      await act(async () => root.render(createElement(VoicePreferencesProvider,
+        { key, initialVoice: DEFAULT_VOICE_SETTINGS }, createElement(Controls))));
+      assert.equal(document.getElementById("navigation").dataset.engine, "device");
+      assert.equal(document.getElementById("navigation").dataset.menu, "false");
+      assert.equal(document.getElementById("navigation").dataset.tutor, "false");
+      assert.ok(document.cookie.includes("kodmod_voice="), "Existing preferences must be upgraded for server rendering");
+      assert.equal(document.querySelector("dialog").open, false);
+    }
   } finally {
     await act(async () => root.unmount());
     hooks.deregister(); dom.window.close();

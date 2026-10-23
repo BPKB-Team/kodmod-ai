@@ -25,6 +25,10 @@ for (const approved of [false, true]) {
     const previousAct = globalThis.IS_REACT_ACT_ENVIRONMENT;
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     const boundary = { confirmations: [], speech: [], submissions: [] };
+    const frames = new Map();
+    let frameId = 0;
+    globalThis.requestAnimationFrame = callback => { frames.set(++frameId, callback); return frameId; };
+    globalThis.cancelAnimationFrame = id => frames.delete(id);
     globalThis.kodmodLoginBoundary = boundary;
     const translate = (value) => ({
       "Akun ini sedang aktif di perangkat lain. Jika masuk di sini, sesi pada perangkat tersebut akan diakhiri.": "This account is active on another device. Signing in here ends that session.",
@@ -86,7 +90,12 @@ for (const approved of [false, true]) {
 
       await act(async () => {
         boundary.resolveConfirmation(approved);
-        await new Promise(resolve => setTimeout(resolve, 30));
+      });
+      // Flush the frame after React commits the hidden replacement token.
+      // A fixed sleep races with React and the browser scheduler under load.
+      await act(async () => {
+        for (const callback of frames.values()) callback(0);
+        frames.clear();
       });
       assert.equal(boundary.submissions.length, approved ? 1 : 0);
       if (approved) assert.equal(boundary.submissions[0], "session-on-other-device");

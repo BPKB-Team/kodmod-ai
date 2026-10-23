@@ -56,6 +56,7 @@ class LoginRequest(BaseModel):
     username: Username
     password: str = Field(min_length=1, max_length=72)
     replace_session_id: uuid.UUID | None = None
+    preferred_language: Literal["id", "en"] | None = None
 
     @field_validator("username")
     @classmethod

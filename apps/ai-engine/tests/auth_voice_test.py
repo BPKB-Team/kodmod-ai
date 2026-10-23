@@ -6,6 +6,56 @@ pytest_plugins = ["tests.editorial_test"]
 
 
 @pytest.mark.parametrize("role", ["student", "teacher"])
+async def test_login_language_is_atomic_and_does_not_bypass_session_confirmation(
+    editorial_http, role
+):
+    client, *_ = editorial_http
+    credentials = {"username": f"language-{role}", "password": "language-test-123"}
+    created = await client.post(
+        "/auth/register",
+        json={
+            **credentials,
+            "full_name": "Language test",
+            "role": role,
+            "preferred_language": "en",
+        },
+    )
+    assert created.status_code == 201
+    token = created.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    # Neither invalid input, wrong credentials nor an unapproved second
+    # login may change the current account's language/session.
+    assert (
+        await client.post("/auth/login", json={**credentials, "preferred_language": "fr"})
+    ).status_code == 422
+    assert (
+        await client.post(
+            "/auth/login", json={**credentials, "password": "incorrect", "preferred_language": "id"}
+        )
+    ).status_code == 401
+    conflict = await client.post("/auth/login", json={**credentials, "preferred_language": "id"})
+    assert conflict.status_code == 409
+    assert (await client.get("/auth/me", headers=headers)).json()["preferred_language"] == "en"
+    approved = await client.post(
+        "/auth/login",
+        json={
+            **credentials,
+            "preferred_language": "id",
+            "replace_session_id": conflict.json()["detail"]["session_id"],
+        },
+    )
+    assert approved.status_code == 200
+    assert approved.json()["user"]["preferred_language"] == "id"
+    assert (await client.get("/auth/me", headers=headers)).status_code == 401
+    headers = {"Authorization": f"Bearer {approved.json()['access_token']}"}
+    assert (await client.post("/auth/logout", headers=headers)).status_code == 204
+    # API clients without a browser preference retain the saved account choice.
+    again = await client.post("/auth/login", json=credentials)
+    assert again.status_code == 200
+    assert again.json()["user"]["preferred_language"] == "id"
+
+
+@pytest.mark.parametrize("role", ["student", "teacher"])
 async def test_registration_without_invitation(editorial_http, role):
     client, _, _, _, _, _ = editorial_http
     payload = dict(

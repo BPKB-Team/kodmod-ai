@@ -6,10 +6,12 @@ export type DisplaySettings = Pick<VoiceSettings, "lowVision" | "fontScale" | "h
 export const DISPLAY_COOKIE: string;
 export function parseDisplaySettings(value?: Partial<VoiceSettings>): DisplaySettings;
 export const VOICE_SETTINGS_KEY: string;
+export const VOICE_SETTINGS_COOKIE: string;
 export const DEFAULT_VOICE_SETTINGS: VoiceSettings;
 export function readVoiceSettingsSnapshot(): string | null;
 export function parseVoiceSettings(snapshot: string | null): VoiceSettings | null;
 export function writeVoiceSettings(settings: VoiceSettings): boolean;
+export function syncVoiceSettingsCookies(settings: VoiceSettings): void;
 export type SpeechContext = { language?: "id" | "en"; profile?: string; scope?: string;
   menuKey?: string; signal?: AbortSignal };
 

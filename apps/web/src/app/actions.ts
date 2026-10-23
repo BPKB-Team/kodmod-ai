@@ -27,9 +27,11 @@ export async function login(
     return { error: "Isi username dan kata sandi terlebih dahulu." };
   let result: { access_token: string; expires_in: number; user: User };
   try {
+    const language = (await cookies()).get(LANGUAGE_COOKIE)?.value;
     result = await backend("/auth/login", undefined, {
       method: "POST",
-      body: JSON.stringify({ username, password, replace_session_id }),
+      body: JSON.stringify({ username, password, replace_session_id,
+        ...(validLanguage(language) ? { preferred_language: language } : {}) }),
     });
   } catch (error) {
     if (error instanceof BackendError && error.status === 409) {
@@ -74,6 +76,7 @@ export async function login(
   (await cookies()).set(LANGUAGE_COOKIE, validLanguage(result.user.preferred_language)
     ? result.user.preferred_language : "id", { sameSite: "lax", path: "/", maxAge: 365 * 86400,
       secure: sessionCookieSecure() });
+  revalidatePath("/", "layout");
   redirect(`${homeFor(result.user.role)}?success=signed-in`);
 }
 export async function logout() {
@@ -87,6 +90,7 @@ export async function logout() {
     }
   }
   jar.delete(SESSION_COOKIE);
+  revalidatePath("/", "layout");
   redirect("/login?success=signed-out");
 }
 export async function register(
@@ -146,6 +150,7 @@ export async function register(
   (await cookies()).set(LANGUAGE_COOKIE, validLanguage(result.user.preferred_language)
     ? result.user.preferred_language : "id", { sameSite: "lax", path: "/", maxAge: 365 * 86400,
       secure: sessionCookieSecure() });
+  revalidatePath("/", "layout");
   redirect(`${homeFor(result.user.role)}?success=registered`);
 }
 export async function saveUser(

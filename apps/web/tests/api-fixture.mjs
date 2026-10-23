@@ -80,6 +80,7 @@ const server = createServer(async (req, res) => {
     const user = users.find((u) => u.username === body.username);
     if (!user || body.password !== "fixture-only-123") return send(401, {});
     if (!user.is_active) return send(403, {});
+    if (["id", "en"].includes(body.preferred_language)) user.preferred_language = body.preferred_language;
     return send(200, {
       access_token: `fixture-${user.id}`,
       expires_in: 3600,
