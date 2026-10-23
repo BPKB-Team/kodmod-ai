@@ -7,6 +7,14 @@ import type { ActionState } from "@/lib/types";
 import { useI18n } from "@/components/language-provider";
 import { LoadingStatus } from "./loading-feedback";
 import { speechOutput } from "@/lib/browser-speech";
+import { DEFAULT_VOICE_SETTINGS, parseVoiceSettings, readVoiceSettingsSnapshot } from "@/lib/speech-preferences.mjs";
+import type { Language } from "@/lib/i18n.mjs";
+
+function speakFeedback(owner: string, text: string, language: Language) {
+  const settings = parseVoiceSettings(readVoiceSettingsSnapshot()) ?? DEFAULT_VOICE_SETTINGS;
+  if (settings.menuEnabled && settings.engine !== "off")
+    void speechOutput.play({ owner, text, language, engine: settings.engine });
+}
 
 export function useConfirmedAction(
   action: (state: ActionState, data: FormData) => Promise<ActionState>,
@@ -14,9 +22,10 @@ export function useConfirmedAction(
   processSpeech?: string,
   skipConfirmationWhen?: (data: FormData) => boolean,
 ) {
+  const { language, t } = useI18n();
   return useActionState(async (state: ActionState, data: FormData) => {
     const trigger = document.activeElement;
-    if (!skipConfirmationWhen?.(data) && !(await confirmAction(confirmation))) {
+    if (!skipConfirmationWhen?.(data) && !(await confirmAction({ ...confirmation, language }))) {
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           if (trigger instanceof HTMLElement && trigger.isConnected)
@@ -26,44 +35,35 @@ export function useConfirmedAction(
       return state;
     }
     if (processSpeech) {
-      void speechOutput.play({ owner: "action-feedback", text: processSpeech, language: "id", engine: "app" });
+      speakFeedback("action-feedback", t(processSpeech), language);
     }
     return action(state, data);
   }, {});
 }
 
 export function ActionFeedback({ state, pending = false, pendingLabel = "Menyimpan…" }: { state: ActionState; pending?: boolean; pendingLabel?: string }) {
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const router = useRouter();
   const shown = useRef<ActionState | null>(null);
   useEffect(() => {
     if (shown.current === state) return;
     shown.current = state;
     if (state.error) {
-      void notifyResult(state.error, true);
+      void notifyResult(state.error, true, language);
     } else if (state.success) {
-      void notifyResult(state.success);
+      void notifyResult(state.success, false, language);
       if (state.redirectUrl && router) {
         // Announce completion and wait 2.5 seconds before redirecting
-        void speechOutput.play({
-          owner: "action-feedback",
-          text: `${state.success} Mengalihkan halaman dalam beberapa detik...`,
-          language: "id",
-          engine: "app",
-        });
-        const timer = setTimeout(() => {
-          router.push(state.redirectUrl!);
-        }, 2500);
-        return () => clearTimeout(timer);
+        speakFeedback("action-feedback", `${t(state.success)} ${t("Mengalihkan halaman dalam beberapa detik...")}`, language);
       } else {
-        void speechOutput.play({
-          owner: "action-feedback",
-          text: state.success,
-          language: "id",
-          engine: "app",
-        });
+        speakFeedback("action-feedback", t(state.success), language);
       }
     }
+  }, [state, router, language, t]);
+  useEffect(() => {
+    if (!state.success || !state.redirectUrl) return;
+    const timer = setTimeout(() => router.push(state.redirectUrl!), 2500);
+    return () => clearTimeout(timer);
   }, [state, router]);
   return (<>
     <LoadingStatus active={pending} label={pendingLabel} compact />
@@ -89,6 +89,7 @@ const messages: Record<string, string> = {
 };
 
 export function RedirectFeedback() {
+  const { language, t } = useI18n();
   const params = useSearchParams();
   const handled = useRef<string | null>(null);
   const code = params.get("success");
@@ -102,8 +103,8 @@ export function RedirectFeedback() {
     const url = new URL(window.location.href);
     url.searchParams.delete("success");
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
-    void notifyResult(messages[code]);
-    void speechOutput.play({ owner: "redirect-feedback", text: messages[code], language: "id", engine: "app" });
-  }, [code]);
+    void notifyResult(messages[code], false, language);
+    speakFeedback("redirect-feedback", t(messages[code]), language);
+  }, [code, language, t]);
   return null;
 }

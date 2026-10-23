@@ -2,8 +2,9 @@
 
 import Swal from "sweetalert2";
 import { translate, type Language } from "@/lib/i18n.mjs";
+import { readBrowserLanguage } from "@/lib/language-preferences.mjs";
 
-const t = (text: string) => translate(text, document.documentElement.lang as Language);
+const currentLanguage = () => readBrowserLanguage() ?? document.documentElement.lang as Language;
 
 function announceDialog(text: string, menuKey?: string) {
   if (typeof window === "undefined" || typeof CustomEvent === "undefined") return;
@@ -24,8 +25,9 @@ async function waitForNativeDialog() {
   });
 }
 
-const dialog = () =>
-  Swal.mixin({
+const dialog = (language: Language) => {
+  const t = (text: string) => translate(text, language);
+  return Swal.mixin({
     customClass: {
       popup: "kodmod-dialog",
       title: "kodmod-dialog-title",
@@ -42,19 +44,23 @@ const dialog = () =>
     allowOutsideClick: false,
     animation: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   });
+};
 
 export type Confirmation = {
   title: string;
   text: string;
   confirmText?: string;
   destructive?: boolean;
+  language?: Language;
 };
 export async function confirmAction(options: Confirmation) {
   await waitForNativeDialog();
   if (Swal.isVisible()) return false;
+  const language = options.language ?? currentLanguage();
+  const t = (text: string) => translate(text, language);
   const publicKey = options.title === "Masuk ke KODMOD?" ? "login" : options.title === "Buat akun KODMOD?" ? "register" : undefined;
   const confirmText = t(options.confirmText || "Ya, lanjutkan");
-  const result = await dialog().fire({
+  const result = await dialog(language).fire({
     titleText: t(options.title),
     text: t(options.text),
     icon: options.destructive ? "warning" : "question",
@@ -100,9 +106,12 @@ export function formatDialogMessage(message: string): { formattedText: string; i
   return { formattedText: text, isStructured: false };
 }
 
-export async function notifyResult(message: string, error = false) {
+export async function notifyResult(message: string, error = false, preferredLanguage?: Language) {
   await waitForNativeDialog();
-  const { formattedText, isStructured } = formatDialogMessage(message);
+  const language = preferredLanguage ?? currentLanguage();
+  const t = (text: string) => translate(text, language);
+  // Translate the original dictionary key before paragraph formatting changes it.
+  const { formattedText, isStructured } = formatDialogMessage(t(message));
   const title = t(error ? "Belum berhasil" : "Berhasil");
   const publicMessages: Record<string, string> = {
     "Username atau kata sandi tidak sesuai.": "login-invalid",
@@ -113,9 +122,9 @@ export async function notifyResult(message: string, error = false) {
     "Anda sudah keluar dari akun dengan aman.": "signed-out",
   };
   const menuKey = publicMessages[message] ?? (error && /^\/(login|register)(\/|$)/.test(window.location?.pathname ?? "") ? "dialog-error" : undefined);
-  await dialog().fire({
+  await dialog(language).fire({
     titleText: title,
-    text: t(formattedText),
+    text: formattedText,
     customClass: {
       popup: isStructured ? "kodmod-dialog kodmod-dialog-structured" : "kodmod-dialog",
       title: "kodmod-dialog-title",
@@ -128,7 +137,7 @@ export async function notifyResult(message: string, error = false) {
     iconColor: error ? "#c44343" : "#23856d",
     didOpen(popup) {
       popup.querySelector<HTMLElement>(".swal2-confirm")?.setAttribute("data-voice-menu", "dialog-ok");
-      announceDialog(`${title}. ${t(formattedText)}. ${t("Mengerti")}.`, menuKey);
+      announceDialog(`${title}. ${formattedText}. ${t("Mengerti")}.`, menuKey);
     },
   });
 }

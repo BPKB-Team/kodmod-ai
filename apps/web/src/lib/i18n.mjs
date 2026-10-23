@@ -9,6 +9,7 @@ export const localeFor = (language) => language === "en" ? "en-US" : "id-ID";
 // Source strings are the Indonesian copy. Content written by teachers is never
 // passed to this function; it remains in its original language.
 export const english = {
+  "Mengalihkan halaman dalam beberapa detik...": "Redirecting in a few seconds...",
   ...englishUi,
   ...englishScope,
   "Versi": "Version",

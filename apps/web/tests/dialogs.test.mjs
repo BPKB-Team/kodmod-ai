@@ -14,7 +14,7 @@ globalThis.MutationObserver = class {
 };
 const hooks = registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (specifier === 'sweetalert2') return { url: 'data:text/javascript,' + encodeURIComponent(`export default { isVisible: () => false, mixin: () => ({ fire: async (options) => { globalThis.kodmodDialogBoundary.calls.push(options); return { isConfirmed: true }; } }) };`), shortCircuit: true };
+    if (specifier === 'sweetalert2') return { url: 'data:text/javascript,' + encodeURIComponent(`export default { isVisible: () => false, mixin: (defaults) => ({ fire: async (options) => { globalThis.kodmodDialogBoundary.calls.push({...defaults, ...options}); return { isConfirmed: true }; } }) };`), shortCircuit: true };
     if (specifier.startsWith('@/')) return { url: new URL('../src/' + specifier.slice(2), import.meta.url).href, shortCircuit: true };
     return nextResolve(specifier, context);
   },
@@ -56,4 +56,35 @@ test('public login confirmation announces after the popup opens and includes bot
   assert.equal(boundary.announcements[0].menuKey, 'dialog-login');
   assert.match(boundary.announcements[0].text, /Cancel.*Sign in/);
   assert.deepEqual(keys.map(item => item[1]), ['dialog-cancel', 'login-confirm']);
+});
+
+for (const language of ['id', 'en']) {
+  test(`login popup text, button and announcement use explicit ${language} before html language catches up`, async () => {
+    boundary.open = false; boundary.calls = []; boundary.announcements = [];
+    document.documentElement.lang = language === 'en' ? 'id' : 'en';
+    document.cookie = `kodmod_language=${document.documentElement.lang}`;
+    await notifyResult('Anda berhasil masuk. Selamat datang di ruang KODMOD.', false, language);
+    const options = boundary.calls[0];
+    assert.equal(options.titleText, language === 'en' ? 'Done' : 'Berhasil');
+    assert.equal(options.text, language === 'en' ? 'You are signed in. Welcome to KODMOD.' : 'Anda berhasil masuk. Selamat datang di ruang KODMOD.');
+    assert.equal(options.confirmButtonText, language === 'en' ? 'Got it' : 'Mengerti');
+    options.didOpen({ querySelector: () => ({ setAttribute() {} }) });
+    assert.ok(boundary.announcements[0].text.includes(options.text));
+    assert.ok(boundary.announcements[0].text.includes(options.confirmButtonText));
+  });
+}
+
+test('dialog callers without a language use the saved browser choice before html catches up', async () => {
+  boundary.calls = [];
+  document.documentElement.lang = 'id';
+  document.cookie = 'kodmod_language=en';
+  await notifyResult('Anda sudah keluar dari akun dengan aman.');
+  assert.equal(boundary.calls[0].confirmButtonText, 'Got it');
+});
+
+test('long dictionary messages translate before paragraph formatting', async () => {
+  boundary.calls = [];
+  await notifyResult('Indeks materi ini perlu diproses ulang oleh guru. Setelah pemrosesan selesai, coba mulai latihan kembali.', true, 'en');
+  assert.match(boundary.calls[0].text, /index needs to be rebuilt/);
+  assert.doesNotMatch(boundary.calls[0].text, /Indeks materi/);
 });

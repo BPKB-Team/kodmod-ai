@@ -7,6 +7,7 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 import ts from "typescript";
 import { translate } from "../src/lib/i18n.mjs";
+import * as speechPreferences from "../src/lib/speech-preferences.mjs";
 import { formatHtmlMath } from "../src/lib/format-math.mjs";
 
 const require = createRequire(import.meta.url);
@@ -21,6 +22,7 @@ function loadComponents(language = "id", overrides = {}) {
     "@/components/language-provider": i18n,
     "@/lib/utils": { cn: (...parts) => parts.filter(Boolean).join(" ") },
     "@/lib/format-math.mjs": { formatHtmlMath },
+    "@/lib/speech-preferences.mjs": speechPreferences,
     "@/lib/dialogs": { confirmAction: async () => true, notifyResult: async () => {} },
     "@/lib/browser-speech": { speechOutput: { play: async () => {}, stop: () => {}, getState: () => ({ status: "idle" }), subscribe: () => () => {} } },
     ...overrides,
@@ -50,8 +52,8 @@ function loadComponents(language = "id", overrides = {}) {
   return name => load(resolve(components, `${name}.tsx`));
 }
 
-async function mount(render) {
-  const dom = new JSDOM("<!doctype html><html><body><div id='root'></div></body></html>", { pretendToBeVisual: true });
+async function mount(render, url) {
+  const dom = new JSDOM("<!doctype html><html><body><div id='root'></div></body></html>", { pretendToBeVisual: true, url });
   const names = ["window", "document", "HTMLElement", "Node", "IS_REACT_ACT_ENVIRONMENT", "fetch", "requestAnimationFrame"];
   const previous = new Map(names.map(name => [name, globalThis[name]]));
   for (const name of names.slice(0, 4)) globalThis[name] = dom.window[name];
@@ -301,3 +303,62 @@ test("Tutor keeps the lesson during a slow request and retries the same action a
     assert.match(view.document.querySelector(".guided-explanation").textContent, /Dua bagian sama besar/);
   } finally { await view.cleanup(); }
 });
+
+for (const language of ["id", "en"]) {
+  test(`login redirect popup and speech follow ${language} even with stale html language`, async () => {
+    const notifications = [], speech = [];
+    const { RedirectFeedback } = loadComponents(language, {
+      "next/navigation": { useSearchParams: () => new URLSearchParams("success=signed-in&keep=1") },
+      "@/lib/dialogs": { notifyResult: async (...args) => notifications.push(args) },
+      "@/lib/browser-speech": { speechOutput: { play: async value => speech.push(value) } },
+    })("action-feedback");
+    const view = await mount(React => React.createElement(RedirectFeedback), "https://kodmod.test/student?success=signed-in&keep=1");
+    try {
+      assert.equal(view.document.documentElement.lang, "", "html has not been updated by the parent provider effect yet");
+      assert.equal(notifications.length, 1);
+      assert.equal(notifications[0][2], language);
+      assert.equal(speech[0].language, language);
+      assert.equal(speech[0].text, translate("Anda berhasil masuk. Selamat datang di ruang KODMOD.", language));
+      assert.equal(view.dom.window.location.search, "?keep=1");
+      await view.update(React => React.createElement(RedirectFeedback));
+      assert.equal(notifications.length, 1, "rerenders must not replay the success popup");
+    } finally { await view.cleanup(); }
+  });
+
+  test(`action result and spoken feedback follow ${language}`, async () => {
+    const notifications = [], speech = [];
+    const { ActionFeedback } = loadComponents(language, {
+      "next/navigation": { useRouter: () => ({}) },
+      "@/lib/dialogs": { notifyResult: async (...args) => notifications.push(args) },
+      "@/lib/browser-speech": { speechOutput: { play: async value => speech.push(value) } },
+    })("action-feedback");
+    const message = "Anda sudah keluar dari akun dengan aman.";
+    const view = await mount(React => React.createElement(ActionFeedback, { state: { success: message } }));
+    try {
+      assert.equal(notifications[0][2], language);
+      assert.equal(speech[0].language, language);
+      assert.equal(speech[0].text, translate(message, language));
+    } finally { await view.cleanup(); }
+  });
+}
+
+for (const settings of [
+  { engine: "device", menuEnabled: true },
+  { engine: "app", menuEnabled: false },
+  { engine: "off", menuEnabled: true },
+]) {
+  test(`login feedback respects voice engine=${settings.engine} menu=${settings.menuEnabled}`, async () => {
+    const speech = [];
+    const { RedirectFeedback } = loadComponents("en", {
+      "next/navigation": { useSearchParams: () => new URLSearchParams("success=signed-in") },
+      "@/lib/dialogs": { notifyResult: async () => {} },
+      "@/lib/speech-preferences.mjs": { ...speechPreferences, readVoiceSettingsSnapshot: () => JSON.stringify(settings) },
+      "@/lib/browser-speech": { speechOutput: { play: async value => speech.push(value) } },
+    })("action-feedback");
+    const view = await mount(React => React.createElement(RedirectFeedback), "https://kodmod.test/student?success=signed-in");
+    try {
+      assert.equal(speech.length, settings.menuEnabled && settings.engine !== "off" ? 1 : 0);
+      if (speech.length) assert.equal(speech[0].engine, "device");
+    } finally { await view.cleanup(); }
+  });
+}
