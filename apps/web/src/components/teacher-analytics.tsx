@@ -20,6 +20,7 @@ import {
 import { notifyResult } from "@/lib/dialogs";
 import type { AnalyticsWindow } from "@/lib/analytics-types";
 import type { TeacherCohort } from "@/lib/teacher-types";
+import { GameProgress } from "./ui/game-progress";
 
 const windows: Array<{ value: AnalyticsWindow; label: string }> = [
   { value: "today", label: "Hari ini" },
@@ -508,10 +509,13 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
                     <strong>{concept.concept_name}</strong>
                     <span>{concept.n_students}<UiText>{" siswa"}</UiText></span>
                   </div>
-                  <progress
+                  <GameProgress
                     max={1}
                     value={concept.avg_mastery}
+                    size="sm"
+                    showPercentage={false}
                     aria-label={`${concept.concept_name} ${percent(concept.avg_mastery)}`}
+                    variant="amber"
                   />
                   <small><UiText>{"Rata-rata mastery "}</UiText>{percent(concept.avg_mastery)}</small>
                 </div>

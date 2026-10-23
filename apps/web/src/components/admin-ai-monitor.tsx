@@ -53,8 +53,8 @@ export function AdminAiMonitor({
     }
     return null;
   });
-  const [loading, setLoading] = useState(false);
-  const [isRevalidating, setIsRevalidating] = useState(false);
+  const [loading, setLoading] = useState(() => !initialData);
+  const [isRevalidating, setIsRevalidating] = useState(() => Boolean(initialData));
   const [filterProvider, setFilterProvider] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -64,16 +64,11 @@ export function AdminAiMonitor({
   const [selectedRequest, setSelectedRequest] = useState<AdminAiRequestLog | null>(null);
   const [copiedId, setCopiedId] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const hasCachedData = useRef(Boolean(data));
 
   // Background SWR revalidation
   useEffect(() => {
     let active = true;
-    const hasCached = Boolean(data);
-    if (hasCached) {
-      setIsRevalidating(true);
-    } else {
-      setLoading(true);
-    }
 
     const query = new URLSearchParams({ days: "7", page: "1", limit: "20" });
     fetch(`/api/admin/insights/ai-usage?${query}`)
@@ -93,7 +88,7 @@ export function AdminAiMonitor({
         }
       })
       .catch((err) => {
-        if (!hasCached && active) {
+        if (!hasCachedData.current && active) {
           notifyResult(err instanceof Error ? err.message : "Gagal memuat data.", true);
         }
       })
@@ -388,10 +383,20 @@ export function AdminAiMonitor({
           {/* Quota Progress */}
           <div className="ai-quota-meter">
             <div className="quota-meter-header">
-              <span><UiText>{"Karakter Terpakai"}</UiText></span>
+              <span className="quota-meter-label">
+                <span className="quota-dot-indicator" aria-hidden="true" />
+                <UiText>{"Karakter Terpakai"}</UiText>
+              </span>
               <strong>
                 {elevenlabs ? (
-                  elevenlabs.available ? <>{elUsed.toLocaleString()} / {elLimit.toLocaleString()} <span className="quota-pct">({elPct}%)</span></> : <UiText>{"Kuota belum dapat dimuat"}</UiText>
+                  elevenlabs.available ? (
+                    <>
+                      {elUsed.toLocaleString(locale)} / {elLimit.toLocaleString(locale)}{" "}
+                      <span className="quota-pct">({elPct}%)</span>
+                    </>
+                  ) : (
+                    <UiText>{"Kuota belum dapat dimuat"}</UiText>
+                  )
                 ) : (
                   <div className="kodmod-skeleton" style={{ height: "1rem", width: "120px", display: "inline-block" }} />
                 )}
@@ -401,18 +406,22 @@ export function AdminAiMonitor({
               <div
                 className={`quota-progress-fill ${elPct > 85 ? "danger" : elPct > 60 ? "warning" : "normal"}`}
                 style={{ width: `${elPct}%` }}
-              />
+              >
+                <div className="quota-liquid-wave" aria-hidden="true" />
+              </div>
             </div>
             <div className="quota-meter-footer">
-              <small>
+              <span className="quota-remaining-badge">
                 <UiText>{"Sisa kuota: "}</UiText>
-                <strong>{elevenlabs?.available ? elRemaining.toLocaleString() : t("Belum tersedia")}</strong> <UiText>{"karakter"}</UiText>
-              </small>
+                <strong>{elevenlabs?.available ? elRemaining.toLocaleString(locale) : t("Belum tersedia")}</strong>{" "}
+                <UiText>{"karakter"}</UiText>
+              </span>
               {elevenlabs?.next_reset_unix && (
-                <small>
+                <span className="quota-reset-badge">
+                  <Clock size={12} aria-hidden="true" />
                   <UiText>{"Reset: "}</UiText>
                   <strong><UiDate value={new Date(elevenlabs.next_reset_unix * 1000).toISOString()} /></strong>
-                </small>
+                </span>
               )}
             </div>
           </div>
@@ -420,16 +429,22 @@ export function AdminAiMonitor({
           {/* Specs List */}
           <div className="ai-specs-grid">
             <div className="spec-item">
-              <span><UiText>{"Paket / Tier"}</UiText></span>
-              <strong>{elevenlabs ? (elevenlabs.tier?.toUpperCase() ?? t("Belum tersedia")) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "60px", height: "1rem" }} />}</strong>
+              <span className="spec-label"><UiText>{"Paket / Tier"}</UiText></span>
+              <strong className="spec-value tier-badge">
+                {elevenlabs ? (elevenlabs.tier?.toUpperCase() ?? t("Belum tersedia")) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "60px", height: "1rem" }} />}
+              </strong>
             </div>
             <div className="spec-item">
-              <span><UiText>{"Model Suara"}</UiText></span>
-              <strong>{elevenlabs ? elevenlabs.tts_model : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "80px", height: "1rem" }} />}</strong>
+              <span className="spec-label"><UiText>{"Model Suara"}</UiText></span>
+              <strong className="spec-value">
+                {elevenlabs ? elevenlabs.tts_model : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "80px", height: "1rem" }} />}
+              </strong>
             </div>
             <div className="spec-item">
-              <span><UiText>{"Speech to Text"}</UiText></span>
-              <strong>{elevenlabs ? elevenlabs.stt_backend : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
+              <span className="spec-label"><UiText>{"Speech to Text"}</UiText></span>
+              <strong className="spec-value">
+                {elevenlabs ? elevenlabs.stt_backend : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}
+              </strong>
             </div>
           </div>
         </article>
@@ -465,25 +480,72 @@ export function AdminAiMonitor({
             )}
           </div>
 
-          {/* Token Usage Summary */}
+          {/* Token Usage Summary with Ratio Bar */}
           <div className="ai-token-stats">
             <div className="token-total-box">
-              <span><UiText>{"Token terukur"}</UiText></span>
-              {openai ? (
-                <strong>{metric(openai.total_tokens)}</strong>
-              ) : (
-                <div className="kodmod-skeleton" style={{ height: "1.75rem", width: "50%", margin: "6px 0" }} />
-              )}
+              <div className="token-total-top">
+                <span><UiText>{"Token terukur"}</UiText></span>
+                <span className="token-period-chip">
+                  <Clock size={11} aria-hidden="true" />
+                  <UiText>{"7 hari terakhir"}</UiText>
+                </span>
+              </div>
+              <div className="token-total-val">
+                {openai ? (
+                  <strong>{metric(openai.total_tokens)}</strong>
+                ) : (
+                  <div className="kodmod-skeleton" style={{ height: "1.75rem", width: "50%", margin: "6px 0" }} />
+                )}
+                {actualCosts?.available && actualCosts.total_usd != null && (
+                  <span className="token-cost-badge" title={t("Biaya aktual seluruh organisasi dari OpenAI Costs API")}>
+                    <CircleDollarSign size={12} aria-hidden="true" />
+                    {cost(actualCosts.total_usd)}
+                  </span>
+                )}
+              </div>
               <small><UiText>{"Jumlah token dari respons penyedia selama 7 hari terakhir."}</UiText></small>
             </div>
-            <div className="token-breakdown-row">
-              <div className="breakdown-sub">
-                <small><UiText>{"Input (Prompt)"}</UiText></small>
-                <strong>{openai ? metric(openai.prompt_tokens) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "50px", height: "1rem" }} />}</strong>
+
+            {/* Visual Token Ratio Bar */}
+            <div className="token-ratio-visual" aria-hidden="true">
+              <div className="token-ratio-track">
+                <div
+                  className="token-segment prompt"
+                  style={{ width: `${openai && openai.total_tokens ? Math.max(8, Math.round(((openai.prompt_tokens || 0) / openai.total_tokens) * 100)) : 50}%` }}
+                  title={`Prompt: ${openai?.prompt_tokens?.toLocaleString(locale) ?? 0}`}
+                />
+                <div
+                  className="token-segment completion"
+                  style={{ width: `${openai && openai.total_tokens ? Math.max(8, Math.round(((openai.completion_tokens || 0) / openai.total_tokens) * 100)) : 50}%` }}
+                  title={`Completion: ${openai?.completion_tokens?.toLocaleString(locale) ?? 0}`}
+                />
               </div>
-              <div className="breakdown-sub">
-                <small><UiText>{"Output (Jawaban)"}</UiText></small>
+            </div>
+
+            <div className="token-breakdown-row">
+              <div className="breakdown-sub prompt-sub">
+                <div className="breakdown-label">
+                  <span className="breakdown-dot prompt-dot" aria-hidden="true" />
+                  <small><UiText>{"Input (Prompt)"}</UiText></small>
+                </div>
+                <strong>{openai ? metric(openai.prompt_tokens) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "50px", height: "1rem" }} />}</strong>
+                {openai && openai.total_tokens ? (
+                  <span className="breakdown-pct">
+                    {Math.round(((openai.prompt_tokens || 0) / openai.total_tokens) * 100)}%
+                  </span>
+                ) : null}
+              </div>
+              <div className="breakdown-sub completion-sub">
+                <div className="breakdown-label">
+                  <span className="breakdown-dot completion-dot" aria-hidden="true" />
+                  <small><UiText>{"Output (Jawaban)"}</UiText></small>
+                </div>
                 <strong>{openai ? metric(openai.completion_tokens) : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "50px", height: "1rem" }} />}</strong>
+                {openai && openai.total_tokens ? (
+                  <span className="breakdown-pct">
+                    {Math.round(((openai.completion_tokens || 0) / openai.total_tokens) * 100)}%
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -491,16 +553,16 @@ export function AdminAiMonitor({
           {/* Model Mapping */}
           <div className="ai-specs-grid">
             <div className="spec-item">
-              <span><UiText>{"Model Tutor"}</UiText></span>
-              <strong>{openai ? openai.models.tutor : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
+              <span className="spec-label"><UiText>{"Model Tutor"}</UiText></span>
+              <strong className="spec-value">{openai ? openai.models.tutor : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
             <div className="spec-item">
-              <span><UiText>{"Model Kuis"}</UiText></span>
-              <strong>{openai ? openai.models.quiz : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
+              <span className="spec-label"><UiText>{"Model Kuis"}</UiText></span>
+              <strong className="spec-value">{openai ? openai.models.quiz : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
             <div className="spec-item">
-              <span><UiText>{"Embeddings"}</UiText></span>
-              <strong>{openai ? openai.models.embedding : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
+              <span className="spec-label"><UiText>{"Embeddings"}</UiText></span>
+              <strong className="spec-value">{openai ? openai.models.embedding : <span className="kodmod-skeleton" style={{ display: "inline-block", width: "70px", height: "1rem" }} />}</strong>
             </div>
           </div>
         </article>
@@ -605,6 +667,7 @@ export function AdminAiMonitor({
                   <TableHead><UiText>{"Latensi"}</UiText></TableHead>
                   <TableHead><UiText>{"Status"}</UiText></TableHead>
                   <TableHead><UiText>{"Estimasi biaya (USD)"}</UiText></TableHead>
+                  <TableHead className="text-right"><UiText>{"Diagnostik / Jejak"}</UiText></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -618,6 +681,7 @@ export function AdminAiMonitor({
                     <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "55px" }} /></TableCell>
                     <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "65px" }} /></TableCell>
                     <TableCell><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "60px" }} /></TableCell>
+                    <TableCell className="text-right"><div className="kodmod-skeleton" style={{ height: "1.1rem", width: "90px", marginLeft: "auto" }} /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -636,6 +700,7 @@ export function AdminAiMonitor({
                   <TableHead><UiText>{"Latensi"}</UiText></TableHead>
                   <TableHead><UiText>{"Status"}</UiText></TableHead>
                   <TableHead><UiText>{"Estimasi biaya (USD)"}</UiText></TableHead>
+                  <TableHead className="text-right"><UiText>{"Diagnostik / Jejak"}</UiText></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -660,26 +725,8 @@ export function AdminAiMonitor({
                     </TableCell>
                     <TableCell>
                       <div className="log-target-cell">
-                        <strong>{t(req.actor_name)}</strong>
-                        {req.target && <small className="log-target-id">{req.target}</small>}
-                        <div className="trace-btns-row">
-                          <button
-                            type="button"
-                            className="trace-action-btn"
-                            disabled={traceLoading && selectedRequest?.id === req.id}
-                            onClick={() => handleOpenTrace(req)}
-                          >
-                            <Activity size={12} aria-hidden="true" />
-                            <span>{t("Lihat jejak")}</span>
-                          </button>
-                          <Link
-                            href={`/admin/pemantauan-ai/jejak?request_id=${encodeURIComponent(req.request_id)}`}
-                            className="trace-action-btn secondary"
-                            title={t("Buka halaman jejak lengkap")}
-                          >
-                            <ArrowUpRight size={12} aria-hidden="true" />
-                          </Link>
-                        </div>
+                        <strong className="log-actor-name">{t(req.actor_name)}</strong>
+                        {req.target && <span className="log-target-id">{req.target}</span>}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -706,6 +753,28 @@ export function AdminAiMonitor({
                       {req.error_code && <small className="muted">{req.error_code}</small>}
                     </TableCell>
                     <TableCell>{cost(req.estimated_cost_usd)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="log-trace-actions">
+                        <button
+                          type="button"
+                          className="trace-action-btn"
+                          disabled={traceLoading && selectedRequest?.id === req.id}
+                          onClick={() => handleOpenTrace(req)}
+                          title={t("Lihat jejak")}
+                        >
+                          <Activity size={12} aria-hidden="true" />
+                          <span>{t("Lihat jejak")}</span>
+                        </button>
+                        <Link
+                          href={`/admin/pemantauan-ai/jejak?request_id=${encodeURIComponent(req.request_id)}`}
+                          className="trace-action-btn secondary"
+                          title={t("Buka halaman jejak lengkap")}
+                          aria-label={t("Buka halaman jejak lengkap")}
+                        >
+                          <ArrowUpRight size={12} aria-hidden="true" />
+                        </Link>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

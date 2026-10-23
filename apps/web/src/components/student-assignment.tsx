@@ -38,6 +38,7 @@ import {
 import { VoiceControls } from "./voice-controls";
 import { useQuizExitGuard } from "./use-quiz-exit-guard";
 import { Badge } from "./ui";
+import { GameProgress } from "./ui/game-progress";
 import { LoadingStatus } from "./loading-feedback";
 import { Spinner } from "./ui/spinner";
 import "@/styles/editorial.css";
@@ -64,6 +65,12 @@ function readPending(id?: string): string | null {
     return pendingMemory.get(id) ?? null;
   }
 }
+function cleanOptionText(text: string): string {
+  if (!text) return "";
+  const cleaned = text.replace(/^(?:[A-Za-z]|\d+)[\.\)\:\-]\s+/, "").trim();
+  return cleaned || text;
+}
+
 function writePending(id: string, intent: FinalIntent | null) {
   const raw = intent ? JSON.stringify(intent) : null;
   pendingMemory.set(id, raw);
@@ -615,12 +622,12 @@ export function StudentAssignment({
                   ))}
                 </nav>
               </div>
-              <progress
+              <GameProgress
                 value={answeredCount}
                 max={attempt.questions.length}
                 aria-label={t("{count} dari {total} jawaban tersimpan", { count: answeredCount, total: attempt.questions.length })}
+                subtitle={<UiText>{"Jawaban tersimpan saat kamu menekan Simpan & lanjut."}</UiText>}
               />
-              <p className="editorial-progress-hint"><UiText>{"Jawaban tersimpan saat kamu menekan Simpan & lanjut."}</UiText></p>
             </aside>
             <div className="editorial-main">
               <section className="panel editorial-section">
@@ -649,12 +656,12 @@ export function StudentAssignment({
                         value={o.id}
                         checked={selected === o.id}
                         onChange={() => setSelected(o.id)}
-                        aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}, ${o.label}`}
+                        aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}, ${cleanOptionText(o.label)}`}
                       />
                       <span className="quiz-option-key">
                         {String.fromCharCode(65 + i)}
                       </span>
-                      <span>{o.label}</span>
+                      <span>{cleanOptionText(o.label)}</span>
                     </label>
                   ))}
                 </fieldset>
@@ -687,7 +694,7 @@ export function StudentAssignment({
               <VoiceControls
                 key={question.id}
                 autoPlayKey={question.id}
-                text={`${t("Soal {number}", { number: question.order_index })}. ${question.narration || question.prompt}. ${question.options.map((o, i) => `${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}: ${o.label}`).join(". ")}`}
+                text={`${t("Soal {number}", { number: question.order_index })}. ${question.narration || question.prompt}. ${question.options.map((o, i) => `${t("Pilihan {letter}", { letter: String.fromCharCode(65 + i) })}: ${cleanOptionText(o.label)}`).join(". ")}`}
               />
               <section className="panel editorial-section editorial-final-submit">
                 <div>

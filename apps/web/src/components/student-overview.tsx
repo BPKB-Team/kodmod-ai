@@ -5,6 +5,7 @@ import { ArrowUpRight, BookOpen, ListChecks, MessageCircle } from "lucide-react"
 import { classroomData } from "@/lib/classrooms";
 import type { StudentMaterial } from "@/lib/class-types";
 import { getServerI18n } from "@/lib/server-language";
+import { GameProgress } from "@/components/ui/game-progress";
 export async function StudentOverview() {
   const { t } = await getServerI18n();
   const materials = await classroomData<StudentMaterial[]>(
@@ -20,12 +21,12 @@ export async function StudentOverview() {
           <BookOpen size={18} aria-hidden="true" /><UiText>{"Perjalanan bacaanmu"}</UiText></span>
         <h2>
           {done}<UiText>{" dari "}</UiText>{materials.length}<UiText>{" materi selesai bersama Tutor"}</UiText></h2>
-        <progress
+        <GameProgress
           value={done}
           max={materials.length || 1}
           aria-label={t("{count} dari {total} materi selesai bersama Tutor", { count: done, total: materials.length })}
+          subtitle={<UiText>{"Penyelesaian bersama Tutor dicatat per bagian materi. Penguasaan konsep dinilai lewat latihan."}</UiText>}
         />
-        <p><UiText>{"Penyelesaian bersama Tutor dicatat per bagian materi. Penguasaan konsep dinilai lewat latihan."}</UiText></p>
       </div>
       <div className="student-overview-links">
         {next && (

@@ -18,6 +18,7 @@ import { VoiceControls } from "./voice-controls";
 import { StudentQuiz } from "./student-quiz";
 import { speechOutput } from "@/lib/browser-speech";
 import { FormattedMathText } from "./formatted-math-text";
+import { GameProgress } from "./ui/game-progress";
 import "@/styles/guided-learning.css";
 
 function formatLessonContent(text: string, language = "id") {
@@ -411,7 +412,18 @@ export function GuidedTutor({ materials, initialSessions, initialMaterialId, ini
           <ArrowLeft size={16} aria-hidden="true" />
           <UiText>{"Pilih materi lain"}</UiText>
         </button>
-        <Card className="guided-progress"><div><span className="muted">{lesson.subject}</span><h2>{lesson.material_title}</h2></div><strong>{t("Bagian")} {lesson.unit_index + 1} / {lesson.total_units}</strong><progress value={lesson.phase === "completed" ? lesson.total_units : lesson.unit_index + 1} max={lesson.total_units} aria-label={t("Progres belajar")} /></Card>
+        <Card className="guided-progress">
+          <div>
+            <span className="muted">{lesson.subject}</span>
+            <h2>{lesson.material_title}</h2>
+          </div>
+          <strong>{t("Bagian")} {lesson.unit_index + 1} / {lesson.total_units}</strong>
+          <GameProgress
+            value={lesson.phase === "completed" ? lesson.total_units : lesson.unit_index + 1}
+            max={lesson.total_units}
+            aria-label={t("Progres belajar")}
+          />
+        </Card>
         {lesson.phase === "quiz" && lesson.quiz ? (
           <div className="guided-quiz-container">
             <div className="guided-quiz-banner" role="status">

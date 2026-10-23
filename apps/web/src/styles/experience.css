@@ -2019,29 +2019,37 @@
 .role-ratio-bar {
   display: flex;
   height: 14px;
-  border-radius: 999px;
+  border-radius: 9999px;
   overflow: hidden;
-  background: #eaf1fa;
+  background: #090f1d;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(147, 197, 253, 0.22);
   gap: 2px;
 }
 .segment {
   height: 100%;
   transition: width 0.3s ease;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px);
+  background-size: 100% 100%, 56px 100%;
+  animation: gameLiquidFlow 2.4s linear infinite;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6);
 }
 .segment-student {
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  background-color: #2563eb;
 }
 .segment-teacher {
-  background: linear-gradient(90deg, #10b981, #059669);
+  background-color: #059669;
 }
 .segment-admin {
-  background: linear-gradient(90deg, #f59e0b, #d97706);
+  background-color: #d97706;
 }
 .segment-needs-help {
-  background: linear-gradient(90deg, #f43f5e, #e11d48);
+  background-color: #e11d48;
 }
 .segment-developing {
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  background-color: #2563eb;
 }
 .segment-mastering {
   background: linear-gradient(90deg, #10b981, #059669);
@@ -2262,10 +2270,34 @@
 }
 .ai-provider-card {
   padding: 1.75rem 1.75rem 1.5rem;
-  background: #ffffffeb;
+  background: #ffffff;
+  border: 1.5px solid #dce8f8;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(18, 51, 93, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.35rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.ai-provider-card:hover {
+  box-shadow: 0 8px 32px rgba(18, 51, 93, 0.08);
+  border-color: #cbdcf5;
+}
+.ai-provider-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+}
+.ai-provider-card.elevenlabs-card::before {
+  background: linear-gradient(90deg, #4f46e5, #818cf8);
+}
+.ai-provider-card.openai-card::before {
+  background: linear-gradient(90deg, #10b981, #06b6d4);
 }
 .ai-provider-header {
   display: flex;
@@ -2279,60 +2311,73 @@
   gap: 0.85rem;
 }
 .ai-provider-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.ai-provider-card:hover .ai-provider-icon {
+  transform: scale(1.05);
 }
 .ai-provider-icon.indigo {
-  background: #eef2ff;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
   color: #4f46e5;
-  border: 1px solid #c7d2fe;
+  border: 1.5px solid #c7d2fe;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.12);
 }
 .ai-provider-icon.emerald {
-  background: #ecfdf5;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
   color: #059669;
-  border: 1px solid #a7f3d0;
+  border: 1.5px solid #a7f3d0;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.12);
 }
 .ai-provider-title h3 {
-  font-size: 1.15rem;
+  font-size: 1.18rem;
+  font-weight: 750;
   margin: 0 0 0.15rem;
   color: #0f2747;
+  letter-spacing: -0.01em;
 }
 .ai-provider-title small {
-  color: #647d9e;
-  font-size: 0.8rem;
+  color: #557297;
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 .ai-status-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.28rem 0.65rem;
+  padding: 0.32rem 0.75rem;
   border-radius: 999px;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 .ai-status-tag.ready {
   background: #ecfdf5;
   color: #065f46;
   border: 1px solid #a7f3d0;
+  box-shadow: 0 1px 3px rgba(6, 95, 70, 0.06);
 }
 .ai-status-tag.fallback {
   background: #fffbeb;
   color: #92400e;
   border: 1px solid #fde68a;
 }
+
+/* Quota Meter */
 .ai-quota-meter {
-  background: #f8fbff;
-  border: 1px solid #e1ecf8;
-  border-radius: 14px;
-  padding: 1.1rem 1.25rem;
+  background: linear-gradient(180deg, #f8fbff 0%, #f3f7fd 100%);
+  border: 1.5px solid #dce7f5;
+  border-radius: 16px;
+  padding: 1.15rem 1.35rem;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.75rem;
 }
 .quota-meter-header {
   display: flex;
@@ -2341,23 +2386,43 @@
   font-size: 0.88rem;
   color: #4b6688;
 }
+.quota-meter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  color: #1e3a61;
+}
+.quota-dot-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
 .quota-meter-header strong {
-  font-size: 0.95rem;
-  color: #112d53;
+  font-size: 0.98rem;
+  color: #0f2747;
+  font-weight: 750;
 }
 .quota-pct {
-  color: #2565e9;
+  color: #4f46e5;
+  font-weight: 750;
 }
 .quota-progress-track {
-  height: 10px;
+  height: 12px;
   background: #e2ecf8;
   border-radius: 999px;
   overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(18, 51, 93, 0.08);
 }
 .quota-progress-fill {
   height: 100%;
   border-radius: 999px;
-  transition: width 0.4s ease;
+  transition: width 0.5s ease;
+  position: relative;
+  overflow: hidden;
 }
 .quota-progress-fill.normal {
   background: linear-gradient(90deg, #4f46e5, #6366f1);
@@ -2368,17 +2433,47 @@
 .quota-progress-fill.danger {
   background: linear-gradient(90deg, #ef4444, #dc2626);
 }
+.quota-liquid-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: quotaLiquidShimmer 2.2s infinite linear;
+}
+@keyframes quotaLiquidShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
 .quota-meter-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.78rem;
   color: #647b99;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
+.quota-remaining-badge,
+.quota-reset-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid #dce7f5;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 0.76rem;
+  color: #334e68;
+}
+
+/* OpenAI Token Stats */
 .ai-token-stats {
-  background: #f8fbff;
-  border: 1px solid #e1ecf8;
-  border-radius: 14px;
-  padding: 1.1rem 1.25rem;
+  background: linear-gradient(180deg, #f8fbfd 0%, #f1f8f6 100%);
+  border: 1.5px solid #d5ece2;
+  border-radius: 16px;
+  padding: 1.15rem 1.35rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -2388,34 +2483,134 @@
   flex-direction: column;
   gap: 0.2rem;
 }
-.token-total-box span {
-  font-size: 0.8rem;
-  color: #647d9e;
+.token-total-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.token-total-box strong {
-  font-size: 1.45rem;
-  color: #0d294d;
-  line-height: 1.15;
+.token-total-top span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #065f46;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.token-period-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.token-total-val {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 2px;
+}
+.token-total-val strong {
+  font-size: 1.65rem;
+  font-weight: 750;
+  color: #0e2747;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.token-cost-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: #065f46;
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  padding: 3px 9px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(6, 95, 70, 0.08);
+}
+.token-total-box small {
+  font-size: 0.78rem;
+  color: #557297;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.token-ratio-visual {
+  margin: 0.2rem 0;
+}
+.token-ratio-track {
+  height: 10px;
+  background: #e2edf8;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  gap: 2px;
+  box-shadow: inset 0 1px 2px rgba(18, 51, 93, 0.08);
+}
+.token-segment.prompt {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  border-radius: 999px 0 0 999px;
+  transition: width 0.5s ease;
+}
+.token-segment.completion {
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 0 999px 999px 0;
+  transition: width 0.5s ease;
 }
 .token-breakdown-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
   padding-top: 0.65rem;
-  border-top: 1px dashed #dbe6f4;
+  border-top: 1px dashed #d5ece2;
 }
 .breakdown-sub {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  background: #ffffff;
+  border: 1px solid #e1efe9;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
 }
-.breakdown-sub small {
-  font-size: 0.75rem;
-  color: #718aa8;
+.breakdown-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.breakdown-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.breakdown-dot.prompt-dot { background: #2563eb; }
+.breakdown-dot.completion-dot { background: #10b981; }
+.breakdown-label small {
+  font-size: 0.74rem;
+  font-weight: 650;
+  color: #557091;
 }
 .breakdown-sub strong {
-  font-size: 0.95rem;
-  color: #173864;
+  font-size: 1rem;
+  font-weight: 750;
+  color: #0e2747;
 }
+.breakdown-pct {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #059669;
+}
+.breakdown-sub.prompt-sub .breakdown-pct {
+  color: #2563eb;
+}
+
+/* Specs Grid */
 .ai-specs-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2425,20 +2620,34 @@
 .spec-item {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  background: #f5f8fc;
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid #e5edf6;
+  gap: 0.25rem;
+  background: #f8fbff;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid #e3edf8;
+  transition: all 0.15s ease;
 }
-.spec-item span {
-  font-size: 0.74rem;
-  color: #708ba8;
+.spec-item:hover {
+  border-color: #bfdbfe;
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(18, 51, 93, 0.04);
 }
-.spec-item strong {
-  font-size: 0.85rem;
-  color: #163762;
+.spec-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #647d9e;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.spec-value {
+  font-size: 0.86rem;
+  font-weight: 750;
+  color: #112d53;
   word-break: break-all;
+}
+.spec-value.tier-badge {
+  color: #4f46e5;
 }
 .ai-logs-panel {
   border: 1.5px solid #dce8f8;
@@ -2670,48 +2879,68 @@
 .log-target-cell {
   display: flex;
   flex-direction: column;
-  gap: 0.22rem;
+  gap: 0.2rem;
   align-items: flex-start;
 }
-.log-target-cell strong {
+.log-target-cell .log-actor-name {
   font-size: 0.88rem;
+  font-weight: 700;
   color: #112d53;
   line-height: 1.25;
 }
 .log-target-cell .log-target-id {
-  font-size: 0.74rem;
-  color: #64748b;
+  font-size: 0.72rem;
+  color: #475569;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   background: #f1f5f9;
-  padding: 1px 5px;
+  padding: 1px 6px;
   border-radius: 4px;
-  max-width: 200px;
+  border: 1px solid #e2e8f0;
+  max-width: 190px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.log-trace-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
 }
 .trace-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 2px;
-  padding: 3px 8px;
-  font-size: 0.75rem;
+  padding: 4px 10px;
+  font-size: 0.78rem;
   font-weight: 650;
-  border-radius: 6px;
-  border: 1px solid #cbdcf4;
-  background: #f0f6ff;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
   color: #1d4ed8;
   cursor: pointer;
   transition: all 0.15s ease;
   line-height: 1.3;
+  white-space: nowrap;
 }
 .trace-action-btn:hover:not(:disabled) {
   background: #2563eb;
   border-color: #2563eb;
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.22);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
+}
+.trace-action-btn.secondary {
+  padding: 4px 7px !important;
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+  border-radius: 8px !important;
+}
+.trace-action-btn.secondary:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
 }
 .trace-action-btn:disabled {
   opacity: 0.6;
@@ -4180,6 +4409,57 @@
   gap: 1.5rem;
 }
 
+.trace-breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.86rem;
+  margin-bottom: -0.35rem;
+}
+
+.trace-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  color: #2563eb;
+  text-decoration: none;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 4px 11px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.trace-back-btn:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  transform: translateX(-2px);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.trace-crumb-divider {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.trace-crumb-current {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.trace-stat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  font-weight: 650;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .trace-btns-row {
   display: inline-flex;
   align-items: center;
@@ -4853,4 +5133,338 @@
   background: #e0f2fe;
   color: #0369a1;
   border: 1px solid #bae6fd;
+}
+
+/* ==========================================================================
+   KODMOD Game Liquid Progress Bars (Global & Component HUD)
+   High-performance GPU-accelerated liquid animation, pure CSS keyframes
+   ========================================================================== */
+
+@keyframes gameLiquidFlow {
+  0% {
+    background-position: 0 0, 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 0, 56px 0, 0 0;
+  }
+}
+
+@keyframes gameHudPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 6px rgba(56, 189, 248, 0.7);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.92);
+    box-shadow: 0 0 2px rgba(56, 189, 248, 0.3);
+  }
+}
+
+/* Global native progress bar styling - transforms all progress bars into Game Liquid Gauges */
+progress {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  display: block;
+  width: 100%;
+  height: 13px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: #090f1d;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.65),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(147, 197, 253, 0.22);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+progress::-webkit-progress-bar {
+  background: #090f1d;
+  border-radius: 9999px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.65);
+}
+
+progress::-webkit-progress-value {
+  border-radius: 9999px;
+  position: relative;
+  background-color: #2563eb;
+  background-image:
+    /* Specular glass tube reflection */
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    /* Flowing liquid wave bands */
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px),
+    /* Fluid cyan-blue-violet gradient */
+    linear-gradient(90deg, #06b6d4 0%, #2563eb 50%, #7c3aed 100%);
+  background-size: 100% 100%, 56px 100%, 100% 100%;
+  background-repeat: no-repeat, repeat-x, no-repeat;
+  box-shadow:
+    0 0 12px rgba(6, 182, 212, 0.5),
+    0 0 4px rgba(37, 99, 235, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+  animation: gameLiquidFlow 2.4s linear infinite;
+  transition: width 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+  will-change: background-position;
+}
+
+progress::-moz-progress-bar {
+  border-radius: 9999px;
+  position: relative;
+  background-color: #2563eb;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px),
+    linear-gradient(90deg, #06b6d4 0%, #2563eb 50%, #7c3aed 100%);
+  background-size: 100% 100%, 56px 100%, 100% 100%;
+  background-repeat: no-repeat, repeat-x, no-repeat;
+  box-shadow:
+    0 0 12px rgba(6, 182, 212, 0.5),
+    0 0 4px rgba(37, 99, 235, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+  animation: gameLiquidFlow 2.4s linear infinite;
+  transition: width 0.4s cubic-bezier(0.34, 1.3, 0.64, 1);
+  will-change: background-position;
+}
+
+/* ==========================================================================
+   Game HUD Progress Container & Elements
+   ========================================================================== */
+
+.game-progress-hud {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  margin: 6px 0;
+}
+
+.game-progress-hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.game-progress-hud-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+.game-hud-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+  animation: gameHudPulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.game-progress-hud-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #0b1526 0%, #0f1f38 100%);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.game-hud-num {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+}
+
+.game-progress-hud-badge.sm {
+  padding: 2px 7px;
+}
+.game-progress-hud-badge.sm .game-hud-num {
+  font-size: 0.75rem;
+}
+
+.game-progress-track {
+  position: relative;
+  width: 100%;
+}
+
+.game-progress-hud-subtitle {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Sizes */
+.game-progress-sm progress {
+  height: 9px;
+}
+.game-progress-sm .game-hud-dot {
+  width: 6px;
+  height: 6px;
+}
+.game-progress-sm .game-progress-hud-badge {
+  padding: 2px 6px;
+}
+.game-progress-sm .game-hud-num {
+  font-size: 0.72rem;
+}
+
+.game-progress-lg progress {
+  height: 18px;
+}
+.game-progress-lg .game-progress-hud-badge {
+  padding: 4px 12px;
+}
+.game-progress-lg .game-hud-num {
+  font-size: 0.94rem;
+}
+
+/* ==========================================================================
+   Color Variants (Emerald, Amber, Purple, Cyan)
+   ========================================================================== */
+
+/* Emerald (Vitality / Health / Mastery / Success) */
+.game-progress-emerald progress::-webkit-progress-value,
+progress.variant-emerald::-webkit-progress-value {
+  background-color: #059669;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px),
+    linear-gradient(90deg, #10b981 0%, #059669 50%, #0284c7 100%);
+  box-shadow:
+    0 0 12px rgba(16, 185, 129, 0.5),
+    0 0 4px rgba(5, 150, 105, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.game-progress-emerald progress::-moz-progress-bar,
+progress.variant-emerald::-moz-progress-bar {
+  background-color: #059669;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px),
+    linear-gradient(90deg, #10b981 0%, #059669 50%, #0284c7 100%);
+  box-shadow:
+    0 0 12px rgba(16, 185, 129, 0.5),
+    0 0 4px rgba(5, 150, 105, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.game-progress-emerald .game-hud-dot {
+  background: #34d399;
+  box-shadow: 0 0 6px #34d399;
+}
+.game-progress-emerald .game-progress-hud-badge {
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+.game-progress-emerald .game-hud-num {
+  color: #34d399;
+  text-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
+}
+
+/* Amber (Stamina / Attention / Warning) */
+.game-progress-amber progress::-webkit-progress-value,
+progress.variant-amber::-webkit-progress-value {
+  background-color: #d97706;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px),
+    linear-gradient(90deg, #f59e0b 0%, #ea580c 50%, #e11d48 100%);
+  box-shadow:
+    0 0 12px rgba(245, 158, 11, 0.5),
+    0 0 4px rgba(234, 88, 12, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.game-progress-amber progress::-moz-progress-bar,
+progress.variant-amber::-moz-progress-bar {
+  background-color: #d97706;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px),
+    linear-gradient(90deg, #f59e0b 0%, #ea580c 50%, #e11d48 100%);
+  box-shadow:
+    0 0 12px rgba(245, 158, 11, 0.5),
+    0 0 4px rgba(234, 88, 12, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.game-progress-amber .game-hud-dot {
+  background: #fbbf24;
+  box-shadow: 0 0 6px #fbbf24;
+}
+.game-progress-amber .game-progress-hud-badge {
+  border-color: rgba(251, 191, 36, 0.45);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+.game-progress-amber .game-hud-num {
+  color: #fbbf24;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.7);
+}
+
+/* Purple (Magic / Cosmic / Insight) */
+.game-progress-purple progress::-webkit-progress-value,
+progress.variant-purple::-webkit-progress-value {
+  background-color: #7c3aed;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px),
+    linear-gradient(90deg, #a855f7 0%, #7c3aed 50%, #ec4899 100%);
+  box-shadow:
+    0 0 12px rgba(168, 85, 247, 0.5),
+    0 0 4px rgba(124, 58, 237, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.game-progress-purple progress::-moz-progress-bar,
+progress.variant-purple::-moz-progress-bar {
+  background-color: #7c3aed;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.08) 50%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(125deg, rgba(255, 255, 255, 0.24) 0px, rgba(255, 255, 255, 0.24) 14px, transparent 14px, transparent 28px),
+    linear-gradient(90deg, #a855f7 0%, #7c3aed 50%, #ec4899 100%);
+  box-shadow:
+    0 0 12px rgba(168, 85, 247, 0.5),
+    0 0 4px rgba(124, 58, 237, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+.game-progress-purple .game-hud-dot {
+  background: #c084fc;
+  box-shadow: 0 0 6px #c084fc;
+}
+.game-progress-purple .game-progress-hud-badge {
+  border-color: rgba(192, 132, 252, 0.45);
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+.game-progress-purple .game-hud-num {
+  color: #c084fc;
+  text-shadow: 0 0 8px rgba(192, 132, 252, 0.7);
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  progress::-webkit-progress-value,
+  progress::-moz-progress-bar,
+  .game-hud-dot {
+    animation: none !important;
+  }
+}
+
+html[data-reduced-motion="true"] progress::-webkit-progress-value,
+html[data-reduced-motion="true"] progress::-moz-progress-bar,
+html[data-reduced-motion="true"] .game-hud-dot {
+  animation: none !important;
 }

@@ -23,6 +23,7 @@ import type {
   TeacherStudentDetail,
   TeacherTranscript,
 } from "@/lib/teacher-types";
+import { GameProgress } from "./ui/game-progress";
 import { analyticsWindowLabel } from "@/lib/analytics-display.mjs";
 
 function percent(value: number) {
@@ -147,8 +148,15 @@ export function TeacherStudentDetailView({
             <div className="analytics-concept-list">
               {analytics.weak_concepts.map((concept) => (
                 <div className="analytics-concept" key={concept.concept_id}>
-                  <div className="analytics-concept-top"><strong>{concept.concept_name}</strong><span>{percent(concept.mastery)}</span></div>
-                  <progress max={1} value={concept.mastery} aria-label={`${concept.concept_name} ${percent(concept.mastery)}`} />
+                  <div className="analytics-concept-top"><strong>{concept.concept_name}</strong><span className="game-progress-hud-badge sm"><span className="game-hud-num">{percent(concept.mastery)}</span></span></div>
+                  <GameProgress
+                    max={1}
+                    value={concept.mastery}
+                    size="sm"
+                    showPercentage={false}
+                    aria-label={`${concept.concept_name} ${percent(concept.mastery)}`}
+                    variant="amber"
+                  />
                   <small>{concept.n_attempts}<UiText>{" latihan tercatat"}</UiText></small>
                 </div>
               ))}

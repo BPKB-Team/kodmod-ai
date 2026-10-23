@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { UiText, useI18n } from "@/components/language-provider";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, BookOpenCheck, CheckCircle2, Edit3, Eye, FileText, FolderPlus, Plus, Search, UploadCloud, UserPlus, X } from "lucide-react";
 import { addMembers, createClass, changeClass, saveMaterial } from "@/app/class-actions";
@@ -43,6 +43,7 @@ function SubjectPicker({
   disabled?: boolean;
 }) {
   const { t } = useI18n();
+  const optionsId = useId();
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -151,6 +152,7 @@ function SubjectPicker({
               autoComplete="off"
               role="combobox"
               aria-expanded={isOpen}
+              aria-controls={optionsId}
             />
             {query && (
               <button
@@ -165,7 +167,7 @@ function SubjectPicker({
           </div>
 
           {isOpen && (
-            <div className="subject-dropdown-menu" role="listbox">
+            <div id={optionsId} className="subject-dropdown-menu" role="listbox">
               {filtered.length > 0 ? (
                 <div className="subject-options-group">
                   <div className="subject-dropdown-heading">

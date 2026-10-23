@@ -13,7 +13,8 @@
 .guided-progress h2 { margin: .25rem 0 0; font-size: 1.25rem; overflow-wrap: anywhere; }
 .guided-progress > div { flex: 1; min-width: 10rem; }
 .guided-progress strong { color: #24486f; }
-.guided-progress progress { flex-basis: 100%; width: 100%; accent-color: #2463ed; height: .6rem; }
+.guided-progress progress { flex-basis: 100%; width: 100%; height: 14px; margin-top: 0.25rem; }
+.guided-progress .game-progress-hud { flex-basis: 100%; width: 100%; margin: 0.25rem 0 0; }
 .guided-lesson-heading { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.5rem; }
 .guided-lesson-heading h2 { margin: 0; font-size: clamp(1.3rem, 2.5vw, 1.8rem); line-height: 1.45; }
 .guided-symbol { display: inline-flex; padding: .85rem; color: #245be4; background: #ecf3ff; border-radius: 1rem; flex: 0 0 auto; }

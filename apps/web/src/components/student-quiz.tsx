@@ -7,7 +7,7 @@ import { UiText, useI18n } from "@/components/language-provider";
 
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { CheckCircle2, Lightbulb, LineChart, LoaderCircle, RefreshCw, Send, Sparkles, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, Lightbulb, LineChart, LoaderCircle, RefreshCw, RotateCcw, Send, Sparkles, XCircle } from "lucide-react";
 import { confirmAction, notifyResult } from "@/lib/dialogs";
 import type { QuizQuestion, QuizStartResponse, QuizSubmitRequest, QuizRecoveryResponse, QuizInteractionView, QuizActionRequest } from "@/lib/quiz-types";
 import type { StudentMaterial } from "@/lib/class-types";
@@ -19,6 +19,13 @@ import { VoiceControls } from "./voice-controls";
 import { LoadingStatus } from "./loading-feedback";
 import { speechOutput } from "@/lib/browser-speech";
 import { FormattedMathText } from "./formatted-math-text";
+import { GameProgress } from "./ui/game-progress";
+
+function cleanOptionText(text: string): string {
+  if (!text) return "";
+  const cleaned = text.replace(/^(?:[A-Za-z]|\d+)[\.\)\:\-]\s+/, "").trim();
+  return cleaned || text;
+}
 
 type Phase = "idle" | "starting" | "active" | "submitting" | "review" | "complete";
 
@@ -94,6 +101,28 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
 
   function changeAnswer(value: string) {
     if (!acceptingAnswer.current || requestInFlight.current || pendingSubmission.current || answerAttemptRef.current !== answerAttempt) return;
+    if (question?.options?.length) {
+      const trimmed = value.trim();
+      const matched = question.options.find((opt, idx) => {
+        const letter = String.fromCharCode(65 + idx).toLowerCase();
+        const cleaned = cleanOptionText(opt).toLowerCase();
+        const raw = opt.toLowerCase();
+        const input = trimmed.toLowerCase();
+        return (
+          input === letter ||
+          input === `pilihan ${letter}` ||
+          input === `jawaban ${letter}` ||
+          input === `opsi ${letter}` ||
+          input === cleaned ||
+          input === raw ||
+          (input.length > 5 && (cleaned.startsWith(input) || input.startsWith(cleaned)))
+        );
+      });
+      if (matched) {
+        setAnswer(matched);
+        return;
+      }
+    }
     setAnswer(value);
   }
 
@@ -243,12 +272,15 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
     setPhase("active");
   }
 
+  const isLastQuestion = question ? question.order_index === totalQuestions - 1 : false;
   const { questionNumber, answeredQuestions } = quizProgress(question, totalQuestions, phase === "complete");
   const answerLocked = phase !== "active" || submissionPending || restartRequired || actionBusy || Boolean(pendingActionKind);
   const v2 = interaction.policy_version === 2;
   const actions = quizUiState(interaction);
+  const suppressRetryOnRestoredFinal = v2 && !actions.canAnswer && isLastQuestion && Boolean(initialSession?.review_question);
+  const showRetry = (!v2 || actions.canAnswer || !isCorrect) && !suppressRetryOnRestoredFinal;
   const renderActions = () => <div className="quiz-policy-actions">
-    {actions.canAnswer && phase === "review" && <button type="button" className="button secondary" disabled={actionBusy || restartRequired || Boolean(pendingActionKind)} onClick={() => { beginAnswer(); setFeedback(""); setPhase("active"); }}><UiText>{"Coba lagi"}</UiText></button>}
+    {actions.canAnswer && phase === "review" && <button type="button" className="button secondary" disabled={actionBusy || restartRequired || Boolean(pendingActionKind)} onClick={() => { beginAnswer(); setFeedback(""); setPhase("active"); }}><RotateCcw size={17} aria-hidden="true"/><UiText>{"Coba lagi"}</UiText></button>}
     {actions.canHint && <button type="button" className="button secondary" disabled={actionBusy || submissionPending || restartRequired || (Boolean(pendingActionKind) && pendingActionKind !== "hint")} onClick={() => void actQuiz("hint")}><Lightbulb size={17} aria-hidden="true"/><UiText>{"Petunjuk"}</UiText></button>}
     {actions.canAdvance && <button type="button" className="button primary" disabled={actionBusy || submissionPending || restartRequired || (Boolean(pendingActionKind) && pendingActionKind !== "advance")} onClick={() => void actQuiz("advance")}><UiText>{interaction.question_state === "review" && question?.order_index === totalQuestions - 1 ? "Selesaikan latihan" : "Lanjut soal"}</UiText></button>}
   </div>;
@@ -297,14 +329,21 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
       {question && phase !== "idle" && phase !== "starting" && (
         <>
           <section className="panel quiz-progress" aria-label={t("Progres latihan")}>
-            <div>
+            <div className="quiz-progress-meta">
               <span className="muted"><UiText>{embedded ? "Mini kuis Tutor" : "Asesmen mandiri"}</UiText></span>
               <strong><UiText>{"Soal "}</UiText>{questionNumber}<UiText>{" dari "}</UiText>{totalQuestions}
               </strong>
             </div>
             {v2 && interaction.score_summary && <span className="quiz-score-label">{quizPointsLabel(interaction.score_summary, language)}</span>}
-            <progress value={answeredQuestions} max={totalQuestions || 1} aria-label={`${answeredQuestions} dari ${totalQuestions} soal selesai`} />
-            {!embedded && phase === "complete" && <button type="button" className="button secondary small" onClick={() => void startQuiz()}>
+            <div className="quiz-progress-gauge">
+              <GameProgress
+                value={answeredQuestions}
+                max={totalQuestions || 1}
+                label={<UiText>{"Progres latihan"}</UiText>}
+                aria-label={`${answeredQuestions} dari ${totalQuestions} soal selesai`}
+              />
+            </div>
+            {!embedded && phase === "complete" && <button type="button" className="button secondary small quiz-progress-restart" onClick={() => void startQuiz()}>
               <RefreshCw size={16} aria-hidden="true" /><UiText>{"Latihan baru"}</UiText></button>
             }
           </section>
@@ -317,7 +356,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
             <h2 ref={heading} tabIndex={-1}><FormattedMathText text={question.question} /></h2>
             <VoiceControls
               key={`${answerAttempt}:${answerLocked ? "read" : "answer"}`}
-              text={feedback || [question.question, ...question.options.map((option, index) => `${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}: ${option}`)].join(". ")}
+              text={feedback || [question.question, ...question.options.map((option, index) => `${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}: ${cleanOptionText(option)}`)].join(". ")}
               language={contentLanguage}
               autoPlayKey={phase === "submitting" ? null : `${quizSessionId}:${question.question_id}:${phase}:${answerAttempt}`}
               onTranscript={answerLocked ? undefined : changeAnswer}
@@ -337,10 +376,10 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                           checked={answer === option}
                           onChange={() => changeAnswer(option)}
                           disabled={answerLocked}
-                          aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}, ${option}`}
+                          aria-label={`${t("Pilihan {letter}", { letter: String.fromCharCode(65 + index) })}, ${cleanOptionText(option)}`}
                         />
                         <span className="quiz-option-key">{String.fromCharCode(65 + index)}</span>
-                        <span><FormattedMathText text={option} /></span>
+                        <span><FormattedMathText text={cleanOptionText(option)} /></span>
                       </label>
                     ))}
                   </fieldset>
@@ -387,10 +426,56 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                       )}
                     </div>
                   </div>
-                ) : v2 ? renderActions() : (
-                  <button type="button" className="button primary" onClick={continueQuiz}>
-                    {nextQuestion?.order_index === question.order_index ? <UiText>{"Coba jawab lagi"}</UiText> : <UiText>{"Lanjut ke soal berikutnya"}</UiText>}
-                  </button>
+                ) : (
+                  <div className="quiz-feedback-actions">
+                    {showRetry && (
+                      <button
+                        type="button"
+                        className="button secondary"
+                        disabled={actionBusy || restartRequired || Boolean(pendingActionKind)}
+                        onClick={() => {
+                          setAnswer("");
+                          setFeedback("");
+                          setError("");
+                          beginAnswer();
+                          setPhase("active");
+                        }}
+                      >
+                        <RotateCcw size={18} aria-hidden="true" />
+                        <UiText>{"Coba jawab lagi"}</UiText>
+                      </button>
+                    )}
+                    {v2 && actions.canHint && (
+                      <button
+                        type="button"
+                        className="button secondary"
+                        disabled={actionBusy || submissionPending || restartRequired || (Boolean(pendingActionKind) && pendingActionKind !== "hint")}
+                        onClick={() => void actQuiz("hint")}
+                      >
+                        <Lightbulb size={17} aria-hidden="true" />
+                        <UiText>{"Petunjuk"}</UiText>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="button primary"
+                      disabled={actionBusy || submissionPending || restartRequired || (Boolean(pendingActionKind) && pendingActionKind !== "advance")}
+                      onClick={() => {
+                        if (v2) {
+                          void actQuiz("advance");
+                        } else if (nextQuestion && nextQuestion.order_index !== question?.order_index) {
+                          continueQuiz();
+                        } else if (isLastQuestion) {
+                          setPhase("complete");
+                        } else {
+                          void actQuiz("advance");
+                        }
+                      }}
+                    >
+                      <UiText>{isLastQuestion ? "Selesaikan latihan" : "Lanjut ke soal berikutnya"}</UiText>
+                      <ArrowRight size={18} aria-hidden="true" />
+                    </button>
+                  </div>
                 )}
               </section>
             )}

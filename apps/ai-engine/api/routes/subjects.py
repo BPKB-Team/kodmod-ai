@@ -180,6 +180,13 @@ async def delete_subject(
 ) -> None:
     """Removes the subject with its concepts, documents, and indexed chunks."""
     subject = await _editable_subject(session, subject_id, actor)
+    if actor.role == "admin":
+        from api.cascade_delete import cascade_delete_subject
+
+        await cascade_delete_subject(session, subject)
+        await session.commit()
+        return
+
     stored = list(
         (
             await session.execute(
