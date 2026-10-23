@@ -15,7 +15,7 @@ x-api: &api
   mem_limit: 1536m
   cpus: 2.0
   pids_limit: 256
-  networks: [backend, data, metrics]
+  networks: [backend, data, metrics, vectors]
   image: kodmod/ai-engine:${KODMOD_TAG:-vps}
   build:
     context: ../../apps/ai-engine
@@ -101,6 +101,17 @@ services:
 
   ai-engine:
     <<: *api
+    environment:
+      QDRANT_URL: https://qdrant:6333
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      QDRANT_CA_CERT_FILE: /etc/ssl/certs/qdrant-ca.crt
+    volumes:
+      - kodmod-audio:/var/lib/kodmod/audio
+      - kodmod-uploads:/var/lib/kodmod/uploads
+      - type: bind
+        source: ${QDRANT_CA_CERT_PATH:-/etc/ssl/certs/ca-certificates.crt}
+        target: /etc/ssl/certs/qdrant-ca.crt
+        read_only: true
     restart: unless-stopped
     depends_on:
       migrate: { condition: service_completed_successfully }
@@ -108,7 +119,18 @@ services:
 
   worker:
     <<: *api
-    networks: [backend, data]
+    networks: [backend, data, vectors]
+    environment:
+      QDRANT_URL: https://qdrant:6333
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      QDRANT_CA_CERT_FILE: /etc/ssl/certs/qdrant-ca.crt
+    volumes:
+      - kodmod-audio:/var/lib/kodmod/audio
+      - kodmod-uploads:/var/lib/kodmod/uploads
+      - type: bind
+        source: ${QDRANT_CA_CERT_PATH:-/etc/ssl/certs/ca-certificates.crt}
+        target: /etc/ssl/certs/qdrant-ca.crt
+        read_only: true
     command: ["python", "-m", "api.material_worker"]
     restart: unless-stopped
     healthcheck:
@@ -120,6 +142,40 @@ services:
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
+
+  qdrant:
+    image: qdrant/qdrant:v1.19.2-unprivileged
+    profiles: ["qdrant"]
+    restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [vectors]
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 128
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:-}
+      QDRANT__SERVICE__ENABLE_TLS: "true"
+      QDRANT__TLS__CERT: /qdrant/server.crt
+      QDRANT__TLS__KEY: /qdrant/server.key
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    volumes:
+      - kodmod-qdrantdata:/qdrant/storage
+      - kodmod-qdrantsnapshots:/qdrant/snapshots
+      - type: bind
+        source: ${QDRANT_TLS_ROOT:-/srv/kodmod/secrets/qdrant}/server.crt
+        target: /qdrant/server.crt
+        read_only: true
+      - type: bind
+        source: ${QDRANT_TLS_ROOT:-/srv/kodmod/secrets/qdrant}/server.key
+        target: /qdrant/server.key
+        read_only: true
+    logging:
+      driver: local
+      options: { max-size: 10m, max-file: "3" }
 
   web:
     <<: *runtime
@@ -321,6 +377,8 @@ volumes:
   kodmod-uploads:
   kodmod-caddydata:
   kodmod-caddyconfig:
+  kodmod-qdrantdata:
+  kodmod-qdrantsnapshots:
 
 networks:
   edge:
@@ -328,5 +386,7 @@ networks:
   data:
     internal: true
   metrics:
+    internal: true
+  vectors:
     internal: true
   grafana-access:

@@ -51,6 +51,10 @@ private_files=(.env apps/ai-engine/.env)
 if [[ -f .runtime/admin-password ]]; then private_files+=(.runtime/admin-password); fi
 if [[ -f .runtime/demo-accounts.json ]]; then private_files+=(.runtime/demo-accounts.json); fi
 tar -czf "$snapshot/configuration.tar.gz" "${private_files[@]}"
+if [[ -d /srv/kodmod/secrets/qdrant ]]; then
+  tar --numeric-owner -C /srv/kodmod/secrets -czf "$snapshot/qdrant-secrets.tar.gz" qdrant
+  tar -tzf "$snapshot/qdrant-secrets.tar.gz" >/dev/null
+fi
 chmod 0600 "$snapshot"/*
 (cd -- "$snapshot" && sha256sum -- *.dump *.tar.gz > SHA256SUMS && sha256sum --check SHA256SUMS)
 touch "$snapshot/COMPLETE"

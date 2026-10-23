@@ -177,8 +177,10 @@ uji beban pengguna; ukur penggunaan nyata sebelum menaikkan konkurensi.
 `kodmod-backup.timer` membuat snapshot privat setiap hari antara 03:15–03:25
 Asia/Jakarta. Web/API/worker dihentikan sementara untuk konsistensi lalu
 dijalankan kembali, termasuk jika proses backup gagal. Snapshot meliputi dump
-PostgreSQL, audio, unggahan, dan konfigurasi privat; checksum serta daftar
-arsip diperiksa sebelum ditandai `COMPLETE`.
+PostgreSQL, audio, unggahan, dan konfigurasi privat; saat Qdrant aktif, backup
+juga menyimpan key TLS privatnya dalam arsip terpisah. Indeks Qdrant tidak
+diarsipkan karena bisa dibangun ulang dari vektor kanonis PostgreSQL. Checksum
+serta daftar arsip diperiksa sebelum ditandai `COMPLETE`.
 
 ```bash
 sudo systemctl start kodmod-backup.service

@@ -10,7 +10,7 @@ vektor atau memindahkan data.
 |---|---|
 | Docker Centre Windows | Qdrant opsional melalui profile `qdrant`; storage aktif memakai named volume Compose `kodmod-centre_kodmod-qdrantdata` pada Docker Desktop WSL2/ext4. Direktori data WSL Docker Desktop saat ini berada di `F:\Docker_Centre\wsl\DockerDesktopWSL`. |
 | Pengembangan native / Docker mandiri | Default tetap `pgvector`; Qdrant hanya aktif jika `VECTOR_BACKEND=qdrant` dan servicenya dijalankan. |
-| Compose produksi VPS | Qdrant belum dipasang di `infra/docker/docker-compose.prod.yml`. Gunakan `pgvector` di VPS sampai deployment produksi Qdrant dirancang dan diamankan tersendiri. |
+| Compose produksi VPS | Qdrant dipasang lewat profile `qdrant`, image unprivileged yang dipatok, jaringan internal tanpa port host, TLS dengan CA privat, API key, dan volume persisten. Retrieval aplikasi tetap memakai `pgvector` sampai indeks Qdrant diverifikasi dan backend sengaja dialihkan. |
 
 Direktori lama `F:\Docker_Centre\kodmod\data\qdrant` adalah salinan bind
 mount lama dan tetap dibiarkan utuh; direktori itu tidak lagi dipakai container
@@ -41,17 +41,56 @@ langsung memakai fallback tanpa mengantre probe jaringan berulang.
 
 ## Versi dan konfigurasi
 
-Versi runtime yang dipatok saat ini adalah image `qdrant/qdrant:v1.19.2` dan
-Python client `qdrant-client>=1.19.1,<2.0`. Koleksi default
+Versi runtime produksi dipatok ke image
+`qdrant/qdrant:v1.19.2-unprivileged`; Docker Centre lokal memakai
+`qdrant/qdrant:v1.19.2`. Python client dipatok ke
+`qdrant-client>=1.19.1,<2.0`. Koleksi default
 `kodmod_curriculum_v2` memakai embedding 1536 dimensi dengan jarak cosine.
 
 | Variabel | Nilai / fungsi |
 |---|---|
 | `VECTOR_BACKEND` | `pgvector` (default) atau `qdrant`. |
-| `QDRANT_URL` | Dalam Compose: `http://qdrant:6333`. Port Qdrant tidak dipublikasikan oleh Compose Docker Centre. Proses native perlu endpoint Qdrant terpisah yang memang dapat dijangkau dan diamankan. |
+| `QDRANT_URL` | VPS: `https://qdrant:6333` melalui jaringan internal. Docker Centre lokal: `http://qdrant:6333`, tanpa port host. Proses native perlu endpoint Qdrant terpisah yang memang dapat dijangkau dan diamankan. |
 | `QDRANT_COLLECTION` | `kodmod_curriculum_v2`; ubah hanya untuk membangun atau memulihkan koleksi baru. |
 | `QDRANT_TIMEOUT_SECONDS` | Batas waktu jaringan, default 5 detik. |
 | `QDRANT_API_KEY` | Kredensial sisi client jika server Qdrant memang dikonfigurasi untuk autentikasi. Variabel ini sendiri tidak mengaktifkan autentikasi pada server. |
+| `QDRANT_CA_CERT_FILE` | Opsional untuk client aplikasi. Menetapkan CA yang dipakai memvalidasi sertifikat TLS privat Qdrant. |
+
+## Memasang Qdrant di VPS
+
+Pemasangan ini tidak mengalihkan retrieval aktif dari `pgvector`. Profile
+Qdrant diaktifkan oleh `QDRANT_ENABLED=true` pada root `.env`; helper membuat
+API key acak dan sertifikat privat idempoten tanpa menampilkan nilainya:
+
+```bash
+cd /home/kodmod-admin/kodmod-ai
+sudo bash scripts/prepare-qdrant-vps.sh
+sudo bash scripts/release.sh check
+sudo bash scripts/release.sh deploy TAG_RILIS_UNIK
+sudo bash scripts/release.sh compose exec -T ai-engine python -m scripts.reindex_qdrant --batch-size 256
+```
+
+Sebelum update konfigurasi atau image, ikuti preflight dan buat snapshot penuh
+sesuai [runbook VPS](VPS_SETUP.md). Helper menyimpan CA dan key server di
+`/srv/kodmod/secrets/qdrant` dengan akses terbatas; private key CA tidak
+dipasang ke container. Container Qdrant berjalan sebagai UID/GID 1000, hanya
+terhubung ke network internal `vectors`, dan tidak menerbitkan port host.
+Hanya API dan worker yang dapat menjangkau Qdrant. Key API dikirim melalui
+HTTPS dan sertifikat diverifikasi terhadap CA privat yang dipasang read-only.
+
+Pastikan reindex berhasil lalu verifikasi jumlah point dari API container tanpa
+mencetak key atau payload:
+
+```bash
+sudo bash scripts/release.sh compose exec -T ai-engine python -c 'import ssl; from config.settings import settings; from qdrant_client import QdrantClient; c=QdrantClient(url=settings.QDRANT_URL,api_key=settings.QDRANT_API_KEY,timeout=30,verify=ssl.create_default_context(cafile=settings.QDRANT_CA_CERT_FILE)); info=c.get_collection(settings.QDRANT_COLLECTION); print(settings.VECTOR_BACKEND, settings.QDRANT_COLLECTION, info.status, info.points_count); c.close()'
+sudo bash scripts/release.sh smoke
+```
+
+Hasil yang diharapkan adalah `pgvector`, koleksi berstatus `green`, jumlah
+point sesuai vektor kanonis yang memenuhi syarat di PostgreSQL, dan smoke
+aplikasi lulus. Ini menandakan Qdrant siap sebagai indeks sekunder; backend
+tetap `pgvector`. Indeks Qdrant adalah data turunan: bila volume hilang,
+jalankan kembali reindex dari PostgreSQL; database kanonis tidak diubah.
 
 Untuk Docker Centre, `.env` yang dipakai Compose ada di
 `F:\Docker_Centre\kodmod\.env`. File `apps/ai-engine/.env.example`
