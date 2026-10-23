@@ -77,6 +77,9 @@ dipasang ke container. Container Qdrant berjalan sebagai UID/GID 1000, hanya
 terhubung ke network internal `vectors`, dan tidak menerbitkan port host.
 Hanya API dan worker yang dapat menjangkau Qdrant. Key API dikirim melalui
 HTTPS dan sertifikat diverifikasi terhadap CA privat yang dipasang read-only.
+Probe versi bawaan client dilewati untuk endpoint CA privat karena
+`qdrant-client` tidak meneruskan CA itu ke probe HTTP internalnya; versi image
+server dan batas versi client tetap dipatok serta request API diuji langsung.
 
 Pastikan reindex berhasil lalu verifikasi jumlah point dari API container tanpa
 mencetak key atau payload:

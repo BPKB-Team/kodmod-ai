@@ -39,6 +39,9 @@ async def _client():
                     client_options["verify"] = ssl.create_default_context(
                         cafile=settings.QDRANT_CA_CERT_FILE
                     )
+                    # qdrant-client's compatibility probe uses a raw httpx call
+                    # that does not receive this private CA trust context.
+                    client_options["check_compatibility"] = False
                 client = AsyncQdrantClient(
                     **client_options,
                 )

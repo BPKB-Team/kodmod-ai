@@ -261,5 +261,6 @@ async def test_client_uses_configured_private_ca(monkeypatch) -> None:
 
     assert ca_options == {"cafile": "/etc/ssl/certs/qdrant-ca.crt"}
     assert captured["verify"] is context
+    assert captured["check_compatibility"] is False
     assert await qdrant_store._client() is client
     await qdrant_store.close_client()
