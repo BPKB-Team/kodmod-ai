@@ -53,7 +53,7 @@ export async function LearningShell({
           </div>
         </div>
         <StudentTopNav user={user} />
-        <main id="konten-utama" tabIndex={-1} className="workspace-main student-main-content">
+        <main id="main-content" tabIndex={-1} className="workspace-main student-main-content">
           <StudentBackBar />
           {children}
         </main>
@@ -88,7 +88,7 @@ export async function LearningShell({
             />
           </div>
         </header>
-        <main id="konten-utama" tabIndex={-1} className="workspace-main">
+        <main id="main-content" tabIndex={-1} className="workspace-main">
           {children}
         </main>
         <InnerFooter className="workspace-footer" />

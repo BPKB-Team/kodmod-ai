@@ -26,7 +26,7 @@ export default function LandingMenu({ links }: { links: string[][] }) {
       </summary>
       <nav aria-label={t("Navigasi seluler")}>
         {links.map(([href, label]) => (
-          <a href={href} key={href} onClick={close} data-voice-menu={{ "#tentang": "about", "#cara-belajar": "how", "#untuk-guru": "features", "#faq": "faq" }[href]}>
+          <a href={href} key={href} onClick={close} data-voice-menu={{ "#about": "about", "#how-it-works": "how", "#for-teachers": "features", "#faq": "faq" }[href]}>
             {t(label)}
           </a>
         ))}

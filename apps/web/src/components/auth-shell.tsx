@@ -43,7 +43,7 @@ export async function AuthShell({
         <ExperienceToolbar />
       </header>
 
-      <main id="konten-utama" tabIndex={-1} className="auth-main">
+      <main id="main-content" tabIndex={-1} className="auth-main">
         <div className="auth-card">
           <div className="auth-card-brand">
             <Link href="/" aria-label={t("KODMOD, halaman utama")} data-voice-menu="home" className="auth-brand-logo">

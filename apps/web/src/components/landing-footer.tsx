@@ -35,16 +35,16 @@ export function LandingFooter() {
             <h4 className="lp-footer-col-title">{t("Navigasi")}</h4>
             <ul className="lp-footer-links">
               <li>
-                <a href="#tentang" data-voice-menu="footer-nav-about">{t("Tentang KODMOD")}</a>
+                <a href="#about" data-voice-menu="footer-nav-about">{t("Tentang KODMOD")}</a>
               </li>
               <li>
-                <a href="#pilar-solusi" data-voice-menu="footer-nav-pillars">{t("Pilar Solusi")}</a>
+                <a href="#solution-pillars" data-voice-menu="footer-nav-pillars">{t("Pilar Solusi")}</a>
               </li>
               <li>
                 <a href="#faq" data-voice-menu="footer-nav-faq">{t("Pertanyaan umum")}</a>
               </li>
               <li>
-                <a href="#sponsor" data-voice-menu="footer-nav-sponsor">{t("Sponsor")}</a>
+                <a href="#sponsors" data-voice-menu="footer-nav-sponsor">{t("Sponsor")}</a>
               </li>
             </ul>
           </div>

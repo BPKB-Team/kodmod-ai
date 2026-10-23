@@ -41,7 +41,7 @@ export default function App() {
         {/* Diisi saat rute ditambahkan. */}
       </nav>
 
-      <main id="konten-utama" tabIndex={-1} className="px-6 py-8">
+      <main id="main-content" tabIndex={-1} className="px-6 py-8">
         <h2 className="text-xl font-semibold">{t("Mode suara")}</h2>
         <p className="mt-2 max-w-prose">
           {t("Pilih bagaimana KODMOD menyampaikan informasi. Ini menentukan apakah aplikasi bersuara sendiri atau menyerahkannya ke pembaca layar Anda.")}

@@ -7,7 +7,7 @@ import { UiText } from "./language-provider";
 export default function SkipLink() {
   return (
     <a
-      href="#konten-utama"
+      href="#main-content"
       className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:text-kodmod-ink focus:shadow-lg"
     >
       <UiText>Lewati ke konten utama</UiText>

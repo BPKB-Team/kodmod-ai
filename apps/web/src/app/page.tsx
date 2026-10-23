@@ -10,8 +10,8 @@ import "../styles/public-learning.css";
 import { TutorAgentDemo } from "@/components/tutor-agent-demo";
 import { LandingFooter } from "@/components/landing-footer";
 
-const navigation = [["#tentang", "Tentang KODMOD"], ["#cara-belajar", "Cara belajar"], ["#untuk-guru", "Untuk guru"], ["#faq", "Pertanyaan umum"]];
-const menuKeys: Record<string, string> = { "#tentang": "about", "#cara-belajar": "how", "#untuk-guru": "features", "#faq": "faq" };
+const navigation = [["#about", "Tentang KODMOD"], ["#how-it-works", "Cara belajar"], ["#for-teachers", "Untuk guru"], ["#faq", "Pertanyaan umum"]];
+const menuKeys: Record<string, string> = { "#about": "about", "#how-it-works": "how", "#for-teachers": "features", "#faq": "faq" };
 
 export default async function HomePage() {
   const { t } = await getServerI18n();
@@ -26,7 +26,7 @@ export default async function HomePage() {
       <div className="lp-header-actions"><ExperienceToolbar /><Link className="lp-login" href="/login" data-voice-menu="login">{t("Masuk")}<ArrowRight size={16} aria-hidden="true" /></Link></div>
       <LandingMenu links={navigation} />
     </div></header>
-    <main id="konten-utama" tabIndex={-1}>
+    <main id="main-content" tabIndex={-1}>
       <section className="lp-hero">
         <div className="lp-grid" aria-hidden="true" />
         <div className="lp-globe-mesh" aria-hidden="true">
@@ -118,7 +118,7 @@ export default async function HomePage() {
       </section>
 
       {/* 5 Core Solution Pillars Showcase from Pitch Deck */}
-      <section className="lp-pillars-section" id="pilar-solusi">
+      <section className="lp-pillars-section" id="solution-pillars">
         <div className="lp-container">
           <div className="lp-pillars-header">
             <div className="lp-sdg-showcase" data-voice-menu="sdg-badge" tabIndex={0} aria-label={t("Target PBB SDG 4: Pendidikan Berkualitas")}>
@@ -191,7 +191,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      <section id="tentang" className="lp-about-section">
+      <section id="about" className="lp-about-section">
         <div className="lp-container lp-section">
           <div className="lp-section-heading" data-voice-menu="heading-about"><h2>{t("Semua kebutuhan belajar,")}<br />{t("lebih mudah dijangkau.")}</h2><p>{t("Dirancang untuk siswa tunanetra dan siswa dengan penglihatan terbatas, dengan pendampingan guru.")}</p></div>
           <div className="lp-capability-grid">
@@ -204,7 +204,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      <section id="cara-belajar" className="lp-flow-section"><div className="lp-container lp-section">
+      <section id="how-it-works" className="lp-flow-section"><div className="lp-container lp-section">
         <div className="lp-section-heading" data-voice-menu="heading-how"><h2>{t("Mulai dari materi,")}<br />{t("lanjutkan dengan rasa ingin tahu.")}</h2><p>{t("Atur suara sekali. Setelah itu, belajar dengan ritmemu sendiri.")}</p></div>
         <div className="lp-flow-layout"><div className="lp-student-art"><Image src="/images/landing/student-voice.svg" alt="" width={960} height={1080} /></div>
           <ol className="lp-steps">{[
@@ -215,7 +215,7 @@ export default async function HomePage() {
           ].map(([title, copy, stepKey], index) => <li key={title} data-voice-menu={stepKey} tabIndex={0}><span className="lp-step-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><div><h3>{t(title)}</h3><p>{t(copy)}</p></div></li>)}</ol>
         </div>
       </div></section>
-      <section id="untuk-guru" className="lp-teacher-section"><div className="lp-container lp-section lp-teacher"><div>
+      <section id="for-teachers" className="lp-teacher-section"><div className="lp-container lp-section lp-teacher"><div>
         <div data-voice-menu="section-teacher">
           <h2>{t("Siapkan pembelajaran.")}<br />{t("Dampingi setiap siswa.")}</h2>
           <p>{t("Kelola kelas, bagikan materi, dan siapkan kuis dengan peninjauan sebelum dipublikasikan. Pantau hasil siswa untuk menentukan langkah belajar berikutnya.")}</p>
@@ -279,7 +279,7 @@ export default async function HomePage() {
       </section>
 
       {/* Dedicated Sponsor & Ecosystem Section */}
-      <section className="lp-sponsors-section" id="sponsor">
+      <section className="lp-sponsors-section" id="sponsors">
         <div className="lp-sponsors-bg-glow" aria-hidden="true" />
         <div className="lp-container">
           <div className="lp-sponsors-header">

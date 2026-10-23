@@ -37,7 +37,7 @@ export default async function AdminLayout({
             />
           </div>
         </header>
-        <main id="konten-utama" tabIndex={-1} className="workspace-main">
+        <main id="main-content" tabIndex={-1} className="workspace-main">
           {children}
         </main>
         <InnerFooter className="workspace-footer" />
