@@ -53,7 +53,7 @@ untuk mengambil ulang kode dan menjalankan redirect URL lama.
 
 ## Validasi
 
-- Suite web: 231 lulus, 2 tes opsional dilewati; tes session confirmation yang
+- Suite web terbaru: 242 lulus, 2 tes opsional dilewati; tes session confirmation yang
   sebelumnya memakai sleep tetap kini mem-flush animation frame secara
   deterministik.
 - Tes autentikasi/suara HTTP backend: 27 lulus, termasuk preservasi bahasa saat
@@ -68,6 +68,36 @@ untuk mengambil ulang kode dan menjalankan redirect URL lama.
 
 Pengujian tidak memakai akun demo produksi, materi pengguna, atau provider
 berbayar. Diagnosis tab lama tidak mencakup pengamatan langsung terhadap
-console browser pengguna. Perubahan disiapkan pada branch
-`goldenz/session-preferences-sync`; deployment adalah langkah terpisah dan
-laporan ini tidak menyatakan patch sudah aktif di VPS.
+console browser pengguna. Perubahan disiapkan dan di-push pada branch
+`goldenz/session-preferences-sync`. Status deployment terbaru dicatat di bawah.
+
+
+## Popup dan deployment VPS
+
+Popup hasil login sebelumnya membaca bahasa dari atribut `html`, yang dapat
+belum diperbarui ketika efek komponen setelah login berjalan. Narasi hasil aksi
+juga memakai bahasa Indonesia dan engine aplikasi secara tetap. Popup kini
+menerima bahasa dari provider; pemanggil lain membaca cookie bahasa terlebih
+dahulu. Judul, isi, tombol, dan pengumuman dialog memakai bahasa yang sama.
+Pesan diterjemahkan sebelum pemformatan paragraf. Narasi hasil aksi mengikuti
+bahasa serta pilihan engine/menu suara tersimpan, termasuk suara dimatikan.
+
+- Commit aplikasi yang dideploy: `1e3dd1a7967d8a6ba5842e1239c6776744ee19af`.
+- Tag image web/API/worker: `vps-20261023-prefs-1e3dd1a`.
+- Snapshot penuh: `/srv/kodmod/backups/kodmod-20261023T133544Z-18007`;
+  marker `COMPLETE` dan semua checksum valid. Release juga membuat dump
+  PostgreSQL sebelum migrasi. Tidak ada migrasi skema baru pada patch ini.
+- Container web, API, worker, PostgreSQL, dan Redis sehat; migrasi selesai
+  dengan exit code 0. Smoke HTTPS lulus; monitoring 26/26 lulus.
+- Pengujian HTTPS anonim untuk ID/EN mengonfirmasi cookie bahasa, SSR suara
+  menu mati, ukuran teks besar, kontras tinggi, serta aset bertanda versi rilis.
+  Alias `/masuk` tetap HTTP 308 ke `/login` dan mempertahankan query.
+  Respons RSC untuk client versi lama membawa deployment ID terbaru.
+- Jumlah data sebelum/sesudah sama: 56 akun, 23 materi, 52 keanggotaan kelas,
+  dan 85 chunk kanonis. Akun dan materi tidak dihapus atau di-seed ulang.
+- Retrieval tetap `VECTOR_BACKEND=qdrant`; koleksi `kodmod_curriculum_v2`
+  berstatus green dengan 85 point, melalui koneksi TLS tervalidasi.
+- Pengujian popup/narasi ID/EN dan transisi autentikasi dilakukan melalui kode
+  dengan React/JSDOM serta fixture API; bukan klaim pengujian pemutaran audio
+  langsung pada perangkat pengguna. Tes HTTPS produksi tidak mengganti sesi
+  akun yang sedang dipakai.
