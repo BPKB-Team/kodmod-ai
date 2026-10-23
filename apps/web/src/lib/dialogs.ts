@@ -112,7 +112,7 @@ export async function notifyResult(message: string, error = false) {
     "Sesi tidak valid. Hubungi administrator.": "session-invalid",
     "Anda sudah keluar dari akun dengan aman.": "signed-out",
   };
-  const menuKey = publicMessages[message] ?? (error && /^\/(masuk|daftar)(\/|$)/.test(window.location?.pathname ?? "") ? "dialog-error" : undefined);
+  const menuKey = publicMessages[message] ?? (error && /^\/(login|register)(\/|$)/.test(window.location?.pathname ?? "") ? "dialog-error" : undefined);
   await dialog().fire({
     titleText: title,
     text: t(formattedText),

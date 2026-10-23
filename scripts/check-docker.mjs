@@ -140,7 +140,7 @@ async function main() {
   let login;
   await check("landing page", async () => { landing = await page(web, "/"); });
   await check("login page", async () => {
-    login = await page(web, "/masuk");
+    login = await page(web, "/login");
     expect(login.includes("Senang bertemu lagi."), "expected login page is missing");
   });
 
@@ -192,12 +192,12 @@ async function main() {
   });
   await check("web API fallback readiness (DB and Redis)", async () => ready(await json(web, "/api/ready")));
   await check("student page redirects to login", async () => {
-    const response = await request(web, "/siswa", "text/html");
+    const response = await request(web, "/student", "text/html");
     expect([302, 303, 307, 308].includes(response.status), "expected login redirect");
     const location = response.headers.get("location");
     expect(location, "redirect is missing Location");
     const destination = new URL(location, web);
-    expect(destination.origin === web && destination.pathname === "/masuk", "unexpected redirect destination");
+    expect(destination.origin === web && destination.pathname === "/login", "unexpected redirect destination");
   });
   await check("API rejects missing authentication", async () => { await apiJson("/auth/me", 401); });
   await check("web API fallback rejects missing authentication", async () => { await json(web, "/api/auth/me", 401); });

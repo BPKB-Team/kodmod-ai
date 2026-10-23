@@ -8,27 +8,41 @@ before(async () => {
   assert.equal((await response.json()).username, 'admin.test', 'This suite requires the isolated fixture.');
 });
 const request = (path, token) => fetch(origin + path, { redirect: 'manual', headers: token ? { Cookie: `kodmod_session=${token}` } : {} });
-for (const path of ['/admin', '/admin/pengguna', '/admin/undangan', '/admin/pengguna/baru']) {
+for (const path of ['/admin', '/admin/users', '/admin/invitations', '/admin/users/new']) {
   test(`anonymous user cannot read ${path}`, async () => {
     const response = await request(path);
     assert.equal(response.status, 307);
-    assert.equal(response.headers.get('location'), '/masuk');
+    assert.equal(response.headers.get('location'), '/login');
+  });
+}
+for (const [legacy, canonical] of [
+  ['/masuk?success=signed-out', '/login'],
+  ['/guru/kelas/7f4a/materi/3bc2', '/teacher/classes/7f4a/materials/3bc2'],
+  ['/siswa/tugas/3bc2', '/student/assignments/3bc2'],
+  ['/admin/pengguna/baru', '/admin/users/new'],
+]) {
+  test(`legacy URL ${legacy} permanently redirects to ${canonical}`, async () => {
+    const response = await request(legacy);
+    assert.equal(response.status, 308);
+    const destination = new URL(response.headers.get('location'), origin);
+    assert.equal(destination.pathname, canonical);
+    if (legacy.includes('?')) assert.equal(destination.search, '?success=signed-out');
   });
 }
 test('invalid session returns to login', async () => {
   const response = await request('/admin', 'invalid-session');
-  assert.equal(response.headers.get('location'), '/masuk');
+  assert.equal(response.headers.get('location'), '/login');
 });
 test('student cannot read admin user directory', async () => {
-  const response = await request('/admin/pengguna', 'fixture-test-student');
-  assert.equal(response.headers.get('location'), '/siswa');
+  const response = await request('/admin/users', 'fixture-test-student');
+  assert.equal(response.headers.get('location'), '/student');
 });
 test('teacher cannot read admin invitations', async () => {
-  const response = await request('/admin/undangan', 'fixture-test-teacher');
-  assert.equal(response.headers.get('location'), '/guru');
+  const response = await request('/admin/invitations', 'fixture-test-teacher');
+  assert.equal(response.headers.get('location'), '/teacher');
 });
 test('admin data renders without exposing the access token', async () => {
-  const response = await request('/admin/pengguna', 'fixture-test-admin');
+  const response = await request('/admin/users', 'fixture-test-admin');
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.ok(html.includes('admin.test'));

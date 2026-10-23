@@ -53,16 +53,16 @@ export function LandingFooter() {
             <h4 className="lp-footer-col-title">{t("Ruang Belajar")}</h4>
             <ul className="lp-footer-links">
               <li>
-                <Link href="/siswa" data-voice-menu="footer-room-student">{t("Ruang siswa")}</Link>
+                <Link href="/student" data-voice-menu="footer-room-student">{t("Ruang siswa")}</Link>
               </li>
               <li>
-                <Link href="/guru" data-voice-menu="footer-room-teacher">{t("Ruang guru")}</Link>
+                <Link href="/teacher" data-voice-menu="footer-room-teacher">{t("Ruang guru")}</Link>
               </li>
               <li>
-                <Link href="/daftar" data-voice-menu="cta-register">{t("Mulai belajar")}</Link>
+                <Link href="/register" data-voice-menu="cta-register">{t("Mulai belajar")}</Link>
               </li>
               <li>
-                <Link href="/masuk" data-voice-menu="login">{t("Masuk")}</Link>
+                <Link href="/login" data-voice-menu="login">{t("Masuk")}</Link>
               </li>
             </ul>
           </div>

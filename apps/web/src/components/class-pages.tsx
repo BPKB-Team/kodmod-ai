@@ -40,14 +40,14 @@ import type { CurriculumConcept, CurriculumSubject, MaterialMapping } from "@/li
 import { ClassSubjectForm, MaterialConceptsForm } from "./material-concepts-form";
 
 const baseFor = (role: LearningRole) =>
-  role === "teacher" ? "/guru" : "/siswa";
+  role === "teacher" ? "/teacher" : "/student";
 export async function BackToClasses({ role }: { role: LearningRole }) {
   const { t } = await getServerI18n();
   const isStudent = role === "student";
   return (
     <Link
       className={`learning-back ${isStudent ? "student-back-link" : ""}`}
-      href={`${baseFor(role)}/kelas`}
+      href={`${baseFor(role)}/classes`}
       data-voice-menu={isStudent ? "classes" : undefined}
       aria-label={isStudent ? t("Kembali ke semua kelas saya") : undefined}
     >
@@ -62,7 +62,7 @@ function ClassCards({ rows, role, t }: { rows: Classroom[]; role: LearningRole; 
     <div className={`class-grid ${isStudent ? "student-class-grid" : ""}`}>
       {rows.map((row) => (
         <Link
-          href={`${baseFor(role)}/kelas/${row.id}`}
+          href={`${baseFor(role)}/classes/${row.id}`}
           className={`class-card panel ${isStudent ? "student-tactile-card" : ""}`}
           key={row.id}
           aria-label={
@@ -118,7 +118,7 @@ function ClassCards({ rows, role, t }: { rows: Classroom[]; role: LearningRole; 
         {role === "teacher" ? (
           <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
             <UiText>{"Buat kelas, tambahkan siswa, lalu bagikan materi pertama."}</UiText>
-            <Link className="button primary" href="/guru/kelas/baru">
+            <Link className="button primary" href="/teacher/classes/new">
               <Plus size={16} aria-hidden="true" />
               <UiText>{"Buat kelas baru"}</UiText>
             </Link>
@@ -204,7 +204,7 @@ export async function ClassIndex({
         }
       >
         {teacher && (
-          <Link className="button primary" href="/guru/kelas/baru">
+          <Link className="button primary" href="/teacher/classes/new">
             <Plus size={17} aria-hidden="true" /><UiText>{"Buat kelas"}</UiText></Link>
         )}
       </Heading>
@@ -223,7 +223,7 @@ export async function ClassIndex({
                   : <UiText>{"Buka kelas Anda, pilih materi, dan belajar sesuai ritme yang nyaman."}</UiText>}
               </p>
               <Link
-                href={`${baseFor(role)}/kelas`}
+                href={`${baseFor(role)}/classes`}
                 className="button learning-hero-button"
               ><UiText>{"Jelajahi kelas"}</UiText><ArrowUpRight size={18} aria-hidden="true" />
               </Link>
@@ -262,7 +262,7 @@ export async function ClassIndex({
       {dashboard && !teacher && <StudentOverview />}
       {/* Search and filter toolbar for full class catalog */}
       {teacher && !dashboard && (
-        <form className="filters" action="/guru/kelas">
+        <form className="filters" action="/teacher/classes">
           <div className="field search-field">
             <label htmlFor="search" className="sr-only">
               <UiText>{"Cari nama kelas atau mata pelajaran"}</UiText>
@@ -298,7 +298,7 @@ export async function ClassIndex({
           </button>
 
           {hasActiveFilters && (
-            <Link href="/guru/kelas" className="filter-reset-btn">
+            <Link href="/teacher/classes" className="filter-reset-btn">
               <RotateCcw size={14} aria-hidden="true" />
               <UiText>{"Bersihkan filter"}</UiText>
             </Link>
@@ -317,7 +317,7 @@ export async function ClassIndex({
           <Empty title={<UiText>{"Kelas tidak ditemukan"}</UiText>}>
             <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
               <UiText>{"Tidak ada kelas yang sesuai dengan pencarian atau filter yang dipilih."}</UiText>
-              <Link href={`${baseFor(role)}/kelas`} className="button secondary">
+              <Link href={`${baseFor(role)}/classes`} className="button secondary">
                 <RotateCcw size={15} aria-hidden="true" />
                 <UiText>{"Hapus filter"}</UiText>
               </Link>
@@ -328,7 +328,7 @@ export async function ClassIndex({
         <ClassCards rows={[]} role={role} t={t} />
       )}
       {dashboard && rows.length > 6 && (
-        <Link className="learning-back" href={`${baseFor(role)}/kelas`}><UiText>{"Lihat semua kelas"}</UiText><ArrowUpRight size={16} aria-hidden="true" />
+        <Link className="learning-back" href={`${baseFor(role)}/classes`}><UiText>{"Lihat semua kelas"}</UiText><ArrowUpRight size={16} aria-hidden="true" />
         </Link>
       )}
     </>
@@ -395,7 +395,7 @@ export async function ClassRoom({
             {teacher && !row.is_archived && (
               <Link
                 className="button primary"
-                href={`/guru/kelas/${id}/materi/baru`}
+                href={`/teacher/classes/${id}/materials/new`}
               >
                 <Plus size={16} aria-hidden="true" /><UiText>{"Unggah materi"}</UiText></Link>
             )}
@@ -406,7 +406,7 @@ export async function ClassRoom({
                 <Link
                   key={material.id}
                   className="material-row"
-                  href={teacher ? `/guru/kelas/${id}/materi/${material.id}` : `/siswa/tutor?class_id=${id}&material_id=${material.id}`}
+                  href={teacher ? `/teacher/classes/${id}/materials/${material.id}` : `/student/tutor?class_id=${id}&material_id=${material.id}`}
                   aria-label={
                     teacher
                       ? undefined
@@ -501,7 +501,7 @@ export async function MaterialPage({
   ]) : [null, []];
   return (
     <>
-      <Link className={`learning-back ${role === "student" ? "student-back-link" : ""}`} href={`${baseFor(role)}/kelas/${id}`}>
+      <Link className={`learning-back ${role === "student" ? "student-back-link" : ""}`} href={`${baseFor(role)}/classes/${id}`}>
         <ArrowLeft size={16} aria-hidden="true" />
         {row.name}
       </Link>

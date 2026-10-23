@@ -102,7 +102,7 @@ export function TeacherStudentDetailView({
     <section className="teacher-detail-workspace" aria-label={t("Detail siswa {name}", { name: data.account.full_name })}>
       <LoadingStatus active={loading} label="Memuat progres siswa…" />
       <LoadingStatus active={loadingTranscript} label="Membuka riwayat sesi…" />
-      <Link className="learning-back" href="/guru/analitik"><ArrowLeft size={16} aria-hidden="true" /><UiText>{"Kembali ke analitik"}</UiText></Link>
+      <Link className="learning-back" href="/teacher/analytics"><ArrowLeft size={16} aria-hidden="true" /><UiText>{"Kembali ke analitik"}</UiText></Link>
       <div className="teacher-detail-heading">
         <div className="teacher-profile-heading">
           <span className="teacher-profile-avatar" aria-hidden="true">{data.account.full_name.slice(0, 1).toUpperCase()}</span>

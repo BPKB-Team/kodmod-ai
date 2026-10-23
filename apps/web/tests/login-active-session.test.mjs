@@ -8,7 +8,7 @@ import { JSDOM } from "jsdom";
 for (const approved of [false, true]) {
   test(`active-session confirmation ${approved ? "replaces the old session" : "keeps the old session"}`, async () => {
     const dom = new JSDOM("<!doctype html><html><body><div id='root'></div></body></html>", {
-      url: "http://localhost/masuk",
+      url: "http://localhost/login",
       pretendToBeVisual: true,
     });
     const descriptors = new Map();

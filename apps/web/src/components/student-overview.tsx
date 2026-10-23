@@ -32,18 +32,18 @@ export async function StudentOverview() {
         {next && (
           <Link
             className="button primary"
-            href={`/siswa/tutor?class_id=${next.class_id}&material_id=${next.id}`}
+            href={`/student/tutor?class_id=${next.class_id}&material_id=${next.id}`}
           ><UiText>{"Belajar: "}</UiText>{next.title}
             <ArrowUpRight size={18} aria-hidden="true" />
           </Link>
         )}
-        <Link className="button secondary" href="/siswa/materi">
+        <Link className="button secondary" href="/student/materials">
           <BookOpen size={18} aria-hidden="true" /><UiText>{"Daftar materi"}</UiText>
         </Link>
-        <Link className="button secondary" href="/siswa/tutor">
+        <Link className="button secondary" href="/student/tutor">
           <MessageCircle size={18} aria-hidden="true" /><UiText>{"Tutor AI"}</UiText>
         </Link>
-        <Link className="button secondary" href="/siswa/latihan">
+        <Link className="button secondary" href="/student/practice">
           <ListChecks size={18} aria-hidden="true" /><UiText>{"Asesmen mandiri"}</UiText>
         </Link>
       </div>

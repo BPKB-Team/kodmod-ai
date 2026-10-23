@@ -19,6 +19,8 @@ Jadi sebenarnya bukan soal kurangnya alat bantu, tapi belum adanya alat yang ben
 
 Di situlah KODMOD hadir. Ia bekerja sebagai tutor percakapan yang mengikuti kurikulum SLB A, lebih peduli pada cara siswa berpikir ketimbang sekadar menguji hafalan, dan melaporkan progres belajarnya otomatis ke guru.
 
+URL halaman memakai slug bahasa Inggris, seperti `/login`, `/teacher`, dan `/student`, apa pun bahasa antarmuka yang dipilih. Tautan lama berbahasa Indonesia tetap diarahkan permanen ke URL baru.
+
 ## Struktur folder
 
 ```
@@ -173,9 +175,9 @@ $env:API_ORIGIN='http://127.0.0.1:8109'
 npm run dev:web -- --port 3110
 ```
 
-Pada `http://127.0.0.1:3110/masuk`, akun fixture adalah `admin.test`, `guru.test`, atau `siswa.test`, dengan sandi fixture `fixture-only-123`. Data sementara kembali ke awal ketika fixture dimulai ulang. Jangan gunakan konfigurasi fixture untuk deployment.
+Pada `http://127.0.0.1:3110/login`, akun fixture adalah `admin.test`, `guru.test`, atau `siswa.test`, dengan sandi fixture `fixture-only-123`. Data sementara kembali ke awal ketika fixture dimulai ulang. Jangan gunakan konfigurasi fixture untuk deployment.
 
-Fixture siswa sudah menyediakan dua kelas, tiga materi contoh, kontrak Tutor REST sederhana, dan latihan mini-kuis deterministik. Login sebagai `siswa.test` untuk mencoba pustaka, filter, pembaca, bookmark, tanda selesai, `/siswa/tutor`, dan `/siswa/latihan`. Jika fixture sudah berjalan saat kode diperbarui, hentikan lalu mulai ulang agar data/alur terbaru dimuat. Fixture mendukung tampilan kelas guru, tetapi mutasi pengelolaan kelas guru masih memerlukan backend nyata. Tidak ada panggilan AI atau suara berbayar dari fixture.
+Fixture siswa sudah menyediakan dua kelas, tiga materi contoh, kontrak Tutor REST sederhana, dan latihan mini-kuis deterministik. Login sebagai `siswa.test` untuk mencoba pustaka, filter, pembaca, bookmark, tanda selesai, `/student/tutor`, dan `/student/practice`. Jika fixture sudah berjalan saat kode diperbarui, hentikan lalu mulai ulang agar data/alur terbaru dimuat. Fixture mendukung tampilan kelas guru, tetapi mutasi pengelolaan kelas guru masih memerlukan backend nyata. Tidak ada panggilan AI atau suara berbayar dari fixture.
 
 Backend nyata memerlukan migrasi sampai `0005_assessment_submissions` (`python -m alembic upgrade head` dari `apps/ai-engine`, pada database pengembangan yang dituju). Materi terbit yang sudah ada akan berstatus `pending`; guru dapat memakai **Siapkan untuk Tutor** tanpa mengubah isi materi. Isi seluruh `LLM_*_MODEL`, `OPENAI_API_KEY`, dan konfigurasi ElevenLabs pada `.env` backend untuk uji provider nyata. Detail tahap ini: [materi kelas dan Tutor](docs/plans/2026-10-04-learning-flow-milestone.md).
 

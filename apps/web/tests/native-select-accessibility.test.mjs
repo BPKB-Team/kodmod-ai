@@ -127,7 +127,7 @@ test("selecting an option speaks its selection confirmation once", async () => {
     speech,
     language: "id",
     engine: "app",
-    pathname: "/siswa/latihan",
+    pathname: "/student/practice",
   });
   try {
     await view.React.act(async () => view.trigger.click());
@@ -145,7 +145,7 @@ test("opening a dropdown keeps its own announcement instead of the document clic
   const view = await renderSelect({ menuEnabled: true });
   const speech = { getState: () => ({ owner: null, status: "idle" }),
     queueMenu: request => view.voiceQueue.push(request), cancelQueuedMenu() {}, stop() {}, play() {} };
-  const detach = attachMenuNarration({ document: view.dom.window.document, speech, language: "id", engine: "app", pathname: "/siswa/materi" });
+  const detach = attachMenuNarration({ document: view.dom.window.document, speech, language: "id", engine: "app", pathname: "/student/materials" });
   try {
     await view.React.act(async () => view.trigger.click());
     assert.equal(view.voiceQueue.length, 1);

@@ -11,8 +11,8 @@ function failure(error: unknown): ActionState {
   return { error: error instanceof BackendError ? error.message : "Perubahan belum tersimpan. Silakan coba lagi." };
 }
 function refresh() {
-  revalidatePath("/guru", "layout");
-  revalidatePath("/siswa", "layout");
+  revalidatePath("/teacher", "layout");
+  revalidatePath("/student", "layout");
   revalidatePath("/admin", "layout");
 }
 

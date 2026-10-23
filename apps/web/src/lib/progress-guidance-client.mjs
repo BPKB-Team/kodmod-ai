@@ -25,7 +25,7 @@ export function prepareProgressIntent(pending,input,createId=createQuizSubmissio
   return Object.freeze({scope,path,body:Object.freeze(body)});
 }
 export function safePlanDestination(value){
-  return typeof value==="string"&&/^\/siswa\/(tutor|latihan)\?session_id=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  return typeof value==="string"&&/^\/student\/(tutor|practice)\?session_id=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 export async function readProgressMutation(response){
   let data;try{data=await response.json();}catch{throw new ProgressRequestError("Hasil tindakan belum dapat dipastikan.");}

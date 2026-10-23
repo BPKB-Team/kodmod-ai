@@ -111,7 +111,7 @@ export function AdminUserDetail({
         title={user.full_name}
         description={<UiText>{"Detail akun dan konfigurasi hak akses pengguna."}</UiText>}
       >
-        <Link href="/admin/pengguna" className="button secondary">
+        <Link href="/admin/users" className="button secondary">
           <ArrowLeft size={16} aria-hidden="true" />
           <UiText>{"Kembali ke daftar pengguna"}</UiText>
         </Link>
@@ -424,7 +424,7 @@ export function AdminUserDetail({
             <ActionFeedback state={saveState} pending={savePending} pendingLabel="Menyimpan akun…" />
 
             <div className="form-footer-actions">
-              <Link href="/admin/pengguna" className="button secondary">
+              <Link href="/admin/users" className="button secondary">
                 <UiText>{"Batal"}</UiText>
               </Link>
               <button

@@ -158,8 +158,8 @@ test("student page changes focus and announce the new page heading", () => {
     language: "id",
     engine: "app",
     enabled: true,
-    previousPathname: "/siswa/tutor",
-    pathname: "/siswa/progres",
+    previousPathname: "/student/tutor",
+    pathname: "/student/progress",
   });
   assert.equal(heading.getAttribute("tabindex"), "-1");
   assert.equal(dom.window.document.activeElement, heading);

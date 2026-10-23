@@ -405,7 +405,7 @@ export function TeacherAnalytics({ initial }: { initial: TeacherCohort }) {
               <div className="teacher-student-list">
                 {paginatedStudents.map((student) => (
                   <Link
-                    href={`/guru/siswa/${encodeURIComponent(student.student_id)}`}
+                    href={`/teacher/students/${encodeURIComponent(student.student_id)}`}
                     className="teacher-student-row"
                     key={student.student_id}
                   >

@@ -187,7 +187,7 @@ async def guidance(session, student, *, timezone="UTC"):
         "plan": view,
         "needs_refresh": not ready and state != "completed",
         "empty_action": {
-            "href": "/siswa/kelas",
+            "href": "/student/classes",
             "label": "Choose a class or ask your teacher"
             if student.preferred_language == "en"
             else "Pilih kelas atau hubungi guru",
@@ -449,7 +449,7 @@ async def step_action(session, graph, student, plan_id, step_id, body, *, action
             "status": "in_progress",
             "revision": plan.revision + 1,
             "session_id": str(step.session_id),
-            "destination": f"/siswa/{'latihan' if candidate.kind == 'practice' else 'tutor'}?session_id={step.session_id}",
+            "destination": f"/student/{'practice' if candidate.kind == 'practice' else 'tutor'}?session_id={step.session_id}",
         }
     plan.revision += 1
     await session.flush()

@@ -145,10 +145,10 @@ test("a loading button blocks repeated clicks and becomes usable after completio
 test("button composition keeps a link as one interactive element", async () => {
   const { Button } = loadComponents()("ui/button");
   const view = await mount(React => React.createElement(Button, { asChild: true },
-    React.createElement("a", { href: "/siswa/materi" }, "Materi saya")));
+    React.createElement("a", { href: "/student/materials" }, "Materi saya")));
   try {
     assert.equal(view.document.querySelectorAll("a, button").length, 1);
-    assert.equal(view.document.querySelector("a").getAttribute("href"), "/siswa/materi");
+    assert.equal(view.document.querySelector("a").getAttribute("href"), "/student/materials");
   } finally { await view.cleanup(); }
 });
 

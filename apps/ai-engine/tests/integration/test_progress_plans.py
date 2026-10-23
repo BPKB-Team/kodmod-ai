@@ -94,7 +94,7 @@ async def test_start_and_real_quiz_receipt_complete_only_the_linked_step(plan_ht
     started = await client.post(path, json=body)
     assert started.status_code == 200, started.text
     assert (await client.post(path, json=body)).json() == started.json()
-    assert started.json()["destination"].startswith("/siswa/latihan?session_id=")
+    assert started.json()["destination"].startswith("/student/practice?session_id=")
     sid = started.json()["session_id"]
     current = (await client.get(f"/quiz/sessions/{sid}")).json()
     answer = {

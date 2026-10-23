@@ -22,7 +22,7 @@ export const session = cache(async () => {
 });
 export async function requireSession(role?: Role) {
   const value = await session();
-  if (!value) redirect("/masuk");
+  if (!value) redirect("/login");
   if (role && value.user.role !== role) redirect(homeFor(value.user.role));
   return value;
 }

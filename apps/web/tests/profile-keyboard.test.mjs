@@ -49,7 +49,7 @@ test("profile menu supports keyboard selection, Escape, and cancellation focus",
     trigger.focus();
     await key(trigger, "ArrowDown");
     assert.equal(trigger.getAttribute("aria-expanded"), "true");
-    assert.equal(document.activeElement.getAttribute("href"), "/siswa/progres");
+    assert.equal(document.activeElement.getAttribute("href"), "/student/progress");
     await key(document.activeElement, "Escape");
     assert.equal(trigger.getAttribute("aria-expanded"), "false");
     assert.equal(document.activeElement, trigger);

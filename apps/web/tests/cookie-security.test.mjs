@@ -94,7 +94,7 @@ async function invokeAction(name, action, form) {
   assert.equal(cookieName, name === "reading" ? "kodmod_reading_student-1" : "kodmod_session");
   assert.equal(options.httpOnly, true);
   assert.equal(options.sameSite, "lax");
-  assert.equal(options.path, name === "reading" ? "/siswa" : "/");
+  assert.equal(options.path, name === "reading" ? "/student" : "/");
   assert.ok(options.maxAge > 0);
   if (name !== "reading") {
     const [languageCookie, language, languageOptions] = boundary.writes[1];

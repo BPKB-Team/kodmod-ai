@@ -74,8 +74,8 @@ test("Progress distinguishes unassessed concepts and finished material from fail
 });
 
 test("cold-start focus has a real class action and no invented mastery statistic",()=>{
- const initial={status:"no_available_material",updating:false,timezone:"UTC",as_of:"now",needs_refresh:false,focus:null,plan:null,insights:[{kind:"baseline",fact_ids:["coverage"],title:"Belum dinilai",body:"Mulai dari sumber yang tersedia."}],empty_action:{href:"/siswa/kelas",label:"Pilih kelas atau hubungi guru"}};
+ const initial={status:"no_available_material",updating:false,timezone:"UTC",as_of:"now",needs_refresh:false,focus:null,plan:null,insights:[{kind:"baseline",fact_ids:["coverage"],title:"Belum dinilai",body:"Mulai dari sumber yang tersedia."}],empty_action:{href:"/student/classes",label:"Pilih kelas atau hubungi guru"}};
  const html=renderToStaticMarkup(React.createElement(ProgressFocus,{initial}));
- assert.match(html,/href="\/siswa\/kelas"/);assert.match(html,/Belum dinilai/);
+ assert.match(html,/href="\/student\/classes"/);assert.match(html,/Belum dinilai/);
  assert.doesNotMatch(html,/0%|0 persen|konsep lemah/);
 });

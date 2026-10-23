@@ -173,7 +173,7 @@ export function StudentReader({
           <p><UiText>{"Bawa materi ini ke Tutor. Kamu bisa meminta penjelasan, contoh, atau latihan singkat berdasarkan bacaan."}</UiText></p>
           {material.rag_status && material.rag_status !== "ready" && <p role="status"><UiText>{"Materi masih disiapkan untuk Tutor. Kamu tetap bisa membaca atau mendengarkannya di sini."}</UiText></p>}
         </div>
-        <Link className="button primary" href={`/siswa/tutor?class_id=${encodeURIComponent(classId)}&material_id=${encodeURIComponent(material.id)}`}><MessageCircle size={18} aria-hidden="true" /><UiText>{" Tanya Tutor tentang materi ini"}</UiText></Link>
+        <Link className="button primary" href={`/student/tutor?class_id=${encodeURIComponent(classId)}&material_id=${encodeURIComponent(material.id)}`}><MessageCircle size={18} aria-hidden="true" /><UiText>{" Tanya Tutor tentang materi ini"}</UiText></Link>
       </section>
       <section className="panel reader-finish" aria-label={t("Progres bacaan")}>
         <div>

@@ -8,7 +8,7 @@ function view(html, state = { owner: null, status: "idle" }) {
   const queued = [], played = [];
   const speech = { getState: () => state, queueMenu: request => queued.push(request),
     cancelQueuedMenu() {}, stop() {}, play: async request => played.push(request) };
-  const detach = attachMenuNarration({ document: dom.window.document, speech, language: "id", engine: "app", pathname: "/siswa/latihan" });
+  const detach = attachMenuNarration({ document: dom.window.document, speech, language: "id", engine: "app", pathname: "/student/practice" });
   return { dom, document: dom.window.document, queued, played, speech,
     async settle() { await new Promise(resolve => setTimeout(resolve, 10)); },
     cleanup() { detach(); dom.window.close(); } };
@@ -126,7 +126,7 @@ test("navigation waits for a streamed destination heading and supports teacher p
   const dom = new JSDOM('<main></main>', { pretendToBeVisual: true });
   const played = [];
   const cleanup = announcePageNavigation({ document: dom.window.document, speech: { play: r => played.push(r) },
-    language: "id", engine: "app", enabled: true, previousPathname: "/guru", pathname: "/guru/kelas" });
+    language: "id", engine: "app", enabled: true, previousPathname: "/teacher", pathname: "/teacher/classes" });
   try {
     dom.window.document.querySelector("main").innerHTML = '<h1>Kelas saya</h1>';
     await new Promise(resolve => setTimeout(resolve, 10));
@@ -138,7 +138,7 @@ test("navigation waits for a streamed destination heading and supports teacher p
 test("destination focus survives a late framework reset without stealing focus from another control", async () => {
   const dom = new JSDOM('<body tabindex="-1"><main><h1>Kelas</h1><button>Mulai</button></main></body>', { pretendToBeVisual: true });
   const { document } = dom.window;
-  const announce = () => announcePageNavigation({ document, speech: { play() {} }, language: "id", engine: "app", enabled: true, previousPathname: "/siswa", pathname: "/siswa/kelas" });
+  const announce = () => announcePageNavigation({ document, speech: { play() {} }, language: "id", engine: "app", enabled: true, previousPathname: "/student", pathname: "/student/classes" });
   let cleanup = announce();
   try {
     document.body.focus();

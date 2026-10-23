@@ -599,7 +599,7 @@ export function AdminInsights({
               <h3><UiText>{"Pintasan Administrasi"}</UiText></h3>
             </div>
             <div className="admin-quick-actions-grid">
-              <Link href="/admin/pengguna" className="admin-quick-action-card">
+              <Link href="/admin/users" className="admin-quick-action-card">
                 <div className="quick-action-icon blue">
                   <Users size={16} aria-hidden="true" />
                 </div>
@@ -609,7 +609,7 @@ export function AdminInsights({
                 </div>
                 <ArrowUpRight size={14} className="quick-action-arrow" aria-hidden="true" />
               </Link>
-              <Link href="/admin/pemantauan-ai" className="admin-quick-action-card">
+              <Link href="/admin/ai-monitor" className="admin-quick-action-card">
                 <div className="quick-action-icon purple">
                   <Bot size={16} aria-hidden="true" />
                 </div>
@@ -619,7 +619,7 @@ export function AdminInsights({
                 </div>
                 <ArrowUpRight size={14} className="quick-action-arrow" aria-hidden="true" />
               </Link>
-              <Link href="/admin/materi" className="admin-quick-action-card">
+              <Link href="/admin/materials" className="admin-quick-action-card">
                 <div className="quick-action-icon emerald">
                   <BookOpen size={16} aria-hidden="true" />
                 </div>
@@ -629,7 +629,7 @@ export function AdminInsights({
                 </div>
                 <ArrowUpRight size={14} className="quick-action-arrow" aria-hidden="true" />
               </Link>
-              <Link href="/admin/pengguna/baru" className="admin-quick-action-card">
+              <Link href="/admin/users/new" className="admin-quick-action-card">
                 <div className="quick-action-icon amber">
                   <UserPlus size={16} aria-hidden="true" />
                 </div>

@@ -70,7 +70,7 @@ test('language persists to the authenticated account and a same-origin cookie', 
   assert.equal(account.preferred_language, 'en');
   const foreign = await fetch(origin + '/api/preferences/language', { method: 'POST', headers: { ...headers('student'), Origin: 'https://outside.example' }, body: JSON.stringify({ language: 'id' }) });
   assert.equal(foreign.status, 403);
-  const html = await (await fetch(origin + '/daftar', { headers: { Cookie: 'kodmod_language=en' } })).text();
+  const html = await (await fetch(origin + '/register', { headers: { Cookie: 'kodmod_language=en' } })).text();
   assert.match(html, /lang="en"/);
   assert.ok(!html.includes('name="invitation_code"'));
   assert.ok(html.includes('Create your KODMOD account'));

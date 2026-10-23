@@ -225,7 +225,7 @@ export function QuizWorkspace({
           },
         );
         accept(next);
-        if (!draft) router.replace(`/guru/kuis/${next.id}`);
+        if (!draft) router.replace(`/teacher/quizzes/${next.id}`);
       },
       "Draf kuis tersimpan. Anda dapat langsung menerbitkan kuis untuk dibagikan ke kelas.",
       "save",
@@ -856,7 +856,7 @@ export function QuizWorkspace({
                   >
                     {busy && busyAction === "assign" ? <Spinner /> : <Send size={16} aria-hidden="true" />}<UiText>{"Bagikan ke kelas"}</UiText></button>
                   {!classes.some((c) => !c.is_archived) && (
-                    <Link className="learning-back" href="/guru/kelas/baru"><UiText>{"Buat kelas aktif terlebih dahulu"}</UiText>{" "}
+                    <Link className="learning-back" href="/teacher/classes/new"><UiText>{"Buat kelas aktif terlebih dahulu"}</UiText>{" "}
                       <ArrowUpRight size={16} aria-hidden="true" />
                     </Link>
                   )}
@@ -869,7 +869,7 @@ export function QuizWorkspace({
                   <Link
                     key={a.id}
                     className="editorial-assignment-row"
-                    href={`/guru/penugasan/${a.id}`}
+                    href={`/teacher/assignments/${a.id}`}
                   >
                     <span>
                       <strong>{a.class_name}</strong>

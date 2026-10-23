@@ -16,7 +16,7 @@ test("mobile learning menu exposes its controlled navigation and closes after a 
   let speechStopCalls = 0;
   const mocks = {
     "next/link": { __esModule: true, default: ({ children, ...props }) => React.createElement("a", { ...props, href: "#" }, children) },
-    "next/navigation": { usePathname: () => "/siswa" },
+    "next/navigation": { usePathname: () => "/student" },
     "./language-provider": { useI18n: () => ({ t: text => text }) },
     "./logout-button": { LogoutButton: () => React.createElement("button", null, "Keluar") },
     "@/lib/browser-speech": { speechOutput: { stop: () => { speechStopCalls += 1; } } },
@@ -28,7 +28,7 @@ test("mobile learning menu exposes its controlled navigation and closes after a 
   new Function("require", "module", "exports", compiled)(id => mocks[id] ?? require(id), compiledModule, compiledModule.exports);
   const root = createRoot(document.getElementById("root"));
   try {
-    await React.act(async () => root.render(React.createElement(compiledModule.exports.LearningNav, { base: "/siswa" })));
+    await React.act(async () => root.render(React.createElement(compiledModule.exports.LearningNav, { base: "/student" })));
     const toggle = document.querySelector(".learning-nav-toggle");
     const nav = document.getElementById(toggle.getAttribute("aria-controls"));
     assert.equal(nav.getAttribute("aria-label"), "Menu ruang belajar");

@@ -332,7 +332,7 @@ export function ClassForm({ subjects = [] }: { subjects?: CurriculumSubject[] })
         </div>
 
         <div className="teacher-form-actions">
-          <Link href="/guru/kelas" className="button secondary">
+          <Link href="/teacher/classes" className="button secondary">
             <UiText>{"Batal"}</UiText>
           </Link>
           <button

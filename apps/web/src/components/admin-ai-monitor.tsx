@@ -206,7 +206,7 @@ export function AdminAiMonitor({
               <UiText>{"Memperbarui data…"}</UiText>
             </span>
           )}
-          <Link href="/admin/pemantauan-ai/jejak" className="button secondary refresh-btn trace-nav-btn">
+          <Link href="/admin/ai-monitor/traces" className="button secondary refresh-btn trace-nav-btn">
             <Activity size={15} aria-hidden="true" />
             <UiText>{"Jejak Alur Belajar"}</UiText>
           </Link>
@@ -766,7 +766,7 @@ export function AdminAiMonitor({
                           <span>{t("Lihat jejak")}</span>
                         </button>
                         <Link
-                          href={`/admin/pemantauan-ai/jejak?request_id=${encodeURIComponent(req.request_id)}`}
+                          href={`/admin/ai-monitor/traces?request_id=${encodeURIComponent(req.request_id)}`}
                           className="trace-action-btn secondary"
                           title={t("Buka halaman jejak lengkap")}
                           aria-label={t("Buka halaman jejak lengkap")}
@@ -1016,7 +1016,7 @@ export function AdminAiMonitor({
 
             <div className="ai-trace-footer">
               <Link
-                href={`/admin/pemantauan-ai/jejak?request_id=${encodeURIComponent(selectedRequest.request_id)}`}
+                href={`/admin/ai-monitor/traces?request_id=${encodeURIComponent(selectedRequest.request_id)}`}
                 className="button secondary"
               >
                 <ArrowUpRight size={14} aria-hidden="true" />

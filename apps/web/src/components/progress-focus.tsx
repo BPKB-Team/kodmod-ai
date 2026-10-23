@@ -154,7 +154,7 @@ export function ProgressFocus({initial, analyticsSpoken}:{initial:GuidanceRespon
             <ArrowRight size={18} aria-hidden="true"/>
           </button>
         ):(
-          <Link className="button primary" href="/siswa/kelas">{data.empty_action.label}<ArrowRight size={18} aria-hidden="true"/></Link>
+          <Link className="button primary" href="/student/classes">{data.empty_action.label}<ArrowRight size={18} aria-hidden="true"/></Link>
         )}
       </article>
     </section>

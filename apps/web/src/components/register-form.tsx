@@ -108,7 +108,7 @@ export function RegisterForm() {
       </Button>
       <p className="form-help">
         {t("Sudah punya akun?")}{" "}
-        <Link className="text-link" href="/masuk" data-voice-menu="login">
+        <Link className="text-link" href="/login" data-voice-menu="login">
           {t("Masuk")}
         </Link>
       </p>

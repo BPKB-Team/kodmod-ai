@@ -36,7 +36,7 @@ export const roleLabel: Record<Role, string> = {
   student: "Siswa",
 };
 export function homeFor(role: Role) {
-  return { admin: "/admin", teacher: "/guru", student: "/siswa" }[role];
+  return { admin: "/admin", teacher: "/teacher", student: "/student" }[role];
 }
 export function dateLabel(value: string | null) {
   return value

@@ -23,7 +23,7 @@ export default async function HomePage() {
       <nav className="lp-desktop-nav" aria-label={t("Navigasi utama")}>
         {navigation.map(([href, label]) => <a href={href} key={href} data-voice-menu={menuKeys[href]}>{t(label)}</a>)}
       </nav>
-      <div className="lp-header-actions"><ExperienceToolbar /><Link className="lp-login" href="/masuk" data-voice-menu="login">{t("Masuk")}<ArrowRight size={16} aria-hidden="true" /></Link></div>
+      <div className="lp-header-actions"><ExperienceToolbar /><Link className="lp-login" href="/login" data-voice-menu="login">{t("Masuk")}<ArrowRight size={16} aria-hidden="true" /></Link></div>
       <LandingMenu links={navigation} />
     </div></header>
     <main id="konten-utama" tabIndex={-1}>
@@ -68,7 +68,7 @@ export default async function HomePage() {
             <h1 data-voice-menu="hero-title">{t("Pahami pelajaran,")}<br />{t("selangkah demi selangkah.")}</h1>
             <p data-voice-menu="hero-subtitle">{t("Belajar dari materi guru, tanyakan yang belum kamu pahami, dan berlatih bersama Tutor AI. Pilih teks atau suara yang nyaman untukmu.")}</p>
             <div className="lp-actions">
-              <Link href="/daftar" className="lp-btn lp-btn-blue lp-hero-cta" data-voice-menu="cta-start">
+              <Link href="/register" className="lp-btn lp-btn-blue lp-hero-cta" data-voice-menu="cta-start">
                 <span>{t("Mulai belajar")}</span>
                 <ArrowRight size={19} aria-hidden="true" />
               </Link>
@@ -225,7 +225,7 @@ export default async function HomePage() {
           ["Tinjau kuis, lalu tugaskan ke kelas", "teacher-check-quiz"],
           ["Pantau hasil dan progres siswa", "teacher-check-progress"],
         ].map(([copy, voiceKey]) => <li key={copy} tabIndex={0} data-voice-menu={voiceKey}><Check size={18} aria-hidden="true" /><span>{t(copy)}</span></li>)}</ul>
-        <Link href="/daftar" className="lp-btn lp-btn-outline" data-voice-menu="register">{t("Daftar sebagai guru")}<ArrowRight size={18} aria-hidden="true" /></Link>
+        <Link href="/register" className="lp-btn lp-btn-outline" data-voice-menu="register">{t("Daftar sebagai guru")}<ArrowRight size={18} aria-hidden="true" /></Link>
       </div><div className="lp-teacher-art"><Image src="/images/landing/teacher-support.svg" alt="" width={1200} height={900} /></div></div></section>
       <section className="lp-access-section" id="aksesibilitas"><div className="lp-container lp-access-layout"><div><h2>{t("Pilih cara belajar")}<br />{t("yang nyaman untukmu.")}</h2></div>
         <div className="lp-access-items">{[
@@ -386,7 +386,7 @@ export default async function HomePage() {
 
             <div className="lp-cta-actions-wrap">
               <Link
-                href="/daftar"
+                href="/register"
                 className="voice-game-voice-btn lp-cta-btn-primary"
                 data-voice-menu="cta-register"
                 aria-label={t("Buat akun")}
@@ -400,7 +400,7 @@ export default async function HomePage() {
               </Link>
 
               <Link
-                href="/masuk"
+                href="/login"
                 className="voice-game-voice-btn lp-cta-btn-secondary"
                 data-voice-menu="cta-login"
                 aria-label={`${t("Sudah punya akun?")} ${t("Masuk")}`}

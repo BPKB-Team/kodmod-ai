@@ -37,7 +37,7 @@ Materi yang terbit dapat digunakan siswa untuk membaca. Agar Tutor memakai isi m
 
 Paket ini menambahkan 20 tugas terbuka yang dipasangkan satu per satu dengan materi, termasuk instruksi, bukti yang dikumpulkan, dan rubrik ringkas. Tugas-tugas ini adalah bahan pengajar; pengumpulan jawaban terbuka belum menjadi tugas aktif di website.
 
-File `internal/quiz-templates.json` berisi 20 kuis pilihan ganda, masing-masing tiga soal, dengan opsi, jawaban benar, penjelasan, narasi, dan tingkat kesulitan. File ini khusus pengajar dan merupakan bank template, bukan payload API siap kirim. Alur `/siswa/tugas` KODMOD menggunakan kuis yang dibuat, ditinjau, disetujui, diterbitkan, lalu diberikan ke kelas. Sebelum membuat draft di environment test, pilih ID mata pelajaran yang benar; template belum memuat `subject_id` dari database.
+File `internal/quiz-templates.json` berisi 20 kuis pilihan ganda, masing-masing tiga soal, dengan opsi, jawaban benar, penjelasan, narasi, dan tingkat kesulitan. File ini khusus pengajar dan merupakan bank template, bukan payload API siap kirim. Alur `/student/assignments` KODMOD menggunakan kuis yang dibuat, ditinjau, disetujui, diterbitkan, lalu diberikan ke kelas. Sebelum membuat draft di environment test, pilih ID mata pelajaran yang benar; template belum memuat `subject_id` dari database.
 
 Kunci latihan materi berada di `internal/kunci-jawaban-guru.md`.
 
@@ -58,7 +58,7 @@ Kolom aktivitas adalah **rencana/simulasi**, bukan riwayat yang sudah tercatat d
 1. Siapkan database khusus test KODMOD dan jalankan web serta API.
 2. Buat akun melalui alur admin yang tersedia dengan kata sandi demo yang dibuat khusus untuk lingkungan test.
 3. Buat kelas test, unggah materi, terbitkan, dan tunggu sampai status indeks siap.
-4. Masuk sebagai beberapa akun dari tiap pola. Uji baca materi, Tutor, kuis mini Tutor, asesmen mandiri, tugas/kuis terbit di `/siswa/tugas`, progres, TTS, perpindahan halaman, dan pembacaan opsi.
+4. Masuk sebagai beberapa akun dari tiap pola. Uji baca materi, Tutor, kuis mini Tutor, asesmen mandiri, tugas/kuis terbit di `/student/assignments`, progres, TTS, perpindahan halaman, dan pembacaan opsi.
 5. Bandingkan progres dengan interaksi yang benar-benar dilakukan; jangan mengisi angka ringkasan secara manual.
 
 Gunakan infrastruktur terisolasi `apps/ai-engine/docker/docker-compose.test.yml`: database `kodmod_test` berada pada port host 5434 secara default. Port 5433 pada Compose aplikasi adalah database aplikasi `kodmod`. Pastikan nama database dan port tujuan sebelum mengimpor data demo. Import yang tercatat pada status di atas dilakukan ke database aplikasi lokal; pengujian UI dengan fixture sementara tetap tidak membuat akun atau mengunggah materi.

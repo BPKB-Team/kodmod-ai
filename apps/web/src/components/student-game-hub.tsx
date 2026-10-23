@@ -19,12 +19,12 @@ import type { Classroom, StudentMaterial } from "@/lib/class-types";
 import type { User } from "@/lib/types";
 
 const GAME_PAD_ROUTES = [
-  "/siswa/tutor",
-  "/siswa/latihan",
-  "/siswa/tugas",
-  "/siswa/progres",
-  "/siswa/kelas",
-  "/siswa/materi",
+  "/student/tutor",
+  "/student/practice",
+  "/student/assignments",
+  "/student/progress",
+  "/student/classes",
+  "/student/materials",
 ];
 
 interface StudentGameHubProps {
@@ -203,7 +203,7 @@ export function StudentGameHub({
               </p>
             </div>
             <Link
-              href={`/siswa/tutor?class_id=${encodeURIComponent(
+              href={`/student/tutor?class_id=${encodeURIComponent(
                 nextMaterial.class_id
               )}&material_id=${encodeURIComponent(nextMaterial.id)}`}
               className="button primary mission-action-btn"
@@ -275,7 +275,7 @@ export function StudentGameHub({
               <UiText>{"Kelas Terdaftar Kamu"}</UiText>
             </h2>
             <Link
-              href="/siswa/kelas"
+              href="/student/classes"
               className="student-see-all-btn student-see-all-link"
               data-voice-menu="classes"
               aria-label={t("Lihat kelas saya. Buka daftar lengkap semua kelas terdaftar kamu.")}
@@ -289,7 +289,7 @@ export function StudentGameHub({
             {activeClasses.slice(0, 4).map((cls) => (
               <Link
                 key={cls.id}
-                href={`/siswa/kelas/${cls.id}`}
+                href={`/student/classes/${cls.id}`}
                 className="student-class-mini-card"
                 data-voice-menu="classes"
                 aria-label={t("Kelas {name}. Mata pelajaran {subject}. {count} materi.", {

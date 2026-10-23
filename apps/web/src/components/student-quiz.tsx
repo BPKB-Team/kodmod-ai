@@ -410,7 +410,7 @@ export function StudentQuiz({ materials = [], initialSession = null, embedded = 
                   <div className="quiz-complete-summary">
                     <strong>{summary ? <FormattedMathText text={summary} /> : <UiText>{"Latihan selesai."}</UiText>}</strong>
                     <div className="quiz-complete-actions">
-                      <Link className="button secondary" href="/siswa/progres">
+                      <Link className="button secondary" href="/student/progress">
                         <LineChart size={18} aria-hidden="true" />
                         <UiText>{"Lihat Progres"}</UiText>
                       </Link>

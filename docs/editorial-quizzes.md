@@ -76,11 +76,11 @@ Migration `0006_editorial_quizzes` berisi definisi tabel yang dibekukan. Upgrade
 
 | Peran | Halaman |
 | --- | --- |
-| Guru pemilik | `/guru/kuis`, `/guru/kuis/baru`, `/guru/kuis/{id}` |
-| Guru reviewer | `/guru/review-kuis`, `/guru/review-kuis/{id}` |
-| Admin reviewer | `/admin/review-kuis`, `/admin/review-kuis/{id}` |
-| Guru pemilik kelas | `/guru/penugasan/{id}` untuk hasil dan penutupan |
-| Siswa anggota kelas | `/siswa/tugas`, `/siswa/tugas/{id}` |
+| Guru pemilik | `/teacher/quizzes`, `/teacher/quizzes/new`, `/teacher/quizzes/{id}` |
+| Guru reviewer | `/teacher/quiz-reviews`, `/teacher/quiz-reviews/{id}` |
+| Admin reviewer | `/admin/quiz-reviews`, `/admin/quiz-reviews/{id}` |
+| Guru pemilik kelas | `/teacher/assignments/{id}` untuk hasil dan penutupan |
+| Siswa anggota kelas | `/student/assignments`, `/student/assignments/{id}` |
 
 Form guru dapat membuat Subject baru, menyusun ulang soal, mengatur narasi alternatif, menentukan kapan pembahasan dirilis, memilih reviewer dan menjadwalkan kelas. Simpan isi lebih dahulu sebelum keputusan review/publikasi. Setiap revisi baru perlu memilih reviewer lagi atau menggunakan antrean admin.
 

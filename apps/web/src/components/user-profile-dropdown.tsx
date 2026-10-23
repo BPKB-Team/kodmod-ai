@@ -25,7 +25,7 @@ export function UserProfileDropdown({ user, roleLabel, role = "student" }: {
   }
   const roleIcon = role === "admin" ? <ShieldCheck size={16} aria-hidden="true" /> : role === "teacher" ? <GraduationCap size={16} aria-hidden="true" /> : <BookOpen size={16} aria-hidden="true" />;
   const initial = user.full_name.trim().slice(0, 1).toUpperCase() || "U";
-  const destination = role === "admin" ? "/admin" : role === "teacher" ? "/guru" : "/siswa/progres";
+  const destination = role === "admin" ? "/admin" : role === "teacher" ? "/teacher" : "/student/progress";
   const label = role === "admin" ? "Ruang administrasi" : role === "teacher" ? "Ruang mengajar" : "Progres saya";
   return <div className="profile-dropdown-container"><DropdownMenu open={open} onOpenChange={setOpen}>
     <DropdownMenuTrigger asChild><button ref={trigger} type="button" className={`profile-dropdown-trigger ${open ? "open" : ""}`} aria-label={t(pending ? "Keluar…" : "Menu profil pengguna")} aria-busy={pending} disabled={pending}>

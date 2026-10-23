@@ -208,7 +208,7 @@ export function LoginForm() {
       </Submit>
       <p className="form-help">
         {t("Belum punya akun?")}{" "}
-        <Link className="text-link" href="/daftar" data-voice-menu="register">
+        <Link className="text-link" href="/register" data-voice-menu="register">
           {t("Buat akun")}
         </Link>
       </p>
@@ -310,7 +310,7 @@ export function UserForm({
       </div>
       <Feedback state={state} pending={pending} />
       <div className="form-footer">
-        <Link className="button secondary" href="/admin/pengguna"><UiText>{"Batal"}</UiText></Link>
+        <Link className="button secondary" href="/admin/users"><UiText>{"Batal"}</UiText></Link>
         <Submit pending={pending}>
           {user ? <UiText>{"Simpan perubahan"}</UiText> : <UiText>{"Buat pengguna"}</UiText>}
         </Submit>

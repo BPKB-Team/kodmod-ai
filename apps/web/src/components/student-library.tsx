@@ -113,7 +113,7 @@ export function StudentLibrary({
           {filtered.slice(0, limit).map((m) => (
             <Link
               className="panel student-material-card student-tactile-card"
-              href={`/siswa/tutor?class_id=${m.class_id}&material_id=${m.id}`}
+              href={`/student/tutor?class_id=${m.class_id}&material_id=${m.id}`}
               key={m.id}
               aria-label={t("Materi {title}. Kelas {className}. Mata pelajaran {subject}. {progress}. Buka ruang belajar bersama Tutor AI.", {
                 title: m.title,

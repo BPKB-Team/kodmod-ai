@@ -1,6 +1,6 @@
 const targets = "[data-voice-menu],a,button,summary,input,select,textarea,[role=option],[role=button],[role=menuitem],[role=menuitemcheckbox],[role=menuitemradio],[role=radio],[role=checkbox],[role=switch],[role=tab],[role=combobox],.lp-capability,.lp-access-chips > span,.lp-floating,.kodmod-dialog-title,.kodmod-dialog-body,.swal2-title,.swal2-html-container";
 const fieldKeys = { username: "username", password: "password", full_name: "full-name", role: "role" };
-const publicLinks = { "/": "home", "/masuk": "login", "/daftar": "register" };
+const publicLinks = { "/": "home", "/login": "login", "/register": "register" };
 const publicLabels = { Masuk: "login", "Sign in": "login", "Buat akun": "register", "Create account": "register", "Create an account": "register", "Kembali ke beranda": "back-home", "Back to home": "back-home" };
 const modalSelector = "dialog[open],[role=dialog][aria-modal=true],[role=alertdialog]";
 const liveSelector = '[role=alert],[role=status],[aria-live=polite],[aria-live=assertive]';
@@ -86,7 +86,7 @@ function controlText(element, document, language) {
 export function attachMenuNarration({ document, speech, language, engine, pathname }) {
   if (engine === "off") return () => {};
   const dialogTarget = document.defaultView ?? document;
-  const signedInArea = /^\/(siswa|guru|admin)(\/|$)/.test(pathname);
+  const signedInArea = /^\/(student|teacher|admin)(\/|$)/.test(pathname);
   let last = null, lastText = "", lastAt = 0, lastWasHover = false, focusGuardUntil = 0;
   const closestMenu = node => node?.closest?.(targets) ?? node?.parentElement?.closest?.(targets);
   const canPlay = () => !document.querySelector(".voice-panel[data-recording=true]");
@@ -210,7 +210,7 @@ export function announceLanguageChange(speech, language, { engine, enabled, reco
 }
 
 export function announcePageNavigation({ document, speech, language, engine, enabled, previousPathname, pathname }) {
-  if (previousPathname === pathname || !/^\/(siswa|guru|admin|masuk|daftar)(\/|$)/.test(pathname)) return;
+  if (previousPathname === pathname || !/^\/(student|teacher|admin|login|register)(\/|$)/.test(pathname)) return;
   const view = document.defaultView;
   let observer, timer, focusFrame;
   const cleanup = () => {
@@ -230,7 +230,7 @@ export function announcePageNavigation({ document, speech, language, engine, ena
       });
     }
     const text = clean(heading.textContent).slice(0, 300);
-    const menuKey = pathname === "/masuk" ? "login" : pathname === "/daftar" ? "register" : undefined;
+    const menuKey = pathname === "/login" ? "login" : pathname === "/register" ? "register" : undefined;
     if (enabled && engine !== "off" && text) void speech.play({ owner: "menu", text, engine, language, menuKey });
     return true;
   };

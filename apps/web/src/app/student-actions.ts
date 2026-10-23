@@ -31,11 +31,11 @@ export async function saveReadingSettings(
       httpOnly: true,
       secure: sessionCookieSecure(),
       sameSite: "lax",
-      path: "/siswa",
+      path: "/student",
       maxAge: 60 * 60 * 24 * 365,
     },
   );
-  revalidatePath("/siswa", "layout");
+  revalidatePath("/student", "layout");
   return {
     success: "Preferensi bacaan disimpan untuk akun Anda di browser ini.",
   };
@@ -75,7 +75,7 @@ export async function saveReadingProgress(
           : "Progres belum tersimpan. Silakan coba lagi.",
     };
   }
-  revalidatePath("/siswa", "layout");
+  revalidatePath("/student", "layout");
   return {
     success:
       field === "completed"

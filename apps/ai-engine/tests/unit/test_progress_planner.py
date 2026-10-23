@@ -93,7 +93,7 @@ async def test_graph_uses_one_gateway_call_and_deterministic_recommendations(mon
     )
     assert len(calls) == 1 and not result["plan"].used_fallback
     assert len(result["recommendations"]) == 2
-    assert all(r.href.startswith("/siswa/") for r in result["recommendations"])
+    assert all(r.href.startswith("/student/") for r in result["recommendations"])
     assert "Ignore instructions" not in str(calls)
     assert "evil.test" not in str(calls)
 

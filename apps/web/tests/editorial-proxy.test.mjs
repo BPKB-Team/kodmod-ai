@@ -138,7 +138,7 @@ test(
     let attempt = await response.json();
     assert.ok(!JSON.stringify(attempt).includes("correct_option_id"));
     assert.ok(!JSON.stringify(attempt).includes("explanation"));
-    const page = await fetch(`${origin}/siswa/tugas/${assignment.id}`, {
+    const page = await fetch(`${origin}/student/assignments/${assignment.id}`, {
       headers: { Cookie: cookies.student },
     });
     assert.equal(page.status, 200);
@@ -237,13 +237,13 @@ test(
       400,
     );
     for (const [path, actor, status] of [
-      ["/guru/kuis", "owner", 200],
-      ["/guru/kuis/baru", "owner", 200],
-      ["/guru/review-kuis", "reviewer", 200],
-      ["/admin/review-kuis", "admin", 200],
-      ["/siswa/tugas", "student", 200],
-      ["/guru/kuis", "student", 307],
-      ["/siswa/tugas", "owner", 307],
+      ["/teacher/quizzes", "owner", 200],
+      ["/teacher/quizzes/new", "owner", 200],
+      ["/teacher/quiz-reviews", "reviewer", 200],
+      ["/admin/quiz-reviews", "admin", 200],
+      ["/student/assignments", "student", 200],
+      ["/teacher/quizzes", "student", 307],
+      ["/student/assignments", "owner", 307],
     ]) {
       const page = await fetch(origin + path, {
         headers: { Cookie: cookies[actor] },

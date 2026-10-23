@@ -87,7 +87,7 @@ Untuk username berbeda, jalankan perintah lengkap berikut:
   exec ai-engine python -m scripts.create_admin --username admin
 ```
 
-Password diminta di terminal dan tidak ditulis pada command. Script ini juga mereset password jika username tersebut sudah merupakan admin; gunakan username yang dimaksud. Setelah itu buka `/masuk`.
+Password diminta di terminal dan tidak ditulis pada command. Script ini juga mereset password jika username tersebut sudah merupakan admin; gunakan username yang dimaksud. Setelah itu buka `/login`.
 
 ### Akun demo opsional
 

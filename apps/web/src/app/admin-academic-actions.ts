@@ -60,7 +60,7 @@ export async function saveAdminClass(
     return problem(error);
   }
 
-  revalidatePath("/admin/akademik");
+  revalidatePath("/admin/academics");
   return { success: id ? "Data kelas berhasil diperbarui." : "Kelas baru berhasil ditambahkan." };
 }
 
@@ -80,7 +80,7 @@ export async function deleteAdminClass(
     return problem(error);
   }
 
-  revalidatePath("/admin/akademik");
+  revalidatePath("/admin/academics");
   return { success: "Kelas beserta seluruh data turunannya berhasil dihapus permanen." };
 }
 
@@ -118,7 +118,7 @@ export async function saveAdminSubject(
     return problem(error);
   }
 
-  revalidatePath("/admin/akademik");
+  revalidatePath("/admin/academics");
   return {
     success: id
       ? "Mata pelajaran berhasil diperbarui."
@@ -142,7 +142,7 @@ export async function deleteAdminSubject(
     return problem(error);
   }
 
-  revalidatePath("/admin/akademik");
+  revalidatePath("/admin/academics");
   return {
     success:
       "Mata pelajaran beserta seluruh kelas dan data turunannya berhasil dihapus permanen.",

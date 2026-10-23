@@ -109,15 +109,15 @@ Rincian akun demo VPS ada pada bagian berikut.
 
 | Username | Peran | Halaman setelah login |
 | --- | --- | --- |
-| `siswa.demo` | student | `/siswa` |
-| `guru.demo` | teacher | `/guru` |
+| `siswa.demo` | student | `/student` |
+| `guru.demo` | teacher | `/teacher` |
 | `admin.demo` | admin | `/admin` |
 
 Atas permintaan pemilik pada 19 Oktober 2026, ketiga akun demo saat ini memakai
 password bersama `password`. Kredensial tersimpan pada
 `/home/kodmod-admin/kodmod-ai/.runtime/demo-accounts.json`, milik
 `kodmod-admin` dengan izin `600`. Baca file tersebut hanya dalam sesi privat.
-Login di `https://kodmodai.com/masuk`. Akun admin utama tetap memakai
+Login di `https://kodmodai.com/login`. Akun admin utama tetap memakai
 password pada `.runtime/admin-password`. Password bersama ini memberi akses
 admin melalui `admin.demo`; gunakan hanya untuk demo dan ganti atau nonaktifkan
 akun tersebut setelah pengujian publik selesai.

@@ -22,7 +22,7 @@ export function StudentTopNav({ user }: StudentTopNavProps) {
     <header className="student-header" role="banner">
       <div className="student-header-inner">
         <div className="student-header-left">
-          <Brand href="/siswa" />
+          <Brand href="/student" />
         </div>
 
         <div className="student-header-toolbar-wrap">
@@ -45,7 +45,7 @@ export function StudentBackBar() {
   const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
-  const isHub = pathname === "/siswa";
+  const isHub = pathname === "/student";
 
   // Keyboard shortcut: Escape returns to Game Hub when on sub-pages
   useEffect(() => {
@@ -60,7 +60,7 @@ export function StudentBackBar() {
         if (!isInput && !isModal) {
           e.preventDefault();
           speechOutput.stop();
-          router.push("/siswa");
+          router.push("/student");
         }
       }
     };
@@ -73,7 +73,7 @@ export function StudentBackBar() {
   return (
     <div className="student-back-bar">
       <Link
-        href="/siswa"
+        href="/student"
         className="student-back-to-hub-btn"
         data-voice-menu="back-home"
         aria-label={t("Kembali ke Menu Utama Belajar. Pintasan tombol Escape.")}

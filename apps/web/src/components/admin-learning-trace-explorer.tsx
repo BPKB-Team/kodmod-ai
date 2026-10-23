@@ -70,7 +70,7 @@ export function AdminLearningTraceExplorer({
       if (requestId.trim()) sp.set("request_id", requestId.trim());
       if (page > 1) sp.set("page", String(page));
       const qs = sp.toString();
-      router.replace(`/admin/pemantauan-ai/jejak${qs ? `?${qs}` : ""}`, { scroll: false });
+      router.replace(`/admin/ai-monitor/traces${qs ? `?${qs}` : ""}`, { scroll: false });
     } catch {
       // silent or handled
     } finally {
@@ -117,7 +117,7 @@ export function AdminLearningTraceExplorer({
   return (
     <div className="trace-explorer-page">
       <div className="trace-breadcrumb-nav">
-        <Link href="/admin/pemantauan-ai" className="trace-back-btn">
+        <Link href="/admin/ai-monitor" className="trace-back-btn">
           <ArrowLeft size={15} aria-hidden="true" />
           <span><UiText>{"Kembali ke Pantau AI"}</UiText></span>
         </Link>

@@ -87,7 +87,7 @@ export async function logout() {
     }
   }
   jar.delete(SESSION_COOKIE);
-  redirect("/masuk?success=signed-out");
+  redirect("/login?success=signed-out");
 }
 export async function register(
   _state: ActionState,
@@ -194,7 +194,7 @@ export async function saveUser(
     return problem(error);
   }
   revalidatePath("/admin", "layout");
-  redirect("/admin/pengguna?success=saved");
+  redirect("/admin/users?success=saved");
 }
 export async function toggleUser(
   _state: ActionState,
@@ -232,5 +232,5 @@ export async function deleteUser(
     return problem(error);
   }
   revalidatePath("/admin", "layout");
-  redirect("/admin/pengguna?success=deleted");
+  redirect("/admin/users?success=deleted");
 }

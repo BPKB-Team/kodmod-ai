@@ -62,22 +62,22 @@ export function LearningNav({ base }: { base: string }) {
     <nav id={navigationId} className={`admin-nav${menuOpen ? " is-open" : ""}`} aria-label={t("Menu ruang belajar")}>
       {[
         { href: base, title: "Ringkasan", icon: LayoutDashboard },
-        ...(base === "/guru"
+        ...(base === "/teacher"
           ? [
-              { href: "/guru/kelas", title: "Kelas", icon: Library },
-              { href: "/guru/materi", title: "Materi", icon: BookOpen },
-              { href: "/guru/kuis", title: "Kuis & Tugas", icon: ListChecks },
-              { href: "/guru/analitik", title: "Analitik", icon: LineChart },
+              { href: "/teacher/classes", title: "Kelas", icon: Library },
+              { href: "/teacher/materials", title: "Materi", icon: BookOpen },
+              { href: "/teacher/quizzes", title: "Kuis & Tugas", icon: ListChecks },
+              { href: "/teacher/analytics", title: "Analitik", icon: LineChart },
             ]
           : []),
-        ...(base === "/siswa"
+        ...(base === "/student"
           ? [
-              { href: "/siswa/tutor", title: "Tutor AI", icon: MessageCircle },
-              { href: "/siswa/latihan", title: "Latihan & Kuis", icon: ListChecks },
-              { href: "/siswa/tugas", title: "Tugas", icon: ClipboardList },
-              { href: "/siswa/progres", title: "Progres", icon: LineChart },
-              { href: "/siswa/kelas", title: "Kelas", icon: Library },
-              { href: "/siswa/materi", title: "Materi", icon: BookOpen },
+              { href: "/student/tutor", title: "Tutor AI", icon: MessageCircle },
+              { href: "/student/practice", title: "Latihan & Kuis", icon: ListChecks },
+              { href: "/student/assignments", title: "Tugas", icon: ClipboardList },
+              { href: "/student/progress", title: "Progres", icon: LineChart },
+              { href: "/student/classes", title: "Kelas", icon: Library },
+              { href: "/student/materials", title: "Materi", icon: BookOpen },
             ]
           : []),
       ].map(({ href, title, icon: Icon }) => {
@@ -92,15 +92,15 @@ export function LearningNav({ base }: { base: string }) {
                 ? "dashboard"
                 : (
                     {
-                      kelas: "classes",
-                      materi: "materials",
+                      classes: "classes",
+                      materials: "materials",
                       tutor: "tutor",
-                      latihan: "practice",
-                      tugas: "assignments",
-                      progres: "progress",
-                      kuis: "quizzes",
-                      "review-kuis": "review",
-                      analitik: "analytics",
+                      practice: "practice",
+                      assignments: "assignments",
+                      progress: "progress",
+                      quizzes: "quizzes",
+                      "quiz-reviews": "review",
+                      analytics: "analytics",
                     } as Record<string, string>
                   )[href.split("/").at(-1) ?? ""]
             }

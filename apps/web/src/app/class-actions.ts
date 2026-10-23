@@ -24,8 +24,8 @@ function failure(error: unknown): ActionState {
   };
 }
 function refresh() {
-  revalidatePath("/guru", "layout");
-  revalidatePath("/siswa", "layout");
+  revalidatePath("/teacher", "layout");
+  revalidatePath("/student", "layout");
 }
 
 export async function createClass(
@@ -50,7 +50,7 @@ export async function createClass(
   refresh();
   return {
     success: "Kelas berhasil dibuat. Tambahkan siswa dan materi untuk mulai belajar.",
-    redirectUrl: `/guru/kelas/${row.id}?success=class-created`,
+    redirectUrl: `/teacher/classes/${row.id}?success=class-created`,
   };
 }
 
@@ -154,7 +154,7 @@ export async function saveMaterial(
   if (!materialId) {
     return {
       success: "Materi berhasil disimpan dan siap dipelajari.",
-      redirectUrl: `/guru/kelas/${effectiveClassId}/materi/${row.id}?success=material-saved`,
+      redirectUrl: `/teacher/classes/${effectiveClassId}/materials/${row.id}?success=material-saved`,
     };
   }
   return { success: "Materi disimpan sesuai status publikasinya." };

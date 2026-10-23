@@ -186,7 +186,7 @@ def recommendations_from_plan(plan, snapshot, language="id"):
                 body=body,
                 reason_text=reason,
                 estimated_minutes=candidate.estimated_minutes,
-                href=f"/siswa/{'latihan' if candidate.kind == 'practice' else 'tutor'}?"
+                href=f"/student/{'practice' if candidate.kind == 'practice' else 'tutor'}?"
                 + urlencode({"class_id": candidate.class_id, "material_id": candidate.material_id}),
             )
         )

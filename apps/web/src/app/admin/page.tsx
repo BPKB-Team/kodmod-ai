@@ -37,7 +37,7 @@ export default async function AdminPage() {
         title={`Selamat datang, ${user.full_name.split(" ")[0]}.`}
         description={<UiText>{"Kelola akses, siapkan ruang belajar, dan dampingi sekolah Anda."}</UiText>}
       >
-        <Link className="button primary" href="/admin/pengguna/baru">
+        <Link className="button primary" href="/admin/users/new">
           <Plus size={18} aria-hidden="true" />
           <UiText>{"Tambah pengguna"}</UiText>
         </Link>
@@ -48,7 +48,7 @@ export default async function AdminPage() {
             <BookOpen size={16} aria-hidden="true" /><UiText>{"Mulai dari akses yang tepat"}</UiText></span>
           <h2><UiText>{"Ruang belajar yang baik,"}</UiText><br /><UiText>{"dimulai bersama Anda."}</UiText></h2>
           <p><UiText>{"Pastikan guru dan siswa memiliki akses untuk melangkah ke perjalanan belajar berikutnya."}</UiText></p>
-          <Link href="/admin/pengguna" className="button white"><UiText>{"Kelola pengguna"}</UiText><ArrowUpRight size={18} aria-hidden="true" />
+          <Link href="/admin/users" className="button white"><UiText>{"Kelola pengguna"}</UiText><ArrowUpRight size={18} aria-hidden="true" />
           </Link>
         </div>
         <div className="welcome-art" aria-hidden="true">
@@ -105,7 +105,7 @@ export default async function AdminPage() {
             <h2><UiText>{"Pengguna terbaru"}</UiText></h2>
             <p><UiText>{"Akun yang baru bergabung di KODMOD."}</UiText></p>
           </div>
-          <Link href="/admin/pengguna" className="text-link"><UiText>{"Lihat semua"}</UiText><ArrowUpRight size={16} aria-hidden="true" />
+          <Link href="/admin/users" className="text-link"><UiText>{"Lihat semua"}</UiText><ArrowUpRight size={16} aria-hidden="true" />
           </Link>
         </div>
         {users.length ? (
@@ -124,7 +124,7 @@ export default async function AdminPage() {
                   <TableCell>
                     <Link
                       className="user-link"
-                      href={`/admin/pengguna/${u.id}`}
+                      href={`/admin/users/${u.id}`}
                     >
                       <span className={`avatar avatar-${u.role}`} aria-hidden="true">
                         {u.full_name.slice(0, 1)}

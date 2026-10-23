@@ -119,7 +119,7 @@ export async function TeacherQuizIndex({
         title={<UiText>{"Kuis & penugasan"}</UiText>}
         description={<UiText>{"Dari pertanyaan yang baik, menuju pemahaman yang lebih terarah."}</UiText>}
       >
-        <Link className="button primary" href="/guru/kuis/baru">
+        <Link className="button primary" href="/teacher/quizzes/new">
           <Plus size={17} aria-hidden="true" /><UiText>{"Buat kuis"}</UiText></Link>
       </Heading>
       <section className="editorial-hero">
@@ -138,7 +138,7 @@ export async function TeacherQuizIndex({
       </section>
 
       {/* Filter and Search Bar */}
-      <form className="filters" action="/guru/kuis">
+      <form className="filters" action="/teacher/quizzes">
         <div className="field search-field">
           <label htmlFor="search" className="sr-only">
             <UiText>{"Cari judul kuis"}</UiText>
@@ -177,7 +177,7 @@ export async function TeacherQuizIndex({
         </button>
 
         {hasActiveFilters && (
-          <Link href="/guru/kuis" className="filter-reset-btn">
+          <Link href="/teacher/quizzes" className="filter-reset-btn">
             <RotateCcw size={14} aria-hidden="true" />
             <UiText>{"Bersihkan filter"}</UiText>
           </Link>
@@ -195,7 +195,7 @@ export async function TeacherQuizIndex({
           {rows.map((q) => (
             <Link
               className="panel editorial-card"
-              href={`/guru/kuis/${q.id}`}
+              href={`/teacher/quizzes/${q.id}`}
               key={q.id}
             >
               <div className="editorial-card-top">
@@ -224,7 +224,7 @@ export async function TeacherQuizIndex({
           <Empty title={<UiText>{"Kuis tidak ditemukan"}</UiText>}>
             <div style={{ display: "grid", gap: "1rem", justifyItems: "center" }}>
               <UiText>{"Tidak ada kuis yang sesuai dengan pencarian atau filter yang dipilih."}</UiText>
-              <Link href="/guru/kuis" className="button secondary">
+              <Link href="/teacher/quizzes" className="button secondary">
                 <RotateCcw size={15} aria-hidden="true" />
                 <UiText>{"Hapus filter"}</UiText>
               </Link>
@@ -236,7 +236,7 @@ export async function TeacherQuizIndex({
           <Empty title={<UiText>{"Mulai dari satu pertanyaan."}</UiText>}><UiText>{"Buat kuis pilihan ganda, lalu minta peninjauan sebelum membagikannya ke siswa."}</UiText></Empty>
         </section>
       )}
-      <Pagination page={page} next={rows.length === 25} path="/guru/kuis" label={t("Halaman daftar")} />
+      <Pagination page={page} next={rows.length === 25} path="/teacher/quizzes" label={t("Halaman daftar")} />
     </>
   );
 }
@@ -255,7 +255,7 @@ export async function TeacherQuizEditor({ id }: { id?: string }) {
   if (draft && draft.teacher_id !== user.id) notFound();
   return (
     <>
-      <Link className="learning-back" href="/guru/kuis">
+      <Link className="learning-back" href="/teacher/quizzes">
         <ArrowLeft size={16} aria-hidden="true" /><UiText>{"Semua kuis"}</UiText></Link>
       <Heading
         title={draft?.version.title || <UiText>{"Buat kuis baru"}</UiText>}
@@ -288,7 +288,7 @@ export async function QuizReviewIndex({
 }) {
   const { t } = await getServerI18n();
   const page = pageNumber(raw),
-    base = role === "admin" ? "/admin/review-kuis" : "/guru/review-kuis";
+    base = role === "admin" ? "/admin/quiz-reviews" : "/teacher/quiz-reviews";
   const search = (rawSearch ?? "").trim().slice(0, 120);
   const allRows = await editorialData<QuizSummary[]>(
     `/quiz-reviews?limit=50&offset=${page * 50}`,
@@ -428,7 +428,7 @@ export async function QuizReviewDetail({
     <>
       <Link
         className="learning-back"
-        href={role === "admin" ? "/admin/review-kuis" : "/guru/review-kuis"}
+        href={role === "admin" ? "/admin/quiz-reviews" : "/teacher/quiz-reviews"}
       >
         <ArrowLeft size={16} aria-hidden="true" /><UiText>{"Antrean peninjauan"}</UiText></Link>
       <Heading
@@ -472,7 +472,7 @@ export async function StudentAssignmentIndex({ page: raw }: { page?: string }) {
             return (
               <Link
                 key={a.id}
-                href={`/siswa/tugas/${a.id}`}
+                href={`/student/assignments/${a.id}`}
                 className="panel editorial-card student-tactile-card"
                 aria-label={t("Tugas {title}. Kelas {className}. {count} soal. Status: {status}. {deadline}.", {
                   title: a.title,
@@ -531,7 +531,7 @@ export async function StudentAssignmentIndex({ page: raw }: { page?: string }) {
           <Empty title={<UiText>{"Tugasmu akan muncul di sini."}</UiText>}><UiText>{"Guru akan membagikan kuis setelah kamu terdaftar di kelas."}</UiText></Empty>
         </section>
       )}
-      <Pagination page={page} next={rows.length === 25} path="/siswa/tugas" label={t("Halaman daftar")} />
+      <Pagination page={page} next={rows.length === 25} path="/student/assignments" label={t("Halaman daftar")} />
     </>
   );
 }
@@ -560,7 +560,7 @@ export async function StudentAssignmentPage({ id }: { id: string }) {
     <>
       <Link
         className="learning-back student-back-link"
-        href="/siswa/tugas"
+        href="/student/assignments"
         data-voice-menu="assignments"
         aria-label={t("Kembali ke semua tugas dari guru")}
       >
@@ -600,7 +600,7 @@ export async function TeacherAssignmentPage({ id }: { id: string }) {
   );
   return (
     <>
-      <Link className="learning-back" href="/guru/kuis">
+      <Link className="learning-back" href="/teacher/quizzes">
         <ArrowLeft size={16} aria-hidden="true" /><UiText>{"Semua kuis"}</UiText></Link>
       <Heading
         title={result.assignment.title}

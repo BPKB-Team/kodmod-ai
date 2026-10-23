@@ -66,7 +66,7 @@ $env:API_FIXTURE_ORIGIN = 'http://127.0.0.1:3219'
 node --test apps/web/tests/quiz-proxy.test.mjs apps/web/tests/access.test.mjs apps/web/tests/material-proxy.test.mjs
 ```
 
-Browser acceptance di `/siswa/latihan`, login fixture `siswa.test` / `fixture-only-123`:
+Browser acceptance di `/student/practice`, login fixture `siswa.test` / `fixture-only-123`:
 1. Atur `POST http://127.0.0.1:3219/__fixture/quiz` dengan JSON `{"failures":[503]}`. Kirim jawaban, pastikan opsi/mikrofon input terkunci dan retry mengirim payload identik. `GET /__fixture/quiz` memuat request yang diterima fixture.
 2. Ganti failures menjadi `[422]`: setelah penolakan, input dapat diedit dan kiriman berikutnya mendapat UUID baru.
 3. Ganti failures menjadi `[409]`: kirim ulang diblokir, tersedia tindakan Latihan baru dengan konfirmasi.
