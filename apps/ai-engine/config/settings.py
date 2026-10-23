@@ -146,6 +146,7 @@ class Settings(BaseSettings):
     VECTOR_BACKEND: Literal["pgvector", "qdrant"] = "pgvector"
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_API_KEY: str | None = None
+    QDRANT_CA_CERT_FILE: str | None = None
     QDRANT_COLLECTION: str = "kodmod_curriculum_v2"
     QDRANT_TIMEOUT_SECONDS: float = Field(default=5.0, gt=0, le=60)
     RERANKER_MODEL: str = "BAAI/bge-reranker-v2-m3"

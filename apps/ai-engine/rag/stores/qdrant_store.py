@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import ssl
 import uuid
 
 from config.settings import settings
@@ -29,10 +30,20 @@ async def _client():
                     raise ConnectionError("Qdrant initialization is cooling down")
                 from qdrant_client import AsyncQdrantClient
 
+                client_options: dict[str, object] = {
+                    "url": settings.QDRANT_URL,
+                    "api_key": settings.QDRANT_API_KEY,
+                    "timeout": settings.QDRANT_TIMEOUT_SECONDS,
+                }
+                if settings.QDRANT_CA_CERT_FILE:
+                    client_options["verify"] = ssl.create_default_context(
+                        cafile=settings.QDRANT_CA_CERT_FILE
+                    )
+                    # qdrant-client's compatibility probe uses a raw httpx call
+                    # that does not receive this private CA trust context.
+                    client_options["check_compatibility"] = False
                 client = AsyncQdrantClient(
-                    url=settings.QDRANT_URL,
-                    api_key=settings.QDRANT_API_KEY,
-                    timeout=settings.QDRANT_TIMEOUT_SECONDS,
+                    **client_options,
                 )
                 try:
                     async with asyncio.timeout(settings.QDRANT_TIMEOUT_SECONDS):

@@ -17,6 +17,9 @@ if [[ "$action" == deploy ]]; then
   flock -n 9 || { echo 'A KODMOD backup or deployment is already running.' >&2; exit 1; }
 fi
 compose=(docker compose --profile monitoring --profile monitoring-linux --env-file .env -f infra/docker/docker-compose.prod.yml)
+if [[ "$(read_env QDRANT_ENABLED)" == "true" ]]; then
+  compose+=(--profile qdrant)
+fi
 validation_mode=prod
 if [[ "$mode" == private ]]; then
   compose+=(-f infra/docker/docker-compose.private.yml)

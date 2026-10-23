@@ -225,3 +225,42 @@ async def test_initialization_has_one_overall_timeout_and_closes_failed_client(m
         await asyncio.wait_for(qdrant_store._client(), timeout=0.2)
     assert closed == [True], "the initialization deadline must close its incomplete client"
     assert qdrant_store._client_instance is None
+
+
+async def test_client_uses_configured_private_ca(monkeypatch) -> None:
+    import qdrant_client
+
+    context = object()
+    captured = {}
+    ca_options = {}
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+        async def close(self):
+            pass
+
+    async def ready(client):
+        return None
+
+    monkeypatch.setattr(qdrant_client, "AsyncQdrantClient", FakeClient)
+
+    def create_context(**kwargs):
+        ca_options.update(kwargs)
+        return context
+
+    monkeypatch.setattr(qdrant_store.ssl, "create_default_context", create_context)
+    monkeypatch.setattr(qdrant_store.settings, "QDRANT_CA_CERT_FILE", "/etc/ssl/certs/qdrant-ca.crt")
+    monkeypatch.setattr(qdrant_store, "_client_instance", None)
+    monkeypatch.setattr(qdrant_store, "_client_lock", asyncio.Lock())
+    monkeypatch.setattr(qdrant_store, "_client_retry_at", 0.0, raising=False)
+    monkeypatch.setattr(qdrant_store, "ensure_collection", ready)
+
+    client = await qdrant_store._client()
+
+    assert ca_options == {"cafile": "/etc/ssl/certs/qdrant-ca.crt"}
+    assert captured["verify"] is context
+    assert captured["check_compatibility"] is False
+    assert await qdrant_store._client() is client
+    await qdrant_store.close_client()
