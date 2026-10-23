@@ -187,6 +187,7 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         API_ORIGIN: http://ai-engine:8000
+        KODMOD_DEPLOYMENT_ID: ${KODMOD_TAG:-vps}
     restart: unless-stopped
     init: true
     read_only: true

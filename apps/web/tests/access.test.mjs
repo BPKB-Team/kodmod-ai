@@ -3,6 +3,17 @@ import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
 const origin = process.env.WEB_TEST_ORIGIN || 'http://127.0.0.1:3110';
 const apiOrigin = process.env.API_FIXTURE_ORIGIN || 'http://127.0.0.1:8109';
+test('a stale navigation receives the current deployment version and versioned assets', {
+  skip: !process.env.WEB_DEPLOYMENT_ID,
+}, async () => {
+  const expected = process.env.WEB_DEPLOYMENT_ID;
+  const page = await fetch(origin + '/login');
+  assert.ok((await page.text()).includes(`?dpl=${expected}`));
+  const stale = await fetch(origin + '/login?_rsc=deployment-probe', {
+    redirect: 'manual', headers: { RSC: '1', 'x-deployment-id': 'older-test-deployment' },
+  });
+  assert.equal(stale.headers.get('x-nextjs-deployment-id'), expected);
+});
 before(async () => {
   const response = await fetch(apiOrigin + '/auth/me', { headers: { Authorization: 'Bearer fixture-test-admin' } });
   assert.equal((await response.json()).username, 'admin.test', 'This suite requires the isolated fixture.');

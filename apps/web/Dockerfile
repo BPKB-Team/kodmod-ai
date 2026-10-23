@@ -10,7 +10,9 @@ FROM dependencies AS builder
 # Next.js compiles fallback rewrites. Keep this internal hostname identical
 # in local and VPS Compose. Provider credentials never enter this build.
 ARG API_ORIGIN=http://ai-engine:8000
-ENV API_ORIGIN=${API_ORIGIN}
+ARG KODMOD_DEPLOYMENT_ID
+ENV API_ORIGIN=${API_ORIGIN} \
+    KODMOD_DEPLOYMENT_ID=${KODMOD_DEPLOYMENT_ID}
 COPY apps/web ./apps/web
 RUN npm run build:web
 
